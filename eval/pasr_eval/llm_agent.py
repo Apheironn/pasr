@@ -37,15 +37,21 @@ expected answer refers to? Reply with exactly YES or NO."""
 class LlmAgent:
     name = "claude"
 
-    def __init__(self, model: str = "claude-sonnet-5", api_key: str | None = None) -> None:
+    def __init__(
+        self,
+        model: str = "claude-sonnet-5",
+        api_key: str | None = None,
+        judge_model: str | None = None,
+    ) -> None:
         import anthropic
 
         self.model = model
+        self.judge_model = judge_model or model
         self._client = anthropic.Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
 
-    def _ask(self, prompt: str, max_tokens: int) -> str:
+    def _ask(self, prompt: str, max_tokens: int, model: str | None = None) -> str:
         message = self._client.messages.create(
-            model=self.model,
+            model=model or self.model,
             max_tokens=max_tokens,
             messages=[{"role": "user", "content": prompt}],
         )
@@ -66,5 +72,6 @@ class LlmAgent:
                 answer=answer,
             ),
             max_tokens=5,
+            model=self.judge_model,
         )
         return verdict.strip().upper().startswith("YES")

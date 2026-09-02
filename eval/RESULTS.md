@@ -8,8 +8,8 @@
 > **Plan expanded to 50 tasks / 10 repos.** The keyword-proxy re-run (no API) already
 > corroborates and tightens the interval: PASR **0.70** vs broad **0.66** vs
 > native_search **0.64**, PASR critical-source miss **0.08 vs broad's 0.34**, +90%
-> tokens. The **50-task real-agent run is the next step** —
-> `python eval/run_eval.py --agent claude`.
+> tokens. The **50-task real-agent run is the next step** — streams to disk and is
+> `--resume`-able; see [Next](#next) for the budget-safe command.
 >
 > This is an efficiency-direction result, not a superiority claim.
 
@@ -104,8 +104,16 @@ Delivery: `eval/deliveries/pilot_20260902T212108Z/`.
 
 ### Next
 
-1. **Run the 50-task real-agent eval:** `python eval/run_eval.py --agent claude`
-   (~400 API calls, ~$5–10, ~30–40 min). Trial first with `--max-tasks 4`.
+1. **Run the 50-task real-agent eval.** ~400 API calls (200 answer + ~200 judge).
+   Rows stream to `matrix.jsonl` as they finish, so a crash never loses progress —
+   resume with `--resume <run_dir>`. Budget levers:
+   - Cheap answer model + strong judge (~$4–6 total on Haiku answers):
+     `python eval/run_eval.py --agent claude --model claude-haiku-4-5 --judge-model claude-sonnet-5`
+   - Trial first: add `--max-tasks 4` (~$0.4).
+   - Shrink the `broad` arm's dump if context spend matters:
+     `PASR_EVAL_BROAD_CAP=30000` (env var; default 60000).
+   - Full Sonnet answer+judge ≈ $12–15; if it stops, rerun the same command with
+     `--resume eval/runs/<plan>_<ts>`.
 2. Consider a stronger `broad` (relevance-ranked truncation) so it isn't a strawman
    past ~40k tokens.
 3. If the CI still crosses at n=50, add a second batch of 50.

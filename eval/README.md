@@ -14,8 +14,9 @@ Paired non-inferiority of `pasr` / `pasr_fallback` vs the `baseline_arm` on task
 success, within `margin_task_success` (pre-registered in the plan).
 
 **No GPU.** The arms run on CPU; the only model use is one *answer* call + one *judge*
-call per (task, arm) — ~120 Anthropic API calls for the pilot, a few minutes, well
-under $5 on Sonnet. Runs on your laptop or a free Colab CPU runtime.
+call per (task, arm) — ~400 Anthropic API calls for the 50-task plan. Runs on your
+laptop or a free Colab CPU runtime. Full Sonnet answer+judge ≈ $12–15; a cheap
+`--model` with a strong `--judge-model` ≈ $4–6.
 
 ## Dry run (offline, no API)
 
@@ -32,12 +33,24 @@ the arm's context) — a machinery check, not evidence.
 ```bash
 pip install -e ".[eval]"                       # brings anthropic + matplotlib
 export ANTHROPIC_API_KEY=sk-ant-...
-python eval/run_eval.py --agent claude --max-tasks 2   # cheap trial first (~$0.20)
-python eval/run_eval.py --agent claude --model claude-sonnet-5   # full run
+python eval/run_eval.py --agent claude --max-tasks 4    # cheap trial first (~$0.4)
+
+# budget-safe full run: cheap answers, strong judge (~$4-6 for 50 tasks)
+python eval/run_eval.py --agent claude \
+  --model claude-haiku-4-5 --judge-model claude-sonnet-5 \
+  --checkout-dir .eval-checkouts
+
+# if it stops partway, continue into the same delivery — no rows lost:
+python eval/run_eval.py --agent claude \
+  --model claude-haiku-4-5 --judge-model claude-sonnet-5 \
+  --checkout-dir .eval-checkouts --resume eval/runs/<plan>_<utc>
 ```
 
-Re-runs are safe: `--checkout-dir DIR` reuses clones, and each run writes its own
-timestamped delivery.
+Each finished (task, arm) row is appended to `matrix.jsonl` and flushed immediately, so
+a crash or Ctrl-C keeps every completed row; `--resume <run_dir>` reloads the partial
+matrix, skips the done pairs, and finishes into the same files. `--checkout-dir DIR`
+reuses clones across runs. `PASR_EVAL_BROAD_CAP=30000` shrinks the `broad` arm's dump
+if you want to spend less on the biggest-context arm.
 
 Writes `eval/runs/<plan>_<utc>/`: `matrix.jsonl`, `report.json`, `report.md`,
 `report.png`, `validation.json`, `resolved_commits.json`. `LlmAgent` answers each task
@@ -57,10 +70,10 @@ the same on Colab and archives the run to Drive.
 | `pasr_eval/arms.py` | the four arms → `ArmResult` |
 | `pasr_eval/agents.py` | `AgentRunner` protocol, `KeywordAgent` (offline proxy) |
 | `pasr_eval/llm_agent.py` | `LlmAgent` — answer + judge via the Anthropic API (`[eval]` extra) |
-| `run_eval.py` | one-command orchestrator: clone → matrix → report → validate |
+| `run_eval.py` | one-command orchestrator: clone → matrix (streamed, `--resume`-able) → report → validate |
 | `pasr_eval/metrics.py` | grade, aggregate, paired bootstrap CI, non-inferiority, `full_report` |
-| `pasr_eval/runner.py` | `resolve_repos`, `run_plan`, `write_matrix` |
+| `pasr_eval/runner.py` | `resolve_repos`, `run_plan` (`skip=`/`on_row=`), `write_matrix` |
 | `pasr_eval/validate.py` | `validate_matrix` — no synthetic rows, no leaks, matched matrix |
-| `plans/pilot.json` | the registered plan (5 repos, 15 tasks) — **DRAFT** |
+| `plans/pilot.json` | the registered plan — 10 repos, 50 tasks |
 
-| `RESULTS.md` | pre-registration + results (PENDING the real run) |
+| `RESULTS.md` | pre-registration + n=15 pilot + keyword-50; 50-task real-agent row PENDING |

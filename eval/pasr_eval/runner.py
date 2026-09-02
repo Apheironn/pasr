@@ -61,19 +61,27 @@ def run_plan(
     tokenizer: Tokenizer | None = None,
     arms: Sequence[str] = ARMS,
     on_row=None,
+    skip: Sequence[tuple[str, str]] = (),
 ) -> list[ArmResult]:
+    """Run every (task, arm) not in ``skip``. ``on_row(done, total, row)`` fires per
+    completed row — use it to stream to disk so a crash keeps partial progress."""
+    already = set(skip)
     rows: list[ArmResult] = []
     total = len(plan.tasks) * len(arms)
+    done = len(already)
     for task in plan.tasks:
         root = Path(repo_roots[task.repo])
         for arm in arms:
+            if (task.id, arm) in already:
+                continue
             try:
                 row = run_arm(arm, task, root, agent, tokenizer)
             except Exception as exc:  # make the failing (task, arm) obvious
                 raise RuntimeError(f"arm {arm!r} on task {task.id!r} ({task.repo}) failed: {exc}") from exc
             rows.append(row)
+            done += 1
             if on_row is not None:
-                on_row(len(rows), total, row)
+                on_row(done, total, row)
     return rows
 
 

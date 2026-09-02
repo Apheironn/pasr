@@ -7,7 +7,8 @@ agent could then answer. Deterministic.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+import os
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 
 from pasr.evidence import extract_keywords
@@ -24,7 +25,8 @@ ARMS = ("native_search", "broad", "pasr", "pasr_fallback")
 _TOOL_OVERHEAD_TOKENS = 40  # flat per-tool-interaction cost estimate
 _NATIVE_MAX_FILES = 6
 _NATIVE_FILE_CAP_TOKENS = 4000  # an agent reads a big file in ranges, not whole
-_BROAD_CAP_TOKENS = 60_000  # a realistic large-context baseline for a repo that doesn't fit
+# a realistic large-context baseline; PASR_EVAL_BROAD_CAP lets a tight API budget shrink it
+_BROAD_CAP_TOKENS = int(os.environ.get("PASR_EVAL_BROAD_CAP", "60000"))
 _PASR_BUDGET = 6000
 _FALLBACK_EXTRA = 4000
 _FALLBACK_CONFIDENCE = 0.65  # widen once when PASR is not confident in the slice
@@ -58,6 +60,13 @@ class ArmResult:
 
     def to_dict(self) -> dict:
         return {**asdict(self), "sources_included": list(self.sources_included)}
+
+    @classmethod
+    def from_dict(cls, data: dict) -> ArmResult:
+        names = {f.name for f in fields(cls)}
+        payload = {k: v for k, v in data.items() if k in names}
+        payload["sources_included"] = tuple(payload.get("sources_included", ()))
+        return cls(**payload)
 
 
 def run_arm(
