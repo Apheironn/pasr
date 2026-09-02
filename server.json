@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "name": "io.github.Apheironn/pasr",
+  "description": "Zero-setup context-broker MCP: a small, budgeted, fully-traceable slice of the workspace for a query, with a receipt for every line and an honest signal when it is the wrong tool.",
+  "status": "active",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/Apheironn/pasr",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "pasr-mcp",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" },
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--workspace",
+          "value": ".",
+          "isRequired": true,
+          "isRepeated": false,
+          "description": "Workspace root. Every file path resolves against it and the server will not read outside it."
+        }
+      ]
+    }
+  ]
+}

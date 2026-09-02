@@ -74,8 +74,9 @@ def _trace(args: argparse.Namespace) -> int:
         if not result["found"]:
             print(f"symbol '{args.symbol}' is not defined in the scanned files")
             return 1
-        pct = round(result["token_reduction"] * 100)
-        print(f"# {args.symbol} — {len(result['spans'])} definitions, {pct}% fewer tokens than the index\n")
+        pct = result["token_reduction"] * 100
+        pct_str = ">99" if pct >= 99.5 else str(round(pct))
+        print(f"# {args.symbol} — {len(result['spans'])} definitions, {pct_str}% fewer tokens than the index\n")
         for span in result["spans"]:
             print(f"- {span['provenance']}  ({span['kind']} {span['name']})")
     return 0

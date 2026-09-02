@@ -9,21 +9,33 @@ budgeted, fully-traceable slice**: every returned span carries its `file:line`, 
 count, and the reason it was selected — and PASR tells the agent when it is the wrong
 tool for the question.
 
-> Status: **pre-alpha (M11).** Offline retrieval (BM25 + lexical + tree-sitter symbols
-> + an optional sub-word semantic scorer) + budgeted assembly; `select_context`,
+> Status: **v0.1.0.** Offline retrieval (BM25 + lexical + tree-sitter symbols + an
+> optional sub-word semantic scorer) + budgeted assembly; `select_context`,
 > `trace_dependencies`, `explain_selection`, `expand_context` MCP tools (stdio);
 > byte-stable receipts; query self-assessment + routing advice; committable Context
 > Packs; a `pasr` CLI; a headless `pasr context` + GitHub Action.
->
-> **Evaluation (50 tasks, 10 pinned repos, real Claude answer + judge).** PASR hands
-> the model **5.8k targeted tokens in one tool call** → **0.48** task success; a
-> **59k-token whole-repo dump → 0.38** (`pasr` **+0.10** on paired success,
-> `pasr_fallback` +0.12, both clearing the -0.05 non-inferiority margin on the point
-> estimate; 95% CI still crosses it). PASR gets the answer's file into context
-> **46/50** vs the dump's **33/50**, at **~90% fewer input tokens**. An agent's own
-> grep + read-6-files scores 0.52 but at 4× the tokens, 6 round trips, 30% critical
-> miss. A **bounded efficiency result**, not a superiority claim — details and the
-> supporting n=15 / keyword runs: [`eval/RESULTS.md`](eval/RESULTS.md).
+
+## Before / after
+
+One localized question — *"how are redirects resolved and followed"* — against
+`psf/requests` ([verbatim transcript](examples/01-requests-redirects.md)):
+
+| | agent reads the `src/` tree | **`select_context`** |
+|---|---:|---:|
+| input tokens | 42 768 | **2 718** (94% less) |
+| tool round trips | 1 big read | **1** |
+| provenance | none | **`file:line` + reason for all 10 spans** |
+| wrong-tool signal | — | **`localized`, confidence 0.68, "looks complete"** |
+
+Across a **50-task, 10-repo evaluation** (a real model answering from only what each
+arm supplies, a second model judging): `select_context` **0.48** task success at
+**5.8k** context tokens vs a **59k-token whole-repo dump's 0.38** — `pasr` **+0.10** on
+paired success (`pasr_fallback` +0.12), both clearing the -0.05 non-inferiority margin
+on the point estimate; the 95% CI still crosses it. PASR gets the answer's file into
+context **46/50** vs the dump's **33/50**. An agent's own grep + read-6-files scores
+0.52 but at **4× the tokens, 6 round trips, 30% critical miss**. A **bounded efficiency
+result**, not a superiority claim — full detail and the supporting runs:
+[`eval/RESULTS.md`](eval/RESULTS.md), write-up: [`docs/blog/what-worked.md`](docs/blog/what-worked.md).
 
 ## What it is / is not
 
@@ -55,8 +67,11 @@ Needs [`uv`](https://docs.astral.sh/uv/). `uvx` fetches and runs the server.
 }
 ```
 
-Per-client setup: [`docs/install/claude-code.md`](docs/install/claude-code.md),
-[`docs/install/cursor.md`](docs/install/cursor.md).
+Per-client setup: [Claude Code](docs/install/claude-code.md) ·
+[Cursor](docs/install/cursor.md) · [Windsurf](docs/install/windsurf.md).
+
+See [`examples/`](examples/README.md) for five verbatim runs against pinned public
+repos (requests, httpx, attrs, packaging, starlette).
 
 ## MCP tools
 
@@ -91,10 +106,16 @@ what PASR handed the model and what it dropped. Context Packs land in `.pasr/pac
 
 ## Docs
 
-- [`docs/architecture.md`](docs/architecture.md) — target architecture and data flow
+- [`examples/`](examples/README.md) — verbatim CLI transcripts against pinned repos
+- [`eval/RESULTS.md`](eval/RESULTS.md) — the 50-task evaluation, pre-registered
+- [`docs/blog/what-worked.md`](docs/blog/what-worked.md) — what held up, what didn't
+- [`docs/architecture.md`](docs/architecture.md) — architecture and data flow
 - [`docs/roadmap.md`](docs/roadmap.md) — milestones M0–M12, each with tests and an exit gate
-
 - (planning docs kept outside the OSS repo)
+- [`CHANGELOG.md`](CHANGELOG.md) · [`CONTRIBUTING.md`](CONTRIBUTING.md)
+
+The research this productises is the frozen `researchv2` study (model-external context
+optimization; paper in preparation).
 
 ## Development
 
@@ -113,4 +134,4 @@ python -c "import pasr.pipeline, sys; assert not {'torch','transformers'} & set(
 
 ## License
 
-Apache-2.0.
+[Apache-2.0](LICENSE).
