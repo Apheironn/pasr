@@ -4,6 +4,7 @@ Tools:
   select_context     — a budgeted, provenance-carrying slice of the workspace
   trace_dependencies — the transitive definition closure for a symbol
   explain_selection  — the stored receipt for a prior select_context run
+  expand_context     — re-run a prior selection once with a larger budget
 
 Runs fully offline.
 
@@ -22,7 +23,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from pasr import __version__
 from pasr.receipt import read_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
-from pasr.select import run_select_context
+from pasr.select import run_expand_context, run_select_context
 from pasr.trace import trace_dependencies as _trace_dependencies
 
 _SELECT_CONTEXT_DESCRIPTION = (
@@ -40,6 +41,11 @@ _EXPLAIN_SELECTION_DESCRIPTION = (
     "Return the stored receipt for a prior select_context run by its id: the kept "
     "spans (file:line, tokens, reasons), the dropped candidates, and the token budget "
     "accounting. Use it to audit exactly what a selection handed to the model."
+)
+_EXPAND_CONTEXT_DESCRIPTION = (
+    "Re-run a prior select_context (by its receipt id) once with a larger budget "
+    "(budget_tokens + extra_budget). Use it when the earlier slice's advice said "
+    "coverage was low. One pass, still a hard token cap."
 )
 
 
@@ -131,6 +137,16 @@ def create_server(workspace_root: Path) -> MCPServer:
         """Return the stored receipt ``<workspace>/.pasr/receipts/<receipt_id>.json``."""
         try:
             return read_receipt(root, receipt_id)
+        except FileNotFoundError as exc:
+            raise ToolError(f"no receipt with id {receipt_id!r}") from exc
+        except ValueError as exc:
+            raise ToolError(str(exc)) from exc
+
+    @server.tool(name="expand_context", description=_EXPAND_CONTEXT_DESCRIPTION)
+    def expand_context(receipt_id: str, extra_budget: int = 2000) -> dict[str, Any]:
+        """Re-run the selection behind ``receipt_id`` with ``+extra_budget`` tokens."""
+        try:
+            return run_expand_context(root, receipt_id, extra_budget)
         except FileNotFoundError as exc:
             raise ToolError(f"no receipt with id {receipt_id!r}") from exc
         except ValueError as exc:

@@ -6,14 +6,16 @@ Every run writes a byte-stable receipt under ``<workspace>/.pasr/receipts/``.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from pasr.chunker import chunk_text
 from pasr.evidence import account_query_evidence, build_evidence_span
 from pasr.pipeline import AssembleConfig, assemble
-from pasr.receipt import build_receipt, write_receipt
+from pasr.receipt import build_receipt, read_receipt, write_receipt
 from pasr.redaction import Redactor, identity_redactor
-from pasr.schema import SelectContextRequest
+from pasr.routing import assess, classify_query
+from pasr.schema import SelectContextRequest, validate_select_context_request
 from pasr.symbols import get_provider, symbol_candidates
 from pasr.tokenize import Tokenizer, get_tokenizer
 
@@ -150,4 +152,44 @@ def _run(
         "diagnostics": diagnostics,
         "evidence_accounting": evidence,
     }
+    query_class, signals = classify_query(request.query)
+    assessment = assess(query_class, result)
+    result["query_class"] = assessment["query_class"]
+    result["query_signals"] = signals
+    result["confidence"] = assessment["confidence"]
+    result["advice"] = assessment["advice"]
     return result, candidate_records
+
+
+def run_expand_context(
+    workspace_root: Path,
+    receipt_id: str,
+    extra_budget: int,
+    tokenizer: Tokenizer | None = None,
+    redactor: Redactor | None = None,
+) -> dict[str, Any]:
+    """Re-run a prior selection once with a larger budget.
+
+    Reads ``<workspace>/.pasr/receipts/<receipt_id>.json``, re-runs
+    ``select_context`` with ``budget_tokens += extra_budget`` (a single pass — no
+    internal iteration), and returns the new result tagged ``expanded_from``.
+    """
+    if extra_budget <= 0:
+        raise ValueError("extra_budget must be positive.")
+    prior = read_receipt(workspace_root, receipt_id)["request"]
+    request = validate_select_context_request(
+        {
+            "query": prior["query"],
+            "files": prior["sources"],
+            "budget_tokens": prior["budget_tokens"] + extra_budget,
+            "prefix_tokens": prior["prefix_tokens"],
+            "tail_tokens": prior["tail_tokens"],
+            "recall_strategy": prior["recall_strategy"],
+            "block_size": prior["block_size"],
+        },
+        workspace_root=workspace_root,
+    )
+    result = run_select_context(request, tokenizer=tokenizer, redactor=redactor)
+    result["expanded_from"] = receipt_id
+    result["extra_budget"] = extra_budget
+    return result

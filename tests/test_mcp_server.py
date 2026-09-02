@@ -11,11 +11,11 @@ def _call(server, tool: str, arguments: dict):
     return anyio.run(lambda: server.call_tool(tool, arguments))
 
 
-def test_lists_all_three_tools_with_schemas(mini_workspace: Path):
+def test_lists_all_tools_with_schemas(mini_workspace: Path):
     server = create_server(mini_workspace)
     tools = {tool.name: tool for tool in anyio.run(server.list_tools)}
 
-    assert set(tools) == {"select_context", "trace_dependencies", "explain_selection"}
+    assert set(tools) == {"select_context", "trace_dependencies", "explain_selection", "expand_context"}
     props = set(tools["select_context"].input_schema.get("properties", {}))
     assert {"query", "files", "include", "budget_tokens", "prefix_tokens", "tail_tokens"} <= props
 
@@ -111,3 +111,28 @@ def test_explain_selection_unknown_id_is_a_clean_error(mini_workspace: Path):
     server = create_server(mini_workspace)
     with pytest.raises(Exception, match="no receipt with id"):
         _call(server, "explain_selection", {"receipt_id": "deadbeef0000"})
+
+
+def test_expand_context_widens_a_prior_selection_once(mini_workspace: Path):
+    server = create_server(mini_workspace)
+    first = json.loads(
+        _call(
+            server,
+            "select_context",
+            {"query": "rate limit headers", "include": ["."], "budget_tokens": 100, "block_size": 30},
+        )
+        .content[0]
+        .text
+    )
+    result = _call(server, "expand_context", {"receipt_id": first["receipt"]["id"], "extra_budget": 300})
+    assert result.is_error is False
+    payload = json.loads(result.content[0].text)
+    assert payload["budget_tokens"] == 400
+    assert payload["token_count"] <= 400
+    assert payload["expanded_from"] == first["receipt"]["id"]
+
+
+def test_expand_context_rejects_non_positive_budget(mini_workspace: Path):
+    server = create_server(mini_workspace)
+    with pytest.raises(Exception, match="extra_budget"):
+        _call(server, "expand_context", {"receipt_id": "deadbeef0000", "extra_budget": 0})

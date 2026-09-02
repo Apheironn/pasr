@@ -61,6 +61,9 @@ def build_receipt(
         "request": request,
         "result": {
             "route": result["route"],
+            "query_class": result.get("query_class"),
+            "confidence": result.get("confidence"),
+            "advice": result.get("advice", []),
             "token_count": result["token_count"],
             "budget_tokens": result["budget_tokens"],
             "within_budget": result["within_budget"],
@@ -113,6 +116,8 @@ def render_markdown(receipt: dict[str, Any]) -> str:
             f"- Route: **{result['route']}**  |  {result['token_count']}/{result['budget_tokens']} tokens"
             f"  |  {result['total_input_tokens']} input  |  {_pct(result['token_reduction'])} reduction"
         ),
+        (f"- Assessment: {result.get('query_class', '?')} query, confidence {result.get('confidence', '?')}"),
+        *[f"  - {line}" for line in result.get("advice", [])],
         "",
         f"## Kept ({len(receipt['kept'])} spans)",
         "",

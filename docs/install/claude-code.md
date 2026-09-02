@@ -30,7 +30,7 @@ Use an absolute path if you launch Claude Code from elsewhere.
 
 ## Use it
 
-The agent gets three tools.
+The agent gets four tools.
 
 ### `explain_selection`
 
@@ -39,6 +39,14 @@ The agent gets three tools.
 Returns the stored receipt (`.pasr/receipts/<id>.json`): kept spans with `file:line`,
 tokens and reasons, the dropped candidates, and the budget accounting — an audit of
 exactly what the selection handed the model.
+
+### `expand_context`
+
+- `receipt_id` — a prior `select_context` result id
+- `extra_budget` — extra tokens to allow
+
+Re-runs that selection once with `budget_tokens + extra_budget`. Use it when the
+earlier result's `advice` flagged low coverage.
 
 ### `trace_dependencies`
 

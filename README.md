@@ -9,10 +9,11 @@ budgeted, fully-traceable slice**: every returned span carries its `file:line`, 
 count, and the reason it was selected — and PASR tells the agent when it is the wrong
 tool for the question.
 
-> Status: **pre-alpha (M6).** Offline retrieval + budgeted assembly + tree-sitter
-> symbols; `select_context`, `trace_dependencies`, `explain_selection` MCP tools (stdio);
-> byte-stable selection receipts; a `pasr` CLI. Routing, context packs, and the
-> real-agent evaluation are still ahead — see `docs/roadmap.md`.
+> Status: **pre-alpha (M7).** Offline retrieval + budgeted assembly + tree-sitter
+> symbols; `select_context`, `trace_dependencies`, `explain_selection`, `expand_context`
+> MCP tools (stdio); byte-stable receipts; query self-assessment + routing advice; a
+> `pasr` CLI. Context packs and the real-agent evaluation are still ahead — see
+> `docs/roadmap.md`.
 
 ## What it is / is not
 
@@ -54,7 +55,11 @@ Per-client setup: [`docs/install/claude-code.md`](docs/install/claude-code.md),
 | `select_context` | **available (M4)** | budgeted, provenance-tracked slice for a query |
 | `trace_dependencies` | **available (M5)** | deterministic def/reference closure for a symbol (Python, JS/TS) |
 | `explain_selection` | **available (M6)** | return the stored receipt for a prior selection |
-| `expand_context` | planned (M7) | one bounded widening pass when the slice was insufficient |
+| `expand_context` | **available (M7)** | re-run a prior selection once with a larger budget |
+
+Every `select_context` result also carries a `query_class`, a `confidence` score, and
+`advice` — e.g. "aggregation-style question: read the files directly" or "low coverage,
+also grep for X or call `expand_context`".
 
 ## CLI
 

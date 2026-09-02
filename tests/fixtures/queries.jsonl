@@ -1,0 +1,22 @@
+{"query": "where is the user session token rotated on privilege change", "class": "localized"}
+{"query": "how does rate limiting work for the login endpoint", "class": "localized"}
+{"query": "which function parses the CSV rows into records", "class": "localized"}
+{"query": "find the code that validates the incoming request body", "class": "localized"}
+{"query": "how is the invoice prorated for a mid cycle upgrade", "class": "localized"}
+{"query": "where do we bind a session to a device fingerprint", "class": "localized"}
+{"query": "show the retry schedule for a failed payment", "class": "localized"}
+{"query": "how is bankers rounding applied to the tax amount", "class": "localized"}
+{"query": "what does the sanitize function do to the text", "class": "localized"}
+{"query": "where is MAX_ROWS enforced during load", "class": "localized"}
+{"query": "what are the dependencies of run_pipeline", "class": "trace"}
+{"query": "trace the call chain starting from handleRequest", "class": "trace"}
+{"query": "who calls the parse function", "class": "trace"}
+{"query": "show the import chain for the billing module", "class": "trace"}
+{"query": "what functions does load transitively call", "class": "trace"}
+{"query": "find all callers of normalize across the module", "class": "trace"}
+{"query": "how many functions are defined across the codebase", "class": "aggregation"}
+{"query": "list every class defined in the repo", "class": "aggregation"}
+{"query": "count of TODO comments throughout the project", "class": "aggregation"}
+{"query": "summarize the overall architecture of the service", "class": "aggregation"}
+{"query": "what error handling patterns are used everywhere", "class": "aggregation"}
+{"query": "give me all the places we read from the database", "class": "aggregation"}

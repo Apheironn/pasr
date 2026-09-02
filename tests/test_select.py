@@ -2,8 +2,10 @@ import json
 import unittest
 from pathlib import Path
 
+import pytest
+
 from pasr.schema import validate_select_context_request
-from pasr.select import run_select_context
+from pasr.select import run_expand_context, run_select_context
 from pasr.tokenize import WhitespaceTokenizer
 
 MINI_REPO = Path(__file__).parent / "fixtures" / "mini_repo"
@@ -39,6 +41,46 @@ def test_no_write_flag_skips_the_file(mini_workspace: Path) -> None:
     result = run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
     assert result["receipt"]["written_to"] is None
     assert not (mini_workspace / ".pasr").exists()
+
+
+def test_result_carries_routing_assessment(mini_workspace: Path) -> None:
+    request = validate_select_context_request(
+        {
+            "query": "how many functions are defined across the codebase",
+            "include": ["."],
+            "budget_tokens": 120,
+            "block_size": 30,
+        },
+        mini_workspace,
+    )
+    result = run_select_context(request, tokenizer=WhitespaceTokenizer())
+    assert result["query_class"] == "aggregation"
+    assert 0.0 <= result["confidence"] <= 1.0
+    assert result["advice"] and any("Aggregation" in line for line in result["advice"])
+
+    receipt = json.loads(
+        (mini_workspace / ".pasr" / "receipts" / f"{result['receipt']['id']}.json").read_text(encoding="utf-8")
+    )
+    assert receipt["result"]["query_class"] == "aggregation"
+    assert receipt["result"]["advice"] == result["advice"]
+
+
+def test_expand_context_widens_the_budget_once(mini_workspace: Path) -> None:
+    request = validate_select_context_request(
+        {"query": "rate limit headers", "include": ["."], "budget_tokens": 100, "block_size": 30}, mini_workspace
+    )
+    first = run_select_context(request, tokenizer=WhitespaceTokenizer())
+
+    expanded = run_expand_context(
+        mini_workspace, first["receipt"]["id"], extra_budget=300, tokenizer=WhitespaceTokenizer()
+    )
+    assert expanded["budget_tokens"] == 400
+    assert expanded["token_count"] <= 400
+    assert expanded["expanded_from"] == first["receipt"]["id"]
+    assert expanded["extra_budget"] == 300
+
+    with pytest.raises(ValueError, match="extra_budget"):
+        run_expand_context(mini_workspace, first["receipt"]["id"], extra_budget=0)
 
 
 def test_redactor_is_applied_to_returned_spans(mini_workspace: Path) -> None:
