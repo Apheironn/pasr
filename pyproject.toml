@@ -45,7 +45,7 @@ packages = ["src/pasr"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
-pythonpath = ["src"]
+pythonpath = ["src", "eval"]
 
 [tool.ruff]
 line-length = 120

@@ -9,12 +9,13 @@ budgeted, fully-traceable slice**: every returned span carries its `file:line`, 
 count, and the reason it was selected — and PASR tells the agent when it is the wrong
 tool for the question.
 
-> Status: **pre-alpha (M10).** Offline retrieval (BM25 + lexical + tree-sitter symbols
+> Status: **pre-alpha (M11).** Offline retrieval (BM25 + lexical + tree-sitter symbols
 > + an optional sub-word semantic scorer) + budgeted assembly; `select_context`,
 > `trace_dependencies`, `explain_selection`, `expand_context` MCP tools (stdio);
 > byte-stable receipts; query self-assessment + routing advice; committable Context
-> Packs; a `pasr` CLI; a headless `pasr context` + GitHub Action. The real-agent
-> evaluation and a quiet release are what's left — see `docs/roadmap.md`.
+> Packs; a `pasr` CLI; a headless `pasr context` + GitHub Action; a real-agent
+> evaluation harness (`eval/`, A100 run pending). Headline numbers land here once the
+> evaluation runs — see `eval/RESULTS.md` and `docs/roadmap.md`.
 
 ## What it is / is not
 

@@ -1,0 +1,31 @@
+{
+  "name": "pasr-realagent-pilot",
+  "status": "DRAFT — confirm pins and tasks against the resolved checkouts before the A100 run.",
+  "baseline_arm": "broad",
+  "margin_task_success": -0.05,
+  "notes": "Source-grounded locate/trace/explain tasks on pinned public Python repos. The notebook shallow-clones each repo at its pin, records the resolved commit into the matrix, and runs all four arms. answer_keywords are identifiers expected to be stable near the pin; the executable/reference grader in the notebook supersedes the keyword proxy.",
+  "repos": [
+    {"name": "requests", "mode": "git", "url": "https://github.com/psf/requests", "pin": "v2.32.3"},
+    {"name": "click", "mode": "git", "url": "https://github.com/pallets/click", "pin": "8.1.7"},
+    {"name": "attrs", "mode": "git", "url": "https://github.com/python-attrs/attrs", "pin": "24.2.0"},
+    {"name": "pluggy", "mode": "git", "url": "https://github.com/pytest-dev/pluggy", "pin": "1.5.0"},
+    {"name": "starlette", "mode": "git", "url": "https://github.com/encode/starlette", "pin": "0.38.6"}
+  ],
+  "tasks": [
+    {"id": "req-01", "repo": "requests", "kind": "locate", "query": "where is the request body and headers assembled before sending", "answer_keywords": ["PreparedRequest", "prepare"], "critical_source": "requests/models.py"},
+    {"id": "req-02", "repo": "requests", "kind": "trace", "query": "what does the top-level get helper call to actually perform the http request", "answer_keywords": ["request", "Session", "send"], "critical_source": "requests/api.py"},
+    {"id": "req-03", "repo": "requests", "kind": "explain", "query": "how are redirects resolved and followed by the session", "answer_keywords": ["resolve_redirects", "SessionRedirectMixin"], "critical_source": "requests/sessions.py"},
+    {"id": "click-01", "repo": "click", "kind": "locate", "query": "where does a command group decide which subcommand to invoke", "answer_keywords": ["MultiCommand", "resolve_command", "invoke"], "critical_source": "src/click/core.py"},
+    {"id": "click-02", "repo": "click", "kind": "trace", "query": "how is a parameter value converted from the raw string on the command line", "answer_keywords": ["ParamType", "convert", "process_value"], "critical_source": "src/click/types.py"},
+    {"id": "click-03", "repo": "click", "kind": "explain", "query": "how does the option parser split short and long flags", "answer_keywords": ["OptionParser", "_process_opts", "_match_long_opt"], "critical_source": "src/click/parser.py"},
+    {"id": "attrs-01", "repo": "attrs", "kind": "locate", "query": "where is the modern class decorator that adds slots and init implemented", "answer_keywords": ["define", "attrs", "slots"], "critical_source": "src/attr/_next_gen.py"},
+    {"id": "attrs-02", "repo": "attrs", "kind": "trace", "query": "what builds the generated __init__ method for an attrs class", "answer_keywords": ["_ClassBuilder", "add_init", "_attrs_to_init_script"], "critical_source": "src/attr/_make.py"},
+    {"id": "attrs-03", "repo": "attrs", "kind": "explain", "query": "how does asdict recurse into nested attrs instances and containers", "answer_keywords": ["asdict", "_asdict_anything", "recurse"], "critical_source": "src/attr/_funcs.py"},
+    {"id": "pluggy-01", "repo": "pluggy", "kind": "locate", "query": "where are all the registered hook implementations actually invoked in order", "answer_keywords": ["_multicall", "hook_impls"], "critical_source": "src/pluggy/_callers.py"},
+    {"id": "pluggy-02", "repo": "pluggy", "kind": "trace", "query": "what happens when a plugin is registered on the manager", "answer_keywords": ["PluginManager", "register", "_hookimpls"], "critical_source": "src/pluggy/_manager.py"},
+    {"id": "pluggy-03", "repo": "pluggy", "kind": "explain", "query": "how is firstresult handling different from a normal hook call", "answer_keywords": ["firstresult", "HookCaller", "_hookexec"], "critical_source": "src/pluggy/_hooks.py"},
+    {"id": "star-01", "repo": "starlette", "kind": "locate", "query": "where is the middleware stack wrapped around the application", "answer_keywords": ["build_middleware_stack", "Middleware"], "critical_source": "starlette/applications.py"},
+    {"id": "star-02", "repo": "starlette", "kind": "trace", "query": "how does a routed request reach the endpoint callable", "answer_keywords": ["Route", "matches", "handle", "app"], "critical_source": "starlette/routing.py"},
+    {"id": "star-03", "repo": "starlette", "kind": "explain", "query": "how are streaming responses sent chunk by chunk over asgi", "answer_keywords": ["StreamingResponse", "stream_response", "body_iterator"], "critical_source": "starlette/responses.py"}
+  ]
+}
