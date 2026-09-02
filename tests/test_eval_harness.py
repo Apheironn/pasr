@@ -134,3 +134,48 @@ def test_registered_pilot_plan_loads():
     assert len(plan.tasks) == 15
     assert plan.baseline_arm == "broad"
     assert all(repo.mode == "git" and repo.url and repo.pin for repo in plan.repos)
+
+
+def test_run_eval_script_writes_a_delivery(tmp_path):
+    import json as _json
+    import subprocess
+    import sys
+
+    plan = _local_plan()
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_text(
+        _json.dumps(
+            {
+                "name": "smoke",
+                "baseline_arm": "broad",
+                "margin_task_success": -0.1,
+                "repos": [{"name": r.name, "mode": "local", "path": r.path} for r in plan.repos],
+                "tasks": [
+                    {
+                        "id": t.id,
+                        "repo": t.repo,
+                        "kind": t.kind,
+                        "query": t.query,
+                        "answer_keywords": list(t.answer_keywords),
+                        "critical_source": t.critical_source,
+                    }
+                    for t in plan.tasks
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    root = Path(__file__).parents[1]
+    cmd = [
+        sys.executable,
+        str(root / "eval" / "run_eval.py"),
+        "--plan", str(plan_path),
+        "--out", str(tmp_path / "runs"),
+        "--agent", "keyword",
+    ]  # fmt: skip
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=root)
+    assert result.returncode == 0, result.stderr
+    delivery = next((tmp_path / "runs").iterdir())
+    for name in ("matrix.jsonl", "report.json", "report.md", "validation.json"):
+        assert (delivery / name).is_file()
+    assert _json.loads((delivery / "validation.json").read_text())["ok"] is True

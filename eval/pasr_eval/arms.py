@@ -63,7 +63,10 @@ def run_arm(
     context_tokens = tok.count(context)
     hit = not task.critical_source or any(task.critical_source in source for source in sources)
     answer = agent.answer(task, context)
-    dummy = _Probe(hit)
+
+    judge = getattr(agent, "judge", None)
+    success = bool(judge(task, answer, hit)) if callable(judge) else grade(task, answer, _Probe(hit))
+
     return ArmResult(
         arm=arm,
         task_id=task.id,
@@ -76,7 +79,7 @@ def run_arm(
         critical_source_hit=hit,
         fallback_triggered=fallback,
         answer=answer,
-        task_success=grade(task, answer, dummy),
+        task_success=success,
     )
 
 

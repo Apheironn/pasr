@@ -13,27 +13,37 @@ overhead), tool-call / round-trip count, critical-source miss rate, fallback rat
 Paired non-inferiority of `pasr` / `pasr_fallback` vs the `baseline_arm` on task
 success, within `margin_task_success` (pre-registered in the plan).
 
-## Dry run (offline)
+**No GPU.** The arms run on CPU; the only model use is one *answer* call + one *judge*
+call per (task, arm) — ~120 Anthropic API calls for the pilot, a few minutes, well
+under $5 on Sonnet. Runs on your laptop or a free Colab CPU runtime.
+
+## Dry run (offline, no API)
 
 ```bash
 pytest -q tests/test_eval_harness.py
+python eval/run_eval.py --agent keyword        # full matrix + report + validation
 ```
 
-Runs the full 4×N matrix with `KeywordAgent` (a retrieval-quality proxy — every answer
-keyword must be groundable in the arm's context) over the repo's own fixtures, then
-`validate_matrix`.
+`KeywordAgent` is a retrieval-quality proxy (every answer keyword must be groundable in
+the arm's context) — a machinery check, not evidence.
 
-## Real run (A100 notebook)
+## Real run
 
+```bash
+pip install -e ".[eval]"                       # brings anthropic + matplotlib
+export ANTHROPIC_API_KEY=sk-ant-...
+python eval/run_eval.py --agent claude --model claude-sonnet-5
+```
 
-2. Open it in Colab (A100). It mounts Drive, clones this repo via a `GH_TOKEN` Colab
-   secret, shallow-clones each plan repo at its pin (recording the resolved SHA),
-   runs the matrix, writes `report.json` / `report.md` / `report.png`, validates,
-   ZIPs the run under `OUT`, and disconnects.
-3. **Wire the agent:** replace `NotebookAgent.answer` with a call into an MCP-client
-   agent (given only `context`) plus a task-kind grader, set `USE_REAL_AGENT = True`.
-4. Copy the resulting numbers into `eval/RESULTS.md` and the top of the project README
-   — whatever they say.
+Writes `eval/runs/<plan>_<utc>/`: `matrix.jsonl`, `report.json`, `report.md`,
+`report.png`, `validation.json`, `resolved_commits.json`. `LlmAgent` answers each task
+from **only** the arm's context, then a second call judges the answer against the
+task's expected identifiers; `critical_source_hit` is still required.
+
+Then paste `report.md` into `eval/RESULTS.md` and the project README — whatever it says.
+
+The harness
+the same on Colab and archives the run to Drive.
 
 ## Files
 
@@ -41,7 +51,9 @@ keyword must be groundable in the arm's context) over the repo's own fixtures, t
 |---|---|
 | `pasr_eval/spec.py` | `RepoSpec` / `TaskSpec` / `EvalPlan`, `load_plan` |
 | `pasr_eval/arms.py` | the four arms → `ArmResult` |
-| `pasr_eval/agents.py` | `AgentRunner` protocol, `KeywordAgent`, `ClaudeCodeAgent` stub |
+| `pasr_eval/agents.py` | `AgentRunner` protocol, `KeywordAgent` (offline proxy) |
+| `pasr_eval/llm_agent.py` | `LlmAgent` — answer + judge via the Anthropic API (`[eval]` extra) |
+| `run_eval.py` | one-command orchestrator: clone → matrix → report → validate |
 | `pasr_eval/metrics.py` | grade, aggregate, paired bootstrap CI, non-inferiority, `full_report` |
 | `pasr_eval/runner.py` | `resolve_repos`, `run_plan`, `write_matrix` |
 | `pasr_eval/validate.py` | `validate_matrix` — no synthetic rows, no leaks, matched matrix |
