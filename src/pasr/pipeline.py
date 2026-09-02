@@ -8,6 +8,7 @@ lossless-under-budget short-circuit, mandatory active window, whole-span packing
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import Any
@@ -34,6 +35,7 @@ class RetrievalConfig:
     bm25: Bm25Params = field(default_factory=Bm25Params)
     use_bm25: bool = True
     use_lexical: bool = True
+    semantic: str = ""  # "", "hashing", or "minilm" (opt-in extra fusion signal)
 
     def __post_init__(self) -> None:
         if self.top_k <= 0:
@@ -104,6 +106,10 @@ def retrieve(
         groups["bm25"] = bm25_candidates(spans, query, params=cfg.bm25)
     if cfg.use_lexical:
         groups["lexical"] = lexical_coverage_candidates(spans, query)
+    if cfg.semantic:
+        semantic_group = _semantic_group(query, spans, cfg.semantic)
+        if semantic_group:
+            groups["semantic"] = semantic_group
     for name, candidates in (extra_candidate_groups or {}).items():
         groups[name] = list(candidates)
 
@@ -228,3 +234,19 @@ def _window_candidate(span: RawSpan) -> CandidateSpan | None:
     return raw_span_to_candidate(
         span, reasons=("active_window",), rank_score=0.0, score_components={"active_window": 0.0}
     )
+
+
+def _semantic_group(query: str, spans: Sequence[RawSpan], name: str) -> list[CandidateSpan]:
+    """Build the optional semantic candidate group, degrading to BM25+lexical on error."""
+    try:
+        from pasr.retrieval.semantic import get_scorer, semantic_candidates
+
+        scorer = get_scorer(name)
+        return semantic_candidates(spans, query, scorer) if scorer is not None else []
+    except Exception as exc:  # missing extra, model download failure, bad name
+        warnings.warn(
+            f"semantic scorer {name!r} unavailable ({exc}); using BM25 + lexical only",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        return []

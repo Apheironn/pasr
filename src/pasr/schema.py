@@ -13,6 +13,7 @@ from typing import Any
 from pasr.file_discovery import FileDiscoveryConfig, discover_workspace_files
 
 _RECALL_STRATEGIES = ("score_only", "coverage_aware")
+_SEMANTIC_SCORERS = ("", "none", "hashing", "minilm")
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,7 @@ class SelectContextRequest:
     tail_tokens: int
     recall_strategy: str
     block_size: int
+    semantic: str
 
 
 @dataclass(frozen=True)
@@ -60,6 +62,10 @@ def validate_select_context_request(payload: dict[str, Any], workspace_root: Pat
     if recall_strategy not in _RECALL_STRATEGIES:
         raise ValueError(f"recall_strategy must be one of {_RECALL_STRATEGIES}.")
 
+    semantic = str(payload.get("semantic", "") or "")
+    if semantic not in _SEMANTIC_SCORERS:
+        raise ValueError(f"semantic must be one of {_SEMANTIC_SCORERS}.")
+
     return SelectContextRequest(
         query=query,
         workspace_root=root,
@@ -70,6 +76,7 @@ def validate_select_context_request(payload: dict[str, Any], workspace_root: Pat
         tail_tokens=_non_negative_int(payload.get("tail_tokens", 128), "tail_tokens"),
         recall_strategy=recall_strategy,
         block_size=_positive_int(payload.get("block_size", 400), "block_size"),
+        semantic="" if semantic == "none" else semantic,
     )
 
 

@@ -12,7 +12,7 @@ from typing import Any
 from pasr.chunker import chunk_text
 from pasr.evidence import account_query_evidence, build_evidence_span
 from pasr.packs import build_pack, load_pack, pack_staleness, write_pack
-from pasr.pipeline import AssembleConfig, assemble
+from pasr.pipeline import AssembleConfig, RetrievalConfig, assemble
 from pasr.receipt import build_receipt, read_receipt, write_receipt
 from pasr.redaction import Redactor, identity_redactor
 from pasr.routing import assess, classify_query
@@ -32,6 +32,7 @@ def _canonical_request(request: SelectContextRequest) -> dict[str, Any]:
         "tail_tokens": request.tail_tokens,
         "recall_strategy": request.recall_strategy,
         "block_size": request.block_size,
+        "semantic": request.semantic,
     }
 
 
@@ -107,6 +108,7 @@ def _run(
             prefix_tokens=request.prefix_tokens,
             tail_tokens=request.tail_tokens,
             recall_strategy=request.recall_strategy,
+            retrieval=RetrievalConfig(semantic=request.semantic),
         ),
         extra_candidate_groups={"symbols": sym_candidates} if sym_candidates else None,
         collect_candidates=True,
@@ -227,6 +229,7 @@ def run_expand_context(
             "tail_tokens": prior["tail_tokens"],
             "recall_strategy": prior["recall_strategy"],
             "block_size": prior["block_size"],
+            "semantic": prior.get("semantic", ""),
         },
         workspace_root=workspace_root,
     )

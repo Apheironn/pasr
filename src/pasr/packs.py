@@ -60,6 +60,7 @@ def build_pack(name: str, request: Any, result: dict[str, Any]) -> dict[str, Any
             "tail_tokens": request.tail_tokens,
             "recall_strategy": request.recall_strategy,
             "block_size": request.block_size,
+            "semantic": request.semantic,
         },
         "context": context,
         "content_hash": content_hash(context),

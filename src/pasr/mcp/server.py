@@ -65,6 +65,7 @@ def create_server(workspace_root: Path) -> MCPServer:
         recall_strategy: str = "coverage_aware",
         block_size: int = 400,
         max_files: int = 100,
+        semantic: str = "",
         pack: str = "",
         save_as: str = "",
     ) -> dict[str, Any]:
@@ -96,6 +97,7 @@ def create_server(workspace_root: Path) -> MCPServer:
                     "recall_strategy": recall_strategy,
                     "block_size": block_size,
                     "max_files": max_files,
+                    "semantic": semantic,
                 },
                 workspace_root=root,
             )

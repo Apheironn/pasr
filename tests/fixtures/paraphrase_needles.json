@@ -1,0 +1,18 @@
+[
+  {"query": "normalization and deduplication of the inbound record set", "source": "store.py", "line": 4},
+  {"query": "eviction of whichever entry was used least recently in the cache", "source": "store.py", "line": 14},
+  {"query": "pagination across the item list with a stable cursor", "source": "store.py", "line": 22},
+  {"query": "retrying an operation that keeps failing, backing off exponentially", "source": "store.py", "line": 29},
+  {"query": "authenticating an inbound request from its bearer token header", "source": "auth.py", "line": 4},
+  {"query": "invalidation of every session owned by a compromised account", "source": "auth.py", "line": 11},
+  {"query": "rotation of the signing keyring on a scheduled interval", "source": "auth.py", "line": 15},
+  {"query": "scheduling of recurring jobs from a cron expression", "source": "jobs.py", "line": 4},
+  {"query": "acknowledgement and removal of a message once processed", "source": "jobs.py", "line": 9},
+  {"query": "throttling of the worker pool while load is high", "source": "jobs.py", "line": 15},
+  {"query": "serialization of a job payload into compact json", "source": "jobs.py", "line": 21},
+  {"query": "resurrection of a job that died in the middle of execution", "source": "jobs.py", "line": 27},
+  {"query": "tokenization of a sentence into lowercased words", "source": "text.py", "line": 4},
+  {"query": "summarization of a document down to a brief abstract", "source": "text.py", "line": 8},
+  {"query": "transliteration of accented characters into plain ascii", "source": "text.py", "line": 12},
+  {"query": "redaction of personally identifiable information from the text", "source": "text.py", "line": 18}
+]
