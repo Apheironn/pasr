@@ -13,9 +13,14 @@ tool for the question.
 > + an optional sub-word semantic scorer) + budgeted assembly; `select_context`,
 > `trace_dependencies`, `explain_selection`, `expand_context` MCP tools (stdio);
 > byte-stable receipts; query self-assessment + routing advice; committable Context
-> Packs; a `pasr` CLI; a headless `pasr context` + GitHub Action; a real-agent
-> evaluation harness (`eval/`, A100 run pending). Headline numbers land here once the
-> evaluation runs — see `eval/RESULTS.md` and `docs/roadmap.md`.
+> Packs; a `pasr` CLI; a headless `pasr context` + GitHub Action.
+>
+> **Pilot evaluation** (15 source-grounded tasks, 5 pinned repos, `claude-sonnet-5`
+> answering + judging): PASR **0.53** task success at **5.8k** context tokens vs a
+> 58k full-repo dump's **0.47** — matching answer quality at **~90% fewer tokens** and
+> one tool call. Point estimate favours PASR; at n=15 the CI (±0.3) is too wide to
+> *establish* non-inferiority. Efficiency-direction result, not a superiority claim.
+> Details + next steps: [`eval/RESULTS.md`](eval/RESULTS.md).
 
 ## What it is / is not
 

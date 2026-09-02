@@ -1,0 +1,83 @@
+{
+  "arms": {
+    "broad": {
+      "context_tokens": 58146,
+      "critical_source_miss_rate": 0.06666666666666667,
+      "fallback_rate": 0.0,
+      "n": 15.0,
+      "round_trips": 1,
+      "task_success": 0.4666666666666667,
+      "tokens_in": 58186,
+      "tool_calls": 1
+    },
+    "native_search": {
+      "context_tokens": 22771.466666666667,
+      "critical_source_miss_rate": 0.26666666666666666,
+      "fallback_rate": 0.0,
+      "n": 15.0,
+      "round_trips": 6,
+      "task_success": 0.4,
+      "tokens_in": 23051.466666666667,
+      "tool_calls": 7
+    },
+    "pasr": {
+      "context_tokens": 5764.066666666667,
+      "critical_source_miss_rate": 0.13333333333333333,
+      "fallback_rate": 0.0,
+      "n": 15.0,
+      "round_trips": 1,
+      "task_success": 0.5333333333333333,
+      "tokens_in": 5804.066666666667,
+      "tool_calls": 1
+    },
+    "pasr_fallback": {
+      "context_tokens": 5764.066666666667,
+      "critical_source_miss_rate": 0.13333333333333333,
+      "fallback_rate": 0.0,
+      "n": 15.0,
+      "round_trips": 1,
+      "task_success": 0.6,
+      "tokens_in": 5804.066666666667,
+      "tool_calls": 1
+    }
+  },
+  "baseline_arm": "broad",
+  "margin_task_success": -0.05,
+  "n_tasks": 15,
+  "non_inferiority": {
+    "pasr": {
+      "arm": "pasr",
+      "baseline": "broad",
+      "ci95": [
+        -0.3333,
+        0.4667
+      ],
+      "delta_mean": 0.0667,
+      "field": "task_success",
+      "margin": -0.05,
+      "n_pairs": 15,
+      "passes_ci": false,
+      "passes_point": true
+    },
+    "pasr_fallback": {
+      "arm": "pasr_fallback",
+      "baseline": "broad",
+      "ci95": [
+        -0.2,
+        0.4667
+      ],
+      "delta_mean": 0.1333,
+      "field": "task_success",
+      "margin": -0.05,
+      "n_pairs": 15,
+      "passes_ci": false,
+      "passes_point": true
+    }
+  },
+  "plan": "pasr-realagent-pilot",
+  "token_savings_vs_baseline": {
+    "native_search": 0.6038,
+    "pasr": 0.9002,
+    "pasr_fallback": 0.9002
+  }
+}
