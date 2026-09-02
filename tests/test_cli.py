@@ -62,6 +62,18 @@ def test_trace_missing_symbol_returns_one(capsys):
     assert "not defined" in capsys.readouterr().out
 
 
+def test_pack_writes_a_context_pack(tmp_path, capsys):
+    import shutil
+
+    ws = tmp_path / "ws"
+    shutil.copytree(MINI_REPO, ws)
+    code = main(["--workspace", str(ws), "pack", "throttle", "exempt internal service accounts from throttling", "."])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "wrote" in out
+    assert (ws / ".pasr" / "packs" / "throttle.json").is_file()
+
+
 def test_validation_error_returns_two(capsys):
     code = main(["--workspace", str(MINI_REPO), "explain", "q", "../escape"])
     assert code == 2

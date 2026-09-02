@@ -136,3 +136,34 @@ def test_expand_context_rejects_non_positive_budget(mini_workspace: Path):
     server = create_server(mini_workspace)
     with pytest.raises(Exception, match="extra_budget"):
         _call(server, "expand_context", {"receipt_id": "deadbeef0000", "extra_budget": 0})
+
+
+def test_select_context_saves_and_loads_a_pack(mini_workspace: Path):
+    server = create_server(mini_workspace)
+    saved = json.loads(
+        _call(
+            server,
+            "select_context",
+            {
+                "query": "emit rate limit headers on the response",
+                "include": ["api/ratelimit.py"],
+                "budget_tokens": 2000,
+                "save_as": "rl",
+            },
+        )
+        .content[0]
+        .text
+    )
+    assert saved["saved_pack"].endswith("rl.json")
+    assert (mini_workspace / ".pasr" / "packs" / "rl.json").is_file()
+
+    loaded = json.loads(_call(server, "select_context", {"query": "", "pack": "rl"}).content[0].text)
+    assert loaded["from_pack"] == "rl"
+    assert loaded["context"] == saved["context"]
+    assert loaded["pack_stale"] == []
+
+
+def test_select_context_unknown_pack_is_a_clean_error(mini_workspace: Path):
+    server = create_server(mini_workspace)
+    with pytest.raises(Exception, match="no pack named"):
+        _call(server, "select_context", {"query": "", "pack": "ghost"})

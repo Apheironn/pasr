@@ -217,5 +217,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# PASR receipts / local artifacts
-.pasr/
+# PASR local artifacts — receipts are ignored, Context Packs are committable
+.pasr/*
+!.pasr/packs/

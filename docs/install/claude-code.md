@@ -48,6 +48,13 @@ exactly what the selection handed the model.
 Re-runs that selection once with `budget_tokens + extra_budget`. Use it when the
 earlier result's `advice` flagged low coverage.
 
+### Context Packs
+
+`select_context` takes two extra params: `save_as="auth"` saves the selection as a
+committable pack under `.pasr/packs/`, and `pack="auth"` loads it back instantly (no
+retrieval) on later turns / by teammates. Or create one from the shell:
+`pasr pack auth "session + login + token" src/auth/`.
+
 ### `trace_dependencies`
 
 - `symbol` (required) — the function / class / const to trace

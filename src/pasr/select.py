@@ -11,6 +11,7 @@ from typing import Any
 
 from pasr.chunker import chunk_text
 from pasr.evidence import account_query_evidence, build_evidence_span
+from pasr.packs import build_pack, load_pack, pack_staleness, write_pack
 from pasr.pipeline import AssembleConfig, assemble
 from pasr.receipt import build_receipt, read_receipt, write_receipt
 from pasr.redaction import Redactor, identity_redactor
@@ -159,6 +160,46 @@ def _run(
     result["confidence"] = assessment["confidence"]
     result["advice"] = assessment["advice"]
     return result, candidate_records
+
+
+def save_pack(
+    name: str,
+    request: SelectContextRequest,
+    tokenizer: Tokenizer | None = None,
+    redactor: Redactor | None = None,
+    result: dict[str, Any] | None = None,
+) -> tuple[Path, dict[str, Any]]:
+    """Save a selection as a named Context Pack. Runs the selection if no ``result`` is
+    supplied. Returns ``(path, pack)``."""
+    if result is None:
+        result = run_select_context(request, tokenizer=tokenizer, redactor=redactor, write_receipt_file=False)
+    pack = build_pack(name, request, result)
+    return write_pack(request.workspace_root, pack), pack
+
+
+def run_pack(workspace_root: Path, name: str, redactor: Redactor | None = None) -> dict[str, Any]:
+    """Warm-start: return a stored Context Pack as a ``select_context``-shaped result.
+
+    No chunking or retrieval. ``pack_stale`` lists sources that changed since the pack
+    was built (advisory — the stored context is still returned).
+    """
+    redact = redactor or identity_redactor
+    pack = load_pack(workspace_root, name)
+    stale = pack_staleness(workspace_root, pack)
+    return {
+        "tool": TOOL_NAME,
+        "query": pack["query"],
+        "route": pack["route"],
+        "from_pack": name,
+        "pack_stale": stale,
+        "budget_tokens": pack["config"]["budget_tokens"],
+        "token_count": pack["token_count"],
+        "within_budget": pack["token_count"] <= pack["config"]["budget_tokens"],
+        "sources": pack["sources"],
+        "context": redact(pack["context"]),
+        "spans": pack["spans"],
+        "diagnostics": {"from_pack": name, "content_hash": pack["content_hash"], "pack_stale": stale},
+    }
 
 
 def run_expand_context(

@@ -9,11 +9,11 @@ budgeted, fully-traceable slice**: every returned span carries its `file:line`, 
 count, and the reason it was selected — and PASR tells the agent when it is the wrong
 tool for the question.
 
-> Status: **pre-alpha (M7).** Offline retrieval + budgeted assembly + tree-sitter
+> Status: **pre-alpha (M8).** Offline retrieval + budgeted assembly + tree-sitter
 > symbols; `select_context`, `trace_dependencies`, `explain_selection`, `expand_context`
-> MCP tools (stdio); byte-stable receipts; query self-assessment + routing advice; a
-> `pasr` CLI. Context packs and the real-agent evaluation are still ahead — see
-> `docs/roadmap.md`.
+> MCP tools (stdio); byte-stable receipts; query self-assessment + routing advice;
+> committable Context Packs; a `pasr` CLI. Headless/CI mode and the real-agent
+> evaluation are still ahead — see `docs/roadmap.md`.
 
 ## What it is / is not
 
@@ -66,10 +66,13 @@ also grep for X or call `expand_context`".
 ```bash
 pasr explain "how is the request rate limited"        # run a selection, print the receipt
 pasr trace enforce_per_user_request_quota src/        # a symbol's dependency closure
+pasr pack auth "session + login + token" src/auth/    # save a Context Pack
 ```
 
-Receipts are written to `.pasr/receipts/<id>.{json,md}` (gitignored) — a byte-stable
-record of what PASR handed the model and what it dropped.
+Receipts land in `.pasr/receipts/<id>.{json,md}` (gitignored) — a byte-stable record of
+what PASR handed the model and what it dropped. Context Packs land in `.pasr/packs/`
+(committable) — a named, warm-start slice the whole team can load with
+`select_context(pack="auth")`.
 
 ## Docs
 

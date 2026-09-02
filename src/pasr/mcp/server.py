@@ -23,7 +23,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from pasr import __version__
 from pasr.receipt import read_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
-from pasr.select import run_expand_context, run_select_context
+from pasr.select import run_expand_context, run_pack, run_select_context, save_pack
 from pasr.trace import trace_dependencies as _trace_dependencies
 
 _SELECT_CONTEXT_DESCRIPTION = (
@@ -56,7 +56,7 @@ def create_server(workspace_root: Path) -> MCPServer:
 
     @server.tool(name="select_context", description=_SELECT_CONTEXT_DESCRIPTION)
     def select_context(
-        query: str,
+        query: str = "",
         files: list[str] | None = None,
         include: list[str] | None = None,
         budget_tokens: int = 3000,
@@ -65,14 +65,25 @@ def create_server(workspace_root: Path) -> MCPServer:
         recall_strategy: str = "coverage_aware",
         block_size: int = 400,
         max_files: int = 100,
+        pack: str = "",
+        save_as: str = "",
     ) -> dict[str, Any]:
         """Select relevant raw spans from workspace files for ``query``.
 
         Provide ``files`` (explicit workspace-relative paths) and/or ``include``
         (globs or directories). ``recall_strategy`` is ``coverage_aware`` or
-        ``score_only``. Returns the assembled ``context`` plus per-span provenance,
-        token accounting, routing, and a lexical evidence diagnostic.
+        ``score_only``. Set ``pack`` to load a saved Context Pack (warm start, zero
+        retrieval); set ``save_as`` to save this selection as a pack. Returns the
+        assembled ``context`` plus per-span provenance, token accounting, routing, and
+        a lexical evidence diagnostic.
         """
+        if pack:
+            try:
+                return run_pack(root, pack)
+            except FileNotFoundError as exc:
+                raise ToolError(f"no pack named {pack!r}") from exc
+            except ValueError as exc:
+                raise ToolError(str(exc)) from exc
         try:
             request = validate_select_context_request(
                 {
@@ -88,7 +99,11 @@ def create_server(workspace_root: Path) -> MCPServer:
                 },
                 workspace_root=root,
             )
-            return run_select_context(request)
+            result = run_select_context(request)
+            if save_as:
+                path, _ = save_pack(save_as, request, result=result)
+                result["saved_pack"] = str(path)
+            return result
         except ValueError as exc:
             raise ToolError(str(exc)) from exc
 

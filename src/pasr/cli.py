@@ -1,7 +1,8 @@
 """``pasr`` CLI — run PASR without an agent.
 
-pasr explain "<query>" [globs...]   show the selection receipt
-pasr trace <symbol> [globs...]      show a dependency closure
+pasr explain "<query>" [globs...]      show the selection receipt
+pasr trace <symbol> [globs...]         show a dependency closure
+pasr pack <name> "<query>" [globs...]  save a Context Pack
 """
 
 from __future__ import annotations
@@ -14,7 +15,7 @@ from pathlib import Path
 from pasr import __version__
 from pasr.receipt import receipt_bytes, render_markdown, write_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
-from pasr.select import build_select_receipt
+from pasr.select import build_select_receipt, save_pack
 from pasr.trace import trace_dependencies
 
 
@@ -61,6 +62,27 @@ def _trace(args: argparse.Namespace) -> int:
     return 0
 
 
+def _pack(args: argparse.Namespace) -> int:
+    request = validate_select_context_request(
+        {
+            "query": args.query,
+            "include": args.paths or ["."],
+            "budget_tokens": args.budget,
+            "prefix_tokens": args.prefix_tokens,
+            "tail_tokens": args.tail_tokens,
+            "recall_strategy": args.recall_strategy,
+            "block_size": args.block_size,
+        },
+        workspace_root=args.workspace,
+    )
+    path, pack = save_pack(args.name, request)
+    print(
+        f"wrote {path.relative_to(args.workspace) if path.is_relative_to(args.workspace) else path}  "
+        f"({pack['token_count']} tokens, {len(pack['spans'])} spans, {pack['content_hash'][:12]})"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="pasr", description="PASR context broker — CLI")
     parser.add_argument("--version", action="version", version=f"pasr {__version__}")
@@ -85,6 +107,17 @@ def build_parser() -> argparse.ArgumentParser:
     trace.add_argument("--max-depth", type=int, default=4, dest="max_depth")
     trace.add_argument("--json", action="store_true", help="Emit the closure as JSON.")
     trace.set_defaults(func=_trace)
+
+    pack = sub.add_parser("pack", help="Save a selection as a Context Pack under .pasr/packs/.")
+    pack.add_argument("name")
+    pack.add_argument("query")
+    pack.add_argument("paths", nargs="*", help="Globs / directories (default: '.').")
+    pack.add_argument("--budget", type=int, default=3000, dest="budget")
+    pack.add_argument("--prefix-tokens", type=int, default=128, dest="prefix_tokens")
+    pack.add_argument("--tail-tokens", type=int, default=128, dest="tail_tokens")
+    pack.add_argument("--recall-strategy", default="coverage_aware", dest="recall_strategy")
+    pack.add_argument("--block-size", type=int, default=400, dest="block_size")
+    pack.set_defaults(func=_pack)
 
     return parser
 
