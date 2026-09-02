@@ -89,15 +89,18 @@ class SelectedRouteTests(unittest.TestCase):
         self.assertFalse(pack.diagnostics["active_window"])
         self.assertLessEqual(pack.token_count, 16)
 
-    def test_impossible_active_window_budget_raises(self):
+    def test_tiny_budget_drops_the_active_window(self):
         big = "word " * 100
         spans = _doc([big, "small middle line", big])
-        with self.assertRaisesRegex(ValueError, "exceed"):
-            assemble(
-                "middle",
-                spans,
-                AssembleConfig(budget_tokens=150, prefix_tokens=80, tail_tokens=80),
-            )
+        pack = assemble(
+            "middle",
+            spans,
+            AssembleConfig(budget_tokens=150, prefix_tokens=80, tail_tokens=80),
+        )
+        self.assertEqual(pack.route, ROUTE_SELECTED)
+        self.assertFalse(pack.diagnostics["active_window"])
+        self.assertIn("active_window_dropped", pack.diagnostics)
+        self.assertLessEqual(pack.token_count, 150)
 
     def test_is_deterministic(self):
         cfg = AssembleConfig(budget_tokens=20, prefix_tokens=6, tail_tokens=6)
@@ -133,11 +136,7 @@ class BudgetPropertyTests(unittest.TestCase):
                 recall_strategy=strategy,
             )
             query = " ".join(rng.sample(self.VOCAB, 3))
-            try:
-                pack = assemble(query, spans, cfg)
-            except ValueError as exc:
-                self.assertIn("exceed", str(exc))
-                continue
+            pack = assemble(query, spans, cfg)
             self.assertLessEqual(pack.token_count, budget)
             self.assertTrue(pack.within_budget)
             if sum(s.token_count for s in spans) <= budget:

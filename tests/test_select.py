@@ -1,0 +1,77 @@
+import unittest
+from pathlib import Path
+
+from pasr.schema import validate_select_context_request
+from pasr.select import run_select_context
+from pasr.tokenize import WhitespaceTokenizer
+
+MINI_REPO = Path(__file__).parent / "fixtures" / "mini_repo"
+
+
+def _run(payload: dict) -> dict:
+    request = validate_select_context_request(payload, MINI_REPO)
+    return run_select_context(request, tokenizer=WhitespaceTokenizer())
+
+
+class RunSelectContextTests(unittest.TestCase):
+    def test_lossless_route_for_a_small_file(self):
+        result = _run({"query": "rate limit headers", "include": ["api/ratelimit.py"], "budget_tokens": 3000})
+
+        self.assertEqual(result["tool"], "select_context")
+        self.assertEqual(result["route"], "lossless")
+        self.assertEqual(result["sources"], ["api/ratelimit.py"])
+        self.assertLessEqual(result["token_count"], 3000)
+        self.assertIn("evidence_accounting", result)
+        self.assertTrue(all(span["provenance"].startswith("api/ratelimit.py:") for span in result["spans"]))
+
+    def test_selected_route_holds_budget_and_carries_provenance(self):
+        result = _run(
+            {
+                "query": "deduplicate near identical documents by shingle fingerprint",
+                "include": ["."],
+                "budget_tokens": 120,
+                "prefix_tokens": 12,
+                "tail_tokens": 12,
+                "block_size": 30,
+            }
+        )
+        self.assertEqual(result["route"], "selected")
+        self.assertLessEqual(result["token_count"], 120)
+        self.assertGreater(result["total_input_tokens"], result["token_count"])
+        self.assertGreater(result["token_reduction"], 0.0)
+        for span in result["spans"]:
+            self.assertRegex(span["provenance"], r"^[\w./-]+:\d+(-\d+)?$")
+            self.assertGreater(span["token_count"], 0)
+            self.assertIn("selection_reasons", span)
+
+    def test_finds_the_planted_needle(self):
+        result = _run(
+            {
+                "query": "exempt internal service accounts from throttling",
+                "include": ["."],
+                "budget_tokens": 140,
+                "prefix_tokens": 12,
+                "tail_tokens": 12,
+                "block_size": 30,
+            }
+        )
+        hit = any(
+            span["source"] == "api/ratelimit.py" and span["line_start"] <= 22 <= span["line_end"]
+            for span in result["spans"]
+        )
+        self.assertTrue(hit, result["spans"])
+
+    def test_is_deterministic(self):
+        payload = {
+            "query": "session token privilege escalation",
+            "include": ["."],
+            "budget_tokens": 100,
+            "prefix_tokens": 10,
+            "tail_tokens": 10,
+            "block_size": 30,
+        }
+        self.assertEqual(_run(payload), _run(payload))
+
+
+if __name__ == "__main__":
+    unittest.main()

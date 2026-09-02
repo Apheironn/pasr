@@ -124,8 +124,10 @@ def assemble(
     """Build a :class:`ContextPack` for ``query`` within ``config.budget_tokens``.
 
     ``spans`` is one ordered sequence (a document, or a repo flattened in a stable
-    file order). The returned ``token_count`` never exceeds ``budget_tokens``.
-    Raises ``ValueError`` if a mandatory active window cannot fit the budget.
+    file order). The returned ``token_count`` never exceeds ``budget_tokens``. If the
+    mandatory active window cannot fit the budget it is dropped and
+    ``diagnostics["active_window_dropped"]`` records why (the low-level
+    :func:`pasr.packing.pack_with_active_window` still raises).
     """
     cfg = config or AssembleConfig()
     ordered = list(spans)
@@ -151,26 +153,32 @@ def assemble(
 
     retrieval_cfg = replace(cfg.retrieval, top_k=max(cfg.retrieval.top_k, 64))
     window_enabled = cfg.prefix_tokens > 0 or cfg.tail_tokens > 0
+    window_diag: dict[str, Any] = {"active_window": False}
+
+    if window_enabled:
+        window = plan_active_window(ordered, cfg.prefix_tokens, cfg.tail_tokens)
+        prefix_spans = [c for c in map(_window_candidate, window.prefix) if c is not None]
+        tail_spans = [c for c in map(_window_candidate, window.tail) if c is not None]
+        candidates = retrieve(query, window.middle, retrieval_cfg, extra_candidate_groups)
+        try:
+            result = pack_with_active_window(
+                prefix_spans, tail_spans, candidates, query, cfg.budget_tokens, cfg.recall_strategy
+            )
+            window_diag = {
+                "active_window": True,
+                "prefix_tokens": window.prefix_tokens,
+                "tail_tokens": window.tail_tokens,
+                "middle_span_count": len(window.middle),
+            }
+        except ValueError as exc:
+            # A mandatory window that cannot fit the budget: drop it, don't fail.
+            window_enabled = False
+            window_diag = {"active_window": False, "active_window_dropped": str(exc)}
 
     if not window_enabled:
         candidates = retrieve(query, ordered, retrieval_cfg, extra_candidate_groups)
         packer = pack_score_only if cfg.recall_strategy == "score_only" else pack_coverage_aware
         result = packer(candidates, query, cfg.budget_tokens)
-        window_diag: dict[str, Any] = {"active_window": False}
-    else:
-        window = plan_active_window(ordered, cfg.prefix_tokens, cfg.tail_tokens)
-        prefix_spans = [c for c in map(_window_candidate, window.prefix) if c is not None]
-        tail_spans = [c for c in map(_window_candidate, window.tail) if c is not None]
-        candidates = retrieve(query, window.middle, retrieval_cfg, extra_candidate_groups)
-        result = pack_with_active_window(
-            prefix_spans, tail_spans, candidates, query, cfg.budget_tokens, cfg.recall_strategy
-        )
-        window_diag = {
-            "active_window": True,
-            "prefix_tokens": window.prefix_tokens,
-            "tail_tokens": window.tail_tokens,
-            "middle_span_count": len(window.middle),
-        }
 
     if result.used_tokens > cfg.budget_tokens:  # defensive; packing already guarantees this
         raise AssertionError("packing exceeded the hard token budget")

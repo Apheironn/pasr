@@ -20,7 +20,11 @@ classifiers = [
 dependencies = [
   "tiktoken>=0.7",
   "pathspec>=0.12",
+  "mcp>=2,<3",
 ]
+
+[project.scripts]
+pasr-mcp = "pasr.mcp.server:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<9", "ruff>=0.6"]
