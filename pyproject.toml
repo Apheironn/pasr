@@ -28,6 +28,7 @@ dependencies = [
 ]
 
 [project.scripts]
+pasr = "pasr.cli:main"
 pasr-mcp = "pasr.mcp.server:main"
 
 [project.optional-dependencies]

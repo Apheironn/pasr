@@ -120,6 +120,7 @@ def assemble(
     spans: Sequence[RawSpan],
     config: AssembleConfig | None = None,
     extra_candidate_groups: Mapping[str, Sequence[CandidateSpan]] | None = None,
+    collect_candidates: bool = False,
 ) -> ContextPack:
     """Build a :class:`ContextPack` for ``query`` within ``config.budget_tokens``.
 
@@ -128,6 +129,9 @@ def assemble(
     mandatory active window cannot fit the budget it is dropped and
     ``diagnostics["active_window_dropped"]`` records why (the low-level
     :func:`pasr.packing.pack_with_active_window` still raises).
+
+    With ``collect_candidates=True``, ``diagnostics["candidates"]`` holds every fused
+    candidate the packer considered, each tagged ``selected`` — the input to a receipt.
     """
     cfg = config or AssembleConfig()
     ordered = list(spans)
@@ -184,22 +188,39 @@ def assemble(
         raise AssertionError("packing exceeded the hard token budget")
 
     final_spans = tuple(result.selected)
+    selected_keys = {span.key for span in final_spans}
+    diagnostics: dict[str, Any] = {
+        **window_diag,
+        "strategy": result.strategy,
+        "candidate_count": len(candidates),
+        "skipped_oversized_count": result.skipped_oversized_count,
+        "skipped_overlap_count": result.skipped_overlap_count,
+        "skipped_budget_count": result.skipped_budget_count,
+        "covered_query_keywords": list(result.covered_query_keywords),
+        "uncovered_query_keywords": list(result.uncovered_query_keywords),
+    }
+    if collect_candidates:
+        diagnostics["candidates"] = [
+            {
+                "source": candidate.source,
+                "provenance": candidate.metadata.get("provenance"),
+                "line_start": candidate.metadata.get("line_start"),
+                "line_end": candidate.metadata.get("line_end"),
+                "token_count": candidate.token_count,
+                "selection_reasons": list(candidate.selection_reasons),
+                "score_components": candidate.score_components,
+                "rank_score": candidate.rank_score,
+                "selected": candidate.key in selected_keys,
+            }
+            for candidate in candidates
+        ]
     return ContextPack(
         route=ROUTE_SELECTED,
         spans=final_spans,
         text="\n".join(span.text.strip("\n") for span in final_spans),
         token_count=result.used_tokens,
         budget_tokens=cfg.budget_tokens,
-        diagnostics={
-            **window_diag,
-            "strategy": result.strategy,
-            "candidate_count": len(candidates),
-            "skipped_oversized_count": result.skipped_oversized_count,
-            "skipped_overlap_count": result.skipped_overlap_count,
-            "skipped_budget_count": result.skipped_budget_count,
-            "covered_query_keywords": list(result.covered_query_keywords),
-            "uncovered_query_keywords": list(result.uncovered_query_keywords),
-        },
+        diagnostics=diagnostics,
     )
 
 

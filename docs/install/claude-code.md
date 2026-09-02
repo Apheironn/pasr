@@ -30,7 +30,15 @@ Use an absolute path if you launch Claude Code from elsewhere.
 
 ## Use it
 
-The agent gets two tools.
+The agent gets three tools.
+
+### `explain_selection`
+
+- `receipt_id` — the id from a prior `select_context` result
+
+Returns the stored receipt (`.pasr/receipts/<id>.json`): kept spans with `file:line`,
+tokens and reasons, the dropped candidates, and the budget accounting — an audit of
+exactly what the selection handed the model.
 
 ### `trace_dependencies`
 

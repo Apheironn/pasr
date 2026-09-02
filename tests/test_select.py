@@ -1,3 +1,4 @@
+import json
 import unittest
 from pathlib import Path
 
@@ -10,7 +11,48 @@ MINI_REPO = Path(__file__).parent / "fixtures" / "mini_repo"
 
 def _run(payload: dict) -> dict:
     request = validate_select_context_request(payload, MINI_REPO)
-    return run_select_context(request, tokenizer=WhitespaceTokenizer())
+    return run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
+
+
+def test_writes_a_byte_stable_receipt(mini_workspace: Path) -> None:
+    payload = {"query": "rate limit headers on the response", "include": ["."], "budget_tokens": 120, "block_size": 30}
+    request = validate_select_context_request(payload, mini_workspace)
+
+    first = run_select_context(request, tokenizer=WhitespaceTokenizer())
+    receipt_path = mini_workspace / ".pasr" / "receipts" / f"{first['receipt']['id']}.json"
+    assert receipt_path.is_file()
+    assert (mini_workspace / ".pasr" / "receipts" / f"{first['receipt']['id']}.md").is_file()
+    assert first["receipt"]["written_to"] == str(receipt_path)
+
+    original_bytes = receipt_path.read_bytes()
+    run_select_context(request, tokenizer=WhitespaceTokenizer())
+    assert receipt_path.read_bytes() == original_bytes  # same request -> identical file
+
+    receipt = json.loads(original_bytes)
+    kept_provenance = {span["provenance"] for span in receipt["kept"]}
+    result_provenance = {span["provenance"] for span in first["spans"]}
+    assert kept_provenance == result_provenance
+
+
+def test_no_write_flag_skips_the_file(mini_workspace: Path) -> None:
+    request = validate_select_context_request({"query": "throttling", "include": ["."]}, mini_workspace)
+    result = run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
+    assert result["receipt"]["written_to"] is None
+    assert not (mini_workspace / ".pasr").exists()
+
+
+def test_redactor_is_applied_to_returned_spans(mini_workspace: Path) -> None:
+    request = validate_select_context_request(
+        {"query": "rate limit", "include": ["api/ratelimit.py"], "budget_tokens": 3000}, mini_workspace
+    )
+    result = run_select_context(
+        request,
+        tokenizer=WhitespaceTokenizer(),
+        redactor=lambda text: text.replace("RateLimit", "[REDACTED]"),
+        write_receipt_file=False,
+    )
+    assert "[REDACTED]" in result["context"]
+    assert all("X-RateLimit" not in span["text"] for span in result["spans"])
 
 
 class RunSelectContextTests(unittest.TestCase):

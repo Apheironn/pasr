@@ -9,9 +9,10 @@ budgeted, fully-traceable slice**: every returned span carries its `file:line`, 
 count, and the reason it was selected — and PASR tells the agent when it is the wrong
 tool for the question.
 
-> Status: **pre-alpha (M5).** Offline retrieval + budgeted assembly + tree-sitter
-> symbols, with `select_context` and `trace_dependencies` MCP tools (stdio). Receipts,
-> routing, packs, and the real-agent evaluation are still ahead — see `docs/roadmap.md`.
+> Status: **pre-alpha (M6).** Offline retrieval + budgeted assembly + tree-sitter
+> symbols; `select_context`, `trace_dependencies`, `explain_selection` MCP tools (stdio);
+> byte-stable selection receipts; a `pasr` CLI. Routing, context packs, and the
+> real-agent evaluation are still ahead — see `docs/roadmap.md`.
 
 ## What it is / is not
 
@@ -52,8 +53,18 @@ Per-client setup: [`docs/install/claude-code.md`](docs/install/claude-code.md),
 |---|---|---|
 | `select_context` | **available (M4)** | budgeted, provenance-tracked slice for a query |
 | `trace_dependencies` | **available (M5)** | deterministic def/reference closure for a symbol (Python, JS/TS) |
-| `explain_selection` | planned (M6) | return the receipt for a prior selection |
+| `explain_selection` | **available (M6)** | return the stored receipt for a prior selection |
 | `expand_context` | planned (M7) | one bounded widening pass when the slice was insufficient |
+
+## CLI
+
+```bash
+pasr explain "how is the request rate limited"        # run a selection, print the receipt
+pasr trace enforce_per_user_request_quota src/        # a symbol's dependency closure
+```
+
+Receipts are written to `.pasr/receipts/<id>.{json,md}` (gitignored) — a byte-stable
+record of what PASR handed the model and what it dropped.
 
 ## Docs
 
