@@ -22,4 +22,4 @@ jobs:
       - run: pytest -q
       - name: core stays torch-free (and mcp-free)
         run: |
-          python -c "import sys, pasr.pipeline, pasr.schema, pasr.select, pasr.symbols; bad=[m for m in ('torch','transformers','mcp') if m in sys.modules]; assert not bad, bad"
+          python -c "import sys, pasr.pipeline, pasr.schema, pasr.select, pasr.symbols, pasr.trace; bad=[m for m in ('torch','transformers','mcp') if m in sys.modules]; assert not bad, bad"

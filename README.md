@@ -9,9 +9,9 @@ budgeted, fully-traceable slice**: every returned span carries its `file:line`, 
 count, and the reason it was selected — and PASR tells the agent when it is the wrong
 tool for the question.
 
-> Status: **pre-alpha (M4).** Offline retrieval + budgeted assembly + a working
-> `select_context` MCP server (stdio). Tree-sitter symbols, `trace_dependencies`,
-> receipts, and the real-agent evaluation are still ahead — see `docs/roadmap.md`.
+> Status: **pre-alpha (M5).** Offline retrieval + budgeted assembly + tree-sitter
+> symbols, with `select_context` and `trace_dependencies` MCP tools (stdio). Receipts,
+> routing, packs, and the real-agent evaluation are still ahead — see `docs/roadmap.md`.
 
 ## What it is / is not
 
@@ -51,7 +51,7 @@ Per-client setup: [`docs/install/claude-code.md`](docs/install/claude-code.md),
 | Tool | Status | Purpose |
 |---|---|---|
 | `select_context` | **available (M4)** | budgeted, provenance-tracked slice for a query |
-| `trace_dependencies` | planned (M5) | deterministic import/def/reference closure for a symbol |
+| `trace_dependencies` | **available (M5)** | deterministic def/reference closure for a symbol (Python, JS/TS) |
 | `explain_selection` | planned (M6) | return the receipt for a prior selection |
 | `expand_context` | planned (M7) | one bounded widening pass when the slice was insufficient |
 

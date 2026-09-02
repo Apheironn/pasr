@@ -1,7 +1,10 @@
 """PASR MCP server (stdio).
 
-Exposes ``select_context``: given a query and a set of workspace files or globs,
-return a budgeted, provenance-carrying slice of that context. Runs fully offline.
+Tools:
+  select_context     — a budgeted, provenance-carrying slice of the workspace
+  trace_dependencies — the transitive definition closure for a symbol
+
+Runs fully offline.
 
     uvx pasr-mcp --workspace .
 """
@@ -16,14 +19,20 @@ from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 
 from pasr import __version__
-from pasr.schema import validate_select_context_request
+from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
 from pasr.select import run_select_context
+from pasr.trace import trace_dependencies as _trace_dependencies
 
 _SELECT_CONTEXT_DESCRIPTION = (
     "Return a small, budgeted, provenance-tracked slice of the workspace for a query. "
     "Prefer this over reading whole files: it caps total tokens, keeps a mandatory "
     "prefix/tail active window, and reports where every span came from (file:line). "
     "Good for locating evidence in a large codebase or long document; not a code writer."
+)
+_TRACE_DEPENDENCIES_DESCRIPTION = (
+    "Return the transitive definition closure for a symbol: every function / class / "
+    "import it needs, in source order, with file:line provenance, at a fraction of the "
+    "tokens of the whole codebase. Deterministic. Python and JavaScript/TypeScript."
 )
 
 
@@ -69,6 +78,46 @@ def create_server(workspace_root: Path) -> MCPServer:
             return run_select_context(request)
         except ValueError as exc:
             raise ToolError(str(exc)) from exc
+
+    @server.tool(name="trace_dependencies", description=_TRACE_DEPENDENCIES_DESCRIPTION)
+    def trace_dependencies(
+        symbol: str,
+        files: list[str] | None = None,
+        include: list[str] | None = None,
+        max_depth: int = 4,
+        budget_tokens: int = 4000,
+        max_files: int = 200,
+    ) -> dict[str, Any]:
+        """Trace ``symbol``'s transitive definition closure across workspace files.
+
+        Provide ``files`` and/or ``include`` (globs / directories) to scope the
+        search. Returns the closure ``context``, per-definition provenance and
+        ``defines`` / ``dependencies``, and token reduction versus the full index.
+        """
+        try:
+            request = validate_trace_dependencies_request(
+                {
+                    "symbol": symbol,
+                    "files": files,
+                    "include": include,
+                    "max_depth": max_depth,
+                    "budget_tokens": budget_tokens,
+                    "max_files": max_files,
+                },
+                workspace_root=root,
+            )
+        except ValueError as exc:
+            raise ToolError(str(exc)) from exc
+        texts = {
+            meta["relative_path"]: path.read_text(encoding="utf-8", errors="replace")
+            for path, meta in zip(request.files, request.file_metadata, strict=True)
+        }
+        return _trace_dependencies(
+            request.symbol,
+            texts,
+            max_depth=request.max_depth,
+            budget_tokens=request.budget_tokens,
+        ).to_dict()
 
     return server
 

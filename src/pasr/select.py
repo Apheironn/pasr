@@ -11,6 +11,7 @@ from pasr.chunker import chunk_text
 from pasr.evidence import account_query_evidence, build_evidence_span
 from pasr.pipeline import AssembleConfig, assemble
 from pasr.schema import SelectContextRequest
+from pasr.symbols import get_provider, symbol_candidates
 from pasr.tokenize import Tokenizer, get_tokenizer
 
 TOOL_NAME = "select_context"
@@ -22,17 +23,28 @@ def run_select_context(request: SelectContextRequest, tokenizer: Tokenizer | Non
 
     spans = []
     per_file = []
+    sym_candidates = []
+    languages: set[str] = set()
     for path, meta in zip(request.files, request.file_metadata, strict=True):
+        source = meta["relative_path"]
         text = path.read_text(encoding="utf-8", errors="replace")
-        file_spans = chunk_text(meta["relative_path"], text, tok, request.block_size)
+        file_spans = chunk_text(source, text, tok, request.block_size)
         spans.extend(file_spans)
         per_file.append(
             {
-                "source": meta["relative_path"],
+                "source": source,
                 "span_count": len(file_spans),
                 "token_count": sum(span.token_count for span in file_spans),
             }
         )
+        provider = get_provider(source)
+        if provider is not None:
+            try:
+                file_symbols = provider.parse(source, text)
+            except Exception:  # symbols are best-effort; never fail the request
+                continue
+            languages.add(file_symbols.language)
+            sym_candidates.extend(symbol_candidates(file_symbols, request.query, text, tok))
 
     pack = assemble(
         request.query,
@@ -43,6 +55,7 @@ def run_select_context(request: SelectContextRequest, tokenizer: Tokenizer | Non
             tail_tokens=request.tail_tokens,
             recall_strategy=request.recall_strategy,
         ),
+        extra_candidate_groups={"symbols": sym_candidates} if sym_candidates else None,
     )
 
     evidence = account_query_evidence(
@@ -76,6 +89,11 @@ def run_select_context(request: SelectContextRequest, tokenizer: Tokenizer | Non
             }
             for span in pack.spans
         ],
-        "diagnostics": {**pack.diagnostics, "files": per_file},
+        "diagnostics": {
+            **pack.diagnostics,
+            "files": per_file,
+            "symbol_languages": sorted(languages),
+            "symbol_candidate_count": len(sym_candidates),
+        },
         "evidence_accounting": evidence,
     }

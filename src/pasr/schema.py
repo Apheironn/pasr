@@ -30,6 +30,18 @@ class SelectContextRequest:
     block_size: int
 
 
+@dataclass(frozen=True)
+class TraceDependenciesRequest:
+    """A validated ``trace_dependencies`` request with resolved workspace files."""
+
+    symbol: str
+    workspace_root: Path
+    files: tuple[Path, ...]
+    file_metadata: tuple[dict[str, Any], ...]
+    max_depth: int
+    budget_tokens: int
+
+
 def validate_select_context_request(payload: dict[str, Any], workspace_root: Path) -> SelectContextRequest:
     """Validate a raw ``select_context`` payload.
 
@@ -58,6 +70,23 @@ def validate_select_context_request(payload: dict[str, Any], workspace_root: Pat
         tail_tokens=_non_negative_int(payload.get("tail_tokens", 128), "tail_tokens"),
         recall_strategy=recall_strategy,
         block_size=_positive_int(payload.get("block_size", 400), "block_size"),
+    )
+
+
+def validate_trace_dependencies_request(payload: dict[str, Any], workspace_root: Path) -> TraceDependenciesRequest:
+    """Validate a raw ``trace_dependencies`` payload."""
+    symbol = str(payload.get("symbol", "")).strip()
+    if not symbol:
+        raise ValueError("symbol is required.")
+    root = workspace_root.resolve()
+    files, metadata = _resolve_files(payload, root)
+    return TraceDependenciesRequest(
+        symbol=symbol,
+        workspace_root=root,
+        files=files,
+        file_metadata=metadata,
+        max_depth=_non_negative_int(payload.get("max_depth", 4), "max_depth"),
+        budget_tokens=_positive_int(payload.get("budget_tokens", 4000), "budget_tokens"),
     )
 
 

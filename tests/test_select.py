@@ -72,6 +72,23 @@ class RunSelectContextTests(unittest.TestCase):
         }
         self.assertEqual(_run(payload), _run(payload))
 
+    def test_symbol_candidates_feed_the_fusion(self):
+        result = _run(
+            {
+                "query": "deduplicate near identical documents by shingle fingerprint",
+                "include": ["."],
+                "budget_tokens": 120,
+                "prefix_tokens": 8,
+                "tail_tokens": 8,
+                "block_size": 30,
+            }
+        )
+        self.assertEqual(result["route"], "selected")
+        self.assertIn("python", result["diagnostics"]["symbol_languages"])
+        self.assertGreater(result["diagnostics"]["symbol_candidate_count"], 0)
+        reasons = {reason for span in result["spans"] for reason in span["selection_reasons"]}
+        self.assertIn("symbol", reasons)
+
 
 if __name__ == "__main__":
     unittest.main()

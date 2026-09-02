@@ -15,10 +15,10 @@ def _call(server, arguments: dict):
 
 def test_lists_the_select_context_tool_with_its_schema():
     server = create_server(MINI_REPO)
-    tools = anyio.run(server.list_tools)
+    tools = {tool.name: tool for tool in anyio.run(server.list_tools)}
 
-    assert [tool.name for tool in tools] == ["select_context"]
-    props = set(tools[0].input_schema.get("properties", {}))
+    assert set(tools) == {"select_context", "trace_dependencies"}
+    props = set(tools["select_context"].input_schema.get("properties", {}))
     assert {"query", "files", "include", "budget_tokens", "prefix_tokens", "tail_tokens"} <= props
 
 
@@ -64,3 +64,28 @@ def test_call_is_deterministic():
     server = create_server(MINI_REPO)
     args = {"query": "compromised account session", "include": ["."], "budget_tokens": 120, "block_size": 30}
     assert json.loads(_call(server, args).content[0].text) == json.loads(_call(server, args).content[0].text)
+
+
+TRACE_REPO = Path(__file__).parent / "fixtures" / "trace_repo"
+
+
+def test_trace_dependencies_tool_is_listed_and_returns_a_closure():
+    server = create_server(TRACE_REPO)
+    tools = anyio.run(server.list_tools)
+    assert {"select_context", "trace_dependencies"} == {tool.name for tool in tools}
+
+    result = anyio.run(lambda: server.call_tool("trace_dependencies", {"symbol": "run_pipeline", "include": ["app"]}))
+    assert result.is_error is False
+    payload = json.loads(result.content[0].text)
+    assert payload["tool"] == "trace_dependencies"
+    assert payload["found"] is True
+    names = {span["name"] for span in payload["spans"]}
+    assert {"run_pipeline", "load", "parse"} <= names
+    assert payload["token_reduction"] > 0.0
+
+
+def test_trace_dependencies_missing_symbol_is_not_an_error():
+    server = create_server(TRACE_REPO)
+    result = anyio.run(lambda: server.call_tool("trace_dependencies", {"symbol": "nope", "include": ["app"]}))
+    assert result.is_error is False
+    assert json.loads(result.content[0].text)["found"] is False

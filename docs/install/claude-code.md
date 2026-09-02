@@ -30,7 +30,20 @@ Use an absolute path if you launch Claude Code from elsewhere.
 
 ## Use it
 
-The agent gets one tool, `select_context`:
+The agent gets two tools.
+
+### `trace_dependencies`
+
+- `symbol` (required) — the function / class / const to trace
+- `include` / `files` — scope the search
+- `max_depth` (default 4)
+
+Returns the transitive definition closure in source order with `file:line` provenance
+and `defines` / `dependencies` per span, plus token reduction versus the whole index.
+Python and JavaScript/TypeScript. A symbol that isn't defined comes back as
+`found: false`, not an error.
+
+### `select_context`
 
 - `query` (required) — what you're looking for
 - `include` — globs / directories (e.g. `["src/**/*.py"]`), and/or `files` — explicit
