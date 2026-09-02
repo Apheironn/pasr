@@ -15,13 +15,15 @@ tool for the question.
 > byte-stable receipts; query self-assessment + routing advice; committable Context
 > Packs; a `pasr` CLI; a headless `pasr context` + GitHub Action.
 >
-> **Pilot evaluation.** Real-agent (n=15, `claude-sonnet-5` answering + judging): PASR
-> **0.53** task success at **5.8k** context tokens vs a 58k full-repo dump's **0.47** —
-> parity at **~90% fewer tokens** and one tool call. A 50-task keyword-proxy re-run
-> corroborates: PASR **0.70** vs broad **0.66**, and PASR misses the critical file
-> **0.08 vs broad's 0.34**. Point estimate favours PASR; the CI needs a larger real
-> run to *establish* non-inferiority. Efficiency direction, not a superiority claim.
-> Details: [`eval/RESULTS.md`](eval/RESULTS.md).
+> **Evaluation (50 tasks, 10 pinned repos, real Claude answer + judge).** PASR hands
+> the model **5.8k targeted tokens in one tool call** → **0.48** task success; a
+> **59k-token whole-repo dump → 0.38** (`pasr` **+0.10** on paired success,
+> `pasr_fallback` +0.12, both clearing the -0.05 non-inferiority margin on the point
+> estimate; 95% CI still crosses it). PASR gets the answer's file into context
+> **46/50** vs the dump's **33/50**, at **~90% fewer input tokens**. An agent's own
+> grep + read-6-files scores 0.52 but at 4× the tokens, 6 round trips, 30% critical
+> miss. A **bounded efficiency result**, not a superiority claim — details and the
+> supporting n=15 / keyword runs: [`eval/RESULTS.md`](eval/RESULTS.md).
 
 ## What it is / is not
 

@@ -1,23 +1,24 @@
 # PASR real-agent evaluation — results
 
-> **Real-agent pilot done (n=15).** `claude-sonnet-5` answering + judging,
-> `eval/deliveries/pilot_20260902T212108Z/`: PASR **0.53** @ 5.8k ctx tokens vs the
-> 58k full-repo dump's **0.47** — parity at ~1/10th the tokens and one tool call.
-> Point estimate favours PASR; n=15 CI too wide to *establish* non-inferiority.
+> **50-task real-agent run done** (`eval/deliveries/realagent50_20260902T221528Z/`,
+> 10 pinned repos, Claude answer + judge). PASR gives the model **5.8k targeted
+> tokens in one tool call** and it answers **48%** of the tasks; the **59k-token
+> source-first repo dump answers 38%** — PASR is **+0.10** on paired task success
+> (`pasr_fallback` +0.12), and the **point estimate clears the -0.05
+> non-inferiority margin** (95% CI still crosses it: `pasr` [-0.08, +0.30]).
+> PASR puts the critical file in context **46/50** times vs the dump's **33/50**.
 >
-> **Plan expanded to 50 tasks / 10 repos.** The keyword-proxy re-run (no API) already
-> corroborates and tightens the interval: PASR **0.70** vs broad **0.66** vs
-> native_search **0.64**, PASR critical-source miss **0.08 vs broad's 0.34**, +90%
-> tokens. The **50-task real-agent run is the next step** — streams to disk and is
-> `--resume`-able; see [Next](#next) for the budget-safe command.
->
-> This is an efficiency-direction result, not a superiority claim.
+> Reading: on localized code questions PASR matches — slightly beats — a 10×-larger
+> whole-repo dump, at **~90% fewer input tokens and one round trip**. `native_search`
+> (grep + read 6 files, 23k tokens, 6 round trips) is the raw-success leader at 0.52
+> but misses the critical file 30% of the time. This is a **bounded efficiency
+> result**, not a superiority claim — one more batch of 50 would settle the interval.
 
 ## Pre-registration
 
-- **Plan:** `eval/plans/pilot.json` — 5 pinned public Python repos, 15 source-grounded
-  `locate` / `trace` / `explain` tasks. The notebook records each repo's resolved
-  commit SHA into `matrix.jsonl`.
+- **Plan:** `eval/plans/pilot.json` — 10 pinned public Python repos, 50 source-grounded
+  `locate` / `trace` / `explain` tasks (5/repo). `run_eval.py` records each repo's
+  resolved commit SHA and the answer/judge model IDs into `matrix.jsonl`'s `_meta` line.
 - **Arms:** `native_search`, `broad`, `pasr`, `pasr_fallback`.
 - **Baseline:** `broad`.
 - **Primary claim (non-inferiority):** on paired tasks, `pasr_fallback` task success
@@ -29,24 +30,18 @@
   traces to a registered task + repo; the query never contains the full answer;
   exactly one row per task×arm).
 
-## Keyword-grader preview (offline, no API — `python eval/run_eval.py --agent keyword`)
+## The two graders
 
-Run against the 5 pinned pilot repos. This is a **harsh literal proxy** (task success
-= every expected identifier appears verbatim in the arm's context **and** the critical
-file is present). The real `--agent claude` run answers + judges with a model and will
-usually score higher; use this only to sanity-check the machinery and the token story.
+- **Keyword proxy** (`--agent keyword`, offline, no API): task success = every expected
+  identifier appears verbatim in the arm's context **and** the critical file is present.
+  A harsh literal proxy for retrieval quality — machinery + token-story check only.
+- **Real agent** (`--agent claude`): a model answers from **only** the arm's context
+  (`UNKNOWN` if not present), then a second model judges the answer against the task's
+  expected identifiers; `critical_source_hit` is still required for a pass.
 
-| arm | task_success | context_tokens | round_trips | crit_miss |
-|---|---:|---:|---:|---:|
-| broad (60k cap, source-first) | 0.93 | 58k | 1 | 0.07 |
-| native_search (6 files, 4k each) | 0.67 | 23k | 6 | 0.27 |
-| pasr | 0.67 | **5.8k** | 1 | 0.13 |
-| pasr_fallback | 0.67 | 5.8k | 1 | 0.13 |
-
-Token savings vs broad: `pasr` **+90%**, `native_search` +60%. Non-inferiority
-(keyword grader) fails at -0.05 — PASR trades literal recall for a 10× smaller context.
-Whether that holds up with a real answering/judging model is exactly what the run below
-measures.
+The n=15 pilot and the 50-task keyword re-run below are the supporting runs; the
+[50-task real-agent run](#50-task-real-agent-run--claude-answer--judge-10-repos---headline)
+is the headline.
 
 ## Pilot run — `claude-sonnet-5`, 15 tasks, 5 repos
 
@@ -102,18 +97,55 @@ Delivery: `eval/deliveries/pilot_20260902T212108Z/`.
   misses clearing the -0.05 margin.
 - Fallback engaged on 1/50 (crit-miss 0.08 → 0.06).
 
+## 50-task real-agent run — Claude answer + judge, 10 repos  ★ headline
+
+`eval/deliveries/realagent50_20260902T221528Z/`. Models recorded in `matrix.jsonl`'s
+`_meta`. `validate_matrix` clean (no synthetic rows, no leak, matched 4×50 matrix).
+
+| arm | task success | context tokens | tokens_in | round trips | crit. miss | fallback |
+|---|---:|---:|---:|---:|---:|---:|
+| broad (59k source-first repo dump) | 0.380 | 59 075 | 59 115 | 1 | **0.340** | – |
+| native_search (grep + 6 files, 4k each) | **0.520** | 22 901 | 23 181 | 6 | 0.300 | – |
+| **pasr** | 0.480 | **5 777** | **5 817** | **1** | **0.080** | – |
+| pasr_fallback | 0.500 | 5 854 | 5 895 | 1.02 | 0.060 | 0.020 |
+
+- **Token savings vs `broad`: pasr +90.2%, pasr_fallback +90.0%**; native_search +60.8%.
+- **Non-inferiority (task success, margin -0.05):** `pasr` delta **+0.100**, 95% CI
+  **[-0.08, +0.30]**; `pasr_fallback` delta **+0.120**, CI **[-0.06, +0.30]**. Both
+  **point estimates PASS**; both CI lower bounds miss the margin by ≈0.03 (half-width
+  ±0.18–0.19 at n=50, down from ±0.30 at n=15).
+- **Critical-source hit: `pasr` 46/50 (92%), `pasr_fallback` 47/50** vs **`broad`
+  33/50 (66%)**. A 59k source-first dump *still* omits the answer's file for 17/50
+  real-repo tasks — concentrated in the large repos (`typer` 5/5 missed, `jinja` 4/5,
+  `packaging` 4/5, `anyio` 3/5); those are exactly the repos where `broad` scores
+  0–1/5. Where the file *does* fit (`requests`, `pluggy`, `httpx`) `broad` reaches
+  4/5. **`broad`'s 0.38 is a truncation + large-haystack failure, not a grading one.**
+- Head-to-head: `pasr` wins **15** tasks `broad` loses, loses **10** `broad` wins
+  (net +5 of 50 = the +0.10). `pasr_fallback` widened once (`pkg`-family), turning one
+  loss into a win.
+- **PASR's weak spot — `typer` (0/5, both PASR arms).** The slice reaches the right
+  file 3/5 but the answering lines aren't in the selected window: `typer` leans on
+  re-exports and decorator plumbing that the current chunker + 6k budget don't
+  resolve. Drop `typer` and `pasr` is 24/45 = **0.53**. Logged for a chunker follow-up.
+- `native_search` is the raw-success leader (0.52) but pays **4× the tokens, 6 round
+  trips**, and a **30% critical-source miss** — brittle when the query terms don't
+  literally appear near the answer.
+
+### Reading it
+
+The claim PASR makes is a **profile trade**, and the run supports it: at parity-ish
+answer quality with a whole-repo dump (−0 to +0.12 depending on arm/margin), PASR
+costs **one order of magnitude fewer input tokens, one tool call instead of the model
+chewing 59k, and a 92% critical-file hit rate with per-line provenance**. It is *not*
+an inferential non-inferiority pass (CI lower bound −0.08) and *not* a raw-accuracy
+win over an agent's own grep. It mirrors `researchv2`'s LongBench Pro finding: a
+bounded cross-repo efficiency direction.
+
 ### Next
 
-1. **Run the 50-task real-agent eval.** ~400 API calls (200 answer + ~200 judge).
-   Rows stream to `matrix.jsonl` as they finish, so a crash never loses progress —
-   resume with `--resume <run_dir>`. Budget levers:
-   - Cheap answer model + strong judge (~$4–6 total on Haiku answers):
-     `python eval/run_eval.py --agent claude --model claude-haiku-4-5 --judge-model claude-sonnet-5`
-   - Trial first: add `--max-tasks 4` (~$0.4).
-   - Shrink the `broad` arm's dump if context spend matters:
-     `PASR_EVAL_BROAD_CAP=30000` (env var; default 60000).
-   - Full Sonnet answer+judge ≈ $12–15; if it stops, rerun the same command with
-     `--resume eval/runs/<plan>_<ts>`.
-2. Consider a stronger `broad` (relevance-ranked truncation) so it isn't a strawman
-   past ~40k tokens.
-3. If the CI still crosses at n=50, add a second batch of 50.
+1. **Second batch of 50 tasks** to close the CI (projected half-width ≈±0.13 at
+   n=100 would clear the −0.05 margin if the point estimate holds).
+2. **Chunker follow-up for re-export/decorator-heavy repos** (`typer`): the pass that
+   turns a critical-file hit into an answerable window.
+3. Consider a relevance-ranked `broad` truncation so it isn't a strawman past ~40k —
+   though the point of this arm is precisely "what a naive big-context dump gets you".

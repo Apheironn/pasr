@@ -151,7 +151,14 @@ def main(argv: list[str] | None = None) -> int:
 
     matrix_path = run_dir / "matrix.jsonl"
     if not args.resume:
-        meta = {"plan": plan.name, "utc": ts, "agent": agent.name, "commits": commits}
+        meta = {
+            "plan": plan.name,
+            "utc": ts,
+            "agent": agent.name,
+            "model": getattr(agent, "model", ""),
+            "judge_model": getattr(agent, "judge_model", ""),
+            "commits": commits,
+        }
         matrix_path.write_text(json.dumps({"_meta": meta}, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     matrix_handle = matrix_path.open("a", encoding="utf-8", newline="\n")
 
