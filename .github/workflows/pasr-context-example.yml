@@ -1,0 +1,38 @@
+name: pasr-context-example
+
+# Manual only — a worked example of feeding an issue through PASR before a
+# downstream autonomous-agent job. It does not run on push.
+on:
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Issue / task text
+        required: true
+      paths:
+        description: Globs / dirs to scan
+        required: false
+        default: "src"
+
+jobs:
+  context:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: pasr
+        uses: ./.github/actions/pasr-context
+        with:
+          issue: ${{ inputs.issue }}
+          paths: ${{ inputs.paths }}
+          budget: "6000"
+          pasr-version: "."
+      - name: Summary
+        run: |
+          echo "route=${{ steps.pasr.outputs.route }}  in=${{ steps.pasr.outputs.tokens-in }}  out=${{ steps.pasr.outputs.tokens-out }}  round_trips_saved=${{ steps.pasr.outputs.round-trips-saved }}"
+          echo '--- context slice ---'
+          cat "${{ steps.pasr.outputs.context-file }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pasr-context
+          path: |
+            ${{ steps.pasr.outputs.context-file }}
+            ${{ steps.pasr.outputs.metrics-file }}

@@ -1,0 +1,72 @@
+name: PASR context
+description: >-
+  Produce a budgeted, provenance-tracked context slice for an issue / task,
+  as a step output a downstream autonomous-agent job can consume.
+
+inputs:
+  issue:
+    description: Issue / task text (or set issue-file).
+    required: false
+    default: ""
+  issue-file:
+    description: Path to a file containing the issue text.
+    required: false
+    default: ""
+  paths:
+    description: Space-separated globs / directories to scan.
+    required: false
+    default: "."
+  budget:
+    description: Hard token budget for the returned context.
+    required: false
+    default: "6000"
+  pasr-version:
+    description: Version spec for the pasr-mcp package uvx installs.
+    required: false
+    default: "pasr-mcp"
+
+outputs:
+  context-file:
+    description: Path to the written context slice.
+    value: ${{ steps.run.outputs.context-file }}
+  metrics-file:
+    description: Path to the written JSON metrics.
+    value: ${{ steps.run.outputs.metrics-file }}
+  route:
+    description: "\"lossless\" or \"selected\"."
+    value: ${{ steps.run.outputs.route }}
+  tokens-in:
+    description: Total scanned input tokens.
+    value: ${{ steps.run.outputs.tokens-in }}
+  tokens-out:
+    description: Tokens in the returned slice.
+    value: ${{ steps.run.outputs.tokens-out }}
+  round-trips-saved:
+    description: Estimated agent file-open round trips replaced by one call.
+    value: ${{ steps.run.outputs.round-trips-saved }}
+
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@v5
+    - id: run
+      shell: bash
+      run: |
+        set -euo pipefail
+        ctx="${RUNNER_TEMP:-/tmp}/pasr-context.txt"
+        met="${RUNNER_TEMP:-/tmp}/pasr-metrics.json"
+        args=(--budget "${{ inputs.budget }}" --format text --context-file "$ctx" --metrics-file "$met")
+        if [ -n "${{ inputs.issue-file }}" ]; then
+          args+=(--issue-file "${{ inputs.issue-file }}")
+        else
+          args+=(--issue "${{ inputs.issue }}")
+        fi
+        uvx --from "${{ inputs.pasr-version }}" pasr context "${args[@]}" ${{ inputs.paths }} > /dev/null
+        {
+          echo "context-file=$ctx"
+          echo "metrics-file=$met"
+          echo "route=$(jq -r .route "$met")"
+          echo "tokens-in=$(jq -r .tokens_in "$met")"
+          echo "tokens-out=$(jq -r .tokens_out "$met")"
+          echo "round-trips-saved=$(jq -r .round_trips_saved "$met")"
+        } >> "$GITHUB_OUTPUT"

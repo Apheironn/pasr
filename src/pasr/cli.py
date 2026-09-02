@@ -1,8 +1,9 @@
 """``pasr`` CLI — run PASR without an agent.
 
-pasr explain "<query>" [globs...]      show the selection receipt
-pasr trace <symbol> [globs...]         show a dependency closure
-pasr pack <name> "<query>" [globs...]  save a Context Pack
+pasr explain "<query>" [globs...]        show the selection receipt
+pasr trace <symbol> [globs...]           show a dependency closure
+pasr pack <name> "<query>" [globs...]    save a Context Pack
+pasr context --issue <text> [globs...]   headless context slice for CI / agents
 """
 
 from __future__ import annotations
@@ -15,8 +16,25 @@ from pathlib import Path
 from pasr import __version__
 from pasr.receipt import receipt_bytes, render_markdown, write_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
-from pasr.select import build_select_receipt, save_pack
+from pasr.select import build_select_receipt, run_select_context, save_pack
 from pasr.trace import trace_dependencies
+
+
+def context_metrics(result: dict) -> dict:
+    """Compact machine-readable metrics for a headless selection."""
+    files = result.get("diagnostics", {}).get("files", [])
+    return {
+        "route": result["route"],
+        "query_class": result.get("query_class"),
+        "confidence": result.get("confidence"),
+        "tokens_in": result["total_input_tokens"],
+        "tokens_out": result["token_count"],
+        "token_reduction": result["token_reduction"],
+        "files_scanned": len(files),
+        "span_count": len(result["spans"]),
+        # estimate: one PASR call replaces the agent opening each scanned file
+        "round_trips_saved": max(0, len(files) - 1),
+    }
 
 
 def _explain(args: argparse.Namespace) -> int:
@@ -83,6 +101,45 @@ def _pack(args: argparse.Namespace) -> int:
     return 0
 
 
+def _context(args: argparse.Namespace) -> int:
+    if args.issue_file:
+        issue = Path(args.issue_file).read_text(encoding="utf-8", errors="replace")
+    elif args.issue:
+        issue = args.issue
+    else:
+        print("error: provide --issue or --issue-file", file=sys.stderr)
+        return 2
+
+    request = validate_select_context_request(
+        {
+            "query": issue,
+            "include": args.paths or ["."],
+            "budget_tokens": args.budget,
+            "prefix_tokens": args.prefix_tokens,
+            "tail_tokens": args.tail_tokens,
+            "recall_strategy": args.recall_strategy,
+            "block_size": args.block_size,
+        },
+        workspace_root=args.workspace,
+    )
+    # CI mode: don't litter .pasr/ — the context / metrics files are the outputs.
+    result = run_select_context(request, write_receipt_file=args.receipt)
+    metrics = context_metrics(result)
+
+    if args.context_file:
+        Path(args.context_file).write_text(result["context"], encoding="utf-8", newline="\n")
+    if args.metrics_file:
+        Path(args.metrics_file).write_text(
+            json.dumps(metrics, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+        )
+
+    if args.format == "text":
+        print(result["context"])
+    else:
+        print(json.dumps({"result": result, "metrics": metrics}, indent=2, sort_keys=True, ensure_ascii=False))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="pasr", description="PASR context broker — CLI")
     parser.add_argument("--version", action="version", version=f"pasr {__version__}")
@@ -118,6 +175,21 @@ def build_parser() -> argparse.ArgumentParser:
     pack.add_argument("--recall-strategy", default="coverage_aware", dest="recall_strategy")
     pack.add_argument("--block-size", type=int, default=400, dest="block_size")
     pack.set_defaults(func=_pack)
+
+    context = sub.add_parser("context", help="Headless context slice for CI / autonomous agents.")
+    context.add_argument("paths", nargs="*", help="Globs / directories (default: '.').")
+    context.add_argument("--issue", default="", help="Issue / task text to select context for.")
+    context.add_argument("--issue-file", default="", dest="issue_file", help="File holding the issue text.")
+    context.add_argument("--budget", type=int, default=6000, dest="budget")
+    context.add_argument("--prefix-tokens", type=int, default=128, dest="prefix_tokens")
+    context.add_argument("--tail-tokens", type=int, default=128, dest="tail_tokens")
+    context.add_argument("--recall-strategy", default="coverage_aware", dest="recall_strategy")
+    context.add_argument("--block-size", type=int, default=400, dest="block_size")
+    context.add_argument("--format", choices=("json", "text"), default="json", dest="format")
+    context.add_argument("--context-file", default="", dest="context_file", help="Write the raw context slice here.")
+    context.add_argument("--metrics-file", default="", dest="metrics_file", help="Write JSON metrics here.")
+    context.add_argument("--receipt", action="store_true", help="Also write a .pasr/receipts/ audit record.")
+    context.set_defaults(func=_context)
 
     return parser
 

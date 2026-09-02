@@ -10,11 +10,14 @@ import pytest
 _FIXTURES = Path(__file__).parent / "fixtures"
 
 
+_IGNORE_PASR = shutil.ignore_patterns(".pasr")
+
+
 @pytest.fixture
 def mini_workspace(tmp_path: Path) -> Path:
     """A writable copy of ``fixtures/mini_repo`` (so runs can drop ``.pasr/``)."""
     root = tmp_path / "ws"
-    shutil.copytree(_FIXTURES / "mini_repo", root)
+    shutil.copytree(_FIXTURES / "mini_repo", root, ignore=_IGNORE_PASR)
     return root
 
 
@@ -22,5 +25,5 @@ def mini_workspace(tmp_path: Path) -> Path:
 def trace_workspace(tmp_path: Path) -> Path:
     """A writable copy of ``fixtures/trace_repo``."""
     root = tmp_path / "ws"
-    shutil.copytree(_FIXTURES / "trace_repo", root)
+    shutil.copytree(_FIXTURES / "trace_repo", root, ignore=_IGNORE_PASR)
     return root
