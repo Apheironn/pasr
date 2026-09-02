@@ -1,0 +1,22 @@
+[
+  {"query": "how do we rotate the session token when a user gains privileges", "source": "auth/session.py", "line": 11},
+  {"query": "revoke every session belonging to a compromised account", "source": "auth/session.py", "line": 18},
+  {"query": "sliding session expiry computed from the last seen timestamp", "source": "auth/session.py", "line": 24},
+  {"query": "bind a session to the client device fingerprint", "source": "auth/session.py", "line": 30},
+  {"query": "enforce a per user request quota inside a sliding window", "source": "api/ratelimit.py", "line": 9},
+  {"query": "exponential backoff delay after repeated rejections", "source": "api/ratelimit.py", "line": 17},
+  {"query": "exempt internal service accounts from throttling", "source": "api/ratelimit.py", "line": 22},
+  {"query": "emit rate limit headers on the response", "source": "api/ratelimit.py", "line": 27},
+  {"query": "prorate the subscription charge for a mid cycle upgrade", "source": "billing/invoice.py", "line": 6},
+  {"query": "dunning retry schedule for a failed payment", "source": "billing/invoice.py", "line": 12},
+  {"query": "split a single invoice across multiple cost centers", "source": "billing/invoice.py", "line": 18},
+  {"query": "bankers rounding of tax per jurisdiction", "source": "billing/invoice.py", "line": 23},
+  {"query": "blue green cutover behind a weighted load balancer", "source": "docs/deployment.md", "line": 5},
+  {"query": "database schema migrations expand and contract sequence", "source": "docs/deployment.md", "line": 8},
+  {"query": "application credentials pulled from the vault sidecar at boot", "source": "docs/deployment.md", "line": 13},
+  {"query": "golden signals dashboard latency traffic errors saturation", "source": "docs/deployment.md", "line": 18},
+  {"query": "incrementally reindex documents changed since the last run", "source": "search/index.py", "line": 4},
+  {"query": "merge small segments into a larger one during compaction", "source": "search/index.py", "line": 12},
+  {"query": "deduplicate near identical documents by shingle fingerprint", "source": "search/index.py", "line": 18},
+  {"query": "promote exact title matches above body matches in ranking", "source": "search/index.py", "line": 30}
+]
