@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pasr-mcp"
+version = "0.0.1"
+description = "Provenance-aware span recall: a zero-setup context-broker MCP for coding and document agents."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [{ name = "Apheironn" }]
+keywords = ["mcp", "llm", "context", "retrieval", "coding-agent", "tokens", "provenance"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: Apache Software License",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+  "tiktoken>=0.7",
+  "pathspec>=0.12",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9", "ruff>=0.6"]
+
+[project.urls]
+Homepage = "https://github.com/Apheironn/pasr"
+Source = "https://github.com/Apheironn/pasr"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pasr"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
