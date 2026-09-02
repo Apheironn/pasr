@@ -220,3 +220,4 @@ __marimo__/
 # PASR local artifacts — receipts are ignored, Context Packs are committable
 .pasr/*
 !.pasr/packs/
+eval/runs/

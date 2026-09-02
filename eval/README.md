@@ -32,8 +32,12 @@ the arm's context) — a machinery check, not evidence.
 ```bash
 pip install -e ".[eval]"                       # brings anthropic + matplotlib
 export ANTHROPIC_API_KEY=sk-ant-...
-python eval/run_eval.py --agent claude --model claude-sonnet-5
+python eval/run_eval.py --agent claude --max-tasks 2   # cheap trial first (~$0.20)
+python eval/run_eval.py --agent claude --model claude-sonnet-5   # full run
 ```
+
+Re-runs are safe: `--checkout-dir DIR` reuses clones, and each run writes its own
+timestamped delivery.
 
 Writes `eval/runs/<plan>_<utc>/`: `matrix.jsonl`, `report.json`, `report.md`,
 `report.png`, `validation.json`, `resolved_commits.json`. `LlmAgent` answers each task

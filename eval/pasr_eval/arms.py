@@ -23,10 +23,22 @@ ARMS = ("native_search", "broad", "pasr", "pasr_fallback")
 
 _TOOL_OVERHEAD_TOKENS = 40  # flat per-tool-interaction cost estimate
 _NATIVE_MAX_FILES = 6
-_BROAD_CAP_TOKENS = 8000
+_NATIVE_FILE_CAP_TOKENS = 4000  # an agent reads a big file in ranges, not whole
+_BROAD_CAP_TOKENS = 60_000  # a realistic large-context baseline for a repo that doesn't fit
 _PASR_BUDGET = 6000
 _FALLBACK_EXTRA = 4000
 _FALLBACK_CONFIDENCE = 0.5
+
+_TEST_HINTS = ("/test", "test_", "_test.", "/tests/", "conftest")
+_DOC_EXT = (".md", ".rst", ".txt")
+
+
+def _priority(relative_path: str) -> tuple[int, str]:
+    """Source first, then non-test, then non-doc — so budget truncation keeps code."""
+    low = relative_path.casefold()
+    is_test = any(hint in low for hint in _TEST_HINTS)
+    is_doc = low.endswith(_DOC_EXT)
+    return (int(is_test) * 2 + int(is_doc), relative_path)
 
 
 @dataclass(frozen=True)
@@ -124,14 +136,18 @@ def _native_search(task, repo_root, tok):
     chosen = scored[:_NATIVE_MAX_FILES] or (
         [(0, r.relative_path, r.path.read_text(encoding="utf-8", errors="replace")) for r in _discovered(repo_root)[:1]]
     )
-    context = "\n\n".join(f"# {rel}\n{text}" for _, rel, text in chosen)
+    parts = []
+    for _, rel, text in chosen:
+        clipped = tok.decode(tok.encode(text)[:_NATIVE_FILE_CAP_TOKENS])
+        parts.append(f"# {rel}\n{clipped}")
+    context = "\n\n".join(parts)
     sources = [rel for _, rel, _ in chosen]
     opened = len(chosen)
     return context, sources, opened + 1, opened, False  # +1 tool call for the grep itself
 
 
 def _broad(repo_root, tok):
-    records = _discovered(repo_root)
+    records = sorted(_discovered(repo_root), key=lambda r: _priority(r.relative_path))
     parts = []
     used = 0
     sources = []
@@ -152,7 +168,14 @@ def _broad(repo_root, tok):
 
 def _pasr_full(task, repo_root, budget):
     request = validate_select_context_request(
-        {"query": task.query, "include": ["."], "budget_tokens": budget}, workspace_root=repo_root
+        {
+            "query": task.query,
+            "include": ["."],
+            "budget_tokens": budget,
+            "max_files": 20000,  # real repos have far more than the 100 default
+            "max_file_bytes": 400_000,
+        },
+        workspace_root=repo_root,
     )
     return run_select_context(request, write_receipt_file=False)
 

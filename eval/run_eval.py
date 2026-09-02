@@ -86,9 +86,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--agent", choices=("keyword", "claude"), default="keyword")
     parser.add_argument("--model", default="claude-sonnet-5")
     parser.add_argument("--checkout-dir", default="")
+    parser.add_argument("--max-tasks", type=int, default=0, help="Run only the first N tasks (a cheap trial).")
     args = parser.parse_args(argv)
 
     plan = load_plan(args.plan)
+    if args.max_tasks:
+        from dataclasses import replace
+
+        plan = replace(plan, tasks=plan.tasks[: args.max_tasks])
     ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_dir = Path(args.out) / f"{plan.name}_{ts}"
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -99,8 +104,21 @@ def main(argv: list[str] | None = None) -> int:
     print("repos:", commits)
 
     agent = _agent(args.agent, args.model)
-    print(f"running {len(plan.tasks)} tasks x 4 arms with agent={agent.name} ...")
-    rows = run_plan(plan, agent, roots)
+    print(f"running {len(plan.tasks)} tasks x 4 arms with agent={agent.name} ...", flush=True)
+
+    def _progress(done: int, total: int, row) -> None:
+        print(
+            f"  [{done:>3}/{total}] {row.task_id:<12} {row.arm:<14} "
+            f"ctx={row.context_tokens:>5}  success={row.task_success}",
+            flush=True,
+        )
+
+    try:
+        rows = run_plan(plan, agent, roots, on_row=_progress)
+    except Exception as exc:
+        (run_dir / "error.txt").write_text(repr(exc), encoding="utf-8")
+        print("RUN FAILED:", exc)
+        raise
     meta = {"plan": plan.name, "utc": ts, "agent": agent.name, "commits": commits}
     write_matrix(rows, run_dir / "matrix.jsonl", meta=meta)
 

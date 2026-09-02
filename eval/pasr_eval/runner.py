@@ -36,14 +36,21 @@ def resolve_repos(plan: EvalPlan, checkout_dir: Path | None = None) -> tuple[dic
 
 
 def _clone(repo: RepoSpec, dest: Path) -> tuple[Path, str]:  # pragma: no cover - network
+    """Idempotent shallow checkout of ``repo.url`` at ``repo.pin`` into ``dest``."""
+
+    def git(*args: str, capture: bool = False):
+        return subprocess.run(["git", *args], cwd=dest, check=True, capture_output=capture, text=True)
+
     dest.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["git", "init", "-q"], cwd=dest, check=True)
-    subprocess.run(["git", "remote", "add", "origin", repo.url], cwd=dest, check=True)
-    subprocess.run(["git", "fetch", "-q", "--depth", "1", "origin", repo.pin], cwd=dest, check=True)
-    subprocess.run(["git", "checkout", "-q", "FETCH_HEAD"], cwd=dest, check=True)
-    sha = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=dest, check=True, capture_output=True, text=True
-    ).stdout.strip()
+    if not (dest / ".git").exists():
+        git("init", "-q")
+    if git("remote", capture=True).stdout.strip():
+        git("remote", "set-url", "origin", repo.url)
+    else:
+        git("remote", "add", "origin", repo.url)
+    git("fetch", "-q", "--depth", "1", "origin", repo.pin)
+    git("checkout", "-q", "-f", "FETCH_HEAD")
+    sha = git("rev-parse", "HEAD", capture=True).stdout.strip()
     return dest, sha
 
 
@@ -53,12 +60,20 @@ def run_plan(
     repo_roots: Mapping[str, Path],
     tokenizer: Tokenizer | None = None,
     arms: Sequence[str] = ARMS,
+    on_row=None,
 ) -> list[ArmResult]:
     rows: list[ArmResult] = []
+    total = len(plan.tasks) * len(arms)
     for task in plan.tasks:
         root = Path(repo_roots[task.repo])
         for arm in arms:
-            rows.append(run_arm(arm, task, root, agent, tokenizer))
+            try:
+                row = run_arm(arm, task, root, agent, tokenizer)
+            except Exception as exc:  # make the failing (task, arm) obvious
+                raise RuntimeError(f"arm {arm!r} on task {task.id!r} ({task.repo}) failed: {exc}") from exc
+            rows.append(row)
+            if on_row is not None:
+                on_row(len(rows), total, row)
     return rows
 
 
