@@ -27,7 +27,7 @@ _NATIVE_FILE_CAP_TOKENS = 4000  # an agent reads a big file in ranges, not whole
 _BROAD_CAP_TOKENS = 60_000  # a realistic large-context baseline for a repo that doesn't fit
 _PASR_BUDGET = 6000
 _FALLBACK_EXTRA = 4000
-_FALLBACK_CONFIDENCE = 0.5
+_FALLBACK_CONFIDENCE = 0.65  # widen once when PASR is not confident in the slice
 
 _TEST_HINTS = ("/test", "test_", "_test.", "/tests/", "conftest")
 _DOC_EXT = (".md", ".rst", ".txt")

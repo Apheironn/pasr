@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from pasr_eval.arms import ARMS
-from pasr_eval.spec import EvalPlan
+from pasr_eval.spec import EvalPlan, _is_identifier_like
 
 _REQUIRED_FIELDS = {
     "arm": str,
@@ -56,11 +56,11 @@ def validate_matrix(plan: EvalPlan, rows: Sequence[Any]) -> list[str]:
             if count != 1:
                 problems.append(f"task {task_id} / arm {arm}: {count} rows (want exactly 1)")
 
-    # no reference leak: a task's query must not already contain every answer keyword
+    # no reference leak: a task's query must not name an identifier-shaped answer keyword
     for task_id, task in task_by_id.items():
         low = task.query.casefold()
-        if task.answer_keywords and all(k.casefold() in low for k in task.answer_keywords):
-            problems.append(f"task {task_id}: query leaks the full answer")
+        if any(_is_identifier_like(k) and k.casefold() in low for k in task.answer_keywords):
+            problems.append(f"task {task_id}: query leaks an identifier keyword")
 
     expected_rows = len(task_ids) * len(ARMS)
     if len(records) != expected_rows:

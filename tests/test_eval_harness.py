@@ -130,10 +130,12 @@ def test_validator_flags_a_synthetic_row():
 
 def test_registered_pilot_plan_loads():
     plan = load_plan(Path(__file__).parents[1] / "eval" / "plans" / "pilot.json")
-    assert len(plan.repos) == 5
-    assert len(plan.tasks) == 15
+    assert len(plan.repos) == 10
+    assert len(plan.tasks) == 50
     assert plan.baseline_arm == "broad"
     assert all(repo.mode == "git" and repo.url and repo.pin for repo in plan.repos)
+    assert len({t.id for t in plan.tasks}) == 50  # no dupes
+    assert all(t.repo in {r.name for r in plan.repos} for t in plan.tasks)
 
 
 def test_run_eval_script_writes_a_delivery(tmp_path):

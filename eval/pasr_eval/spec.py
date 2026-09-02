@@ -10,6 +10,11 @@ from typing import Any
 _KINDS = ("locate", "trace", "explain")
 
 
+def _is_identifier_like(keyword: str) -> bool:
+    """A keyword that looks like a code identifier, not plain English."""
+    return "_" in keyword or any(char.isupper() for char in keyword[1:])
+
+
 @dataclass(frozen=True)
 class RepoSpec:
     name: str
@@ -42,10 +47,15 @@ class TaskSpec:
             raise ValueError(f"task {self.id}: kind must be one of {_KINDS}.")
         if not self.answer_keywords:
             raise ValueError(f"task {self.id}: answer_keywords are required.")
-        # a query must not give away its own answer
+        # a query must not name the identifier it is asking about. Plain domain words
+        # ("parse", "version", "request") are fine; identifier-shaped keywords
+        # (snake_case or CamelCase) appearing verbatim are a leak.
         low = self.query.casefold()
-        if all(keyword.casefold() in low for keyword in self.answer_keywords):
-            raise ValueError(f"task {self.id}: the query already contains every answer keyword (leak).")
+        leaked = [
+            keyword for keyword in self.answer_keywords if _is_identifier_like(keyword) and keyword.casefold() in low
+        ]
+        if leaked:
+            raise ValueError(f"task {self.id}: the query leaks the identifier(s) {leaked} (leak).")
 
 
 @dataclass(frozen=True)

@@ -1,0 +1,12 @@
+{
+  "anyio": "c384f99687c64c59ed8a11c3a0f11a2d57daff71",
+  "attrs": "6771a04893780166e4b7826b63599f43ac30d00a",
+  "click": "874ca2bc1c30d93a4ac6e36a15ed685eafe89097",
+  "httpx": "26d48e0634e6ee9cdc0533996db289ce4b430177",
+  "jinja": "15206881c006c79667fe5154fe80c01c65410679",
+  "packaging": "929fd4b1410ac7ef61ef3f45b2f5d7e87711a9b5",
+  "pluggy": "f8aa4a009716a7994f2f6c1947d9fa69feccbdd5",
+  "requests": "0e322af87745eff34caffe4df68456ebc20d9068",
+  "starlette": "8d0cff820f89b5d5b19677246293513a9d1c952c",
+  "typer": "99eb220df7c69a0f14a0b69214042677e0760b9d"
+}

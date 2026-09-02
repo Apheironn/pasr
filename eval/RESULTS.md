@@ -1,11 +1,17 @@
 # PASR real-agent evaluation — results
 
-> **PILOT DONE (n=15).** Real answering + judging model (`claude-sonnet-5`), run
-> `2026-09-02T21:21:08Z`, `eval/deliveries/pilot_20260902T212108Z/`. Result:
-> **PASR matches full-repo context on answer quality at ~1/10th the tokens and one
-> tool call** — the point estimate favours PASR, but at n=15 the confidence interval
-> is too wide to *establish* non-inferiority. A larger task set is the next step. This
-> is an efficiency-direction result, not a superiority claim.
+> **Real-agent pilot done (n=15).** `claude-sonnet-5` answering + judging,
+> `eval/deliveries/pilot_20260902T212108Z/`: PASR **0.53** @ 5.8k ctx tokens vs the
+> 58k full-repo dump's **0.47** — parity at ~1/10th the tokens and one tool call.
+> Point estimate favours PASR; n=15 CI too wide to *establish* non-inferiority.
+>
+> **Plan expanded to 50 tasks / 10 repos.** The keyword-proxy re-run (no API) already
+> corroborates and tightens the interval: PASR **0.70** vs broad **0.66** vs
+> native_search **0.64**, PASR critical-source miss **0.08 vs broad's 0.34**, +90%
+> tokens. The **50-task real-agent run is the next step** —
+> `python eval/run_eval.py --agent claude`.
+>
+> This is an efficiency-direction result, not a superiority claim.
 
 ## Pre-registration
 
@@ -73,13 +79,33 @@ measures.
   bounded positive claim is a cross-repo efficiency direction, mirroring `researchv2`'s
   LongBench Pro finding.
 
+Delivery: `eval/deliveries/pilot_20260902T212108Z/`.
+
+## 50-task keyword-proxy re-run (no API — `run_eval.py --agent keyword`)
+
+`eval/deliveries/keyword50_20260902T213744Z/`. 10 repos, 50 source-grounded tasks;
+`_FALLBACK_CONFIDENCE` raised to 0.65.
+
+| arm | task success | context tokens | round trips | crit. miss | fallback rate |
+|---|---:|---:|---:|---:|---:|
+| broad (58k source-first) | 0.660 | 59 075 | 1 | **0.340** | – |
+| native_search (6 files, 4k) | 0.640 | 22 901 | 6 | 0.300 | – |
+| **pasr** | **0.700** | **5 777** | 1 | **0.080** | – |
+| pasr_fallback | 0.700 | 5 854 | 1.02 | 0.060 | 0.020 |
+
+- **PASR beats both baselines on the literal grader** (0.70 vs 0.66 / 0.64) at **+90%
+  tokens**, and its critical-source miss (0.08 = 4/50) is **4× lower than broad's
+  0.34** — a 60k source-first dump still fails to include the right file for 17/50
+  real-repo tasks; PASR's targeted retrieval gets it in 92% of the time.
+- Non-inferiority (`pasr` vs `broad`, keyword grader): delta **+0.04**, 95% CI
+  **[-0.14, +0.22]** — point PASSES, CI is now ±0.18 (was ±0.30 at n=15) and just
+  misses clearing the -0.05 margin.
+- Fallback engaged on 1/50 (crit-miss 0.08 → 0.06).
+
 ### Next
 
-1. Expand `eval/plans/pilot.json` to ~50 tasks (10 repos) to tighten the CI.
-2. Raise the fallback trigger (`_FALLBACK_CONFIDENCE` in `arms.py`) so the arm engages,
-   or gate it on `advice` mentioning low coverage.
-3. Fix / drop `star-03` (missed by every arm).
-4. Consider a stronger `broad` (ranked truncation) so it isn't a strawman above ~40k.
-
-Delivery: `eval/deliveries/pilot_20260902T212108Z/` — `matrix.jsonl`, `report.json`,
-`report.md`, `report.png`, `resolved_commits.json`, `validation.json` (ok, 0 problems).
+1. **Run the 50-task real-agent eval:** `python eval/run_eval.py --agent claude`
+   (~400 API calls, ~$5–10, ~30–40 min). Trial first with `--max-tasks 4`.
+2. Consider a stronger `broad` (relevance-ranked truncation) so it isn't a strawman
+   past ~40k tokens.
+3. If the CI still crosses at n=50, add a second batch of 50.

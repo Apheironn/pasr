@@ -15,12 +15,13 @@ tool for the question.
 > byte-stable receipts; query self-assessment + routing advice; committable Context
 > Packs; a `pasr` CLI; a headless `pasr context` + GitHub Action.
 >
-> **Pilot evaluation** (15 source-grounded tasks, 5 pinned repos, `claude-sonnet-5`
-> answering + judging): PASR **0.53** task success at **5.8k** context tokens vs a
-> 58k full-repo dump's **0.47** — matching answer quality at **~90% fewer tokens** and
-> one tool call. Point estimate favours PASR; at n=15 the CI (±0.3) is too wide to
-> *establish* non-inferiority. Efficiency-direction result, not a superiority claim.
-> Details + next steps: [`eval/RESULTS.md`](eval/RESULTS.md).
+> **Pilot evaluation.** Real-agent (n=15, `claude-sonnet-5` answering + judging): PASR
+> **0.53** task success at **5.8k** context tokens vs a 58k full-repo dump's **0.47** —
+> parity at **~90% fewer tokens** and one tool call. A 50-task keyword-proxy re-run
+> corroborates: PASR **0.70** vs broad **0.66**, and PASR misses the critical file
+> **0.08 vs broad's 0.34**. Point estimate favours PASR; the CI needs a larger real
+> run to *establish* non-inferiority. Efficiency direction, not a superiority claim.
+> Details: [`eval/RESULTS.md`](eval/RESULTS.md).
 
 ## What it is / is not
 

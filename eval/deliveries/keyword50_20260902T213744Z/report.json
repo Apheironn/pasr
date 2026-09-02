@@ -1,0 +1,83 @@
+{
+  "arms": {
+    "broad": {
+      "context_tokens": 59074.9,
+      "critical_source_miss_rate": 0.34,
+      "fallback_rate": 0.0,
+      "n": 50.0,
+      "round_trips": 1,
+      "task_success": 0.66,
+      "tokens_in": 59114.9,
+      "tool_calls": 1
+    },
+    "native_search": {
+      "context_tokens": 22901.14,
+      "critical_source_miss_rate": 0.3,
+      "fallback_rate": 0.0,
+      "n": 50.0,
+      "round_trips": 6,
+      "task_success": 0.64,
+      "tokens_in": 23181.14,
+      "tool_calls": 7
+    },
+    "pasr": {
+      "context_tokens": 5777.3,
+      "critical_source_miss_rate": 0.08,
+      "fallback_rate": 0.0,
+      "n": 50.0,
+      "round_trips": 1,
+      "task_success": 0.7,
+      "tokens_in": 5817.3,
+      "tool_calls": 1
+    },
+    "pasr_fallback": {
+      "context_tokens": 5853.94,
+      "critical_source_miss_rate": 0.06,
+      "fallback_rate": 0.02,
+      "n": 50.0,
+      "round_trips": 1.02,
+      "task_success": 0.7,
+      "tokens_in": 5894.74,
+      "tool_calls": 1.02
+    }
+  },
+  "baseline_arm": "broad",
+  "margin_task_success": -0.05,
+  "n_tasks": 50,
+  "non_inferiority": {
+    "pasr": {
+      "arm": "pasr",
+      "baseline": "broad",
+      "ci95": [
+        -0.14,
+        0.22
+      ],
+      "delta_mean": 0.04,
+      "field": "task_success",
+      "margin": -0.05,
+      "n_pairs": 50,
+      "passes_ci": false,
+      "passes_point": true
+    },
+    "pasr_fallback": {
+      "arm": "pasr_fallback",
+      "baseline": "broad",
+      "ci95": [
+        -0.14,
+        0.22
+      ],
+      "delta_mean": 0.04,
+      "field": "task_success",
+      "margin": -0.05,
+      "n_pairs": 50,
+      "passes_ci": false,
+      "passes_point": true
+    }
+  },
+  "plan": "pasr-realagent-pilot",
+  "token_savings_vs_baseline": {
+    "native_search": 0.6079,
+    "pasr": 0.9016,
+    "pasr_fallback": 0.9003
+  }
+}
