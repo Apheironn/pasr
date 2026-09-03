@@ -135,6 +135,40 @@
     "n": 50,
     "retrieval_ok_rate": 0.76
   },
+  "pasr_map": {
+    "by_kind": {
+      "explain": {
+        "crit_hit_rate": 1.0,
+        "kw_coverage": 0.895,
+        "mean_ctx_tokens": 5837,
+        "mean_files": 32.5,
+        "n": 19,
+        "retrieval_ok_rate": 0.895
+      },
+      "locate": {
+        "crit_hit_rate": 1.0,
+        "kw_coverage": 0.941,
+        "mean_ctx_tokens": 5830,
+        "mean_files": 27.1,
+        "n": 17,
+        "retrieval_ok_rate": 0.941
+      },
+      "trace": {
+        "crit_hit_rate": 1.0,
+        "kw_coverage": 0.905,
+        "mean_ctx_tokens": 5831,
+        "mean_files": 30.1,
+        "n": 14,
+        "retrieval_ok_rate": 0.857
+      }
+    },
+    "crit_hit_rate": 1.0,
+    "kw_coverage": 0.913,
+    "mean_ctx_tokens": 5833,
+    "mean_files": 30.0,
+    "n": 50,
+    "retrieval_ok_rate": 0.9
+  },
   "repomap": {
     "by_kind": {
       "explain": {

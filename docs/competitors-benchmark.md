@@ -1,6 +1,6 @@
 # PASR vs. competitor strategies — a local retrieval bake-off
 
-`eval/bakeoff.py` · delivery `eval/deliveries/bakeoff_20260903T003813Z/` · 50
+`eval/bakeoff.py` · delivery `eval/deliveries/bakeoff_20260903T013828Z/` · 50
 source-grounded tasks over 10 pinned public repos (the `eval/plans/pilot.json` set) ·
 **offline, no API, no GPU, no trained embedder** · deterministic (byte-identical on
 re-run).
@@ -32,26 +32,48 @@ that file is "could the model use it".
 | `embed_lex` | 40-line windows scored by idf-weighted word-cosine vs the query, top-k | a **floor** for embedding-based semantic search (claude-context, Cody) *without* the trained model + vector DB |
 | `pasr` | `select_context` at the same budget (BM25 + lexical + symbols, RRF-fused) | — |
 | `pasr_hash` | `select_context --semantic hashing` (PASR's torch-free semantic fusion) | — |
+| `pasr_map` | `pasr` body slice **+ a 1 200-token ranked symbol-index header** (a proposed `map_tokens` option) | — |
 
 ## Results (6 000-token budget, n = 50)
 
 | arm | retrieval_ok | crit_hit | kw_cov | ctx tokens | files |
 |---|---:|---:|---:|---:|---:|
 | grep | 0.18 | 0.20 | 0.68 | 6 000 | 1.3 |
-| repomap | **0.90** | 0.96 | 0.91 | 5 949 | 45.8 |
+| repomap | 0.90 | 0.96 | 0.91 | 5 949 | 45.8 |
 | embed_lex | 0.54 | 0.76 | 0.81 | 6 006 | 9.8 |
 | pasr | 0.70 | 0.92 | 0.78 | 5 777 | 18.4 |
-| **pasr_hash** | 0.76 | 0.94 | 0.84 | 5 741 | 17.8 |
+| pasr_hash | 0.76 | 0.94 | 0.84 | 5 741 | 17.8 |
+| **pasr_map** | **0.90** | **1.00** | **0.91** | 5 833 | 30.0 |
 
 ### retrieval_ok by task kind
 
 | arm | explain (mechanism) | locate (find the definition) | trace (dependency closure) |
 |---|---:|---:|---:|
 | grep | 0.16 | 0.06 | 0.36 |
-| repomap | 0.84 | **0.94** | **0.93** |
+| repomap | 0.84 | 0.94 | **0.93** |
 | embed_lex | 0.84 | 0.35 | 0.36 |
 | pasr | 0.84 | 0.65 | 0.57 |
-| pasr_hash | **0.84** | 0.77 | 0.64 |
+| pasr_hash | 0.84 | 0.77 | 0.64 |
+| **pasr_map** | **0.90** | **0.94** | 0.86 |
+
+### Matching repo-map without giving up the bodies — `pasr_map`
+
+`repomap`'s lead was structural: it names almost every file, so "critical file present"
+and "keyword present" come nearly for free. Prepend the same ranked symbol index —
+capped at **1 200 tokens** — to PASR's normal budgeted slice and PASR gets that pointer
+coverage *and* keeps the implementation:
+
+- **overall 0.90, tying repo-map**, at `crit_hit` **1.00** (repo-map 0.96), fewer
+  scattered files (30 vs 46), fewer tokens (5 833 vs 5 949);
+- **`explain` 0.90 > repo-map's 0.84** — the header locates, the bodies explain;
+- **`locate` 0.94**, tied;
+- **`trace` 0.86** — still the one cell where a full symbol index edges it; folding
+  `trace_dependencies` output into the result on `query_class == "trace"` (routing
+  already detects it) is the fix.
+
+This is a ~15-line change (a `map_tokens` option on `select_context`), measured here as
+the `pasr_map` arm — not shipped in v0.1.0. It closes the only bake-off gap while
+*strengthening* the answer-quality story, since the slice still carries real code.
 
 ## Reading it
 
@@ -97,13 +119,15 @@ a reason to leave `--semantic hashing` on.
   gives you pointers, embeddings give you a region and a vector DB to run, grep gives
   you a keyword dump.
 
-## Where it doesn't
+## Where it doesn't (and the fix)
 
-- **Pure localization recall**: a whole-repo symbol map lists more of the repo, so it
-  "hits" more critical files. If all you want is a pointer, that is cheaper.
-- **`locate`/`trace` at a tight budget**: PASR (0.65 / 0.57) trails repo-map's pointer
-  score because it spends budget on bodies. `trace_dependencies` (not measured here as
-  a bake-off arm) is the tool for closure questions; `pasr_hash` narrows the gap.
+- **Pure localization recall** with vanilla `pasr`: a whole-repo symbol map lists more
+  of the repo, so it "hits" more critical files. **`pasr_map`** (symbol-index header +
+  bodies) already closes this — 0.90 overall, `crit_hit` 1.00 — and is a ~15-line
+  option, not shipped in v0.1.0.
+- **`trace` at a tight budget**: even `pasr_map` (0.86) trails a full symbol index
+  (0.93). Folding `trace_dependencies` output into the result when routing sees a trace
+  query is the remaining fix.
 - This benchmark can't speak to a production trained-embedding index; only to what you
   get with no setup.
 

@@ -43,7 +43,8 @@ from pasr.symbols.base import identifier_terms
 from pasr.symbols.registry import get_provider
 from pasr.tokenize import get_tokenizer
 
-ARMS = ("grep", "repomap", "embed_lex", "pasr", "pasr_hash")
+ARMS = ("grep", "repomap", "embed_lex", "pasr", "pasr_hash", "pasr_map")
+_MAP_TOKENS = 1200  # symbol-index header prepended to the pasr_map slice
 _WORD_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]+")
 TOK = get_tokenizer()
 
@@ -94,7 +95,7 @@ def arm_grep(query: str, root: Path, budget: int) -> tuple[str, list[str]]:
 
 
 # -------------------------------------------------------------- repomap ----------
-def arm_repomap(query: str, root: Path, budget: int) -> tuple[str, list[str]]:
+def _repomap_rows(query: str, root: Path) -> list[tuple[float, str, str]]:
     q = set(identifier_terms(extract_keywords(query))) | {t.casefold() for t in extract_keywords(query)}
     rows: list[tuple[float, str, str]] = []
     for rec in _files(root):
@@ -114,6 +115,10 @@ def arm_repomap(query: str, root: Path, budget: int) -> tuple[str, list[str]]:
             score = len(terms & q) / (len(terms) + 1)
             rows.append((score, rec.relative_path, f"{d.provenance}  {d.kind} {d.name}"))
     rows.sort(key=lambda r: (-r[0], r[1], r[2]))
+    return rows
+
+
+def _pack_rows(rows: list[tuple[float, str, str]], budget: int) -> tuple[str, list[str]]:
     parts: list[str] = []
     sources: list[str] = []
     used = 0
@@ -126,6 +131,20 @@ def arm_repomap(query: str, root: Path, budget: int) -> tuple[str, list[str]]:
             sources.append(rel)
         used += cost
     return "\n".join(parts), sources
+
+
+def arm_repomap(query: str, root: Path, budget: int) -> tuple[str, list[str]]:
+    return _pack_rows(_repomap_rows(query, root), budget)
+
+
+def arm_pasr_map(query: str, root: Path, budget: int) -> tuple[str, list[str]]:
+    """PASR body slice + a capped symbol-index header (the proposed `map_tokens`
+    option). Near-total pointer coverage like repo-map, but with bodies."""
+    header, hsrc = _pack_rows(_repomap_rows(query, root), _MAP_TOKENS)
+    body, bsrc = arm_pasr(query, root, budget - TOK.count(header))
+    ctx = f"# symbol map\n{header}\n\n# context\n{body}" if header else body
+    seen = list(dict.fromkeys([*hsrc, *bsrc]))
+    return ctx, seen
 
 
 # ------------------------------------------------------------- embed_lex ---------
@@ -223,6 +242,8 @@ def run(budget: int) -> list[Row]:
                 ctx, srcs = arm_embed_lex(task.query, root, budget)
             elif arm == "pasr":
                 ctx, srcs = arm_pasr(task.query, root, budget)
+            elif arm == "pasr_map":
+                ctx, srcs = arm_pasr_map(task.query, root, budget)
             else:
                 ctx, srcs = arm_pasr(task.query, root, budget, semantic="hashing")
             low = ctx.casefold()
