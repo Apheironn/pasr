@@ -111,6 +111,7 @@ what PASR handed the model and what it dropped. Context Packs land in `.pasr/pac
 - [`docs/competitors-benchmark.md`](docs/competitors-benchmark.md) — offline bake-off vs grep / repo-map / semantic-search
 - (see the benchmark write-up)
 - [`docs/blog/what-worked.md`](docs/blog/what-worked.md) — what held up, what didn't
+- (a comparative write-up is in preparation)
 - [`docs/architecture.md`](docs/architecture.md) — architecture and data flow
 - [`docs/roadmap.md`](docs/roadmap.md) — milestones M0–M12, each with tests and an exit gate
 - (planning docs kept outside the OSS repo)
