@@ -108,6 +108,7 @@ what PASR handed the model and what it dropped. Context Packs land in `.pasr/pac
 
 - [`examples/`](examples/README.md) — verbatim CLI transcripts against pinned repos
 - [`eval/RESULTS.md`](eval/RESULTS.md) — the 50-task evaluation, pre-registered
+- [`docs/competitors-benchmark.md`](docs/competitors-benchmark.md) — offline bake-off vs grep / repo-map / semantic-search
 - [`docs/blog/what-worked.md`](docs/blog/what-worked.md) — what held up, what didn't
 - [`docs/architecture.md`](docs/architecture.md) — architecture and data flow
 - [`docs/roadmap.md`](docs/roadmap.md) — milestones M0–M12, each with tests and an exit gate

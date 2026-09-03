@@ -75,5 +75,6 @@ the same on Colab and archives the run to Drive.
 | `pasr_eval/runner.py` | `resolve_repos`, `run_plan` (`skip=`/`on_row=`), `write_matrix` |
 | `pasr_eval/validate.py` | `validate_matrix` — no synthetic rows, no leaks, matched matrix |
 | `plans/pilot.json` | the registered plan — 10 repos, 50 tasks |
+| `bakeoff.py` | offline retrieval bake-off: PASR vs grep / repo-map / semantic-search floor — `docs/competitors-benchmark.md` |
 
-| `RESULTS.md` | pre-registration + n=15 pilot + keyword-50; 50-task real-agent row PENDING |
+| `RESULTS.md` | pre-registration + n=15 pilot + keyword-50 + the n=50 real-agent headline |

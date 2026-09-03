@@ -1,0 +1,172 @@
+{
+  "embed_lex": {
+    "by_kind": {
+      "explain": {
+        "crit_hit_rate": 0.947,
+        "kw_coverage": 0.947,
+        "mean_ctx_tokens": 6006,
+        "mean_files": 9.9,
+        "n": 19,
+        "retrieval_ok_rate": 0.842
+      },
+      "locate": {
+        "crit_hit_rate": 0.529,
+        "kw_coverage": 0.824,
+        "mean_ctx_tokens": 6007,
+        "mean_files": 9.3,
+        "n": 17,
+        "retrieval_ok_rate": 0.353
+      },
+      "trace": {
+        "crit_hit_rate": 0.786,
+        "kw_coverage": 0.619,
+        "mean_ctx_tokens": 6006,
+        "mean_files": 10.3,
+        "n": 14,
+        "retrieval_ok_rate": 0.357
+      }
+    },
+    "crit_hit_rate": 0.76,
+    "kw_coverage": 0.813,
+    "mean_ctx_tokens": 6006,
+    "mean_files": 9.8,
+    "n": 50,
+    "retrieval_ok_rate": 0.54
+  },
+  "grep": {
+    "by_kind": {
+      "explain": {
+        "crit_hit_rate": 0.158,
+        "kw_coverage": 0.649,
+        "mean_ctx_tokens": 6000,
+        "mean_files": 1.4,
+        "n": 19,
+        "retrieval_ok_rate": 0.158
+      },
+      "locate": {
+        "crit_hit_rate": 0.118,
+        "kw_coverage": 0.676,
+        "mean_ctx_tokens": 6000,
+        "mean_files": 1.2,
+        "n": 17,
+        "retrieval_ok_rate": 0.059
+      },
+      "trace": {
+        "crit_hit_rate": 0.357,
+        "kw_coverage": 0.714,
+        "mean_ctx_tokens": 6000,
+        "mean_files": 1.1,
+        "n": 14,
+        "retrieval_ok_rate": 0.357
+      }
+    },
+    "crit_hit_rate": 0.2,
+    "kw_coverage": 0.677,
+    "mean_ctx_tokens": 6000,
+    "mean_files": 1.3,
+    "n": 50,
+    "retrieval_ok_rate": 0.18
+  },
+  "pasr": {
+    "by_kind": {
+      "explain": {
+        "crit_hit_rate": 0.947,
+        "kw_coverage": 0.868,
+        "mean_ctx_tokens": 5794,
+        "mean_files": 19.4,
+        "n": 19,
+        "retrieval_ok_rate": 0.842
+      },
+      "locate": {
+        "crit_hit_rate": 0.882,
+        "kw_coverage": 0.765,
+        "mean_ctx_tokens": 5768,
+        "mean_files": 17.7,
+        "n": 17,
+        "retrieval_ok_rate": 0.647
+      },
+      "trace": {
+        "crit_hit_rate": 0.929,
+        "kw_coverage": 0.691,
+        "mean_ctx_tokens": 5765,
+        "mean_files": 17.9,
+        "n": 14,
+        "retrieval_ok_rate": 0.571
+      }
+    },
+    "crit_hit_rate": 0.92,
+    "kw_coverage": 0.783,
+    "mean_ctx_tokens": 5777,
+    "mean_files": 18.4,
+    "n": 50,
+    "retrieval_ok_rate": 0.7
+  },
+  "pasr_hash": {
+    "by_kind": {
+      "explain": {
+        "crit_hit_rate": 0.947,
+        "kw_coverage": 0.895,
+        "mean_ctx_tokens": 5751,
+        "mean_files": 18.6,
+        "n": 19,
+        "retrieval_ok_rate": 0.842
+      },
+      "locate": {
+        "crit_hit_rate": 0.882,
+        "kw_coverage": 0.912,
+        "mean_ctx_tokens": 5737,
+        "mean_files": 17.4,
+        "n": 17,
+        "retrieval_ok_rate": 0.765
+      },
+      "trace": {
+        "crit_hit_rate": 1.0,
+        "kw_coverage": 0.691,
+        "mean_ctx_tokens": 5734,
+        "mean_files": 17.2,
+        "n": 14,
+        "retrieval_ok_rate": 0.643
+      }
+    },
+    "crit_hit_rate": 0.94,
+    "kw_coverage": 0.843,
+    "mean_ctx_tokens": 5741,
+    "mean_files": 17.8,
+    "n": 50,
+    "retrieval_ok_rate": 0.76
+  },
+  "repomap": {
+    "by_kind": {
+      "explain": {
+        "crit_hit_rate": 0.947,
+        "kw_coverage": 0.842,
+        "mean_ctx_tokens": 5950,
+        "mean_files": 51.9,
+        "n": 19,
+        "retrieval_ok_rate": 0.842
+      },
+      "locate": {
+        "crit_hit_rate": 0.941,
+        "kw_coverage": 0.941,
+        "mean_ctx_tokens": 5947,
+        "mean_files": 37.8,
+        "n": 17,
+        "retrieval_ok_rate": 0.941
+      },
+      "trace": {
+        "crit_hit_rate": 1.0,
+        "kw_coverage": 0.964,
+        "mean_ctx_tokens": 5951,
+        "mean_files": 47.1,
+        "n": 14,
+        "retrieval_ok_rate": 0.929
+      }
+    },
+    "crit_hit_rate": 0.96,
+    "kw_coverage": 0.91,
+    "mean_ctx_tokens": 5949,
+    "mean_files": 45.8,
+    "n": 50,
+    "retrieval_ok_rate": 0.9
+  }
+}
