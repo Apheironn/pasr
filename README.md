@@ -103,6 +103,7 @@ pasr explain "how is the request rate limited"        # run a selection, print t
 pasr trace enforce_per_user_request_quota src/        # a symbol's dependency closure
 pasr trace HTTPAdapter src/ --callers                 # who calls it (impact analysis)
 pasr pack auth "session + login + token" src/auth/    # save a Context Pack
+pasr review --staged src/                             # touched defs + the callers they affect
 pasr context --issue "$(cat issue.txt)" src/ \        # headless slice for CI / agents
   --format text --metrics-file metrics.json
 pasr report --price-per-mtok 3                        # tokens / round trips / $ saved so far

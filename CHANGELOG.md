@@ -7,6 +7,12 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **`pasr review`** — diff-aware context. From a unified diff (`git diff`, `--staged`,
+  `--range A..B`, or `--diff FILE`) it returns the definitions the change *touches*
+  (innermost def per hunk, not the whole enclosing class) plus the definitions that
+  *call* them (a one-level reverse closure — "what this change can break"), packed
+  under `--budget` with `file:line` provenance. `--json` / `--context-file` for
+  machines and agents.
 - **Usage ledger + `pasr report`** — every real `select_context` run (MCP calls, and
   `pasr explain` unless `--no-ledger`) appends a row to `.pasr/ledger.jsonl` (gitignored):
   tokens in vs. out, round trips saved, route. `pasr report` summarises it —

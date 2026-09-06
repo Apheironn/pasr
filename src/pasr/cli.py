@@ -63,6 +63,37 @@ def _explain(args: argparse.Namespace) -> int:
     return 0
 
 
+def _review(args: argparse.Namespace) -> int:
+    from pasr.file_discovery import discover_workspace_files
+    from pasr.review import parse_unified_diff, read_git_diff, render_review, review_context
+
+    if args.diff:
+        diff_text = Path(args.diff).read_text(encoding="utf-8", errors="replace")
+    else:
+        try:
+            diff_text = read_git_diff(Path(args.workspace), staged=args.staged, ref_range=args.ref_range)
+        except RuntimeError as exc:
+            print(f"error: {exc}\nhint: pass --diff <file> with a unified diff", file=sys.stderr)
+            return 2
+
+    changes = parse_unified_diff(diff_text)
+    if not changes:
+        print("no changed files with hunks in the diff")
+        return 0
+
+    records = discover_workspace_files(Path(args.workspace).resolve(), include_patterns=args.paths or ["."])
+    texts = {r.relative_path: r.path.read_text(encoding="utf-8", errors="replace") for r in records}
+    result = review_context(changes, texts, budget_tokens=args.budget, callers_depth=args.callers_depth)
+
+    if args.context_file:
+        Path(args.context_file).write_text(result["context"], encoding="utf-8", newline="\n")
+    if args.json:
+        print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
+    else:
+        print(render_review(result), end="")
+    return 0
+
+
 def _report(args: argparse.Namespace) -> int:
     rows = read_ledger(args.workspace)
     summary = summarize(rows, since=args.since, price_per_mtok=args.price_per_mtok)
@@ -197,6 +228,17 @@ def build_parser() -> argparse.ArgumentParser:
     explain.add_argument("--no-write", action="store_true", help="Do not write the receipt file.")
     explain.add_argument("--no-ledger", action="store_true", help="Do not append to .pasr/ledger.jsonl.")
     explain.set_defaults(func=_explain)
+
+    review = sub.add_parser("review", help="Diff-aware context: touched definitions + the callers they affect.")
+    review.add_argument("paths", nargs="*", help="Globs / directories to scan for callers (default: '.').")
+    review.add_argument("--diff", default="", help="Read a unified diff from this file instead of running git.")
+    review.add_argument("--staged", action="store_true", help="Review the staged diff (git diff --cached).")
+    review.add_argument("--range", default="", dest="ref_range", help="A git range, e.g. main..HEAD.")
+    review.add_argument("--budget", type=int, default=6000, dest="budget")
+    review.add_argument("--callers-depth", type=int, default=1, dest="callers_depth")
+    review.add_argument("--context-file", default="", dest="context_file", help="Write the raw review context here.")
+    review.add_argument("--json", action="store_true", help="Emit the review as JSON.")
+    review.set_defaults(func=_review)
 
     report = sub.add_parser("report", help="Summarise .pasr/ledger.jsonl: tokens and round trips saved.")
     report.add_argument("--since", default="", help="Only rows on/after this ISO date prefix, e.g. 2026-09-01.")
