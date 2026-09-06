@@ -122,7 +122,7 @@ what PASR handed the model and what it dropped. A usage ledger accrues in
 ## Docs
 
 - [`examples/`](examples/README.md) — verbatim CLI transcripts against pinned repos
-- [`eval/RESULTS.md`](eval/RESULTS.md) — the 50-task evaluation, pre-registered
+- [`eval/RESULTS.md`](eval/RESULTS.md) — the 50-task evaluation, pre-registered (`pip install ./eval` → `pasr-bench`)
 - [`docs/competitors-benchmark.md`](docs/competitors-benchmark.md) — offline bake-off vs grep / repo-map / semantic-search
 - (see the benchmark write-up)
 - [`docs/blog/what-worked.md`](docs/blog/what-worked.md) — what held up, what didn't

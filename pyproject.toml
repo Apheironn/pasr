@@ -34,6 +34,8 @@ pasr-mcp = "pasr.mcp.server:main"
 [project.optional-dependencies]
 dev = ["pytest>=8,<9", "ruff>=0.6", "pyyaml>=6"]
 semantic = ["sentence-transformers>=3,<6"]
+# the evaluation harness is its own distribution: `pip install ./eval` (package
+# `pasr-bench`); this extra keeps the deps for running it from the source tree.
 eval = ["anthropic>=0.40", "matplotlib>=3.7"]
 
 [project.urls]

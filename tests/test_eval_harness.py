@@ -129,7 +129,7 @@ def test_validator_flags_a_synthetic_row():
 
 
 def test_registered_pilot_plan_loads():
-    plan = load_plan(Path(__file__).parents[1] / "eval" / "plans" / "pilot.json")
+    plan = load_plan(Path(__file__).parents[1] / "eval" / "pasr_eval" / "plans" / "pilot.json")
     assert len(plan.repos) == 10
     assert len(plan.tasks) == 50
     assert plan.baseline_arm == "broad"
@@ -181,3 +181,19 @@ def test_run_eval_script_writes_a_delivery(tmp_path):
     for name in ("matrix.jsonl", "report.json", "report.md", "validation.json"):
         assert (delivery / name).is_file()
     assert _json.loads((delivery / "validation.json").read_text())["ok"] is True
+
+
+def test_pasr_bench_dispatcher():
+    from pasr_eval.__main__ import main as bench_main
+
+    assert bench_main([]) == 2  # no sub-command
+    assert bench_main(["--help"]) == 0
+    assert bench_main(["plans"]) == 0  # lists the packaged plan
+    assert bench_main(["bogus-subcommand"]) == 2
+
+
+def test_packaged_plan_is_importable_and_registered():
+    from pasr_eval.run import _PLANS_DIR
+
+    plan = load_plan(_PLANS_DIR / "pilot.json")
+    assert len(plan.repos) == 10 and len(plan.tasks) == 50

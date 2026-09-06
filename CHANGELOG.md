@@ -7,6 +7,11 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **PASR-Bench** — the evaluation harness is now a standalone distribution
+  (`pip install ./eval`, package `pasr-bench`, console script `pasr-bench
+  {run,bakeoff,plans}`). `eval/run_eval.py` / `eval/bakeoff.py` remain as thin
+  compat shims. `eval/README.md` documents the pre-registered protocol and how to
+  add an arm for your own retriever. Not shipped inside `pasr-mcp`.
 - **`pasr review`** — diff-aware context. From a unified diff (`git diff`, `--staged`,
   `--range A..B`, or `--diff FILE`) it returns the definitions the change *touches*
   (innermost def per hunk, not the whole enclosing class) plus the definitions that

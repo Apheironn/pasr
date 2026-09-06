@@ -16,8 +16,8 @@
 
 ## Pre-registration
 
-- **Plan:** `eval/plans/pilot.json` — 10 pinned public Python repos, 50 source-grounded
-  `locate` / `trace` / `explain` tasks (5/repo). `run_eval.py` records each repo's
+- **Plan:** `pasr_eval/plans/pilot.json` — 10 pinned public Python repos, 50 source-grounded
+  `locate` / `trace` / `explain` tasks (5/repo). `pasr-bench run` records each repo's
   resolved commit SHA and the answer/judge model IDs into `matrix.jsonl`'s `_meta` line.
 - **Arms:** `native_search`, `broad`, `pasr`, `pasr_fallback`.
 - **Baseline:** `broad`.
@@ -76,7 +76,7 @@ is the headline.
 
 Delivery: `eval/deliveries/pilot_20260902T212108Z/`.
 
-## 50-task keyword-proxy re-run (no API — `run_eval.py --agent keyword`)
+## 50-task keyword-proxy re-run (no API — `pasr-bench run --agent keyword`)
 
 `eval/deliveries/keyword50_20260902T213744Z/`. 10 repos, 50 source-grounded tasks;
 `_FALLBACK_CONFIDENCE` raised to 0.65.

@@ -1,7 +1,7 @@
 # PASR vs. competitor strategies — a local retrieval bake-off
 
-`eval/bakeoff.py` · delivery `eval/deliveries/bakeoff_20260903T013828Z/` · 50
-source-grounded tasks over 10 pinned public repos (the `eval/plans/pilot.json` set) ·
+`pasr-bench bakeoff` (`pasr_eval/bakeoff.py`) · delivery `eval/deliveries/bakeoff_20260903T013828Z/` · 50
+source-grounded tasks over 10 pinned public repos (the `pasr_eval/plans/pilot.json` set) ·
 **offline, no API, no GPU, no trained embedder** · deterministic (byte-identical on
 re-run).
 
@@ -134,7 +134,7 @@ a reason to leave `--semantic hashing` on.
 ## Reproduce
 
 ```bash
-PYTHONPATH=eval python eval/bakeoff.py --budget 6000
+pasr-bench bakeoff --budget 6000   # or: PYTHONPATH=eval python eval/bakeoff.py
 # clones the 10 pinned repos into .eval-checkouts/ if missing, writes
-# eval/runs/bakeoff{.jsonl,_report.json,_report.md}
+# ./pasr-bench-runs/bakeoff{.jsonl,_report.json,_report.md}
 ```
