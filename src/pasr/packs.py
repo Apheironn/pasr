@@ -61,6 +61,7 @@ def build_pack(name: str, request: Any, result: dict[str, Any]) -> dict[str, Any
             "recall_strategy": request.recall_strategy,
             "block_size": request.block_size,
             "semantic": request.semantic,
+            "map_tokens": getattr(request, "map_tokens", 0),
         },
         "context": context,
         "content_hash": content_hash(context),

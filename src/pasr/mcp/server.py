@@ -66,6 +66,7 @@ def create_server(workspace_root: Path) -> MCPServer:
         block_size: int = 400,
         max_files: int = 100,
         semantic: str = "",
+        map_tokens: int = 0,
         pack: str = "",
         save_as: str = "",
     ) -> dict[str, Any]:
@@ -73,10 +74,13 @@ def create_server(workspace_root: Path) -> MCPServer:
 
         Provide ``files`` (explicit workspace-relative paths) and/or ``include``
         (globs or directories). ``recall_strategy`` is ``coverage_aware`` or
-        ``score_only``. Set ``pack`` to load a saved Context Pack (warm start, zero
-        retrieval); set ``save_as`` to save this selection as a pack. Returns the
-        assembled ``context`` plus per-span provenance, token accounting, routing, and
-        a lexical evidence diagnostic.
+        ``score_only``. Set ``map_tokens`` > 0 to prepend a query-ranked
+        ``file:line kind name`` symbol index of that size (carved out of
+        ``budget_tokens``, never additive) -- pointer coverage of the whole file set
+        without giving up the bodies in the slice. Set ``pack`` to load a saved
+        Context Pack (warm start, zero retrieval); set ``save_as`` to save this
+        selection as a pack. Returns the assembled ``context`` plus per-span
+        provenance, token accounting, routing, and a lexical evidence diagnostic.
         """
         if pack:
             try:
@@ -98,6 +102,7 @@ def create_server(workspace_root: Path) -> MCPServer:
                     "block_size": block_size,
                     "max_files": max_files,
                     "semantic": semantic,
+                    "map_tokens": map_tokens,
                 },
                 workspace_root=root,
             )

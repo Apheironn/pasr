@@ -17,7 +17,8 @@ from pasr.receipt import build_receipt, read_receipt, write_receipt
 from pasr.redaction import Redactor, identity_redactor
 from pasr.routing import assess, classify_query
 from pasr.schema import SelectContextRequest, validate_select_context_request
-from pasr.symbols import get_provider, symbol_candidates
+from pasr.symbols import FileSymbols, get_provider, symbol_candidates
+from pasr.symbols.base import identifier_terms
 from pasr.tokenize import Tokenizer, get_tokenizer
 
 TOOL_NAME = "select_context"
@@ -33,7 +34,41 @@ def _canonical_request(request: SelectContextRequest) -> dict[str, Any]:
         "recall_strategy": request.recall_strategy,
         "block_size": request.block_size,
         "semantic": request.semantic,
+        "map_tokens": request.map_tokens,
     }
+
+
+def _symbol_map_header(
+    file_symbols: list[FileSymbols], query: str, tok: Tokenizer, cap_tokens: int
+) -> tuple[str, int, int]:
+    """A compact, query-ranked ``file:line kind name`` index over the whole file set,
+    packed under ``cap_tokens``. Returns ``(text, token_count, line_count)``.
+
+    Bodies never enter here -- this locates, the budgeted slice explains. Deterministic:
+    ties break on the provenance string.
+    """
+    terms = set(identifier_terms(query.split())) | {word.casefold() for word in query.split()}
+    scored: list[tuple[float, str, str]] = []
+    for fs in file_symbols:
+        for definition in fs.definitions:
+            parts = set(identifier_terms([definition.name]))
+            score = len(parts & terms) / (len(parts) + 1)
+            line = f"{definition.provenance}  {definition.kind} {definition.name}"
+            scored.append((score, definition.provenance, line))
+    scored.sort(key=lambda row: (-row[0], row[1]))
+
+    lines: list[str] = []
+    used = 0
+    for _, _, line in scored:
+        cost = tok.count(line) + 1
+        if used + cost > cap_tokens:
+            break
+        lines.append(line)
+        used += cost
+    if not lines:
+        return "", 0, 0
+    text = "# symbol map\n" + "\n".join(lines)
+    return text, tok.count(text), len(lines)
 
 
 def run_select_context(
@@ -78,6 +113,7 @@ def _run(
     spans = []
     per_file = []
     sym_candidates = []
+    parsed_symbols: list[FileSymbols] = []
     languages: set[str] = set()
     for path, meta in zip(request.files, request.file_metadata, strict=True):
         source = meta["relative_path"]
@@ -98,13 +134,21 @@ def _run(
             except Exception:  # symbols are best-effort; never fail the request
                 continue
             languages.add(file_symbols.language)
+            parsed_symbols.append(file_symbols)
             sym_candidates.extend(symbol_candidates(file_symbols, request.query, text, tok))
+
+    # Optional symbol-index header. Carved out of budget_tokens (never additive) and
+    # skipped when the whole context already fits.
+    map_text, map_tokens, map_lines = "", 0, 0
+    if request.map_tokens > 0 and parsed_symbols:
+        cap = min(request.map_tokens, request.budget_tokens // 2)
+        map_text, map_tokens, map_lines = _symbol_map_header(parsed_symbols, request.query, tok, cap)
 
     pack = assemble(
         request.query,
         spans,
         AssembleConfig(
-            budget_tokens=request.budget_tokens,
+            budget_tokens=request.budget_tokens - map_tokens,
             prefix_tokens=request.prefix_tokens,
             tail_tokens=request.tail_tokens,
             recall_strategy=request.recall_strategy,
@@ -113,6 +157,8 @@ def _run(
         extra_candidate_groups={"symbols": sym_candidates} if sym_candidates else None,
         collect_candidates=True,
     )
+    if pack.route == "lossless":  # full context already present; a header would only bloat it
+        map_text, map_tokens, map_lines = "", 0, 0
 
     evidence = account_query_evidence(
         request.query,
@@ -121,24 +167,32 @@ def _run(
     )
     total_input_tokens = sum(entry["token_count"] for entry in per_file)
     candidate_records = pack.diagnostics.get("candidates", [])
+    combined_tokens = pack.token_count + map_tokens
+    context_text = f"{map_text}\n\n# context\n{pack.text}" if map_tokens else pack.text
     diagnostics = {
         **{key: value for key, value in pack.diagnostics.items() if key != "candidates"},
         "files": per_file,
         "symbol_languages": sorted(languages),
         "symbol_candidate_count": len(sym_candidates),
     }
+    if request.map_tokens:
+        diagnostics["symbol_map"] = {
+            "requested_tokens": request.map_tokens,
+            "header_tokens": map_tokens,
+            "line_count": map_lines,
+        }
 
     result = {
         "tool": TOOL_NAME,
         "query": request.query,
         "route": pack.route,
-        "budget_tokens": pack.budget_tokens,
-        "token_count": pack.token_count,
-        "within_budget": pack.within_budget,
+        "budget_tokens": request.budget_tokens,
+        "token_count": combined_tokens,
+        "within_budget": combined_tokens <= request.budget_tokens,
         "total_input_tokens": total_input_tokens,
-        "token_reduction": (round(1.0 - pack.token_count / total_input_tokens, 4) if total_input_tokens else 0.0),
+        "token_reduction": (round(1.0 - combined_tokens / total_input_tokens, 4) if total_input_tokens else 0.0),
         "sources": [meta["relative_path"] for meta in request.file_metadata],
-        "context": redact(pack.text),
+        "context": redact(context_text),
         "spans": [
             {
                 "source": span.source,
@@ -230,6 +284,7 @@ def run_expand_context(
             "recall_strategy": prior["recall_strategy"],
             "block_size": prior["block_size"],
             "semantic": prior.get("semantic", ""),
+            "map_tokens": prior.get("map_tokens", 0),
         },
         workspace_root=workspace_root,
     )

@@ -156,6 +156,29 @@ class RunSelectContextTests(unittest.TestCase):
         }
         self.assertEqual(_run(payload), _run(payload))
 
+    def test_map_tokens_prepends_a_symbol_index_within_budget(self):
+        payload = {
+            "query": "deduplicate near identical documents by shingle fingerprint",
+            "include": ["."],
+            "budget_tokens": 200,
+            "prefix_tokens": 10,
+            "tail_tokens": 10,
+            "block_size": 30,
+        }
+        plain = _run(payload)
+        mapped = _run({**payload, "map_tokens": 60})
+
+        self.assertTrue(mapped["context"].startswith("# symbol map\n"))
+        self.assertIn("# context\n", mapped["context"])
+        self.assertLessEqual(mapped["token_count"], 200)  # header carved from budget, never additive
+        self.assertGreater(mapped["diagnostics"]["symbol_map"]["header_tokens"], 0)
+        self.assertLessEqual(mapped["diagnostics"]["symbol_map"]["header_tokens"], 100)  # <= budget // 2
+        # map_tokens = 0 is byte-identical to omitting it
+        self.assertEqual(plain["context"], _run({**payload, "map_tokens": 0})["context"])
+        self.assertNotIn("# symbol map", plain["context"])
+        # deterministic with the header on
+        self.assertEqual(mapped, _run({**payload, "map_tokens": 60}))
+
     def test_symbol_candidates_feed_the_fusion(self):
         result = _run(
             {

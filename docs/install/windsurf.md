@@ -32,7 +32,7 @@ directory, put an absolute path here instead.
 
 `select_context(query, include=[...], files=[...], budget_tokens=3000,
 prefix_tokens=128, tail_tokens=128, recall_strategy="coverage_aware", block_size=400,
-semantic="", pack="", save_as="")` — a budgeted slice of the workspace with `file:line`
+semantic="", map_tokens=0, pack="", save_as="")` — a budgeted slice of the workspace with `file:line`
 provenance for every span, a `route` of `lossless` or `selected`, token accounting, and
 a `query_class` / `confidence` / `advice` triple that tells the agent when PASR is the
 wrong tool for the question.

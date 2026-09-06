@@ -30,6 +30,7 @@ class SelectContextRequest:
     recall_strategy: str
     block_size: int
     semantic: str
+    map_tokens: int
 
 
 @dataclass(frozen=True)
@@ -77,6 +78,7 @@ def validate_select_context_request(payload: dict[str, Any], workspace_root: Pat
         recall_strategy=recall_strategy,
         block_size=_positive_int(payload.get("block_size", 400), "block_size"),
         semantic="" if semantic == "none" else semantic,
+        map_tokens=_non_negative_int(payload.get("map_tokens", 0), "map_tokens"),
     )
 
 

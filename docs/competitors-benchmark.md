@@ -32,7 +32,7 @@ that file is "could the model use it".
 | `embed_lex` | 40-line windows scored by idf-weighted word-cosine vs the query, top-k | a **floor** for embedding-based semantic search (claude-context, Cody) *without* the trained model + vector DB |
 | `pasr` | `select_context` at the same budget (BM25 + lexical + symbols, RRF-fused) | — |
 | `pasr_hash` | `select_context --semantic hashing` (PASR's torch-free semantic fusion) | — |
-| `pasr_map` | `pasr` body slice **+ a 1 200-token ranked symbol-index header** (a proposed `map_tokens` option) | — |
+| `pasr_map` | `pasr` body slice **+ a 1 200-token ranked symbol-index header** (`select_context(map_tokens=1200)`) | — |
 
 ## Results (6 000-token budget, n = 50)
 
@@ -71,8 +71,8 @@ coverage *and* keeps the implementation:
   `trace_dependencies` output into the result on `query_class == "trace"` (routing
   already detects it) is the fix.
 
-This is a ~15-line change (a `map_tokens` option on `select_context`), measured here as
-the `pasr_map` arm — not shipped in v0.1.0. It closes the only bake-off gap while
+This is `select_context(map_tokens=1200)` (also `pasr --map-tokens`), shipped after
+v0.1.0 and measured here as the `pasr_map` arm. It closes the only bake-off gap while
 *strengthening* the answer-quality story, since the slice still carries real code.
 
 ## Reading it
@@ -123,8 +123,8 @@ a reason to leave `--semantic hashing` on.
 
 - **Pure localization recall** with vanilla `pasr`: a whole-repo symbol map lists more
   of the repo, so it "hits" more critical files. **`pasr_map`** (symbol-index header +
-  bodies) already closes this — 0.90 overall, `crit_hit` 1.00 — and is a ~15-line
-  option, not shipped in v0.1.0.
+  bodies) already closes this — 0.90 overall, `crit_hit` 1.00 — via
+  `select_context(map_tokens=)`, shipped after v0.1.0.
 - **`trace` at a tight budget**: even `pasr_map` (0.86) trails a full symbol index
   (0.93). Folding `trace_dependencies` output into the result when routing sees a trace
   query is the remaining fix.

@@ -48,6 +48,7 @@ def _explain(args: argparse.Namespace) -> int:
             "recall_strategy": args.recall_strategy,
             "block_size": args.block_size,
             "semantic": args.semantic,
+            "map_tokens": args.map_tokens,
         },
         workspace_root=args.workspace,
     )
@@ -93,6 +94,7 @@ def _pack(args: argparse.Namespace) -> int:
             "recall_strategy": args.recall_strategy,
             "block_size": args.block_size,
             "semantic": args.semantic,
+            "map_tokens": args.map_tokens,
         },
         workspace_root=args.workspace,
     )
@@ -123,6 +125,7 @@ def _context(args: argparse.Namespace) -> int:
             "recall_strategy": args.recall_strategy,
             "block_size": args.block_size,
             "semantic": args.semantic,
+            "map_tokens": args.map_tokens,
         },
         workspace_root=args.workspace,
     )
@@ -159,6 +162,13 @@ def build_parser() -> argparse.ArgumentParser:
     explain.add_argument("--recall-strategy", default="coverage_aware", dest="recall_strategy")
     explain.add_argument("--block-size", type=int, default=400, dest="block_size")
     explain.add_argument("--semantic", default="", choices=("", "none", "hashing", "minilm"))
+    explain.add_argument(
+        "--map-tokens",
+        type=int,
+        default=0,
+        dest="map_tokens",
+        help="Prepend a query-ranked symbol index of this many tokens (carved from --budget).",
+    )
     explain.add_argument("--json", action="store_true", help="Emit the receipt as JSON.")
     explain.add_argument("--no-write", action="store_true", help="Do not write the receipt file.")
     explain.set_defaults(func=_explain)
@@ -180,6 +190,13 @@ def build_parser() -> argparse.ArgumentParser:
     pack.add_argument("--recall-strategy", default="coverage_aware", dest="recall_strategy")
     pack.add_argument("--block-size", type=int, default=400, dest="block_size")
     pack.add_argument("--semantic", default="", choices=("", "none", "hashing", "minilm"))
+    pack.add_argument(
+        "--map-tokens",
+        type=int,
+        default=0,
+        dest="map_tokens",
+        help="Prepend a query-ranked symbol index of this many tokens (carved from --budget).",
+    )
     pack.set_defaults(func=_pack)
 
     context = sub.add_parser("context", help="Headless context slice for CI / autonomous agents.")
@@ -192,6 +209,13 @@ def build_parser() -> argparse.ArgumentParser:
     context.add_argument("--recall-strategy", default="coverage_aware", dest="recall_strategy")
     context.add_argument("--block-size", type=int, default=400, dest="block_size")
     context.add_argument("--semantic", default="", choices=("", "none", "hashing", "minilm"))
+    context.add_argument(
+        "--map-tokens",
+        type=int,
+        default=0,
+        dest="map_tokens",
+        help="Prepend a query-ranked symbol index of this many tokens (carved from --budget).",
+    )
     context.add_argument("--format", choices=("json", "text"), default="json", dest="format")
     context.add_argument("--context-file", default="", dest="context_file", help="Write the raw context slice here.")
     context.add_argument("--metrics-file", default="", dest="metrics_file", help="Write JSON metrics here.")

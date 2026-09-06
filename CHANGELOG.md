@@ -5,6 +5,16 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **`select_context(map_tokens=N)`** — prepend a query-ranked
+  `file:line kind name` symbol index of up to `N` tokens to the slice. Carved out of
+  `budget_tokens` (never additive), skipped when the route is `lossless`. Gives
+  repo-map-style pointer coverage of the whole file set without giving up the bodies in
+  the slice; in the offline bake-off it lifts `retrieval_ok` from 0.70 to 0.90 (ties a
+  full repo-map) at perfect critical-file coverage. Also `pasr explain/pack/context
+  --map-tokens`. Recorded in the receipt under `diagnostics.symbol_map`.
+
 ## [0.1.0] — 2026-09-03
 
 First public release. A zero-setup, offline, deterministic context-broker MCP for

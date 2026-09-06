@@ -76,6 +76,9 @@ Python and JavaScript/TypeScript. A symbol that isn't defined comes back as
   of the query; set both to `0` to disable
 - `recall_strategy` — `coverage_aware` (default) or `score_only`
 - `block_size` (default 400) — chunk size in tokens
+- `map_tokens` (default 0) — if > 0, prepend a query-ranked `file:line kind name`
+  symbol index of that many tokens, carved out of `budget_tokens` (never additive).
+  Pointer coverage of the whole file set without dropping the slice's bodies.
 
 It returns the assembled `context`, a `spans` list with `file:line` provenance and
 token counts, a `route` (`lossless` when the whole input already fit the budget,

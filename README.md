@@ -86,6 +86,12 @@ Every `select_context` result also carries a `query_class`, a `confidence` score
 `advice` — e.g. "aggregation-style question: read the files directly" or "low coverage,
 also grep for X or call `expand_context`".
 
+`select_context(map_tokens=N)` prepends a query-ranked `file:line kind name` symbol
+index of up to `N` tokens (carved out of `budget_tokens`, never additive) — repo-map
+style pointer coverage of the whole file set *without* dropping the bodies in the slice.
+In the offline bake-off this lifts retrieval quality to a full repo-map's level at
+perfect critical-file coverage; see [`docs/competitors-benchmark.md`](docs/competitors-benchmark.md).
+
 ## CLI
 
 ```bash
@@ -114,6 +120,7 @@ what PASR handed the model and what it dropped. Context Packs land in `.pasr/pac
 - (a comparative write-up is in preparation)
 - [`docs/architecture.md`](docs/architecture.md) — architecture and data flow
 - [`docs/roadmap.md`](docs/roadmap.md) — milestones M0–M12, each with tests and an exit gate
+- [`docs/roadmap-post-1.0.md`](docs/roadmap-post-1.0.md) — v0.2 scope and the launch sequence
 - (planning docs kept outside the OSS repo)
 - [`CHANGELOG.md`](CHANGELOG.md) · [`CONTRIBUTING.md`](CONTRIBUTING.md)
 

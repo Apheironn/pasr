@@ -29,7 +29,8 @@ server with a different working directory, use an absolute path there.
 ## The tools
 
 `select_context(query, include=[...], files=[...], budget_tokens=3000,
-prefix_tokens=128, tail_tokens=128, recall_strategy="coverage_aware", block_size=400)`
+prefix_tokens=128, tail_tokens=128, recall_strategy="coverage_aware", block_size=400,
+map_tokens=0)`
 — a budgeted slice of the workspace with `file:line` provenance for every span, a
 `route` of `lossless` or `selected`, and token accounting.
 
