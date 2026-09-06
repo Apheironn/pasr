@@ -72,5 +72,16 @@ class ReviewContextTests(unittest.TestCase):
         self.assertIn("Review context", render_review(result))
 
 
+class ReadGitDiffTests(unittest.TestCase):
+    def test_non_git_directory_raises_runtimeerror(self):
+        import tempfile
+
+        from pasr.review import read_git_diff
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(RuntimeError):
+                read_git_diff(Path(tmp), staged=False, ref_range="")
+
+
 if __name__ == "__main__":
     unittest.main()

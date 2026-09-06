@@ -85,6 +85,15 @@ class TraceDependenciesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "max_depth"):
             _trace("run_pipeline", max_depth=-1)
 
+    def test_a_syntactically_broken_file_does_not_fail_the_trace(self):
+        files = {
+            "good.py": "def target():\n    helper()\n\ndef helper():\n    return 1\n",
+            "broken.py": "def oops(:\n    this is not python\n",
+        }
+        result = trace_dependencies("target", files, tokenizer=WhitespaceTokenizer(), max_depth=3)
+        self.assertTrue(result.found)  # providers self-guard on a SyntaxError
+        self.assertIn("helper", {span.name for span in result.spans})
+
 
 if __name__ == "__main__":
     unittest.main()

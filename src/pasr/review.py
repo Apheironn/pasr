@@ -63,7 +63,7 @@ def _touched_defs(text: str, source: str, change: FileChange) -> list[SymbolDef]
         return []
     try:
         parsed = provider.parse(source, text)
-    except Exception:
+    except Exception:  # a broken file just contributes no touched defs
         return []
     return [d for d in parsed.definitions if change.overlaps(d.line_start, d.line_end)]
 

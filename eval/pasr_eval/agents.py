@@ -1,5 +1,5 @@
-"""Agent adapters. The dry-run uses a deterministic keyword agent; the A100
-notebook wires a real MCP-client agent to the same protocol."""
+"""Agent adapters. The offline dry-run uses a deterministic keyword agent; the real
+run uses :class:`pasr_eval.llm_agent.LlmAgent` (answer + judge over the Anthropic API)."""
 
 from __future__ import annotations
 
@@ -26,13 +26,3 @@ class KeywordAgent:
         low = context.casefold()
         grounded = [keyword for keyword in task.answer_keywords if keyword.casefold() in low]
         return " ".join(grounded)
-
-
-class ClaudeCodeAgent:
-    """Placeholder for the real run. The notebook replaces ``answer`` with a call
-    into an MCP-capable agent (Claude Code / Codex) and a task-appropriate grader."""
-
-    name = "claude-code"
-
-    def answer(self, task: TaskSpec, context: str) -> str:  # pragma: no cover - notebook only
-        raise NotImplementedError("Wire an MCP-client agent here in the A100 notebook (see eval/README.md).")

@@ -86,6 +86,55 @@ def test_trace_dependencies_missing_symbol_is_not_an_error(trace_workspace: Path
     assert json.loads(result.content[0].text)["found"] is False
 
 
+def test_trace_dependencies_callers_direction(trace_workspace: Path):
+    server = create_server(trace_workspace)
+    result = _call(server, "trace_dependencies", {"symbol": "normalize", "include": ["app"], "direction": "callers"})
+    payload = json.loads(result.content[0].text)
+    assert payload["direction"] == "callers"
+    assert "run_pipeline" in {span["name"] for span in payload["spans"]}
+
+
+def test_trace_dependencies_rejects_bad_direction(trace_workspace: Path):
+    server = create_server(trace_workspace)
+    with pytest.raises(Exception, match="direction"):
+        _call(server, "trace_dependencies", {"symbol": "normalize", "direction": "sideways"})
+
+
+def test_select_context_map_tokens_and_trace_stay_within_budget(mini_workspace: Path):
+    server = create_server(mini_workspace)
+    payload = json.loads(
+        _call(
+            server,
+            "select_context",
+            {
+                "query": "deduplicate near identical documents by shingle fingerprint",
+                "include": ["."],
+                "budget_tokens": 400,
+                "block_size": 30,
+                "map_tokens": 90,
+                "trace": "deduplicate_near_identical_documents_by_shingle_fingerprint",
+            },
+        )
+        .content[0]
+        .text
+    )
+    assert payload["route"] == "selected"
+    assert payload["context"].startswith("# symbol map\n")
+    assert "# dependency closure (" in payload["context"]
+    assert payload["token_count"] <= 400
+    assert payload["diagnostics"]["symbol_map"]["header_tokens"] > 0
+    assert payload["diagnostics"]["trace"]["found"] is True
+
+
+def test_select_context_appends_a_ledger_row(mini_workspace: Path):
+    from pasr.ledger import read_ledger
+
+    server = create_server(mini_workspace)
+    _call(server, "select_context", {"query": "rate limit headers", "include": ["."], "budget_tokens": 200})
+    rows = read_ledger(mini_workspace)
+    assert len(rows) == 1 and rows[0]["source"] == "mcp"
+
+
 def test_explain_selection_returns_the_stored_receipt(mini_workspace: Path):
     server = create_server(mini_workspace)
     select = json.loads(

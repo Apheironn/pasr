@@ -5,7 +5,7 @@ search, full/broad context, PASR selected context, PASR + one controlled fallbac
 and reports paired metrics with a pre-registered non-inferiority margin.
 
 The dry-run path (``KeywordAgent`` + local-mode plan) exercises the whole matrix
-offline. The A100 notebook swaps in a real MCP-client agent.
+offline; the real run swaps in ``LlmAgent`` (answer + judge over the Anthropic API).
 """
 
 from pasr_eval.arms import ARMS, ArmResult, run_arm

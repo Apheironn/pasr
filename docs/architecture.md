@@ -77,7 +77,7 @@ query + file globs
 | `candidates.py` | `CandidateSpan` type, lexical candidates, RRF fusion, stable ranking | copied; tokenizer calls delisted from torch |
 | `packing.py` | hard-budget score-only / coverage-aware / active-window packing, dependency ordering | copied verbatim |
 | `context_order.py` | span packaging orders (score/source/edge/diverse) | copied verbatim |
-| `controller.py` | heuristic block-size / top-k choice | copied verbatim |
+| `controller.py` | heuristic block-size / top-k choice | copied verbatim; **not wired into `select_context`** (fixed `schema` defaults + `routing.py` cover the shipped design) — kept as a utility for adaptive-settings callers |
 | `file_discovery.py` | safe workspace-relative file discovery | copied; `.gitignore` + languages added in M1 |
 | `symbols/python_symbols.py` | Python AST symbol/dependency candidate windows | copied; generalised to tree-sitter in M5 |
 | `_tokenize.py` | list-based encode/decode adapter | new shim seeding M1 |

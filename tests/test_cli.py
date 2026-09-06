@@ -163,3 +163,50 @@ def test_validation_error_returns_two(capsys):
     code = main(["--workspace", str(MINI_REPO), "explain", "q", "../escape"])
     assert code == 2
     assert "error:" in capsys.readouterr().err
+
+
+def test_trace_callers_flag(capsys):
+    code = main(["--workspace", str(TRACE_REPO), "trace", "normalize", "app", "--callers"])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "callers" in out and "run_pipeline" in out
+
+
+_DIFF = "--- a/app/pipeline.py\n+++ b/app/pipeline.py\n@@ -26,0 +27 @@ def normalize(row):\n+    # tightened\n"
+
+
+def test_review_from_a_diff_file(tmp_path, capsys):
+    diff = tmp_path / "d.diff"
+    diff.write_text(_DIFF, encoding="utf-8")
+    code = main(["--workspace", str(TRACE_REPO), "review", "app", "--diff", str(diff)])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "Review context" in out
+    assert "normalize" in out
+
+
+def test_review_json_and_empty_diff(tmp_path, capsys):
+    empty = tmp_path / "e.diff"
+    empty.write_text("", encoding="utf-8")
+    assert main(["--workspace", str(TRACE_REPO), "review", "--diff", str(empty)]) == 0
+    assert "no changed files" in capsys.readouterr().out
+
+    diff = tmp_path / "d.diff"
+    diff.write_text(_DIFF, encoding="utf-8")
+    code = main(["--workspace", str(TRACE_REPO), "review", "app", "--diff", str(diff), "--json"])
+    assert code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["changed_files"] == ["app/pipeline.py"]
+
+
+def test_report_reads_the_ledger(mini_workspace, capsys):
+    main(["--workspace", str(mini_workspace), "explain", "rate limit headers", ".", "--budget", "150"])
+    capsys.readouterr()
+    code = main(["--workspace", str(mini_workspace), "report", "--price-per-mtok", "3", "--json"])
+    assert code == 0
+    summary = json.loads(capsys.readouterr().out)
+    assert summary["calls"] == 1 and summary["tokens_saved"] > 0
+
+    code = main(["--workspace", str(mini_workspace), "report"])
+    assert code == 0
+    assert "PASR usage" in capsys.readouterr().out

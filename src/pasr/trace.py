@@ -108,7 +108,7 @@ def trace_dependencies(
         provider = get_provider(source)
         if provider is None:
             continue
-        parsed = provider.parse(source, files[source])
+        parsed = provider.parse(source, files[source])  # providers self-guard: parse never raises
         languages.add(parsed.language)
         all_defs.extend(parsed.all_defs)
 

@@ -14,7 +14,7 @@ _NUMERIC_FIELDS = ("task_success", "tokens_in", "context_tokens", "tool_calls", 
 
 def grade(task: TaskSpec, answer: str, arm_result: Any) -> bool:
     """A retrieval-quality proxy: the agent grounded every answer keyword **and** the
-    arm's context contained the critical source. The A100 notebook replaces this with
+    arm's context contained the critical source. The real run replaces this with
     an executable / reference grader per task kind."""
     low = answer.casefold()
     keywords_ok = all(keyword.casefold() in low for keyword in task.answer_keywords)

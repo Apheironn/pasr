@@ -1,9 +1,11 @@
 """``pasr`` CLI — run PASR without an agent.
 
 pasr explain "<query>" [globs...]        show the selection receipt
-pasr trace <symbol> [globs...]           show a dependency closure (--callers to reverse it)
+pasr trace <symbol> [globs...]           a dependency closure (--callers to reverse it)
 pasr pack <name> "<query>" [globs...]    save a Context Pack
+pasr review [--staged|--range|--diff]    diff-aware context: touched defs + their callers
 pasr context --issue <text> [globs...]   headless context slice for CI / agents
+pasr report [--since] [--price-per-mtok] summarise .pasr/ledger.jsonl
 """
 
 from __future__ import annotations
