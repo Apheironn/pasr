@@ -21,6 +21,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 
 from pasr import __version__
+from pasr.ledger import append_ledger, ledger_entry
 from pasr.receipt import read_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
 from pasr.select import run_expand_context, run_pack, run_select_context, save_pack
@@ -115,6 +116,7 @@ def create_server(workspace_root: Path) -> MCPServer:
             if save_as:
                 path, _ = save_pack(save_as, request, result=result)
                 result["saved_pack"] = str(path)
+            append_ledger(root, ledger_entry(result, source="mcp"))
             return result
         except ValueError as exc:
             raise ToolError(str(exc)) from exc

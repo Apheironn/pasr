@@ -7,6 +7,11 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Usage ledger + `pasr report`** — every real `select_context` run (MCP calls, and
+  `pasr explain` unless `--no-ledger`) appends a row to `.pasr/ledger.jsonl` (gitignored):
+  tokens in vs. out, round trips saved, route. `pasr report` summarises it —
+  "PASR handed the model N fewer tokens across M calls, R round trips saved" — with
+  `--since` and an optional `--price-per-mtok` dollar estimate.
 - **`trace_dependencies(direction="callers")`** — reverse the edges: the closure of
   every definition that transitively *references* the symbol. Impact analysis --
   "what breaks if I change this." Also `pasr trace --callers`.

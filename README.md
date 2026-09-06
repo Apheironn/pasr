@@ -101,16 +101,20 @@ slice (also carved from `budget_tokens`) — one call instead of a separate
 ```bash
 pasr explain "how is the request rate limited"        # run a selection, print the receipt
 pasr trace enforce_per_user_request_quota src/        # a symbol's dependency closure
+pasr trace HTTPAdapter src/ --callers                 # who calls it (impact analysis)
 pasr pack auth "session + login + token" src/auth/    # save a Context Pack
 pasr context --issue "$(cat issue.txt)" src/ \        # headless slice for CI / agents
   --format text --metrics-file metrics.json
+pasr report --price-per-mtok 3                        # tokens / round trips / $ saved so far
 ```
 
 For CI there's a composite GitHub Action at `.github/actions/pasr-context/` — see
 [`docs/ci.md`](docs/ci.md).
 
 Receipts land in `.pasr/receipts/<id>.{json,md}` (gitignored) — a byte-stable record of
-what PASR handed the model and what it dropped. Context Packs land in `.pasr/packs/`
+what PASR handed the model and what it dropped. A usage ledger accrues in
+`.pasr/ledger.jsonl` (gitignored) — one row per real call; `pasr report` turns it into
+"N fewer tokens across M calls, R round trips saved". Context Packs land in `.pasr/packs/`
 (committable) — a named, warm-start slice the whole team can load with
 `select_context(pack="auth")`.
 

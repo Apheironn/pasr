@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 from pasr import __version__
+from pasr.ledger import append_ledger, entry_from_receipt, read_ledger, render_report, summarize
 from pasr.receipt import receipt_bytes, render_markdown, write_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
 from pasr.select import build_select_receipt, run_select_context, save_pack
@@ -56,7 +57,19 @@ def _explain(args: argparse.Namespace) -> int:
     receipt = build_select_receipt(request)
     if not args.no_write:
         write_receipt(request.workspace_root, receipt)
+        if not args.no_ledger:
+            append_ledger(request.workspace_root, entry_from_receipt(receipt, source="cli"))
     print(receipt_bytes(receipt).rstrip() if args.json else render_markdown(receipt))
+    return 0
+
+
+def _report(args: argparse.Namespace) -> int:
+    rows = read_ledger(args.workspace)
+    summary = summarize(rows, since=args.since, price_per_mtok=args.price_per_mtok)
+    if args.json:
+        print(json.dumps(summary, indent=2, sort_keys=True))
+    else:
+        print(render_report(summary), end="")
     return 0
 
 
@@ -182,7 +195,20 @@ def build_parser() -> argparse.ArgumentParser:
     explain.add_argument("--trace", default="", help="Also fold this symbol's dependency closure into the slice.")
     explain.add_argument("--json", action="store_true", help="Emit the receipt as JSON.")
     explain.add_argument("--no-write", action="store_true", help="Do not write the receipt file.")
+    explain.add_argument("--no-ledger", action="store_true", help="Do not append to .pasr/ledger.jsonl.")
     explain.set_defaults(func=_explain)
+
+    report = sub.add_parser("report", help="Summarise .pasr/ledger.jsonl: tokens and round trips saved.")
+    report.add_argument("--since", default="", help="Only rows on/after this ISO date prefix, e.g. 2026-09-01.")
+    report.add_argument(
+        "--price-per-mtok",
+        type=float,
+        default=0.0,
+        dest="price_per_mtok",
+        help="USD per million input tokens; if set, show an estimated cost avoided.",
+    )
+    report.add_argument("--json", action="store_true", help="Emit the summary as JSON.")
+    report.set_defaults(func=_report)
 
     trace = sub.add_parser("trace", help="Print a symbol's dependency closure.")
     trace.add_argument("symbol")
