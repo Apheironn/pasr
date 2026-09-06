@@ -131,6 +131,7 @@ what PASR handed the model and what it dropped. A usage ledger accrues in
 - [`docs/roadmap.md`](docs/roadmap.md) — milestones M0–M12, each with tests and an exit gate
 - [`docs/roadmap-post-1.0.md`](docs/roadmap-post-1.0.md) — v0.2 scope and the launch sequence
 - (planning docs kept outside the OSS repo)
+
 - [`CHANGELOG.md`](CHANGELOG.md) · [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 The research this productises is the frozen `researchv2` study (model-external context
