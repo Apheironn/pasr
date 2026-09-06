@@ -20,6 +20,7 @@ from pasr.schema import SelectContextRequest, validate_select_context_request
 from pasr.symbols import FileSymbols, get_provider, symbol_candidates
 from pasr.symbols.base import identifier_terms
 from pasr.tokenize import Tokenizer, get_tokenizer
+from pasr.trace import trace_dependencies
 
 TOOL_NAME = "select_context"
 
@@ -35,6 +36,7 @@ def _canonical_request(request: SelectContextRequest) -> dict[str, Any]:
         "block_size": request.block_size,
         "semantic": request.semantic,
         "map_tokens": request.map_tokens,
+        "trace": request.trace,
     }
 
 
@@ -69,6 +71,31 @@ def _symbol_map_header(
         return "", 0, 0
     text = "# symbol map\n" + "\n".join(lines)
     return text, tok.count(text), len(lines)
+
+
+def _trace_header(
+    symbol: str, texts_by_source: dict[str, str], tok: Tokenizer, cap_tokens: int
+) -> tuple[str, int, dict[str, Any]]:
+    """The dependency closure of ``symbol`` over the resolved files, hard-clipped to
+    ``cap_tokens``. Returns ``(text, token_count, meta)``. Empty when the symbol is not
+    defined in the file set."""
+    if cap_tokens <= 0:
+        return "", 0, {"found": False, "reason": "no budget for a trace header"}
+    result = trace_dependencies(symbol, texts_by_source, tokenizer=tok, budget_tokens=cap_tokens)
+    if not result.found:
+        return "", 0, {"found": False, "reason": "symbol not defined in the resolved files"}
+    body = result.text
+    clipped = tok.count(body) > cap_tokens
+    if clipped:
+        body = tok.decode(tok.encode(body)[:cap_tokens])
+    text = f"# dependency closure ({symbol})\n{body}"
+    meta = {
+        "found": True,
+        "closure_def_count": len(result.spans),
+        "clipped": clipped,
+        "token_reduction": result.token_reduction,
+    }
+    return text, tok.count(text), meta
 
 
 def run_select_context(
@@ -114,10 +141,12 @@ def _run(
     per_file = []
     sym_candidates = []
     parsed_symbols: list[FileSymbols] = []
+    texts_by_source: dict[str, str] = {}
     languages: set[str] = set()
     for path, meta in zip(request.files, request.file_metadata, strict=True):
         source = meta["relative_path"]
         text = path.read_text(encoding="utf-8", errors="replace")
+        texts_by_source[source] = text
         file_spans = chunk_text(source, text, tok, request.block_size)
         spans.extend(file_spans)
         per_file.append(
@@ -137,18 +166,24 @@ def _run(
             parsed_symbols.append(file_symbols)
             sym_candidates.extend(symbol_candidates(file_symbols, request.query, text, tok))
 
-    # Optional symbol-index header. Carved out of budget_tokens (never additive) and
-    # skipped when the whole context already fits.
+    # Optional headers, each carved out of budget_tokens (never additive) and skipped
+    # when the whole context already fits: a query-ranked symbol index (map_tokens) and
+    # a named dependency closure (trace).
     map_text, map_tokens, map_lines = "", 0, 0
     if request.map_tokens > 0 and parsed_symbols:
         cap = min(request.map_tokens, request.budget_tokens // 2)
         map_text, map_tokens, map_lines = _symbol_map_header(parsed_symbols, request.query, tok, cap)
 
+    trace_text, trace_tokens, trace_meta = "", 0, {}
+    if request.trace:
+        remaining = max(request.budget_tokens - map_tokens, 0) // 2
+        trace_text, trace_tokens, trace_meta = _trace_header(request.trace, texts_by_source, tok, remaining)
+
     pack = assemble(
         request.query,
         spans,
         AssembleConfig(
-            budget_tokens=request.budget_tokens - map_tokens,
+            budget_tokens=request.budget_tokens - map_tokens - trace_tokens,
             prefix_tokens=request.prefix_tokens,
             tail_tokens=request.tail_tokens,
             recall_strategy=request.recall_strategy,
@@ -159,6 +194,7 @@ def _run(
     )
     if pack.route == "lossless":  # full context already present; a header would only bloat it
         map_text, map_tokens, map_lines = "", 0, 0
+        trace_text, trace_tokens, trace_meta = "", 0, {}
 
     evidence = account_query_evidence(
         request.query,
@@ -167,8 +203,9 @@ def _run(
     )
     total_input_tokens = sum(entry["token_count"] for entry in per_file)
     candidate_records = pack.diagnostics.get("candidates", [])
-    combined_tokens = pack.token_count + map_tokens
-    context_text = f"{map_text}\n\n# context\n{pack.text}" if map_tokens else pack.text
+    combined_tokens = pack.token_count + map_tokens + trace_tokens
+    header = "".join(part for part in (map_text and map_text + "\n\n", trace_text and trace_text + "\n\n") if part)
+    context_text = f"{header}# context\n{pack.text}" if header else pack.text
     diagnostics = {
         **{key: value for key, value in pack.diagnostics.items() if key != "candidates"},
         "files": per_file,
@@ -181,6 +218,8 @@ def _run(
             "header_tokens": map_tokens,
             "line_count": map_lines,
         }
+    if request.trace:
+        diagnostics["trace"] = {"symbol": request.trace, "header_tokens": trace_tokens, **trace_meta}
 
     result = {
         "tool": TOOL_NAME,
@@ -285,6 +324,7 @@ def run_expand_context(
             "block_size": prior["block_size"],
             "semantic": prior.get("semantic", ""),
             "map_tokens": prior.get("map_tokens", 0),
+            "trace": prior.get("trace", ""),
         },
         workspace_root=workspace_root,
     )

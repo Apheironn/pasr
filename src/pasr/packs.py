@@ -62,6 +62,7 @@ def build_pack(name: str, request: Any, result: dict[str, Any]) -> dict[str, Any
             "block_size": request.block_size,
             "semantic": request.semantic,
             "map_tokens": getattr(request, "map_tokens", 0),
+            "trace": getattr(request, "trace", ""),
         },
         "context": context,
         "content_hash": content_hash(context),

@@ -1,7 +1,7 @@
 """``pasr`` CLI — run PASR without an agent.
 
 pasr explain "<query>" [globs...]        show the selection receipt
-pasr trace <symbol> [globs...]           show a dependency closure
+pasr trace <symbol> [globs...]           show a dependency closure (--callers to reverse it)
 pasr pack <name> "<query>" [globs...]    save a Context Pack
 pasr context --issue <text> [globs...]   headless context slice for CI / agents
 """
@@ -49,6 +49,7 @@ def _explain(args: argparse.Namespace) -> int:
             "block_size": args.block_size,
             "semantic": args.semantic,
             "map_tokens": args.map_tokens,
+            "trace": args.trace,
         },
         workspace_root=args.workspace,
     )
@@ -60,15 +61,21 @@ def _explain(args: argparse.Namespace) -> int:
 
 
 def _trace(args: argparse.Namespace) -> int:
+    direction = "callers" if args.callers else "dependencies"
     request = validate_trace_dependencies_request(
-        {"symbol": args.symbol, "include": args.paths or ["."], "max_depth": args.max_depth},
+        {
+            "symbol": args.symbol,
+            "include": args.paths or ["."],
+            "max_depth": args.max_depth,
+            "direction": direction,
+        },
         workspace_root=args.workspace,
     )
     texts = {
         meta["relative_path"]: path.read_text(encoding="utf-8", errors="replace")
         for path, meta in zip(request.files, request.file_metadata, strict=True)
     }
-    result = trace_dependencies(args.symbol, texts, max_depth=request.max_depth).to_dict()
+    result = trace_dependencies(args.symbol, texts, max_depth=request.max_depth, direction=request.direction).to_dict()
     if args.json:
         print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
     else:
@@ -77,7 +84,8 @@ def _trace(args: argparse.Namespace) -> int:
             return 1
         pct = result["token_reduction"] * 100
         pct_str = ">99" if pct >= 99.5 else str(round(pct))
-        print(f"# {args.symbol} — {len(result['spans'])} definitions, {pct_str}% fewer tokens than the index\n")
+        noun = "callers" if direction == "callers" else "definitions"
+        print(f"# {args.symbol} — {len(result['spans'])} {noun}, {pct_str}% fewer tokens than the index\n")
         for span in result["spans"]:
             print(f"- {span['provenance']}  ({span['kind']} {span['name']})")
     return 0
@@ -95,6 +103,7 @@ def _pack(args: argparse.Namespace) -> int:
             "block_size": args.block_size,
             "semantic": args.semantic,
             "map_tokens": args.map_tokens,
+            "trace": args.trace,
         },
         workspace_root=args.workspace,
     )
@@ -126,6 +135,7 @@ def _context(args: argparse.Namespace) -> int:
             "block_size": args.block_size,
             "semantic": args.semantic,
             "map_tokens": args.map_tokens,
+            "trace": args.trace,
         },
         workspace_root=args.workspace,
     )
@@ -169,6 +179,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="map_tokens",
         help="Prepend a query-ranked symbol index of this many tokens (carved from --budget).",
     )
+    explain.add_argument("--trace", default="", help="Also fold this symbol's dependency closure into the slice.")
     explain.add_argument("--json", action="store_true", help="Emit the receipt as JSON.")
     explain.add_argument("--no-write", action="store_true", help="Do not write the receipt file.")
     explain.set_defaults(func=_explain)
@@ -177,6 +188,11 @@ def build_parser() -> argparse.ArgumentParser:
     trace.add_argument("symbol")
     trace.add_argument("paths", nargs="*", help="Globs / directories (default: '.').")
     trace.add_argument("--max-depth", type=int, default=4, dest="max_depth")
+    trace.add_argument(
+        "--callers",
+        action="store_true",
+        help="Reverse the edges: trace what transitively references the symbol (impact analysis).",
+    )
     trace.add_argument("--json", action="store_true", help="Emit the closure as JSON.")
     trace.set_defaults(func=_trace)
 
@@ -197,6 +213,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="map_tokens",
         help="Prepend a query-ranked symbol index of this many tokens (carved from --budget).",
     )
+    pack.add_argument("--trace", default="", help="Also fold this symbol's dependency closure into the slice.")
     pack.set_defaults(func=_pack)
 
     context = sub.add_parser("context", help="Headless context slice for CI / autonomous agents.")
@@ -216,6 +233,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="map_tokens",
         help="Prepend a query-ranked symbol index of this many tokens (carved from --budget).",
     )
+    context.add_argument("--trace", default="", help="Also fold this symbol's dependency closure into the slice.")
     context.add_argument("--format", choices=("json", "text"), default="json", dest="format")
     context.add_argument("--context-file", default="", dest="context_file", help="Write the raw context slice here.")
     context.add_argument("--metrics-file", default="", dest="metrics_file", help="Write JSON metrics here.")

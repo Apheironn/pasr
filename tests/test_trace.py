@@ -46,6 +46,25 @@ class TraceDependenciesTests(unittest.TestCase):
         )
         self.assertEqual(result.text, "\n".join(span.text for span in result.spans))
 
+    def test_callers_direction_is_the_reverse_closure(self):
+        forward = _trace("normalize", max_depth=5)
+        callers = _trace("normalize", max_depth=5, direction="callers")
+        names = {span.name for span in callers.spans}
+
+        self.assertEqual(callers.direction, "callers")
+        self.assertTrue(callers.found)
+        # normalize is called by run_pipeline; the decoys never touch it
+        self.assertIn("run_pipeline", names)
+        self.assertIn("normalize", names)
+        self.assertEqual(names & _DECOYS, set())
+        # forward closure of a leaf pulls its deps, not its callers
+        self.assertNotIn("run_pipeline", {span.name for span in forward.spans})
+        self.assertIn("direction", callers.to_dict())
+
+    def test_rejects_unknown_direction(self):
+        with self.assertRaisesRegex(ValueError, "direction"):
+            _trace("run_pipeline", direction="sideways")
+
     def test_missing_symbol_is_reported_not_raised(self):
         result = _trace("no_such_symbol")
         self.assertFalse(result.found)

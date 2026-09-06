@@ -78,7 +78,7 @@ repos (requests, httpx, attrs, packaging, starlette).
 | Tool | Status | Purpose |
 |---|---|---|
 | `select_context` | **available (M4)** | budgeted, provenance-tracked slice for a query |
-| `trace_dependencies` | **available (M5)** | deterministic def/reference closure for a symbol (Python, JS/TS) |
+| `trace_dependencies` | **available (M5)** | deterministic def/reference closure for a symbol (Python, JS/TS); `direction="callers"` reverses it for impact analysis |
 | `explain_selection` | **available (M6)** | return the stored receipt for a prior selection |
 | `expand_context` | **available (M7)** | re-run a prior selection once with a larger budget |
 
@@ -91,6 +91,10 @@ index of up to `N` tokens (carved out of `budget_tokens`, never additive) — re
 style pointer coverage of the whole file set *without* dropping the bodies in the slice.
 In the offline bake-off this lifts retrieval quality to a full repo-map's level at
 perfect critical-file coverage; see [`docs/competitors-benchmark.md`](docs/competitors-benchmark.md).
+
+`select_context(trace="<symbol>")` folds that symbol's dependency closure into the same
+slice (also carved from `budget_tokens`) — one call instead of a separate
+`trace_dependencies` round trip for trace-style questions.
 
 ## CLI
 

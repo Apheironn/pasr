@@ -34,7 +34,7 @@ map_tokens=0)`
 — a budgeted slice of the workspace with `file:line` provenance for every span, a
 `route` of `lossless` or `selected`, and token accounting.
 
-`trace_dependencies(symbol, include=[...], files=[...], max_depth=4)` — the transitive
+`trace_dependencies(symbol, include=[...], files=[...], max_depth=4, direction="dependencies")` — the transitive
 definition closure for a symbol (Python, JS/TS), in source order, at a fraction of the
 tokens of the whole index.
 

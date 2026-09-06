@@ -60,6 +60,8 @@ retrieval) on later turns / by teammates. Or create one from the shell:
 - `symbol` (required) — the function / class / const to trace
 - `include` / `files` — scope the search
 - `max_depth` (default 4)
+- `direction` — `dependencies` (default, what the symbol needs) or `callers` (what
+  transitively references it — impact analysis)
 
 Returns the transitive definition closure in source order with `file:line` provenance
 and `defines` / `dependencies` per span, plus token reduction versus the whole index.
@@ -79,6 +81,9 @@ Python and JavaScript/TypeScript. A symbol that isn't defined comes back as
 - `map_tokens` (default 0) — if > 0, prepend a query-ranked `file:line kind name`
   symbol index of that many tokens, carved out of `budget_tokens` (never additive).
   Pointer coverage of the whole file set without dropping the slice's bodies.
+- `trace` (default "") — a symbol name; folds its dependency closure into the slice as
+  a `# dependency closure` header, also carved out of `budget_tokens`. One call instead
+  of a separate `trace_dependencies` for trace-style questions.
 
 It returns the assembled `context`, a `spans` list with `file:line` provenance and
 token counts, a `route` (`lossless` when the whole input already fit the budget,

@@ -3,8 +3,10 @@
 Given a symbol name and a set of source files, follow definition -> reference edges
 breadth-first and return the boundary-complete set of definitions the symbol
 transitively needs, in source order, at a fraction of the tokens of the full index.
-Unlike ``select_context`` the token budget here is a soft target: a trace never drops
-a needed definition (it reports ``over_budget`` instead).
+With ``direction="callers"`` the edges are reversed: the closure is every definition
+that transitively *references* the symbol -- impact analysis ("what breaks if I change
+this"). Unlike ``select_context`` the token budget here is a soft target: a trace never
+drops a needed definition (it reports ``over_budget`` instead).
 """
 
 from __future__ import annotations
@@ -31,6 +33,7 @@ class TraceResult:
     token_reduction: float
     depth: int
     budget_tokens: int
+    direction: str
     diagnostics: dict[str, Any]
 
     @property
@@ -41,6 +44,7 @@ class TraceResult:
         return {
             "tool": "trace_dependencies",
             "symbol": self.symbol,
+            "direction": self.direction,
             "found": self.found,
             "depth": self.depth,
             "token_count": self.token_count,
@@ -67,19 +71,35 @@ class TraceResult:
         }
 
 
+_DIRECTIONS = ("dependencies", "callers")
+
+
+def _def_keys(definition: SymbolDef) -> set[str]:
+    """The names a definition is known by (imports/variables bind every name)."""
+    if definition.kind in ("import", "variable"):
+        return set(definition.defines) or {definition.name}
+    return {definition.name}
+
+
 def trace_dependencies(
     symbol: str,
     files: Mapping[str, str],
     tokenizer: Tokenizer | None = None,
     max_depth: int = 4,
     budget_tokens: int = 4000,
+    direction: str = "dependencies",
 ) -> TraceResult:
     """Trace ``symbol``'s transitive definition closure across ``files``.
 
     ``files`` maps a source identifier (usually a workspace-relative path) to its text.
+    ``direction="dependencies"`` (default) follows what ``symbol`` needs;
+    ``direction="callers"`` reverses the edges -- every definition that transitively
+    references ``symbol`` (impact analysis).
     """
     if max_depth < 0:
         raise ValueError("max_depth must be non-negative.")
+    if direction not in _DIRECTIONS:
+        raise ValueError(f"direction must be one of {_DIRECTIONS}.")
     tok = tokenizer or get_tokenizer()
 
     all_defs: list[SymbolDef] = []
@@ -96,11 +116,13 @@ def trace_dependencies(
     # they bind). Parameters and locals live in ``defines`` for candidate scoring but
     # must not create edges here, or a local ``rows`` would pull in any ``def f(rows)``.
     by_name: dict[str, list[SymbolDef]] = {}
+    callers_of: dict[str, list[SymbolDef]] = {}
     for definition in all_defs:
-        keys = set(definition.defines) if definition.kind in ("import", "variable") else {definition.name}
-        for key in keys or {definition.name}:
+        for key in _def_keys(definition):
             by_name.setdefault(key, []).append(definition)
-    for defs in by_name.values():
+        for ref in definition.refs:  # reverse index: ref -> definitions that use it
+            callers_of.setdefault(ref, []).append(definition)
+    for defs in (*by_name.values(), *callers_of.values()):
         defs.sort(key=lambda d: d.key)
 
     unique_defs = {d.key: d for d in all_defs}
@@ -118,6 +140,7 @@ def trace_dependencies(
             token_reduction=0.0,
             depth=0,
             budget_tokens=budget_tokens,
+            direction=direction,
             diagnostics={"reason": "symbol not defined in the provided files", "languages": sorted(languages)},
         )
 
@@ -135,10 +158,13 @@ def trace_dependencies(
                 continue
             visited.add(definition.key)
             collected.append(definition)
-            for ref in sorted(definition.refs):
-                for dependency in by_name.get(ref, []):
-                    if dependency.key not in visited:
-                        next_frontier.append(dependency)
+            if direction == "callers":
+                edges = (neighbour for key in sorted(_def_keys(definition)) for neighbour in callers_of.get(key, []))
+            else:
+                edges = (neighbour for ref in sorted(definition.refs) for neighbour in by_name.get(ref, []))
+            for neighbour in edges:
+                if neighbour.key not in visited:
+                    next_frontier.append(neighbour)
         frontier = next_frontier
 
     collected.sort(key=lambda d: (d.source, d.line_start, d.name))
@@ -156,6 +182,7 @@ def trace_dependencies(
         token_reduction=round(1.0 - token_count / total_index_tokens, 4) if total_index_tokens else 0.0,
         depth=reached_depth,
         budget_tokens=budget_tokens,
+        direction=direction,
         diagnostics={
             "languages": sorted(languages),
             "index_def_count": len(unique_defs),

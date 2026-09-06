@@ -67,6 +67,7 @@ def create_server(workspace_root: Path) -> MCPServer:
         max_files: int = 100,
         semantic: str = "",
         map_tokens: int = 0,
+        trace: str = "",
         pack: str = "",
         save_as: str = "",
     ) -> dict[str, Any]:
@@ -79,8 +80,11 @@ def create_server(workspace_root: Path) -> MCPServer:
         ``budget_tokens``, never additive) -- pointer coverage of the whole file set
         without giving up the bodies in the slice. Set ``pack`` to load a saved
         Context Pack (warm start, zero retrieval); set ``save_as`` to save this
-        selection as a pack. Returns the assembled ``context`` plus per-span
-        provenance, token accounting, routing, and a lexical evidence diagnostic.
+        selection as a pack. Set ``trace`` to a symbol name to also fold that symbol's
+        dependency closure into the slice (carved from ``budget_tokens``) -- a one-call
+        "slice + closure" for trace-style questions. Returns the assembled ``context``
+        plus per-span provenance, token accounting, routing, and a lexical evidence
+        diagnostic.
         """
         if pack:
             try:
@@ -103,6 +107,7 @@ def create_server(workspace_root: Path) -> MCPServer:
                     "max_files": max_files,
                     "semantic": semantic,
                     "map_tokens": map_tokens,
+                    "trace": trace,
                 },
                 workspace_root=root,
             )
@@ -122,11 +127,15 @@ def create_server(workspace_root: Path) -> MCPServer:
         max_depth: int = 4,
         budget_tokens: int = 4000,
         max_files: int = 200,
+        direction: str = "dependencies",
     ) -> dict[str, Any]:
         """Trace ``symbol``'s transitive definition closure across workspace files.
 
         Provide ``files`` and/or ``include`` (globs / directories) to scope the
-        search. Returns the closure ``context``, per-definition provenance and
+        search. ``direction="dependencies"`` (default) follows what ``symbol`` needs;
+        ``direction="callers"`` reverses the edges -- every definition that
+        transitively references ``symbol`` (impact analysis: what breaks if I change
+        this). Returns the closure ``context``, per-definition provenance and
         ``defines`` / ``dependencies``, and token reduction versus the full index.
         """
         try:
@@ -138,6 +147,7 @@ def create_server(workspace_root: Path) -> MCPServer:
                     "max_depth": max_depth,
                     "budget_tokens": budget_tokens,
                     "max_files": max_files,
+                    "direction": direction,
                 },
                 workspace_root=root,
             )
@@ -152,6 +162,7 @@ def create_server(workspace_root: Path) -> MCPServer:
             texts,
             max_depth=request.max_depth,
             budget_tokens=request.budget_tokens,
+            direction=request.direction,
         ).to_dict()
 
     @server.tool(name="explain_selection", description=_EXPLAIN_SELECTION_DESCRIPTION)

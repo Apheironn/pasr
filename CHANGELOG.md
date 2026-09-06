@@ -7,6 +7,13 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **`trace_dependencies(direction="callers")`** — reverse the edges: the closure of
+  every definition that transitively *references* the symbol. Impact analysis --
+  "what breaks if I change this." Also `pasr trace --callers`.
+- **`select_context(trace="<symbol>")`** — fold that symbol's dependency closure into
+  the slice as a `# dependency closure` header, carved out of `budget_tokens`. A
+  one-call "slice + closure" for trace-style questions; skipped on a `lossless` route,
+  recorded under `diagnostics.trace`. Also `pasr explain/pack/context --trace`.
 - **`select_context(map_tokens=N)`** — prepend a query-ranked
   `file:line kind name` symbol index of up to `N` tokens to the slice. Carved out of
   `budget_tokens` (never additive), skipped when the route is `lossless`. Gives

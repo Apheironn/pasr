@@ -179,6 +179,29 @@ class RunSelectContextTests(unittest.TestCase):
         # deterministic with the header on
         self.assertEqual(mapped, _run({**payload, "map_tokens": 60}))
 
+    def test_trace_folds_a_dependency_closure_into_the_slice_within_budget(self):
+        symbol = "deduplicate_near_identical_documents_by_shingle_fingerprint"
+        payload = {
+            "query": "shingle fingerprint dedup",
+            "include": ["."],
+            "budget_tokens": 400,
+            "prefix_tokens": 10,
+            "tail_tokens": 10,
+            "block_size": 30,
+        }
+        traced = _run({**payload, "trace": symbol})
+
+        self.assertTrue(traced["context"].startswith(f"# dependency closure ({symbol})\n"))
+        self.assertIn("# context\n", traced["context"])
+        self.assertLessEqual(traced["token_count"], 400)  # carved from budget, not additive
+        self.assertTrue(traced["diagnostics"]["trace"]["found"])
+        self.assertEqual(traced["diagnostics"]["trace"]["symbol"], symbol)
+        self.assertEqual(traced, _run({**payload, "trace": symbol}))  # deterministic
+        # an unknown symbol is a no-op header, never an error
+        unknown = _run({**payload, "trace": "definitely_not_a_symbol_here"})
+        self.assertNotIn("# dependency closure", unknown["context"])
+        self.assertFalse(unknown["diagnostics"]["trace"]["found"])
+
     def test_symbol_candidates_feed_the_fusion(self):
         result = _run(
             {

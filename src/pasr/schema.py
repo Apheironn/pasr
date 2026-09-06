@@ -14,6 +14,7 @@ from pasr.file_discovery import FileDiscoveryConfig, discover_workspace_files
 
 _RECALL_STRATEGIES = ("score_only", "coverage_aware")
 _SEMANTIC_SCORERS = ("", "none", "hashing", "minilm")
+_TRACE_DIRECTIONS = ("dependencies", "callers")
 
 
 @dataclass(frozen=True)
@@ -31,6 +32,7 @@ class SelectContextRequest:
     block_size: int
     semantic: str
     map_tokens: int
+    trace: str
 
 
 @dataclass(frozen=True)
@@ -43,6 +45,7 @@ class TraceDependenciesRequest:
     file_metadata: tuple[dict[str, Any], ...]
     max_depth: int
     budget_tokens: int
+    direction: str
 
 
 def validate_select_context_request(payload: dict[str, Any], workspace_root: Path) -> SelectContextRequest:
@@ -79,6 +82,7 @@ def validate_select_context_request(payload: dict[str, Any], workspace_root: Pat
         block_size=_positive_int(payload.get("block_size", 400), "block_size"),
         semantic="" if semantic == "none" else semantic,
         map_tokens=_non_negative_int(payload.get("map_tokens", 0), "map_tokens"),
+        trace=str(payload.get("trace", "") or "").strip(),
     )
 
 
@@ -87,6 +91,9 @@ def validate_trace_dependencies_request(payload: dict[str, Any], workspace_root:
     symbol = str(payload.get("symbol", "")).strip()
     if not symbol:
         raise ValueError("symbol is required.")
+    direction = str(payload.get("direction", "dependencies") or "dependencies")
+    if direction not in _TRACE_DIRECTIONS:
+        raise ValueError(f"direction must be one of {_TRACE_DIRECTIONS}.")
     root = workspace_root.resolve()
     files, metadata = _resolve_files(payload, root)
     return TraceDependenciesRequest(
@@ -96,6 +103,7 @@ def validate_trace_dependencies_request(payload: dict[str, Any], workspace_root:
         file_metadata=metadata,
         max_depth=_non_negative_int(payload.get("max_depth", 4), "max_depth"),
         budget_tokens=_positive_int(payload.get("budget_tokens", 4000), "budget_tokens"),
+        direction=direction,
     )
 
 

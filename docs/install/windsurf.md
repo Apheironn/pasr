@@ -37,7 +37,7 @@ provenance for every span, a `route` of `lossless` or `selected`, token accounti
 a `query_class` / `confidence` / `advice` triple that tells the agent when PASR is the
 wrong tool for the question.
 
-`trace_dependencies(symbol, include=[...], files=[...], max_depth=4)` — the transitive
+`trace_dependencies(symbol, include=[...], files=[...], max_depth=4, direction="dependencies")` — the transitive
 definition closure for a symbol (Python, JS/TS), in source order, at a fraction of the
 tokens of the whole index. An undefined symbol returns `found: false`, not an error.
 
