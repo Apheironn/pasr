@@ -24,10 +24,13 @@ _NEWFILE_RE = re.compile(r"^\+\+\+ (?:b/)?(.+?)\s*$")
 
 @dataclass
 class FileChange:
+    """One file's changed line ranges on the new-file side of a diff."""
+
     path: str
     hunks: list[tuple[int, int]] = field(default_factory=list)  # (new_start, new_len), 1-indexed
 
     def overlaps(self, line_start: int, line_end: int) -> bool:
+        """True if any hunk intersects the inclusive line range ``[line_start, line_end]``."""
         for start, length in self.hunks:
             if line_start <= start + max(length - 1, 0) and line_end >= start:
                 return True
@@ -163,6 +166,7 @@ def review_context(
 
 
 def render_review(result: dict[str, Any]) -> str:
+    """Human-readable rendering of a :func:`review_context` result."""
     lines = [
         f"# Review context — {len(result['changed_files'])} changed file(s), "
         f"{result['token_count']}/{result['budget_tokens']} tokens",
