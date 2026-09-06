@@ -5,8 +5,8 @@ and document agents. It sits between a large workspace (repo or long documents) 
 model, and hands the agent a **small, budgeted, fully-traceable slice** of that
 workspace instead of letting the agent read whole files.
 
-It is a productised extraction of the `researchv2` study. The research is frozen; this
-repository is the product line ("Track 2" in `researchv2/docs/program_tracks.md`).
+It is a productised extraction of the `researchv2` study (model-external context
+optimisation). That research is frozen; this repository is its product line.
 
 ## What it is / is not
 
