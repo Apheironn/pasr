@@ -10,7 +10,7 @@ tool.
 [![CI](https://github.com/Apheironn/pasr/actions/workflows/ci.yml/badge.svg)](https://github.com/Apheironn/pasr/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-<p align="center"><img src="docs/assets/demo.svg" alt="pasr explain — one MCP call, 42,768 to 2,718 tokens, a receipt for every line" width="820"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/demo.svg" alt="pasr explain — one MCP call, 42,768 to 2,718 tokens, a receipt for every line" width="820"></p>
 
 ## The problem
 
@@ -26,7 +26,7 @@ numbers, no reason.
 You set a token ceiling; PASR never returns more, and it packs whole spans — never a
 truncated function. If the full file set already fits, you get it back unchanged.
 
-<p align="center"><img src="docs/assets/concept-budgeted.svg" width="760" alt="a budget bar: 2,718 tokens kept under a 3,000-token ceiling, 282 free"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/concept-budgeted.svg" width="760" alt="a budget bar: 2,718 tokens kept under a 3,000-token ceiling, 282 free"></p>
 
 ### Traceable
 
@@ -34,7 +34,7 @@ Every span carries `file:line`, a token count, its retrieval score, and *why* it
 kept (`bm25`, `symbol`, `active_window`, …). A byte-stable receipt — of what was kept
 *and* what was dropped — lands on disk for every call.
 
-<p align="center"><img src="docs/assets/concept-traceable.svg" width="760" alt="anatomy of one returned span: where it is (file:line), what it costs (tokens), why it was kept (retrieval signals + score)"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/concept-traceable.svg" width="760" alt="anatomy of one returned span: where it is (file:line), what it costs (tokens), why it was kept (retrieval signals + score)"></p>
 
 ### Honest
 
@@ -42,7 +42,7 @@ Each result is classified `localized` / `trace` / `aggregation`, with a confiden
 advice (*"aggregation-style question — read the files directly"*). PASR tells the agent
 when it is the wrong tool.
 
-<p align="center"><img src="docs/assets/concept-honest.svg" width="760" alt="two queries classified: an aggregation query routed to 'read the files directly', a localized query passed with confidence 0.68"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/concept-honest.svg" width="760" alt="two queries classified: an aggregation query routed to 'read the files directly', a localized query passed with confidence 0.68"></p>
 
 ### Zero setup
 
@@ -50,7 +50,7 @@ No daemon, no vector database, no index to build, offline by default.
 
 ## Install
 
-[![Add to Cursor](https://img.shields.io/badge/Add%20to-Cursor-111?logo=cursor&logoColor=fff)](docs/install/cursor.md)
+[![Add to Cursor](https://img.shields.io/badge/Add%20to-Cursor-111?logo=cursor&logoColor=fff)](https://github.com/Apheironn/pasr/blob/main/docs/install/cursor.md)
 [![Add to VS Code](https://img.shields.io/badge/Add%20to-VS%20Code-0098FF?logo=visualstudiocode&logoColor=fff)](https://insiders.vscode.dev/redirect/mcp/install?name=pasr&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22pasr-mcp%22%2C%22--workspace%22%2C%22.%22%5D%7D)
 
 ```bash
@@ -68,19 +68,19 @@ does redirect handling work here?"*, *"what breaks if I change `HTTPAdapter`?"* 
 model calls `select_context` / `trace_dependencies` itself instead of opening whole
 files.
 
-<p align="center"><img src="docs/assets/concept-mcp.svg" width="760" alt="Add PASR once: one block in the MCP config, then the agent calls select_context on its own — 2,718 tokens with a receipt instead of 42,768 across 12 files"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/concept-mcp.svg" width="760" alt="Add PASR once: one block in the MCP config, then the agent calls select_context on its own — 2,718 tokens with a receipt instead of 42,768 across 12 files"></p>
 
-Per-client setup notes: [Claude Code](docs/install/claude-code.md) ·
-[Cursor](docs/install/cursor.md) · [Windsurf](docs/install/windsurf.md).
+Per-client setup notes: [Claude Code](https://github.com/Apheironn/pasr/blob/main/docs/install/claude-code.md) ·
+[Cursor](https://github.com/Apheironn/pasr/blob/main/docs/install/cursor.md) · [Windsurf](https://github.com/Apheironn/pasr/blob/main/docs/install/windsurf.md).
 
 **Without an agent:** `pip install pasr-mcp`, then `pasr explain "<question>"` prints the
 same receipt the MCP tool returns. Five verbatim runs against pinned public repos are in
-[`examples/`](examples/README.md).
+[`examples/`](https://github.com/Apheironn/pasr/blob/main/examples/README.md).
 
 ## In one call
 
 One localized question — *"how are redirects resolved and followed"* — against
-`psf/requests` ([verbatim transcript](examples/01-requests-redirects.md)):
+`psf/requests` ([verbatim transcript](https://github.com/Apheironn/pasr/blob/main/examples/01-requests-redirects.md)):
 
 | | **PASR `select_context`** | agent reads the repo |
 |---|:--|--:|
@@ -110,7 +110,7 @@ On the offline bake-off (50 tasks, 10 repos, 6k-token budget, no API, no GPU),
 10× less text** — 5.7k tokens across 18 files vs the map's 46 files of signatures — and
 with `map_tokens=1200` it matches repo-map overall (0.90) at **100% critical-file
 coverage** while still carrying real code. Full table:
-[`docs/competitors-benchmark.md`](docs/competitors-benchmark.md).
+[`docs/competitors-benchmark.md`](https://github.com/Apheironn/pasr/blob/main/docs/competitors-benchmark.md).
 
 ## Does the model actually answer better?
 
@@ -126,8 +126,8 @@ supplies, a second model judging:
   trips, and a 30% critical-file miss**.
 
 A **bounded efficiency result, not a superiority claim.** Pre-registered, with the
-supporting runs: [`eval/RESULTS.md`](eval/RESULTS.md) · narrative:
-[`docs/blog/what-worked.md`](docs/blog/what-worked.md).
+supporting runs: [`eval/RESULTS.md`](https://github.com/Apheironn/pasr/blob/main/eval/RESULTS.md) · narrative:
+[`docs/blog/what-worked.md`](https://github.com/Apheironn/pasr/blob/main/docs/blog/what-worked.md).
 
 ## How it works
 
@@ -179,7 +179,7 @@ what PASR handed the model and what it dropped. A usage ledger accrues in
 `.pasr/ledger.jsonl`; `pasr report` turns it into *"N fewer tokens across M calls, R
 round trips saved"*. Context Packs land in `.pasr/packs/` (committable) — a named,
 warm-start slice the whole team loads with `select_context(pack="auth")`. For CI there
-is a composite GitHub Action — see [`docs/ci.md`](docs/ci.md).
+is a composite GitHub Action — see [`docs/ci.md`](https://github.com/Apheironn/pasr/blob/main/docs/ci.md).
 
 ## Capability boundary (from the research)
 
@@ -192,12 +192,12 @@ is a composite GitHub Action — see [`docs/ci.md`](docs/ci.md).
 
 ## Docs
 
-- [`examples/`](examples/README.md) — five verbatim CLI transcripts against pinned repos
-- [`eval/RESULTS.md`](eval/RESULTS.md) — the 50-task evaluation, pre-registered (`pip install ./eval` → `pasr-bench`)
-- [`docs/competitors-benchmark.md`](docs/competitors-benchmark.md) — offline bake-off vs grep / repo-map / semantic search
-- [`docs/architecture.md`](docs/architecture.md) — components and data flow
-- [`docs/roadmap.md`](docs/roadmap.md) — shipped and next
-- [`CHANGELOG.md`](CHANGELOG.md) · [`CONTRIBUTING.md`](CONTRIBUTING.md)
+- [`examples/`](https://github.com/Apheironn/pasr/blob/main/examples/README.md) — five verbatim CLI transcripts against pinned repos
+- [`eval/RESULTS.md`](https://github.com/Apheironn/pasr/blob/main/eval/RESULTS.md) — the 50-task evaluation, pre-registered (`pip install ./eval` → `pasr-bench`)
+- [`docs/competitors-benchmark.md`](https://github.com/Apheironn/pasr/blob/main/docs/competitors-benchmark.md) — offline bake-off vs grep / repo-map / semantic search
+- [`docs/architecture.md`](https://github.com/Apheironn/pasr/blob/main/docs/architecture.md) — components and data flow
+- [`docs/roadmap.md`](https://github.com/Apheironn/pasr/blob/main/docs/roadmap.md) — shipped and next
+- [`CHANGELOG.md`](https://github.com/Apheironn/pasr/blob/main/CHANGELOG.md) · [`CONTRIBUTING.md`](https://github.com/Apheironn/pasr/blob/main/CONTRIBUTING.md)
 
 This productises the frozen `researchv2` study (model-external context optimization); a
 comparative write-up is in preparation.
@@ -219,4 +219,4 @@ python -c "import pasr.pipeline, sys; assert not {'torch','transformers'} & set(
 
 ## License
 
-[Apache-2.0](LICENSE).
+[Apache-2.0](https://github.com/Apheironn/pasr/blob/main/LICENSE).
