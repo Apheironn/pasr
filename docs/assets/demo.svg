@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 470" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+    <clipPath id="typeCmd">
+      <rect x="26" y="60" height="30" width="0">
+        <animate attributeName="width" dur="11s" repeatCount="indefinite"
+                 keyTimes="0;0.03;0.20;0.93;1" values="0;0;660;660;0"/>
+      </rect>
+    </clipPath>
+  </defs>
+
+  <!-- window -->
+  <rect x="10" y="10" width="840" height="410" rx="12" fill="#0b0e14" stroke="#232a36" stroke-width="1" filter="url(#shadow)"/>
+  <rect x="10" y="10" width="840" height="40" rx="12" fill="#11151f"/>
+  <rect x="10" y="38" width="840" height="12" fill="#11151f"/>
+  <circle cx="34" cy="30" r="6" fill="#ff5f56"/>
+  <circle cx="54" cy="30" r="6" fill="#ffbd2e"/>
+  <circle cx="74" cy="30" r="6" fill="#27c93f"/>
+  <text x="430" y="34" text-anchor="middle" font-size="12.5" fill="#5b6472">pasr — context broker</text>
+
+  <!-- prompt + typed command -->
+  <text x="26" y="80" font-size="14" fill="#7ee787">$</text>
+  <g clip-path="url(#typeCmd)">
+    <text x="42" y="80" font-size="14" fill="#e6edf3">pasr explain <tspan fill="#a5d6ff">"how are redirects resolved and followed"</tspan> src <tspan fill="#8b949e">--budget 3000</tspan></text>
+  </g>
+  <!-- cursor -->
+  <g>
+    <animate attributeName="opacity" dur="11s" repeatCount="indefinite"
+             keyTimes="0;0.24;0.245;0.99;1" values="1;1;0;0;1"/>
+    <rect x="42" y="68" width="8" height="16" fill="#7ee787">
+      <animate attributeName="x" dur="11s" repeatCount="indefinite"
+               keyTimes="0;0.03;0.20;1" values="42;42;700;700"/>
+      <animate attributeName="opacity" dur="0.9s" repeatCount="indefinite"
+               keyTimes="0;0.35;0.5;0.85;1" values="1;1;0;0;1"/>
+    </rect>
+  </g>
+
+  <!-- output -->
+  <g font-size="13.5">
+    <g opacity="0"><animate attributeName="opacity" dur="11s" repeatCount="indefinite" keyTimes="0;0.27;0.29;0.93;1" values="0;0;1;1;0"/>
+      <text x="26" y="122" fill="#8b949e">receipt <tspan fill="#c9d1d9">3e78c870ff68</tspan>   route: <tspan fill="#7ee787">selected</tspan></text>
+    </g>
+
+    <g opacity="0"><animate attributeName="opacity" dur="11s" repeatCount="indefinite" keyTimes="0;0.30;0.32;0.93;1" values="0;0;1;1;0"/>
+      <text x="26" y="156" font-size="19" fill="#e6edf3">42,768 <tspan fill="#5b6472">→</tspan> <tspan fill="#3fb950" font-weight="bold">2,718</tspan> tokens<tspan fill="#7ee787">   94% smaller</tspan><tspan fill="#5b6472">   ·   1 tool call</tspan></text>
+    </g>
+
+    <g opacity="0"><animate attributeName="opacity" dur="11s" repeatCount="indefinite" keyTimes="0;0.33;0.35;0.93;1" values="0;0;1;1;0"/>
+      <text x="26" y="192" fill="#8b949e">kept 10 spans — every one with <tspan fill="#c9d1d9">file:line</tspan> + why</text>
+    </g>
+
+    <g opacity="0"><animate attributeName="opacity" dur="11s" repeatCount="indefinite" keyTimes="0;0.355;0.375;0.93;1" values="0;0;1;1;0"/>
+      <text x="40" y="218" fill="#79c0ff">src/requests/sessions.py:694-754<tspan x="330" fill="#5b6472">bm25, lexical_anchor</tspan></text>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" dur="11s" repeatCount="indefinite" keyTimes="0;0.38;0.40;0.93;1" values="0;0;1;1;0"/>
+      <text x="40" y="240" fill="#79c0ff">src/requests/models.py:981-995<tspan x="330" fill="#5b6472">symbol</tspan></text>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" dur="11s" repeatCount="indefinite" keyTimes="0;0.405;0.425;0.93;1" values="0;0;1;1;0"/>
+      <text x="40" y="262" fill="#79c0ff">src/requests/__init__.py:1-62<tspan x="330" fill="#5b6472">active_window</tspan></text>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" dur="11s" repeatCount="indefinite" keyTimes="0;0.43;0.45;0.93;1" values="0;0;1;1;0"/>
+      <text x="40" y="284" fill="#5b6472">…7 more</text>
+    </g>
+
+    <g opacity="0"><animate attributeName="opacity" dur="11s" repeatCount="indefinite" keyTimes="0;0.46;0.48;0.93;1" values="0;0;1;1;0"/>
+      <text x="26" y="320" fill="#d29922">assessment  <tspan fill="#c9d1d9">localized · confidence 0.68 · "looks complete"</tspan></text>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" dur="11s" repeatCount="indefinite" keyTimes="0;0.49;0.51;0.93;1" values="0;0;1;1;0"/>
+      <text x="26" y="344" fill="#6e7681">— and it tells the agent when it's the wrong tool for the question</text>
+    </g>
+
+    <g opacity="0"><animate attributeName="opacity" dur="11s" repeatCount="indefinite" keyTimes="0;0.52;0.55;0.93;1" values="0;0;1;1;0"/>
+      <text x="26" y="392" font-size="14" fill="#7ee787">$ <tspan fill="#484f58">▋</tspan></text>
+    </g>
+  </g>
+
+  <text x="430" y="452" text-anchor="middle" font-size="12.5" fill="#6e7681">one MCP call  ·  deterministic, byte-identical output  ·  every line traceable to <tspan fill="#8b949e">file:line</tspan></text>
+</svg>

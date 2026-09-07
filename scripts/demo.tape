@@ -1,13 +1,17 @@
-# A vhs tape that records the README demo GIF.
+# A vhs tape that records an optional MP4/GIF of the README demo.
 #
-#   1. install vhs (https://github.com/charmbracelet/vhs) + ffmpeg
-#        winget install charmbracelet.vhs        (Windows)
+# The README already ships an animated, dependency-free terminal in
+# docs/assets/demo.svg (loops on GitHub, byte-stable). This tape is only for a
+# raster capture when you want one — it needs a real TTY:
+#
+#   1. install vhs + ttyd + ffmpeg  (ttyd has no good Windows build -> use a
+#      Linux box / WSL / macOS for this step):
 #        brew install vhs                        (macOS)
+#        # linux: vhs + ttyd from your package manager
 #   2. make sure `pasr` is on PATH  (pip install -e .  or  pipx install pasr-mcp)
 #   3. clone the demo repo once:
 #        bash scripts/gen_examples.sh            (checks out .eval-checkouts/requests)
 #   4. vhs scripts/demo.tape                     -> docs/assets/demo.gif
-#   5. in README.md swap  docs/assets/hero.svg  ->  docs/assets/demo.gif
 #
 # Deterministic: no live typing to fumble, re-run any time the output changes.
 
