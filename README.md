@@ -1,7 +1,12 @@
 # PASR
 
 **Provenance-Aware Span Recall** — a zero-setup context-broker MCP for coding and
-document agents.
+document agents. It passes your agent exactly the context it needs, with a receipt.
+
+[![PyPI](https://img.shields.io/pypi/v/pasr-mcp)](https://pypi.org/project/pasr-mcp/)
+[![Python](https://img.shields.io/pypi/pyversions/pasr-mcp)](https://pypi.org/project/pasr-mcp/)
+[![CI](https://github.com/Apheironn/pasr/actions/workflows/ci.yml/badge.svg)](https://github.com/Apheironn/pasr/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 PASR sits between a large workspace (a repo, or long documents) and the model. Instead
 of letting the agent read whole files and burn tokens, it hands back a **small,
@@ -9,11 +14,16 @@ budgeted, fully-traceable slice**: every returned span carries its `file:line`, 
 count, and the reason it was selected — and PASR tells the agent when it is the wrong
 tool for the question.
 
-> Status: **v0.1.0.** Offline retrieval (BM25 + lexical + tree-sitter symbols + an
-> optional sub-word semantic scorer) + budgeted assembly; `select_context`,
-> `trace_dependencies`, `explain_selection`, `expand_context` MCP tools (stdio);
-> byte-stable receipts; query self-assessment + routing advice; committable Context
-> Packs; a `pasr` CLI; a headless `pasr context` + GitHub Action.
+> **v0.2.0.** Offline retrieval (BM25 + lexical + tree-sitter symbols + an optional
+> sub-word semantic scorer) under a hard token budget; four MCP tools over stdio
+> (`select_context` — with an optional symbol-index header and a folded dependency
+> closure —, `trace_dependencies` — forward or reverse/impact —, `explain_selection`,
+> `expand_context`); byte-stable receipts + a "tokens saved" usage ledger; query
+> self-assessment + routing advice; committable Context Packs; a `pasr` CLI with
+> `explain` / `trace` / `pack` / `review` / `context` / `report`; a headless
+> `pasr context` GitHub Action.
+
+<p align="center"><img src="docs/assets/hero.svg" alt="pasr explain — one call, ~90% fewer tokens, a receipt for every line" width="820"></p>
 
 ## Before / after
 
@@ -57,7 +67,8 @@ result**, not a superiority claim — full detail and the supporting runs:
 
 ## Run it
 
-Needs [`uv`](https://docs.astral.sh/uv/). `uvx` fetches and runs the server.
+With [`uv`](https://docs.astral.sh/uv/) (recommended — `uvx` fetches and runs it, no
+install):
 
 ```json
 {
@@ -67,6 +78,8 @@ Needs [`uv`](https://docs.astral.sh/uv/). `uvx` fetches and runs the server.
 }
 ```
 
+Or `pip install pasr-mcp` and point the client at `pasr-mcp --workspace .`.
+
 Per-client setup: [Claude Code](docs/install/claude-code.md) ·
 [Cursor](docs/install/cursor.md) · [Windsurf](docs/install/windsurf.md).
 
@@ -75,12 +88,12 @@ repos (requests, httpx, attrs, packaging, starlette).
 
 ## MCP tools
 
-| Tool | Status | Purpose |
-|---|---|---|
-| `select_context` | **available (M4)** | budgeted, provenance-tracked slice for a query |
-| `trace_dependencies` | **available (M5)** | deterministic def/reference closure for a symbol (Python, JS/TS); `direction="callers"` reverses it for impact analysis |
-| `explain_selection` | **available (M6)** | return the stored receipt for a prior selection |
-| `expand_context` | **available (M7)** | re-run a prior selection once with a larger budget |
+| Tool | Purpose |
+|---|---|
+| `select_context` | budgeted, provenance-tracked slice for a query (+ `map_tokens`, `trace=`, Context Packs) |
+| `trace_dependencies` | deterministic def/reference closure for a symbol (Python, JS/TS); `direction="callers"` reverses it for impact analysis |
+| `explain_selection` | return the stored receipt for a prior selection |
+| `expand_context` | re-run a prior selection once with a larger budget |
 
 Every `select_context` result also carries a `query_class`, a `confidence` score, and
 `advice` — e.g. "aggregation-style question: read the files directly" or "low coverage,
@@ -128,14 +141,11 @@ what PASR handed the model and what it dropped. A usage ledger accrues in
 - [`docs/blog/what-worked.md`](docs/blog/what-worked.md) — what held up, what didn't
 - (a comparative write-up is in preparation)
 - [`docs/architecture.md`](docs/architecture.md) — architecture and data flow
-- [`docs/roadmap.md`](docs/roadmap.md) — milestones M0–M12, each with tests and an exit gate
-- [`docs/roadmap-post-1.0.md`](docs/roadmap-post-1.0.md) — v0.2 scope and the launch sequence
-- (planning docs kept outside the OSS repo)
-
+- [`docs/roadmap.md`](docs/roadmap.md) · [`docs/roadmap-post-1.0.md`](docs/roadmap-post-1.0.md) — milestones and what's next
 - [`CHANGELOG.md`](CHANGELOG.md) · [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 The research this productises is the frozen `researchv2` study (model-external context
-optimization; paper in preparation).
+optimization; a comparative write-up is in preparation).
 
 ## Development
 

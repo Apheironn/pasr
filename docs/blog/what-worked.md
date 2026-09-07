@@ -1,4 +1,4 @@
-# PASR v0.1.0 — what worked, what didn't
+# PASR — what worked, what didn't
 
 PASR started as a research study (`researchv2`) into model-external context
 optimization. This is the honest write-up of turning the part that held up into a

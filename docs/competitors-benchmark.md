@@ -72,7 +72,7 @@ coverage *and* keeps the implementation:
   already detects it) is the fix.
 
 This is `select_context(map_tokens=1200)` (also `pasr --map-tokens`), shipped after
-v0.1.0 and measured here as the `pasr_map` arm. It closes the only bake-off gap while
+0.2.0 and measured here as the `pasr_map` arm. It closes the only bake-off gap while
 *strengthening* the answer-quality story, since the slice still carries real code.
 
 ## Reading it
@@ -124,7 +124,7 @@ a reason to leave `--semantic hashing` on.
 - **Pure localization recall** with vanilla `pasr`: a whole-repo symbol map lists more
   of the repo, so it "hits" more critical files. **`pasr_map`** (symbol-index header +
   bodies) already closes this — 0.90 overall, `crit_hit` 1.00 — via
-  `select_context(map_tokens=)`, shipped after v0.1.0.
+  `select_context(map_tokens=)`, shipped in 0.2.0.
 - **`trace` at a tight budget**: even `pasr_map` (0.86) trails a full symbol index
   (0.93). Folding `trace_dependencies` output into the result when routing sees a trace
   query is the remaining fix.

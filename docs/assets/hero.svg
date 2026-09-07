@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="470" viewBox="0 0 900 470" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+  <rect width="900" height="470" rx="12" fill="#0d1117"/>
+  <rect x="24" y="24" width="852" height="332" rx="10" fill="#010409" stroke="#30363d"/>
+  <circle cx="46" cy="46" r="6" fill="#ff5f56"/><circle cx="66" cy="46" r="6" fill="#ffbd2e"/><circle cx="86" cy="46" r="6" fill="#27c93f"/>
+  <text x="450" y="50" text-anchor="middle" fill="#7d8590" font-size="12">pasr — provenance-aware span recall</text>
+
+  <text x="44" y="92" font-size="13.5" fill="#c9d1d9"><tspan fill="#7ee787">$</tspan> pasr explain <tspan fill="#a5d6ff">"how are redirects resolved and followed"</tspan> src</text>
+
+  <text x="44" y="126" font-size="13" fill="#8b949e"># Selection receipt <tspan fill="#c9d1d9">0407e3bc74a5</tspan></text>
+  <text x="44" y="150" font-size="13" fill="#8b949e">- Route: <tspan fill="#7ee787">selected</tspan>  |  <tspan fill="#c9d1d9">2 718 / 3 000</tspan> tokens  |  42 768 input  |  <tspan fill="#7ee787">94% reduction</tspan></text>
+  <text x="44" y="174" font-size="13" fill="#8b949e">- Assessment: <tspan fill="#c9d1d9">localized</tspan>, confidence <tspan fill="#c9d1d9">0.68</tspan> — looks complete</text>
+
+  <text x="44" y="208" font-size="13" fill="#8b949e">## Kept (10 spans)</text>
+  <text x="44" y="230" font-size="12.5" fill="#8b949e">  1  <tspan fill="#a5d6ff">src/requests/sessions.py:694-754</tspan>   399 tok   <tspan fill="#d2a8ff">bm25, lexical_anchor</tspan></text>
+  <text x="44" y="250" font-size="12.5" fill="#8b949e">  2  <tspan fill="#a5d6ff">src/requests/models.py:981-995</tspan>     83 tok   <tspan fill="#d2a8ff">symbol</tspan></text>
+  <text x="44" y="270" font-size="12.5" fill="#8b949e">  3  <tspan fill="#a5d6ff">src/requests/sessions.py:117-159</tspan>   400 tok   <tspan fill="#d2a8ff">bm25, lexical_anchor</tspan></text>
+  <text x="44" y="290" font-size="12.5" fill="#6e7681">  …  every line has a file:line and the reason it was kept</text>
+
+  <text x="44" y="326" font-size="12.5" fill="#8b949e">## Dropped (4): 2 over budget, 2 overlapping — with ranks, in the receipt</text>
+
+  <text x="44" y="398" font-size="14" fill="#c9d1d9">One tool call. <tspan fill="#7ee787">~90% fewer tokens.</tspan> A receipt for every line.</text>
+  <text x="44" y="428" font-size="12.5" fill="#8b949e">50 tasks / 10 repos: PASR <tspan fill="#c9d1d9">0.48</tspan> task success @ 5.8k ctx vs a 59k whole-repo dump's <tspan fill="#c9d1d9">0.38</tspan></text>
+  <text x="44" y="450" font-size="12.5" fill="#8b949e">critical file in context <tspan fill="#c9d1d9">46/50</tspan> vs the dump's <tspan fill="#c9d1d9">33/50</tspan>  ·  bounded efficiency result, not a superiority claim</text>
+</svg>
