@@ -41,10 +41,10 @@
   h2{font-size:1.5rem; margin:0 0 .8em; letter-spacing:-.01em}
   p{margin:0 0 1em}
   .lede{font-size:1.12rem; color:#c9d1d9}
-  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-top:8px}
-  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:18px 20px}
-  .card h3{margin:.1em 0 .4em; font-size:1.02rem}
-  .card p{margin:0; color:var(--dim); font-size:.95rem}
+  .feat{margin:28px 0}
+  .feat h3{margin:0 0 .3em; font-size:1.14rem}
+  .feat p{color:var(--dim); max-width:680px}
+  .feat img{display:block; width:100%; max-width:760px; margin:14px 0 0; border:1px solid var(--line); border-radius:10px}
   table{width:100%; border-collapse:collapse; font-size:.92rem; margin-top:6px; display:block; overflow-x:auto}
   th,td{border:1px solid var(--line); padding:8px 11px; text-align:center; white-space:nowrap}
   th{background:var(--panel); font-weight:600}
@@ -98,17 +98,34 @@
 <section>
   <div class="wrap">
     <h2>What PASR does</h2>
-    <div class="grid">
-      <div class="card"><h3>Budgeted</h3><p>You set a token ceiling; PASR never returns more.
-        If the whole thing already fits, you get it back unchanged.</p></div>
-      <div class="card"><h3>Traceable</h3><p>Every span carries <code>file:line</code>, a token
-        count, its retrieval score, and <i>why</i> it was kept. A byte-stable receipt lands on
-        disk for every call.</p></div>
-      <div class="card"><h3>Honest</h3><p>Each result is classified — <code>localized</code> /
-        <code>trace</code> / <code>aggregation</code> — with a confidence and advice. PASR will
-        tell you it is the wrong tool.</p></div>
-      <div class="card"><h3>Zero setup</h3><p>No daemon, no vector database, no index to build,
-        offline by default. <code>uvx pasr-mcp</code> and it runs.</p></div>
+
+    <div class="feat">
+      <h3>Budgeted</h3>
+      <p>You set a token ceiling; PASR never returns more — and it packs whole spans, never a
+      truncated function. If the full file set already fits, you get it back unchanged.</p>
+      <img src="assets/concept-budgeted.svg" alt="a budget bar: 2,718 tokens kept under a 3,000-token ceiling, 282 free">
+    </div>
+
+    <div class="feat">
+      <h3>Traceable</h3>
+      <p>Every span carries <code>file:line</code>, a token count, its retrieval score, and
+      <i>why</i> it was kept. A byte-stable receipt — of what was kept <i>and</i> what was
+      dropped — lands on disk for every call.</p>
+      <img src="assets/concept-traceable.svg" alt="anatomy of one returned span: where it is (file:line), what it costs (tokens), why it was kept (retrieval signals plus score)">
+    </div>
+
+    <div class="feat">
+      <h3>Honest</h3>
+      <p>Each result is classified — <code>localized</code> / <code>trace</code> /
+      <code>aggregation</code> — with a confidence and advice. PASR tells the agent when it is
+      the wrong tool for the question.</p>
+      <img src="assets/concept-honest.svg" alt="two queries classified: an aggregation query routed to 'read the files directly', a localized query passed with confidence 0.68">
+    </div>
+
+    <div class="feat">
+      <h3>Zero setup</h3>
+      <p>No daemon, no vector database, no index to build, offline by default.
+      <code>uvx pasr-mcp</code> and it runs.</p>
     </div>
   </div>
 </section>

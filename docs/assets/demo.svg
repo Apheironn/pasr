@@ -6,7 +6,7 @@
     <clipPath id="typeCmd">
       <rect x="26" y="60" height="30" width="0">
         <animate attributeName="width" dur="11s" repeatCount="indefinite"
-                 keyTimes="0;0.03;0.20;0.93;1" values="0;0;660;660;0"/>
+                 keyTimes="0;0.03;0.20;0.93;1" values="0;0;600;600;0"/>
       </rect>
     </clipPath>
   </defs>
@@ -23,7 +23,7 @@
   <!-- prompt + typed command -->
   <text x="26" y="80" font-size="14" fill="#7ee787">$</text>
   <g clip-path="url(#typeCmd)">
-    <text x="42" y="80" font-size="14" fill="#e6edf3">pasr explain <tspan fill="#a5d6ff">"how are redirects resolved and followed"</tspan> src <tspan fill="#8b949e">--budget 3000</tspan></text>
+    <text x="42" y="80" font-size="14" fill="#e6edf3">pasr explain <tspan fill="#a5d6ff">"how are redirects resolved and followed"</tspan> <tspan fill="#8b949e">--budget 3000</tspan></text>
   </g>
   <!-- cursor -->
   <g>
@@ -31,7 +31,7 @@
              keyTimes="0;0.24;0.245;0.99;1" values="1;1;0;0;1"/>
     <rect x="42" y="68" width="8" height="16" fill="#7ee787">
       <animate attributeName="x" dur="11s" repeatCount="indefinite"
-               keyTimes="0;0.03;0.20;1" values="42;42;700;700"/>
+               keyTimes="0;0.03;0.20;1" values="42;42;590;590"/>
       <animate attributeName="opacity" dur="0.9s" repeatCount="indefinite"
                keyTimes="0;0.35;0.5;0.85;1" values="1;1;0;0;1"/>
     </rect>

@@ -21,16 +21,32 @@ no line numbers, no reason.
 
 ## What PASR does
 
-- **Budgeted.** You set a token ceiling; PASR never returns more. If the whole thing
-  already fits, you get it back unchanged.
-- **Traceable.** Every span carries `file:line`, a token count, its retrieval score,
-  and *why* it was kept (`bm25`, `symbol`, `active_window`, …). A byte-stable receipt
-  lands on disk for every call.
-- **Honest.** Each result is classified (`localized` / `trace` / `aggregation`) with a
-  confidence and advice — *"aggregation-style question, read the files directly"*,
-  *"low coverage, also grep for X"*. PASR will tell you it is the wrong tool.
-- **Zero setup.** No daemon, no vector database, no index to build, offline by
-  default. `uvx pasr-mcp` and it runs.
+### Budgeted
+
+You set a token ceiling; PASR never returns more — and it packs whole spans, never a
+truncated function. If the full file set already fits, you get it back unchanged.
+
+<p align="center"><img src="docs/assets/concept-budgeted.svg" width="760" alt="a budget bar: 2,718 tokens kept under a 3,000-token ceiling, 282 free"></p>
+
+### Traceable
+
+Every span carries `file:line`, a token count, its retrieval score, and *why* it was
+kept (`bm25`, `symbol`, `active_window`, …). A byte-stable receipt — of what was kept
+*and* what was dropped — lands on disk for every call.
+
+<p align="center"><img src="docs/assets/concept-traceable.svg" width="760" alt="anatomy of one returned span: where it is (file:line), what it costs (tokens), why it was kept (retrieval signals + score)"></p>
+
+### Honest
+
+Each result is classified — `localized` / `trace` / `aggregation` — with a confidence
+and advice. PASR tells the agent when it is the wrong tool for the question.
+
+<p align="center"><img src="docs/assets/concept-honest.svg" width="760" alt="two queries classified: an aggregation query routed to 'read the files directly', a localized query passed with confidence 0.68"></p>
+
+### Zero setup
+
+No daemon, no vector database, no index to build, offline by default. `uvx pasr-mcp`
+and it runs.
 
 ## In one call
 
