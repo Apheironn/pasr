@@ -12,12 +12,30 @@ tool.
 
 <p align="center"><img src="docs/assets/demo.svg" alt="pasr explain — one MCP call, 42,768 to 2,718 tokens, a receipt for every line" width="820"></p>
 
-## Add it to your agent
+## The problem
+
+An agent working in a real repo has two bad options: read whole files and burn its
+context window on code that never mattered, or grep-and-guess and miss the file that
+held the answer. Either way, **you cannot see what it looked at** — no record, no line
+numbers, no reason.
+
+## What PASR does
+
+- **Budgeted.** You set a token ceiling; PASR never returns more, and it packs whole
+  spans — never a truncated function. If the full file set already fits, you get it
+  back unchanged.
+- **Traceable.** Every span carries `file:line`, a token count, its retrieval score,
+  and *why* it was kept (`bm25`, `symbol`, `active_window`, …). A byte-stable receipt —
+  of what was kept *and* what was dropped — lands on disk for every call.
+- **Honest.** Each result is classified `localized` / `trace` / `aggregation`, with a
+  confidence and advice (*"aggregation-style question — read the files directly"*).
+  PASR tells the agent when it is the wrong tool.
+- **Zero setup.** No daemon, no vector database, no index to build, offline by default.
+
+## Install
 
 [![Add to Cursor](https://img.shields.io/badge/Add%20to-Cursor-111?logo=cursor&logoColor=fff)](docs/install/cursor.md)
 [![Add to VS Code](https://img.shields.io/badge/Add%20to-VS%20Code-0098FF?logo=visualstudiocode&logoColor=fff)](https://insiders.vscode.dev/redirect/mcp/install?name=pasr&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22pasr-mcp%22%2C%22--workspace%22%2C%22.%22%5D%7D)
-
-One command in Claude Code:
 
 ```bash
 claude mcp add pasr -- uvx pasr-mcp --workspace .
@@ -34,53 +52,21 @@ does redirect handling work here?"*, *"what breaks if I change `HTTPAdapter`?"* 
 model calls `select_context` / `trace_dependencies` itself instead of opening whole
 files.
 
-<p align="center"><img src="docs/assets/concept-mcp.svg" width="760" alt="Add PASR once: one block in the MCP config, then the agent calls select_context on its own — 2,718 tokens with a receipt instead of 42,768 tokens across 12 files"></p>
+<p align="center"><img src="docs/assets/concept-mcp.svg" width="760" alt="Add PASR once: one block in the MCP config, then the agent calls select_context on its own — 2,718 tokens with a receipt instead of 42,768 across 12 files"></p>
 
 Per-client setup notes: [Claude Code](docs/install/claude-code.md) ·
 [Cursor](docs/install/cursor.md) · [Windsurf](docs/install/windsurf.md).
 
-## The problem
-
-An agent working in a real repo has two bad options: read whole files and burn its
-context window on code that never mattered, or grep-and-guess and miss the file that
-held the answer. Either way, **you cannot see what it looked at** — there is no record,
-no line numbers, no reason.
-
-## What PASR does
-
-### Budgeted
-
-You set a token ceiling; PASR never returns more — and it packs whole spans, never a
-truncated function. If the full file set already fits, you get it back unchanged.
-
-<p align="center"><img src="docs/assets/concept-budgeted.svg" width="760" alt="a budget bar: 2,718 tokens kept under a 3,000-token ceiling, 282 free"></p>
-
-### Traceable
-
-Every span carries `file:line`, a token count, its retrieval score, and *why* it was
-kept (`bm25`, `symbol`, `active_window`, …). A byte-stable receipt — of what was kept
-*and* what was dropped — lands on disk for every call.
-
-<p align="center"><img src="docs/assets/concept-traceable.svg" width="760" alt="anatomy of one returned span: where it is (file:line), what it costs (tokens), why it was kept (retrieval signals + score)"></p>
-
-### Honest
-
-Each result is classified — `localized` / `trace` / `aggregation` — with a confidence
-and advice. PASR tells the agent when it is the wrong tool for the question.
-
-<p align="center"><img src="docs/assets/concept-honest.svg" width="760" alt="two queries classified: an aggregation query routed to 'read the files directly', a localized query passed with confidence 0.68"></p>
-
-### Zero setup
-
-No daemon, no vector database, no index to build, offline by default. `uvx pasr-mcp`
-and it runs.
+**Without an agent:** `pip install pasr-mcp`, then `pasr explain "<question>"` prints the
+same receipt the MCP tool returns. Five verbatim runs against pinned public repos are in
+[`examples/`](examples/README.md).
 
 ## In one call
 
 One localized question — *"how are redirects resolved and followed"* — against
 `psf/requests` ([verbatim transcript](examples/01-requests-redirects.md)):
 
-| | **agent reads the repo** | **PASR `select_context`** |
+| | agent reads the repo | **PASR `select_context`** |
 |---|---:|---:|
 | input tokens | 42 768 | **2 718** — 94% less |
 | tool round trips | 1 large read | **1** |
@@ -144,17 +130,7 @@ query + file globs
 
 RRF needs no score calibration across the rankers — only their rank orders — so BM25,
 symbol hits, and the semantic scorer combine without tuning weights. The pack is whole
-spans only (never a truncated function), dependency-ordered.
-
-## Try it without an agent
-
-```bash
-pip install pasr-mcp          # or: uvx pasr-mcp ...   /   pipx install pasr-mcp
-pasr explain "how are redirects resolved and followed"   # run it on the current repo
-```
-
-`pasr explain` prints the same receipt the MCP tool returns. See [`examples/`](examples/README.md)
-for five verbatim runs against pinned public repos.
+spans only, dependency-ordered.
 
 ## MCP tools
 
@@ -179,8 +155,8 @@ pasr report --price-per-mtok 3                        # tokens / round trips / $
 ```
 
 The path is optional everywhere — with none, PASR scans the whole workspace
-(`.gitignore`-aware). Pass a directory or globs (`src/`, `lib/ "**/*.py"`) only to
-scope it tighter or run faster.
+(`.gitignore`-aware). Pass a directory or globs (`src/`, `lib/ "**/*.py"`) only to scope
+it tighter or run faster.
 
 Receipts land in `.pasr/receipts/<id>.{json,md}` (gitignored) — a byte-stable record of
 what PASR handed the model and what it dropped. A usage ledger accrues in
@@ -189,7 +165,7 @@ round trips saved"*. Context Packs land in `.pasr/packs/` (committable) — a na
 warm-start slice the whole team loads with `select_context(pack="auth")`. For CI there
 is a composite GitHub Action — see [`docs/ci.md`](docs/ci.md).
 
-## Honest capability boundary (from the research)
+## Capability boundary (from the research)
 
 - **Strong:** deterministic dependency / variable-trace closure — large token cuts,
   quality preserved or improved.

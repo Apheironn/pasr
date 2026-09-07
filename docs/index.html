@@ -41,10 +41,9 @@
   h2{font-size:1.5rem; margin:0 0 .8em; letter-spacing:-.01em}
   p{margin:0 0 1em}
   .lede{font-size:1.12rem; color:#c9d1d9}
-  .feat{margin:28px 0}
+  .feat{margin:22px 0}
   .feat h3{margin:0 0 .3em; font-size:1.14rem}
   .feat p{color:var(--dim); max-width:680px}
-  .feat img{display:block; width:100%; max-width:760px; margin:14px 0 0; border:1px solid var(--line); border-radius:10px}
   table{width:100%; border-collapse:collapse; font-size:.92rem; margin-top:6px; display:block; overflow-x:auto}
   th,td{border:1px solid var(--line); padding:8px 11px; text-align:center; white-space:nowrap}
   th{background:var(--panel); font-weight:600}
@@ -87,21 +86,6 @@
 
 <section>
   <div class="wrap">
-    <h2>Add it to your agent</h2>
-    <p>One click in Cursor or VS Code, or one command in Claude Code:</p>
-    <pre>claude mcp add pasr -- uvx pasr-mcp --workspace .</pre>
-    <p>Or paste this into your client's MCP config (Claude Desktop, Windsurf, Cline, Zed, …):</p>
-    <pre>{ <span class="c">"mcpServers"</span>: { <span class="c">"pasr"</span>: { <span class="c">"command"</span>: <span class="c">"uvx"</span>, <span class="c">"args"</span>: [<span class="c">"pasr-mcp"</span>, <span class="c">"--workspace"</span>, <span class="c">"."</span>] } } }</pre>
-    <p>After that you <b>never type <code>pasr</code></b>. Ask your agent a question the normal
-    way — <i>"how does redirect handling work here?"</i>, <i>"what breaks if I change
-    <code>HTTPAdapter</code>?"</i> — and the model calls <code>select_context</code> /
-    <code>trace_dependencies</code> itself instead of opening whole files.</p>
-    <img src="assets/concept-mcp.svg" style="display:block;width:100%;max-width:760px;margin:16px 0 0;border:1px solid var(--line);border-radius:10px" alt="Add PASR once: one block in the MCP config, then the agent calls select_context on its own">
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
     <h2>The problem</h2>
     <p class="lede">An agent working in a real repo has two bad options: read whole files and
     burn its context window on code that never mattered, or grep-and-guess and miss the file
@@ -118,7 +102,6 @@
       <h3>Budgeted</h3>
       <p>You set a token ceiling; PASR never returns more — and it packs whole spans, never a
       truncated function. If the full file set already fits, you get it back unchanged.</p>
-      <img src="assets/concept-budgeted.svg" alt="a budget bar: 2,718 tokens kept under a 3,000-token ceiling, 282 free">
     </div>
 
     <div class="feat">
@@ -126,7 +109,6 @@
       <p>Every span carries <code>file:line</code>, a token count, its retrieval score, and
       <i>why</i> it was kept. A byte-stable receipt — of what was kept <i>and</i> what was
       dropped — lands on disk for every call.</p>
-      <img src="assets/concept-traceable.svg" alt="anatomy of one returned span: where it is (file:line), what it costs (tokens), why it was kept (retrieval signals plus score)">
     </div>
 
     <div class="feat">
@@ -134,7 +116,6 @@
       <p>Each result is classified — <code>localized</code> / <code>trace</code> /
       <code>aggregation</code> — with a confidence and advice. PASR tells the agent when it is
       the wrong tool for the question.</p>
-      <img src="assets/concept-honest.svg" alt="two queries classified: an aggregation query routed to 'read the files directly', a localized query passed with confidence 0.68">
     </div>
 
     <div class="feat">
@@ -142,6 +123,24 @@
       <p>No daemon, no vector database, no index to build, offline by default.
       <code>uvx pasr-mcp</code> and it runs.</p>
     </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Install</h2>
+    <p>One command in Claude Code:</p>
+    <pre>claude mcp add pasr -- uvx pasr-mcp --workspace .</pre>
+    <p>Or paste this into your client's MCP config (Claude Desktop, Cursor, Windsurf, Cline, Zed, …):</p>
+    <pre>{ <span class="c">"mcpServers"</span>: { <span class="c">"pasr"</span>: { <span class="c">"command"</span>: <span class="c">"uvx"</span>, <span class="c">"args"</span>: [<span class="c">"pasr-mcp"</span>, <span class="c">"--workspace"</span>, <span class="c">"."</span>] } } }</pre>
+    <p>After that you <b>never type <code>pasr</code></b>. Ask your agent a question the normal
+    way — <i>"how does redirect handling work here?"</i>, <i>"what breaks if I change
+    <code>HTTPAdapter</code>?"</i> — and the model calls <code>select_context</code> /
+    <code>trace_dependencies</code> itself instead of opening whole files.</p>
+    <img src="assets/concept-mcp.svg" style="display:block;width:100%;max-width:760px;margin:16px 0 0;border:1px solid var(--line);border-radius:10px" alt="Add PASR once: one block in the MCP config, then the agent calls select_context on its own">
+    <p style="color:var(--dim);font-size:.95rem;margin-top:14px"><b>Without an agent:</b>
+    <code>pip install pasr-mcp</code>, then <code>pasr explain "&lt;question&gt;"</code> prints
+    the same receipt.</p>
   </div>
 </section>
 
@@ -229,22 +228,6 @@
     <p style="color:var(--dim); font-size:.95rem">RRF needs no score calibration across the
     rankers — only their rank orders — so BM25, symbol hits, and the semantic scorer combine
     without tuning weights.</p>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <h2>Run it</h2>
-    <p>With <a href="https://docs.astral.sh/uv/">uv</a> — <code>uvx</code> fetches and runs it,
-    nothing installed:</p>
-<pre>{
-  <span class="c">"mcpServers"</span>: {
-    <span class="c">"pasr"</span>: { <span class="c">"command"</span>: <span class="c">"uvx"</span>, <span class="c">"args"</span>: [<span class="c">"pasr-mcp"</span>, <span class="c">"--workspace"</span>, <span class="c">"."</span>] }
-  }
-}</pre>
-    <p>Or <code>pip install pasr-mcp</code> and point the client at
-    <code>pasr-mcp --workspace .</code>. Per-client setup for Claude Code, Cursor and Windsurf
-    is in the repo.</p>
   </div>
 </section>
 
