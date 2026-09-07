@@ -141,6 +141,10 @@ pasr context --issue "$(cat issue.txt)" src/ \        # headless slice for CI / 
 pasr report --price-per-mtok 3                        # tokens / round trips / $ saved so far
 ```
 
+The path is optional everywhere — with none, PASR scans the whole workspace
+(`.gitignore`-aware). Pass a directory or globs (`src/`, `lib/ "**/*.py"`) only to
+scope it tighter or run faster.
+
 Receipts land in `.pasr/receipts/<id>.{json,md}` (gitignored) — a byte-stable record of
 what PASR handed the model and what it dropped. A usage ledger accrues in
 `.pasr/ledger.jsonl`; `pasr report` turns it into *"N fewer tokens across M calls, R
