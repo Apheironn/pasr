@@ -12,6 +12,33 @@ tool.
 
 <p align="center"><img src="docs/assets/demo.svg" alt="pasr explain — one MCP call, 42,768 to 2,718 tokens, a receipt for every line" width="820"></p>
 
+## Add it to your agent
+
+[![Add to Cursor](https://img.shields.io/badge/Add%20to-Cursor-111?logo=cursor&logoColor=fff)](docs/install/cursor.md)
+[![Add to VS Code](https://img.shields.io/badge/Add%20to-VS%20Code-0098FF?logo=visualstudiocode&logoColor=fff)](https://insiders.vscode.dev/redirect/mcp/install?name=pasr&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22pasr-mcp%22%2C%22--workspace%22%2C%22.%22%5D%7D)
+
+One command in Claude Code:
+
+```bash
+claude mcp add pasr -- uvx pasr-mcp --workspace .
+```
+
+Or paste this into your client's MCP config (Claude Desktop, Windsurf, Cline, Zed, …):
+
+```json
+{ "mcpServers": { "pasr": { "command": "uvx", "args": ["pasr-mcp", "--workspace", "."] } } }
+```
+
+After that you **never type `pasr`**. Ask your agent a question the normal way — *"how
+does redirect handling work here?"*, *"what breaks if I change `HTTPAdapter`?"* — and the
+model calls `select_context` / `trace_dependencies` itself instead of opening whole
+files.
+
+<p align="center"><img src="docs/assets/concept-mcp.svg" width="760" alt="Add PASR once: one block in the MCP config, then the agent calls select_context on its own — 2,718 tokens with a receipt instead of 42,768 tokens across 12 files"></p>
+
+Per-client setup notes: [Claude Code](docs/install/claude-code.md) ·
+[Cursor](docs/install/cursor.md) · [Windsurf](docs/install/windsurf.md).
+
 ## The problem
 
 An agent working in a real repo has two bad options: read whole files and burn its
@@ -53,7 +80,7 @@ and it runs.
 One localized question — *"how are redirects resolved and followed"* — against
 `psf/requests` ([verbatim transcript](examples/01-requests-redirects.md)):
 
-| | agent reads `src/` | **`select_context`** |
+| | **agent reads the repo** | **PASR `select_context`** |
 |---|---:|---:|
 | input tokens | 42 768 | **2 718** — 94% less |
 | tool round trips | 1 large read | **1** |
@@ -119,21 +146,15 @@ RRF needs no score calibration across the rankers — only their rank orders —
 symbol hits, and the semantic scorer combine without tuning weights. The pack is whole
 spans only (never a truncated function), dependency-ordered.
 
-## Run it
+## Try it without an agent
 
-With [`uv`](https://docs.astral.sh/uv/) — `uvx` fetches and runs it, nothing installed:
-
-```json
-{
-  "mcpServers": {
-    "pasr": { "command": "uvx", "args": ["pasr-mcp", "--workspace", "."] }
-  }
-}
+```bash
+pip install pasr-mcp          # or: uvx pasr-mcp ...   /   pipx install pasr-mcp
+pasr explain "how are redirects resolved and followed"   # run it on the current repo
 ```
 
-Or `pip install pasr-mcp` and point the client at `pasr-mcp --workspace .`. Per-client
-setup: [Claude Code](docs/install/claude-code.md) ·
-[Cursor](docs/install/cursor.md) · [Windsurf](docs/install/windsurf.md).
+`pasr explain` prints the same receipt the MCP tool returns. See [`examples/`](examples/README.md)
+for five verbatim runs against pinned public repos.
 
 ## MCP tools
 

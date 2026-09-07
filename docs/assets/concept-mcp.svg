@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 214" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace">
+  <rect x="1" y="1" width="818" height="212" rx="10" fill="#0b0e14" stroke="#232a36"/>
+
+  <text x="24" y="32" font-size="13" fill="#8b949e">add PASR to your agent once — then it runs itself</text>
+
+  <text x="24" y="64" font-size="12.5" fill="#6e7681">1</text>
+  <text x="46" y="64" font-size="12.5" fill="#8b949e">one block in your MCP config, or click <tspan fill="#79c0ff">Add to Cursor</tspan></text>
+  <text x="46" y="84" font-size="12" fill="#484f58">"pasr": { "command": "uvx", "args": ["pasr-mcp", "--workspace", "."] }</text>
+
+  <text x="24" y="116" font-size="12.5" fill="#6e7681">2</text>
+  <text x="46" y="116" font-size="12.5" fill="#8b949e">ask your agent normally — no <tspan fill="#c9d1d9">pasr</tspan>, no flags</text>
+  <text x="46" y="136" font-size="12.5" fill="#c9d1d9">"how are redirects resolved in this repo?"</text>
+
+  <text x="24" y="168" font-size="12.5" fill="#6e7681">3</text>
+  <text x="46" y="168" font-size="12.5" fill="#8b949e">the model calls <tspan fill="#c9d1d9">select_context</tspan> itself, instead of opening files</text>
+  <text x="46"  y="190" font-size="12" fill="#6e7681">without it   12 files · 42,768 tokens · no record</text>
+  <text x="430" y="190" font-size="12" fill="#6e7681">with it   1 call · <tspan fill="#7ee787">2,718 tokens</tspan> · a receipt</text>
+</svg>

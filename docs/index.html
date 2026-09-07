@@ -87,6 +87,21 @@
 
 <section>
   <div class="wrap">
+    <h2>Add it to your agent</h2>
+    <p>One click in Cursor or VS Code, or one command in Claude Code:</p>
+    <pre>claude mcp add pasr -- uvx pasr-mcp --workspace .</pre>
+    <p>Or paste this into your client's MCP config (Claude Desktop, Windsurf, Cline, Zed, …):</p>
+    <pre>{ <span class="c">"mcpServers"</span>: { <span class="c">"pasr"</span>: { <span class="c">"command"</span>: <span class="c">"uvx"</span>, <span class="c">"args"</span>: [<span class="c">"pasr-mcp"</span>, <span class="c">"--workspace"</span>, <span class="c">"."</span>] } } }</pre>
+    <p>After that you <b>never type <code>pasr</code></b>. Ask your agent a question the normal
+    way — <i>"how does redirect handling work here?"</i>, <i>"what breaks if I change
+    <code>HTTPAdapter</code>?"</i> — and the model calls <code>select_context</code> /
+    <code>trace_dependencies</code> itself instead of opening whole files.</p>
+    <img src="assets/concept-mcp.svg" style="display:block;width:100%;max-width:760px;margin:16px 0 0;border:1px solid var(--line);border-radius:10px" alt="Add PASR once: one block in the MCP config, then the agent calls select_context on its own">
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
     <h2>The problem</h2>
     <p class="lede">An agent working in a real repo has two bad options: read whole files and
     burn its context window on code that never mattered, or grep-and-guess and miss the file

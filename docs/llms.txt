@@ -1,0 +1,40 @@
+# PASR — Provenance-Aware Span Recall
+
+> A zero-setup context-broker MCP server for coding and document agents. Given a query
+> and a workspace, it returns a small, hard-budgeted, fully-traceable slice: every span
+> carries its `file:line`, token count, retrieval score, and the reason it was kept. It
+> classifies each query (localized / trace / aggregation) and tells the agent when it
+> is the wrong tool. Deterministic (byte-identical output for the same input), offline
+> by default — no daemon, no vector database, no index to build.
+
+Install: `pip install pasr-mcp` (PyPI: pasr-mcp) or `uvx pasr-mcp --workspace .`.
+MCP config: `{"command":"uvx","args":["pasr-mcp","--workspace","."]}`.
+
+## MCP tools
+
+- select_context(query, include=[...], budget_tokens=3000, map_tokens=0, trace=""): a
+  budgeted, provenance-tracked slice for a query. `map_tokens` prepends a query-ranked
+  symbol-index header carved out of the budget; `trace` folds a symbol's dependency
+  closure into the same slice.
+- trace_dependencies(symbol, include=[...], max_depth=4, direction="dependencies"):
+  deterministic def/reference closure for a symbol (Python, JS/TS). direction="callers"
+  reverses it for impact analysis.
+- explain_selection(selection_id): return the stored receipt for a prior selection.
+- expand_context(selection_id, budget_tokens): re-run a prior selection once, larger.
+
+## CLI
+
+- pasr explain "<query>" [paths]: run a selection, print the receipt.
+- pasr trace <symbol> [paths] [--callers]: a dependency closure.
+- pasr pack <name> "<query>" [paths]: save a committable Context Pack.
+- pasr review [--staged|--range|--diff]: diff-aware context — touched defs + affected callers.
+- pasr context --issue <text> [paths]: headless slice for CI / agents.
+- pasr report [--price-per-mtok N]: summarise the usage ledger.
+
+## Docs
+
+- README: https://github.com/Apheironn/pasr
+- Evaluation (50 tasks, 10 repos, pre-registered): https://github.com/Apheironn/pasr/blob/main/eval/RESULTS.md
+- Bake-off vs grep / repo-map / semantic search: https://github.com/Apheironn/pasr/blob/main/docs/competitors-benchmark.md
+- Architecture: https://github.com/Apheironn/pasr/blob/main/docs/architecture.md
+- Roadmap: https://github.com/Apheironn/pasr/blob/main/docs/roadmap.md

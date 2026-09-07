@@ -7,7 +7,11 @@ there is nothing to install.
 
 ## Add the server
 
-Create `.cursor/mcp.json` in your project (or `~/.cursor/mcp.json` for all projects):
+**One click:** [Add PASR to Cursor](cursor://anysphere.cursor-deeplink/mcp/install?name=pasr&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyJwYXNyLW1jcCIsIi0td29ya3NwYWNlIiwiLiJdfQ==)
+— Cursor opens an approval dialog and writes the config for you.
+
+**Or by hand:** create `.cursor/mcp.json` in your project (or `~/.cursor/mcp.json` for
+all projects):
 
 ```json
 {

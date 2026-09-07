@@ -11,12 +11,23 @@ requires-python = ">=3.10"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "Apheironn" }]
-keywords = ["mcp", "llm", "context", "retrieval", "coding-agent", "tokens", "provenance"]
+keywords = [
+  "mcp", "model-context-protocol", "mcp-server", "llm", "ai-agent", "coding-agent",
+  "context", "context-engineering", "retrieval", "rag", "code-search", "repo-map",
+  "token-budget", "provenance", "claude", "cursor", "tree-sitter",
+]
 classifiers = [
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
   "Intended Audience :: Developers",
+  "Environment :: Console",
   "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Documentation",
+  "Topic :: Text Processing :: Indexing",
 ]
 dependencies = [
   "tiktoken>=0.7",

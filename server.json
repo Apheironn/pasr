@@ -3,7 +3,7 @@
   "name": "io.github.Apheironn/pasr",
   "description": "Zero-setup context-broker MCP: a small, budgeted, fully-traceable slice of the workspace for a query, with a receipt for every line and an honest signal when it is the wrong tool.",
   "status": "active",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": {
     "url": "https://github.com/Apheironn/pasr",
     "source": "github"
@@ -13,7 +13,7 @@
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "pasr-mcp",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "transport": { "type": "stdio" },
       "runtimeArguments": [
         {
