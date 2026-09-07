@@ -138,7 +138,6 @@ what PASR handed the model and what it dropped. A usage ledger accrues in
 - [`eval/RESULTS.md`](eval/RESULTS.md) — the 50-task evaluation, pre-registered (`pip install ./eval` → `pasr-bench`)
 - [`docs/competitors-benchmark.md`](docs/competitors-benchmark.md) — offline bake-off vs grep / repo-map / semantic-search
 - [`docs/blog/what-worked.md`](docs/blog/what-worked.md) — what held up, what didn't
-- (a comparative write-up is in preparation)
 - [`docs/architecture.md`](docs/architecture.md) — architecture and data flow
 - [`docs/roadmap.md`](docs/roadmap.md) — what's shipped and what's next
 - [`CHANGELOG.md`](CHANGELOG.md) · [`CONTRIBUTING.md`](CONTRIBUTING.md)

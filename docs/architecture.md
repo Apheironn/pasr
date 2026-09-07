@@ -69,37 +69,35 @@ query + file globs
   -> return { spans[], provenance(file:line), token_accounting, routing_advice }
 ```
 
-## Inherited modules (from `researchv2`, pure-logic, torch-free after extraction)
+## Core modules
 
-| Module | Responsibility | Extraction status |
-|---|---|---|
-| `evidence.py` | keyword extraction, claim/coverage accounting | copied verbatim |
-| `candidates.py` | `CandidateSpan` type, lexical candidates, RRF fusion, stable ranking | copied; tokenizer calls delisted from torch |
-| `packing.py` | hard-budget score-only / coverage-aware / active-window packing, dependency ordering | copied verbatim |
-| `context_order.py` | span packaging orders (score/source/edge/diverse) | copied verbatim |
-| `controller.py` | heuristic block-size / top-k choice | copied verbatim; **not wired into `select_context`** (fixed `schema` defaults + `routing.py` cover the shipped design) — kept as a utility for adaptive-settings callers |
-| `file_discovery.py` | safe workspace-relative file discovery | copied; `.gitignore` + languages added in M1 |
-| `symbols/python_symbols.py` | Python AST symbol/dependency candidate windows | copied; generalised to tree-sitter in M5 |
-| `_tokenize.py` | list-based encode/decode adapter | new shim seeding M1 |
+| Module | Responsibility |
+|---|---|
+| `tokenize.py`, `chunker.py` | `Tokenizer` protocol + line-aligned chunking → `RawSpan[]` |
+| `file_discovery.py` | safe workspace-relative discovery, `.gitignore`-aware |
+| `evidence.py` | keyword extraction, claim / coverage accounting |
+| `retrieval/bm25.py`, `retrieval/lexical.py` | Okapi BM25 + lexical-anchor coverage |
+| `symbols/` | tree-sitter symbol + dependency candidates (Python, JS/TS) |
+| `retrieval/semantic.py` | optional sub-word or MiniLM cosine scorer |
+| `candidates.py` | `CandidateSpan` type, reciprocal-rank fusion, stable ranking |
+| `window.py`, `packing.py` | active-window reserve + hard-budget packing, dependency ordering |
+| `routing.py` | query classification + confidence + advice |
+| `select.py`, `trace.py` | the `select_context` / `trace_dependencies` pipelines |
+| `receipt.py`, `packs.py`, `ledger.py` | byte-stable receipts, Context Packs, the usage ledger |
+| `mcp/server.py`, `cli.py` | the MCP stdio server and the `pasr` CLI |
 
-## Replaced / not carried over
+`controller.py` (heuristic block-size / top-k choice) is carried but **not wired into
+`select_context`** — fixed `schema` defaults + `routing.py` cover the shipped design; it
+stays as a utility for adaptive-settings callers.
 
-- `models/` (`compressed_memory`, `recall`, `context_selector`, `dynamic_window`,
-  `model_loader`): all require a HF model just to produce the semantic signal. Replaced
-  by a pluggable `SemanticScorer` (M10, optional) and a torch-free active-window
-  calculator (M3). The windowing *math* in `dynamic_window.DynamicWindowController` is
-  reused as plain integer offsets.
-- `evaluation/`, `benchmarks/`, `notebooks/`, `paper/`: stay in `researchv2`.
-- `demo/` Gradio app: optional later port as `pasr demo`.
+## MCP tools
 
-## MCP tools (target surface)
-
-| Tool | Purpose | Milestone |
-|---|---|---|
-| `select_context` | budgeted, traceable slice for a query | M4 |
-| `trace_dependencies` | deterministic import/def/reference closure for a symbol | M5 |
-| `expand_context` | one bounded widening pass when the slice was insufficient | M7 |
-| `explain_selection` | return the receipt for a prior selection id | M6 |
+| Tool | Purpose |
+|---|---|
+| `select_context` | budgeted, traceable slice for a query (+ `map_tokens`, `trace=`, Context Packs) |
+| `trace_dependencies` | deterministic def/reference closure for a symbol; `direction="callers"` reverses it |
+| `expand_context` | one bounded widening pass when the slice was insufficient |
+| `explain_selection` | return the receipt for a prior selection id |
 
 ## Design rules
 

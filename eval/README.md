@@ -89,4 +89,3 @@ unmatched task×arm matrix, so a submitted result is checkable.
 | `pasr_eval/run.py` | end-to-end orchestrator: clone → streamed matrix → report → validate |
 | `pasr_eval/plans/pilot.json` | the registered plan — 10 pinned repos, 50 tasks |
 | `RESULTS.md` | pre-registration + n=15 pilot + keyword-50 + the n=50 real-agent headline |
-
