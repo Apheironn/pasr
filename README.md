@@ -21,16 +21,32 @@ numbers, no reason.
 
 ## What PASR does
 
-- **Budgeted.** You set a token ceiling; PASR never returns more, and it packs whole
-  spans — never a truncated function. If the full file set already fits, you get it
-  back unchanged.
-- **Traceable.** Every span carries `file:line`, a token count, its retrieval score,
-  and *why* it was kept (`bm25`, `symbol`, `active_window`, …). A byte-stable receipt —
-  of what was kept *and* what was dropped — lands on disk for every call.
-- **Honest.** Each result is classified `localized` / `trace` / `aggregation`, with a
-  confidence and advice (*"aggregation-style question — read the files directly"*).
-  PASR tells the agent when it is the wrong tool.
-- **Zero setup.** No daemon, no vector database, no index to build, offline by default.
+### Budgeted
+
+You set a token ceiling; PASR never returns more, and it packs whole spans — never a
+truncated function. If the full file set already fits, you get it back unchanged.
+
+<p align="center"><img src="docs/assets/concept-budgeted.svg" width="760" alt="a budget bar: 2,718 tokens kept under a 3,000-token ceiling, 282 free"></p>
+
+### Traceable
+
+Every span carries `file:line`, a token count, its retrieval score, and *why* it was
+kept (`bm25`, `symbol`, `active_window`, …). A byte-stable receipt — of what was kept
+*and* what was dropped — lands on disk for every call.
+
+<p align="center"><img src="docs/assets/concept-traceable.svg" width="760" alt="anatomy of one returned span: where it is (file:line), what it costs (tokens), why it was kept (retrieval signals + score)"></p>
+
+### Honest
+
+Each result is classified `localized` / `trace` / `aggregation`, with a confidence and
+advice (*"aggregation-style question — read the files directly"*). PASR tells the agent
+when it is the wrong tool.
+
+<p align="center"><img src="docs/assets/concept-honest.svg" width="760" alt="two queries classified: an aggregation query routed to 'read the files directly', a localized query passed with confidence 0.68"></p>
+
+### Zero setup
+
+No daemon, no vector database, no index to build, offline by default.
 
 ## Install
 
@@ -66,12 +82,12 @@ same receipt the MCP tool returns. Five verbatim runs against pinned public repo
 One localized question — *"how are redirects resolved and followed"* — against
 `psf/requests` ([verbatim transcript](examples/01-requests-redirects.md)):
 
-| | agent reads the repo | **PASR `select_context`** |
-|---|---:|---:|
-| input tokens | 42 768 | **2 718** — 94% less |
-| tool round trips | 1 large read | **1** |
-| provenance | none | **`file:line` + reason for all 10 spans** |
-| wrong-tool signal | — | **`localized`, confidence 0.68, "looks complete"** |
+| | **PASR `select_context`** | agent reads the repo |
+|---|:--|--:|
+| input tokens | **2 718** — 94% less | 42 768 |
+| tool round trips | **1** | 1 large read |
+| provenance | **`file:line` + reason for all 10 spans** | none |
+| wrong-tool signal | **`localized`, confidence 0.68, "looks complete"** | — |
 
 The selection itself runs **offline in ~0.3 s** on this repo — no API call, no index
 build. (`pasr explain` prints `selected in N ms` to stderr; it is kept out of the
@@ -79,15 +95,15 @@ receipt, which stays wall-clock-free and byte-stable.)
 
 ## Why PASR, not the usual options
 
-| | repo-map<br>(aider) | embedding search<br>(claude-context, Cody) | grep / ripgrep<br>MCP | **PASR** |
+| | **PASR** | repo-map<br>(aider) | embedding search<br>(claude-context, Cody) | grep / ripgrep MCP |
 |---|:--:|:--:|:--:|:--:|
-| Setup | none | embedder + vector DB + index build | none | **none** |
-| Returns | signatures, **no bodies** | chunks, no reason | keyword hits | **bodies + `file:line` + reason + score** |
-| Hard token budget | truncates | top-k, no cap | dumps everything | **never exceeded** |
-| Deterministic | ~ | no (ANN + model drift) | yes | **yes — byte-identical** |
-| Says "wrong tool for this" | no | no | no | **yes — routing + confidence** |
-| Audit trail | no | no | no | **a receipt per call** |
-| Dependency-closure trace | no | no | no | **forward + reverse (impact)** |
+| Setup | **none** | none | embedder + vector DB + index build | none |
+| Returns | **bodies + `file:line` + reason + score** | signatures, no bodies | chunks, no reason | keyword hits |
+| Hard token budget | **never exceeded** | truncates | top-k, no cap | dumps everything |
+| Deterministic | **yes — byte-identical** | ~ | no (ANN + model drift) | yes |
+| Says "wrong tool for this" | **yes — routing + confidence** | no | no | no |
+| Audit trail | **a receipt per call** | no | no | no |
+| Dependency-closure trace | **forward + reverse (impact)** | no | no | no |
 
 On the offline bake-off (50 tasks, 10 repos, 6k-token budget, no API, no GPU),
 `select_context` **ties a full repo-map on "how does this work" questions (0.84) using

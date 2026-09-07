@@ -41,16 +41,17 @@
   h2{font-size:1.5rem; margin:0 0 .8em; letter-spacing:-.01em}
   p{margin:0 0 1em}
   .lede{font-size:1.12rem; color:#c9d1d9}
-  .feat{margin:22px 0}
+  .feat{margin:26px 0}
   .feat h3{margin:0 0 .3em; font-size:1.14rem}
   .feat p{color:var(--dim); max-width:680px}
-  table{width:100%; border-collapse:collapse; font-size:.92rem; margin-top:6px; display:block; overflow-x:auto}
-  th,td{border:1px solid var(--line); padding:8px 11px; text-align:center; white-space:nowrap}
+  .feat img{display:block; width:100%; max-width:720px; margin:14px 0 0; border:1px solid var(--line); border-radius:10px}
+  .tablewrap{overflow-x:auto; margin-top:6px}
+  table{width:100%; border-collapse:collapse; font-size:.92rem}
+  th,td{border:1px solid var(--line); padding:8px 11px; text-align:center; vertical-align:top}
   th{background:var(--panel); font-weight:600}
-  td:first-child,th:first-child{text-align:left}
-  tbody tr:last-child td{background:rgba(126,231,135,.06); font-weight:600}
-  .num td:nth-child(2){color:var(--faint)}
-  .num td:last-child{color:var(--mint); font-weight:600}
+  td:first-child,th:first-child{text-align:left; white-space:nowrap}
+  .num td:nth-child(3), .cmp td:nth-child(n+3){color:var(--faint)}
+  .num td:nth-child(2), .cmp td:nth-child(2){color:var(--ink); font-weight:600; background:rgba(126,231,135,.05)}
   pre{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px; overflow-x:auto; font-size:.88rem; line-height:1.6; color:#c9d1d9}
   pre .c{color:var(--faint)}
   .flow{color:var(--dim); font-size:.9rem}
@@ -102,6 +103,7 @@
       <h3>Budgeted</h3>
       <p>You set a token ceiling; PASR never returns more — and it packs whole spans, never a
       truncated function. If the full file set already fits, you get it back unchanged.</p>
+      <img src="assets/concept-budgeted.svg" alt="a budget bar: 2,718 tokens kept under a 3,000-token ceiling, 282 free">
     </div>
 
     <div class="feat">
@@ -109,6 +111,7 @@
       <p>Every span carries <code>file:line</code>, a token count, its retrieval score, and
       <i>why</i> it was kept. A byte-stable receipt — of what was kept <i>and</i> what was
       dropped — lands on disk for every call.</p>
+      <img src="assets/concept-traceable.svg" alt="anatomy of one returned span: where it is (file:line), what it costs (tokens), why it was kept (retrieval signals plus score)">
     </div>
 
     <div class="feat">
@@ -116,6 +119,7 @@
       <p>Each result is classified — <code>localized</code> / <code>trace</code> /
       <code>aggregation</code> — with a confidence and advice. PASR tells the agent when it is
       the wrong tool for the question.</p>
+      <img src="assets/concept-honest.svg" alt="two queries classified: an aggregation query routed to 'read the files directly', a localized query passed with confidence 0.68">
     </div>
 
     <div class="feat">
@@ -149,37 +153,37 @@
     <h2>In one call</h2>
     <p>One localized question — <i>"how are redirects resolved and followed"</i> — against
     <code>psf/requests</code>:</p>
-    <table class="num">
-      <thead><tr><th></th><th>agent reads <code>src/</code></th><th>select_context</th></tr></thead>
+    <div class="tablewrap"><table class="num">
+      <thead><tr><th></th><th>PASR <code>select_context</code></th><th>agent reads the repo</th></tr></thead>
       <tbody>
-        <tr><td>input tokens</td><td>42,768</td><td>2,718 — 94% less</td></tr>
-        <tr><td>tool round trips</td><td>1 large read</td><td>1</td></tr>
-        <tr><td>provenance</td><td>none</td><td>file:line + reason, all 10 spans</td></tr>
-        <tr><td>wrong-tool signal</td><td>—</td><td>localized · conf 0.68 · "looks complete"</td></tr>
-        <tr><td>wall time</td><td>—</td><td>~0.3 s, offline (no API, no index)</td></tr>
+        <tr><td>input tokens</td><td>2,718 — 94% less</td><td>42,768</td></tr>
+        <tr><td>tool round trips</td><td>1</td><td>1 large read</td></tr>
+        <tr><td>provenance</td><td>file:line + reason, all 10 spans</td><td>none</td></tr>
+        <tr><td>wrong-tool signal</td><td>localized · conf 0.68 · "looks complete"</td><td>—</td></tr>
+        <tr><td>wall time</td><td>~0.3 s, offline (no API, no index)</td><td>—</td></tr>
       </tbody>
-    </table>
+    </table></div>
   </div>
 </section>
 
 <section>
   <div class="wrap">
     <h2>Why PASR, not the usual options</h2>
-    <table>
+    <div class="tablewrap"><table class="cmp">
       <thead><tr>
-        <th></th><th>repo-map<br>(aider)</th><th>embedding search<br>(claude-context, Cody)</th>
-        <th>grep / ripgrep MCP</th><th>PASR</th>
+        <th></th><th>PASR</th><th>repo-map<br>(aider)</th>
+        <th>embedding search<br>(claude-context, Cody)</th><th>grep / ripgrep<br>MCP</th>
       </tr></thead>
       <tbody>
-        <tr><td>Setup</td><td>none</td><td>embedder + vector DB + index</td><td>none</td><td>none</td></tr>
-        <tr><td>Returns</td><td>signatures, no bodies</td><td>chunks, no reason</td><td>keyword hits</td><td>bodies + file:line + reason + score</td></tr>
-        <tr><td>Hard token budget</td><td>truncates</td><td>top-k, no cap</td><td>dumps everything</td><td>never exceeded</td></tr>
-        <tr><td>Deterministic</td><td>~</td><td>no (ANN + drift)</td><td>yes</td><td>yes — byte-identical</td></tr>
-        <tr><td>Says "wrong tool for this"</td><td>no</td><td>no</td><td>no</td><td>yes</td></tr>
-        <tr><td>Audit trail</td><td>no</td><td>no</td><td>no</td><td>a receipt per call</td></tr>
-        <tr><td>Dependency-closure trace</td><td>no</td><td>no</td><td>no</td><td>forward + reverse (impact)</td></tr>
+        <tr><td>Setup</td><td>none</td><td>none</td><td>embedder + vector DB + index</td><td>none</td></tr>
+        <tr><td>Returns</td><td>bodies + file:line + reason + score</td><td>signatures, no bodies</td><td>chunks, no reason</td><td>keyword hits</td></tr>
+        <tr><td>Hard token budget</td><td>never exceeded</td><td>truncates</td><td>top-k, no cap</td><td>dumps everything</td></tr>
+        <tr><td>Deterministic</td><td>yes — byte-identical</td><td>~</td><td>no (ANN + drift)</td><td>yes</td></tr>
+        <tr><td>Says "wrong tool for this"</td><td>yes</td><td>no</td><td>no</td><td>no</td></tr>
+        <tr><td>Audit trail</td><td>a receipt per call</td><td>no</td><td>no</td><td>no</td></tr>
+        <tr><td>Dependency-closure trace</td><td>forward + reverse (impact)</td><td>no</td><td>no</td><td>no</td></tr>
       </tbody>
-    </table>
+    </table></div>
     <p style="margin-top:14px; color:var(--dim); font-size:.95rem">On the offline bake-off (50
     tasks, 10 repos, 6k-token budget, no API, no GPU), <code>select_context</code> <b>ties a
     full repo-map on "how does this work" questions (0.84) using 10× less text</b>; with
