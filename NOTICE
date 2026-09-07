@@ -1,0 +1,8 @@
+PASR — Provenance-Aware Span Recall
+Copyright 2026 Mertcan Catak
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This project is the productised extraction of the frozen "researchv2" study
+(model-external context optimisation). Derivative works must retain this NOTICE
+per Section 4(d) of the License.

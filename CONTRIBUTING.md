@@ -42,9 +42,9 @@ output moves.
 
 ## Scope
 
-The roadmap (`docs/roadmap.md`) is done through M12. New capability proposals should
-open an issue first describing the user-visible behaviour and which invariant budget it
-spends. Model-internal ideas belong in the research line, not here — PASR stays
+New capability proposals should open an issue first describing the user-visible
+behaviour and which invariant budget it spends; `docs/roadmap.md` has the current
+scope. Model-internal ideas belong in the research line, not here — PASR stays
 model-external.
 
 ## Style

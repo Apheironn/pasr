@@ -137,11 +137,10 @@ what PASR handed the model and what it dropped. A usage ledger accrues in
 - [`examples/`](examples/README.md) — verbatim CLI transcripts against pinned repos
 - [`eval/RESULTS.md`](eval/RESULTS.md) — the 50-task evaluation, pre-registered (`pip install ./eval` → `pasr-bench`)
 - [`docs/competitors-benchmark.md`](docs/competitors-benchmark.md) — offline bake-off vs grep / repo-map / semantic-search
-- (see the benchmark write-up)
 - [`docs/blog/what-worked.md`](docs/blog/what-worked.md) — what held up, what didn't
 - (a comparative write-up is in preparation)
 - [`docs/architecture.md`](docs/architecture.md) — architecture and data flow
-- [`docs/roadmap.md`](docs/roadmap.md) · [`docs/roadmap-post-1.0.md`](docs/roadmap-post-1.0.md) — milestones and what's next
+- [`docs/roadmap.md`](docs/roadmap.md) — what's shipped and what's next
 - [`CHANGELOG.md`](CHANGELOG.md) · [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 The research this productises is the frozen `researchv2` study (model-external context

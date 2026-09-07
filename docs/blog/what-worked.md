@@ -68,5 +68,4 @@ call at parity quality on *localized* questions. We rewrote the positioning to m
 - Ship the transcript. `examples/` in this repo is verbatim CLI output against pinned
   repos — it's the most convincing artifact and the cheapest to produce.
 
-Result detail: [`eval/RESULTS.md`](../../eval/RESULTS.md). Roadmap and milestone notes:
-[`docs/roadmap.md`](../roadmap.md).
+Result detail: [`eval/RESULTS.md`](../../eval/RESULTS.md). What's next: [`docs/roadmap.md`](../roadmap.md).
