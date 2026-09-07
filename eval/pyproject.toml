@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pasr-bench"
-version = "0.2.0"
+version = "0.2.1"
 description = "PASR-Bench: a pre-registered protocol for measuring a code-context retriever against grep, a repo-map, semantic search, and a whole-repo dump."
 readme = "README.md"
 requires-python = ">=3.10"

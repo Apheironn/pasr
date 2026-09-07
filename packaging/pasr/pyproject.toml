@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pasr"
+version = "0.2.1"
+description = "Install alias for pasr-mcp (Provenance-Aware Span Recall — a zero-setup context-broker MCP)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [{ name = "Apheironn" }]
+keywords = ["mcp", "model-context-protocol", "retrieval", "context-engineering", "coding-agent"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: Apache Software License",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries",
+]
+dependencies = ["pasr-mcp>=0.2.1"]
+
+[project.urls]
+Homepage = "https://github.com/Apheironn/pasr"
+Source = "https://github.com/Apheironn/pasr"
+
+[tool.hatch.build.targets.wheel]
+# no modules of its own — this distribution only exists to pull in pasr-mcp
+bypass-selection = true
+
+[tool.hatch.build.targets.sdist]
+include = ["README.md"]

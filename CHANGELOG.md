@@ -5,6 +5,18 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-09-07
+
+Packaging and docs only — no code changes.
+
+- **README renders off GitHub.** Image and doc-link URLs are now absolute, so the
+  project description shows correctly on PyPI.
+- **Library sdist is scoped.** `pasr-mcp`'s source distribution now ships only the
+  package source, tests, and project metadata — not the `eval/` harness (that is its
+  own distribution, `pasr-bench`) or the `docs/` assets.
+- **`pasr` reserved as an install alias.** `pip install pasr` now pulls `pasr-mcp`;
+  the import package and the CLI were already `pasr`. Source: `packaging/pasr/`.
+
 ## [0.2.0] — 2026-09-07
 
 First public release. A zero-setup, offline, deterministic context-broker MCP for
@@ -74,5 +86,6 @@ saved, route.
   retriever" — add an arm and measure it against the same 50 tasks. Results:
   `eval/RESULTS.md`, `docs/competitors-benchmark.md`.
 
-[Unreleased]: https://github.com/Apheironn/pasr/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Apheironn/pasr/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/Apheironn/pasr/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Apheironn/pasr/releases/tag/v0.2.0
