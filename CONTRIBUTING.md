@@ -55,3 +55,8 @@ classes and plain `pytest` functions both exist; follow the neighbouring test fi
 ## Commits
 
 Conventional-ish subject lines (`area: what changed`). One logical change per commit.
+
+## Conduct and security
+
+By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md). Security
+issues go through [SECURITY.md](SECURITY.md) — a private report, not a public issue.
