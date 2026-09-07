@@ -57,6 +57,22 @@ Source = "https://github.com/Apheironn/pasr"
 [tool.hatch.build.targets.wheel]
 packages = ["src/pasr"]
 
+[tool.hatch.build.targets.sdist]
+# the library sdist: package source + tests + project metadata only.
+# the evaluation harness (eval/) is its own distribution, pasr-bench.
+include = [
+  "src/pasr",
+  "tests",
+  "CHANGELOG.md",
+  "CONTRIBUTING.md",
+  "SECURITY.md",
+  "CODE_OF_CONDUCT.md",
+  "CITATION.cff",
+  "server.json",
+]
+# these two exercise paths that live outside the library sdist (eval/, .github/)
+exclude = ["tests/test_eval_harness.py", "tests/test_ci_assets.py"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
