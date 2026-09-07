@@ -22,10 +22,13 @@ def test_explain_prints_markdown_receipt(capsys):
             "--no-write",
         ]
     )
-    out = capsys.readouterr().out
+    captured = capsys.readouterr()
     assert code == 0
-    assert "# Selection receipt" in out
-    assert "Kept (" in out
+    assert "# Selection receipt" in captured.out
+    assert "Kept (" in captured.out
+    # timing goes to stderr, not into the receipt on stdout
+    assert "ms  (offline, deterministic)" in captured.err
+    assert "ms" not in captured.out.split("# Selection receipt")[0]
 
 
 def test_explain_json_is_valid(capsys):

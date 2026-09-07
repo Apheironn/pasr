@@ -40,7 +40,7 @@
   <!-- output -->
   <g font-size="13.5">
     <g opacity="0"><animate attributeName="opacity" dur="11s" repeatCount="indefinite" keyTimes="0;0.27;0.29;0.93;1" values="0;0;1;1;0"/>
-      <text x="26" y="122" fill="#8b949e">receipt <tspan fill="#c9d1d9">3e78c870ff68</tspan>   route: <tspan fill="#7ee787">selected</tspan></text>
+      <text x="26" y="122" fill="#8b949e">receipt <tspan fill="#c9d1d9">3e78c870ff68</tspan>   route: <tspan fill="#7ee787">selected</tspan>   <tspan fill="#6e7681">selected in 0.26 s, offline</tspan></text>
     </g>
 
     <g opacity="0"><animate attributeName="opacity" dur="11s" repeatCount="indefinite" keyTimes="0;0.30;0.32;0.93;1" values="0;0;1;1;0"/>

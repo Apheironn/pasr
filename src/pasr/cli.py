@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
 from pasr import __version__
@@ -56,12 +57,18 @@ def _explain(args: argparse.Namespace) -> int:
         },
         workspace_root=args.workspace,
     )
+    started = time.perf_counter()
     receipt = build_select_receipt(request)
+    elapsed_ms = (time.perf_counter() - started) * 1000.0
     if not args.no_write:
         write_receipt(request.workspace_root, receipt)
         if not args.no_ledger:
             append_ledger(request.workspace_root, entry_from_receipt(receipt, source="cli"))
     print(receipt_bytes(receipt).rstrip() if args.json else render_markdown(receipt))
+    if not args.json:
+        # timing is not part of the receipt (that stays wall-clock-free and byte-stable);
+        # it goes to stderr so --json and receipt files are unaffected.
+        print(f"\nselected in {elapsed_ms:.0f} ms  (offline, deterministic)", file=sys.stderr)
     return 0
 
 

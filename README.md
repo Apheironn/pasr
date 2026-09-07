@@ -44,6 +44,10 @@ One localized question — *"how are redirects resolved and followed"* — again
 | provenance | none | **`file:line` + reason for all 10 spans** |
 | wrong-tool signal | — | **`localized`, confidence 0.68, "looks complete"** |
 
+The selection itself runs **offline in ~0.3 s** on this repo — no API call, no index
+build. (`pasr explain` prints `selected in N ms` to stderr; it is kept out of the
+receipt, which stays wall-clock-free and byte-stable.)
+
 ## Why PASR, not the usual options
 
 | | repo-map<br>(aider) | embedding search<br>(claude-context, Cody) | grep / ripgrep<br>MCP | **PASR** |
