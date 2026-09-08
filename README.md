@@ -1,9 +1,7 @@
-# PASR
-
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/logo-dark.svg">
-    <img alt="PASR — Provenance-Aware Span Recall" src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/logo.svg" width="308">
+    <img alt="PASR — Provenance-Aware Span Recall" src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/logo.svg" width="300">
   </picture>
 </p>
 
