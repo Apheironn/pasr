@@ -1,9 +1,18 @@
 # PASR
 
-**Provenance-Aware Span Recall** — a zero-setup context broker your coding agent calls
-as an MCP tool. It hands the model the *few* lines that answer the question, each with a
-`file:line` and the reason it was picked — and tells the agent when it asked the wrong
-tool.
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/logo-dark.svg">
+    <img alt="PASR — Provenance-Aware Span Recall" src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/logo.svg" width="308">
+  </picture>
+</p>
+
+<p align="center">
+  <b>Provenance-Aware Span Recall</b> — a zero-setup context broker your coding agent calls
+  as an MCP tool. It hands the model the <i>few</i> lines that answer the question, each with
+  a <code>file:line</code> and the reason it was picked — and tells the agent when it asked
+  the wrong tool.
+</p>
 
 [![PyPI](https://img.shields.io/pypi/v/pasr-mcp)](https://pypi.org/project/pasr-mcp/)
 [![Python](https://img.shields.io/pypi/pyversions/pasr-mcp)](https://pypi.org/project/pasr-mcp/)
@@ -54,10 +63,11 @@ No daemon, no vector database, no index to build, offline by default.
 [![Add to VS Code](https://img.shields.io/badge/Add%20to-VS%20Code-0098FF?logo=visualstudiocode&logoColor=fff)](https://insiders.vscode.dev/redirect/mcp/install?name=pasr&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22pasr-mcp%22%2C%22--workspace%22%2C%22.%22%5D%7D)
 
 ```bash
-claude mcp add pasr -- uvx pasr-mcp --workspace .
+claude mcp add pasr -- uvx pasr-mcp --workspace .   # Claude Code
+codex  mcp add pasr -- uvx pasr-mcp --workspace .   # Codex CLI
 ```
 
-Or paste this into your client's MCP config (Claude Desktop, Windsurf, Cline, Zed, …):
+Or paste this into your client's MCP config (Claude Desktop, Windsurf, Cline, Zed, Gemini CLI, …):
 
 ```json
 { "mcpServers": { "pasr": { "command": "uvx", "args": ["pasr-mcp", "--workspace", "."] } } }

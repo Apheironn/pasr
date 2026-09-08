@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="PASR logo mark">
+  <title>PASR</title>
+  <rect x="9" y="20.5" width="3.5" height="23" rx="1.75" fill="#5B4FE0"/>
+  <rect x="17" y="11.5" width="30" height="5" rx="2.5" fill="#CBCBD8"/>
+  <rect x="17" y="20.5" width="38" height="5" rx="2.5" fill="#22233B"/>
+  <rect x="17" y="29.5" width="27" height="5" rx="2.5" fill="#22233B"/>
+  <rect x="17" y="38.5" width="34" height="5" rx="2.5" fill="#22233B"/>
+  <rect x="17" y="47.5" width="22" height="5" rx="2.5" fill="#CBCBD8"/>
+</svg>
