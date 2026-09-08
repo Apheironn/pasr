@@ -18,7 +18,7 @@
   <circle cx="34" cy="30" r="6" fill="#ff5f56"/>
   <circle cx="54" cy="30" r="6" fill="#ffbd2e"/>
   <circle cx="74" cy="30" r="6" fill="#27c93f"/>
-  <text x="430" y="34" text-anchor="middle" font-size="12.5" fill="#5b6472">pasr — context broker</text>
+  <text x="430" y="34" text-anchor="middle" font-size="12.5" fill="#5b6472">pasr explain</text>
 
   <!-- prompt + typed command -->
   <text x="26" y="80" font-size="14" fill="#7ee787">$</text>
@@ -76,5 +76,5 @@
     </g>
   </g>
 
-  <text x="430" y="452" text-anchor="middle" font-size="12.5" fill="#6e7681">one MCP call  ·  deterministic, byte-identical output  ·  every line traceable to <tspan fill="#8b949e">file:line</tspan></text>
+  <text x="430" y="452" text-anchor="middle" font-size="12.5" fill="#6e7681">one MCP call  ·  far fewer tokens, same or better answers  ·  every line traceable to <tspan fill="#8b949e">file:line</tspan></text>
 </svg>
