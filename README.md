@@ -6,10 +6,8 @@
 </p>
 
 <p align="center">
-  <b>Provenance-Aware Span Recall</b> — a zero-setup context broker your coding agent calls
-  as an MCP tool. It hands the model the <i>few</i> lines that answer the question, each with
-  a <code>file:line</code> and the reason it was picked — and tells the agent when it asked
-  the wrong tool.
+  <b>Provenance-Aware Span Recall</b> — PASR gives your coding agent only the context it needs,
+  keeping it focused on the code that matters. Far fewer tokens, same or better answers.
 </p>
 
 [![PyPI](https://img.shields.io/pypi/v/pasr-mcp)](https://pypi.org/project/pasr-mcp/)
