@@ -15,7 +15,7 @@
 [![CI](https://github.com/Apheironn/pasr/actions/workflows/ci.yml/badge.svg)](https://github.com/Apheironn/pasr/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-<p align="center"><img src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/demo.svg" alt="pasr explain — one MCP call, 42,768 to 2,718 tokens, a receipt for every line" width="820"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/demo.svg" alt="pasr explain — a whole-repo question answered from only the lines that matter, each with its file:line" width="820"></p>
 
 ## The problem
 
