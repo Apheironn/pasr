@@ -5,11 +5,13 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 from typing import Any
 
 EVIDENCE_SCHEMA_VERSION = "1.0"
 _CLAIM_SPLIT_RE = re.compile(r"[.!?;\n]+")
 _TERM_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_.-]*|[0-9]+")
+_PATH_TERM_RE = re.compile(r"[A-Za-z0-9]+")
 _STOPWORDS = frozenset(
     {
         "a",
@@ -107,10 +109,16 @@ def account_query_evidence(
     """Map deterministic query keywords to the returned raw evidence spans.
 
     This is a lexical diagnostic, not a semantic entailment judgment. A claim is
-    ``supported`` only when every extracted keyword occurs in at least one span.
+    ``supported`` only when every extracted keyword occurs in at least one span's
+    body text *or* its source path (``net/stale_socket_gc.py`` counts as evidence
+    for "stale socket" even if the body never spells those words out) — otherwise
+    a span that already answers the query reads as 0% covered and the routing
+    advice tells the caller to search elsewhere for content it is already holding.
     """
     claims = _extract_claims(query)
-    span_terms = {span.span_id: set(_keywords(span.text)) for span in spans}
+    span_terms = {
+        span.span_id: set(_keywords(span.text)) | set(path_keywords(span.source)) for span in spans
+    }
     claim_rows = []
     all_keywords: list[str] = []
     matched_query_keywords: set[str] = set()
@@ -156,7 +164,10 @@ def account_query_evidence(
     return {
         "schema_version": EVIDENCE_SCHEMA_VERSION,
         "method": "deterministic_exact_keyword_coverage",
-        "limitations": "Lexical coverage is diagnostic and does not establish semantic entailment.",
+        "limitations": (
+            "Lexical coverage is diagnostic and does not establish semantic entailment. "
+            "A keyword counts as covered if it appears in a span's text or its source path."
+        ),
         "claims": claim_rows,
         "summary": {
             "claim_count": len(claim_rows),
@@ -171,6 +182,7 @@ def account_query_evidence(
     }
 
 
+@lru_cache(maxsize=8192)
 def extract_keywords(text: str) -> list[str]:
     """Extract candidate-match terms, including dotted/hyphenated components."""
     expanded = []
@@ -181,12 +193,31 @@ def extract_keywords(text: str) -> list[str]:
     return expanded
 
 
+@lru_cache(maxsize=8192)
+def path_keywords(source: str) -> list[str]:
+    """Extract query-matchable terms from a source path's components.
+
+    Splits on every non-alphanumeric character (``/``, ``_``, ``-``, ``.``), unlike
+    :func:`_keywords`/:func:`extract_keywords` which treat ``_`` as part of a token —
+    a filename like ``stale_socket_gc.py`` must yield ``stale`` and ``socket``
+    separately to count as evidence for those query terms.
+    """
+    keywords = []
+    for match in _PATH_TERM_RE.finditer(source.casefold()):
+        term = match.group(0)
+        if not term or term in _STOPWORDS or term in keywords:
+            continue
+        keywords.append(term)
+    return keywords
+
+
 def _extract_claims(query: str) -> list[str]:
     """Split a query into stable sentence-like diagnostic claims."""
     claims = [part.strip() for part in _CLAIM_SPLIT_RE.split(query) if part.strip()]
     return claims or [query.strip()]
 
 
+@lru_cache(maxsize=8192)
 def _keywords(text: str) -> list[str]:
     """Extract unique ordered exact-match terms for local diagnostics."""
     keywords = []

@@ -31,7 +31,12 @@ _SELECT_CONTEXT_DESCRIPTION = (
     "Return a small, budgeted, provenance-tracked slice of the workspace for a query. "
     "Prefer this over reading whole files: it caps total tokens, keeps a mandatory "
     "prefix/tail active window, and reports where every span came from (file:line). "
-    "Good for locating evidence in a large codebase or long document; not a code writer."
+    "Good for locating evidence in a large codebase or long document; not a code writer. "
+    "This tool does NOT search the whole repo by filename on its own — pass `include` "
+    "(globs/directories) or `files` (explicit paths) scoped to where the answer likely "
+    "lives. If you don't already know which files are relevant, do one quick filename/path "
+    "glob or grep first and pass those paths in; don't guess a broad `include` and rely on "
+    "the low-coverage advice to iterate — that costs more calls than searching by name up front."
 )
 _TRACE_DEPENDENCIES_DESCRIPTION = (
     "Return the transitive definition closure for a symbol: every function / class / "

@@ -5,6 +5,23 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **Filename/path terms now count as query evidence.** Lexical candidate generation
+  and coverage accounting only ever looked at file *content* — a file whose name
+  alone answered the query (e.g. `stale_socket_gc.py` for "stale socket cleanup")
+  could be dropped as a candidate entirely, or (if it was already in a lossless
+  slice) reported as 0% covered with advice to widen `include`/grep more, even
+  though the answer was already in hand. `select_context` now also matches query
+  terms against each span's source path.
+- **`select_context`'s description now says it doesn't search the repo by
+  filename.** Callers must scope `include`/`files` themselves; the description now
+  tells the calling model to glob/grep for candidate files up front instead of
+  guessing broadly and iterating on the low-coverage advice.
+- **Repeat calls in one session are much cheaper.** Query-keyword extraction and
+  per-file AST/tree-sitter symbol parsing were recomputed from scratch on every
+  `select_context` call with no cache; a long-lived MCP session calling it
+  repeatedly against a mostly-unchanged file set now reuses that work
+  (~250ms → ~30ms per repeat call in profiling over this repo's `src/`).
+
 ## [0.2.1] — 2026-09-07
 
 Packaging and docs only — no code changes.

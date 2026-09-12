@@ -7,7 +7,7 @@ from dataclasses import asdict, dataclass, field, replace
 from typing import Any
 
 from pasr._tokenize import decode_ids, encode_ids
-from pasr.evidence import extract_keywords
+from pasr.evidence import extract_keywords, path_keywords
 
 
 @dataclass(frozen=True)
@@ -63,12 +63,22 @@ def generate_lexical_candidates(
     source: str,
     block_size: int,
 ) -> list[CandidateSpan]:
-    """Generate exact-anchor candidates over fixed raw token blocks."""
+    """Generate exact-anchor candidates over fixed raw token blocks.
+
+    A block also qualifies when no query term appears in its own text but the
+    *file's path* does (``net/stale_socket_gc.py`` for a "stale socket" query) —
+    otherwise a file whose name alone answers a lexical query is invisible to
+    this generator and can be dropped entirely under budget pressure, even
+    though a plain filename grep would have found it immediately.
+    """
     if block_size <= 0:
         raise ValueError("block_size must be positive.")
     query_terms = extract_keywords(query)
     if not query_terms:
         return []
+    path_terms = set(path_keywords(source))
+    path_matched = [term for term in query_terms if term in path_terms]
+    path_bonus = 0.5 * len(path_matched) / len(query_terms)
     token_ids = encode_ids(tokenizer, text)
 
     candidates = []
@@ -77,11 +87,11 @@ def generate_lexical_candidates(
         block_text = decode_ids(tokenizer, token_ids[start:end])
         block_terms = set(extract_keywords(block_text))
         matched = [term for term in query_terms if term in block_terms]
-        if not matched:
+        if not matched and not path_matched:
             continue
         coverage = len(matched) / len(query_terms)
         density = len(matched) / (end - start)
-        rank_score = coverage + density
+        rank_score = coverage + density + path_bonus
         candidates.append(
             CandidateSpan(
                 source=source,
@@ -89,11 +99,12 @@ def generate_lexical_candidates(
                 end=end,
                 token_count=end - start,
                 text=block_text,
-                selection_reasons=("lexical_anchor",),
+                selection_reasons=("lexical_anchor",) if matched else ("path_anchor",),
                 score_components={
                     "lexical_coverage": coverage,
                     "lexical_density": density,
                     "lexical_match_count": float(len(matched)),
+                    "path_bonus": path_bonus if path_matched else None,
                 },
                 rank_score=rank_score,
                 block_idx=block_idx,
