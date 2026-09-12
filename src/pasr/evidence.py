@@ -116,9 +116,7 @@ def account_query_evidence(
     advice tells the caller to search elsewhere for content it is already holding.
     """
     claims = _extract_claims(query)
-    span_terms = {
-        span.span_id: set(_keywords(span.text)) | set(path_keywords(span.source)) for span in spans
-    }
+    span_terms = {span.span_id: set(_keywords(span.text)) | set(path_keywords(span.source)) for span in spans}
     claim_rows = []
     all_keywords: list[str] = []
     matched_query_keywords: set[str] = set()
