@@ -100,9 +100,12 @@ class _CallGuard:
     """
 
     REPEAT_LIMIT = 2
+    ZERO_NOVELTY_LIMIT = 2
 
     def __init__(self) -> None:
         self._seen: dict[str, tuple[str, int]] = {}
+        self._delivered: set[str] = set()
+        self._zero_novelty = 0
 
     @staticmethod
     def _key(tool: str, arguments: dict[str, Any]) -> str:
@@ -124,6 +127,34 @@ class _CallGuard:
                 "find_symbols(<name>) for where a symbol is defined, find_files(<terms>) for paths."
             )
         return result
+
+    def check_novelty(self, result: dict[str, Any]) -> None:
+        """Stop a selection that keeps re-delivering spans the caller already holds.
+
+        Hashing (tool, arguments) only catches verbatim repeats. The expensive loop in
+        practice is the paraphrased one: a slightly reworded query over the same files,
+        returning the same code under a new receipt id. PASR can see that directly --
+        it knows every span it has handed over this session -- so novelty is measured
+        in delivered spans, not in query strings.
+        """
+        provenances = {str(span.get("provenance")) for span in result.get("spans", []) if span.get("provenance")}
+        if not provenances:
+            return
+        if provenances - self._delivered:
+            self._delivered |= provenances
+            self._zero_novelty = 0
+            return
+
+        self._zero_novelty += 1
+        if self._zero_novelty < self.ZERO_NOVELTY_LIMIT:
+            return
+        sources = sorted({p.rsplit(":", 1)[0] for p in self._delivered})
+        raise ToolError(
+            f"Refused: the last {self._zero_novelty} selections returned only spans you have already "
+            f"been given. You currently hold {len(self._delivered)} span(s) across {len(sources)} file(s): "
+            f"{', '.join(sources[:8])}{' ...' if len(sources) > 8 else ''}. More retrieval will not add "
+            "evidence - answer the question from these spans, naming what you could not determine."
+        )
 
 
 def create_server(workspace_root: Path) -> MCPServer:
@@ -253,6 +284,7 @@ def create_server(workspace_root: Path) -> MCPServer:
                 {"query": query, "files": files, "include": include, "budget_tokens": budget_tokens},
                 lambda: run_select_context(request),
             )
+            guard.check_novelty(result)
             if save_as:
                 path, _ = save_pack(save_as, request, result=result)
                 result["saved_pack"] = str(path)
@@ -321,7 +353,9 @@ def create_server(workspace_root: Path) -> MCPServer:
     def expand_context(receipt_id: str, extra_budget: int = 2000) -> dict[str, Any]:
         """Re-run the selection behind ``receipt_id`` with ``+extra_budget`` tokens."""
         try:
-            return run_expand_context(root, receipt_id, extra_budget)
+            result = run_expand_context(root, receipt_id, extra_budget)
+            guard.check_novelty(result)
+            return result
         except FileNotFoundError as exc:
             raise ToolError(f"no receipt with id {receipt_id!r}") from exc
         except ValueError as exc:

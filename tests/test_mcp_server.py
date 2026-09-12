@@ -246,3 +246,30 @@ def test_find_symbols_returns_definition_provenance(mini_workspace: Path):
     payload = json.loads(result.content[0].text)
     assert payload["matches"], payload
     assert all(":" in match["provenance"] for match in payload["matches"])
+
+
+def test_reworded_queries_over_the_same_spans_stop_too(mini_workspace: Path):
+    """The expensive loop is the paraphrased one: new wording, same spans, new receipt id."""
+    server = create_server(mini_workspace)
+    base = {"include": ["api/ratelimit.py"], "budget_tokens": 3000}
+
+    first = json.loads(_call(server, "select_context", {"query": "rate limit headers", **base}).content[0].text)
+    assert first["spans"], "fixture should return spans"
+
+    # Different query strings, so the byte-identical guard never fires -- but the same
+    # file fits the budget losslessly, so no call after the first adds any evidence.
+    _call(server, "select_context", {"query": "throttling behaviour on responses", **base})
+    with pytest.raises(Exception, match="already been given"):
+        _call(server, "select_context", {"query": "how are 429s emitted", **base})
+
+
+def test_novel_spans_reset_the_stopping_rule(mini_workspace: Path):
+    server = create_server(mini_workspace)
+    _call(server, "select_context", {"query": "rate limit", "include": ["api/ratelimit.py"], "budget_tokens": 3000})
+    _call(server, "select_context", {"query": "rate limits", "include": ["api/ratelimit.py"], "budget_tokens": 3000})
+
+    # A different file is new evidence: the counter resets instead of refusing.
+    result = _call(
+        server, "select_context", {"query": "session", "include": ["auth/session.py"], "budget_tokens": 3000}
+    )
+    assert result.is_error is False

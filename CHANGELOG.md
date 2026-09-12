@@ -29,7 +29,10 @@ this project uses [Semantic Versioning](https://semver.org/).
   slice says so plainly ("answer from it"). The MCP server also refuses a call that
   has already returned the same bytes twice in a session; results themselves are
   never rewritten, so identical requests stay byte-identical and receipts stay
-  reproducible.
+  reproducible. Hashing arguments only catches verbatim repeats, so the server also
+  tracks *delivered spans*: two consecutive selections that hand back only spans the
+  caller already holds are refused, with an inventory of what it holds, which is the
+  paraphrased-loop case (new wording, same code, new receipt id).
 - **New tool: `find_files`.** An agent wired to PASR's tools alone (no generic
   grep/glob) had no way to learn real file paths before calling `select_context`/
   `trace_dependencies` — it guessed plausible names (`main.rs`, `server.rs`, ...),
