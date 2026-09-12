@@ -1,6 +1,7 @@
 """PASR MCP server (stdio).
 
 Tools:
+  find_files         — rank workspace files by path/filename match for a query
   select_context     — a budgeted, provenance-carrying slice of the workspace
   trace_dependencies — the transitive definition closure for a symbol
   explain_selection  — the stored receipt for a prior select_context run
@@ -21,12 +22,25 @@ from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 
 from pasr import __version__
+from pasr.find_files import DEFAULT_TOP_K
+from pasr.find_files import find_files as _find_files
 from pasr.ledger import append_ledger, ledger_entry
 from pasr.receipt import read_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
 from pasr.select import run_expand_context, run_pack, run_select_context, save_pack
 from pasr.trace import trace_dependencies as _trace_dependencies
 
+_FIND_FILES_DESCRIPTION = (
+    "Rank workspace files by how many query terms appear in their own path/filename -- "
+    "call this FIRST when you don't already know which real file paths to pass to "
+    "`select_context`/`trace_dependencies`. No `max_files` limit; safe to call with a "
+    "broad or empty `include`. Guessing plausible filenames instead of calling this "
+    'wastes calls on "file does not exist" errors. This is lexical path matching, not '
+    "semantic search: if your query's words don't literally appear in any path (common "
+    "for vague/conceptual questions), matches come back empty -- call again with "
+    'query="" and a directory in `include` to just list what\'s really there, then '
+    "pick candidates yourself from real names instead of guessing."
+)
 _SELECT_CONTEXT_DESCRIPTION = (
     "Return a small, budgeted, provenance-tracked slice of the workspace for a query. "
     "Prefer this over reading whole files: it caps total tokens, keeps a mandatory "
@@ -34,9 +48,9 @@ _SELECT_CONTEXT_DESCRIPTION = (
     "Good for locating evidence in a large codebase or long document; not a code writer. "
     "This tool does NOT search the whole repo by filename on its own — pass `include` "
     "(globs/directories) or `files` (explicit paths) scoped to where the answer likely "
-    "lives. If you don't already know which files are relevant, do one quick filename/path "
-    "glob or grep first and pass those paths in; don't guess a broad `include` and rely on "
-    "the low-coverage advice to iterate — that costs more calls than searching by name up front."
+    "lives. If you don't already know real file paths, call `find_files` first instead "
+    "of guessing plausible-looking names or a broad `include` — a wrong guess errors, "
+    "and a too-broad `include` can exceed `max_files`."
 )
 _TRACE_DEPENDENCIES_DESCRIPTION = (
     "Return the transitive definition closure for a symbol: every function / class / "
@@ -59,6 +73,17 @@ def create_server(workspace_root: Path) -> MCPServer:
     """Build an MCP server whose tools resolve paths under ``workspace_root``."""
     root = Path(workspace_root).resolve()
     server = MCPServer("pasr", version=__version__)
+
+    @server.tool(name="find_files", description=_FIND_FILES_DESCRIPTION)
+    def find_files(query: str = "", include: list[str] | None = None, top_k: int = DEFAULT_TOP_K) -> dict[str, Any]:
+        """Rank workspace files under ``include`` (default: the whole workspace) by
+        how many ``query`` terms appear in their own path. Returns up to ``top_k``
+        candidates, best match first, each with the path and which terms matched.
+        """
+        try:
+            return _find_files(root, query=query, include=include, top_k=top_k)
+        except ValueError as exc:
+            raise ToolError(str(exc)) from exc
 
     @server.tool(name="select_context", description=_SELECT_CONTEXT_DESCRIPTION)
     def select_context(

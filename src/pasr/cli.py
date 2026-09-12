@@ -1,5 +1,6 @@
 """``pasr`` CLI — run PASR without an agent.
 
+pasr find "<query>" [globs...]           rank files by path/filename match
 pasr explain "<query>" [globs...]        show the selection receipt
 pasr trace <symbol> [globs...]           a dependency closure (--callers to reverse it)
 pasr pack <name> "<query>" [globs...]    save a Context Pack
@@ -17,6 +18,7 @@ import time
 from pathlib import Path
 
 from pasr import __version__
+from pasr.find_files import DEFAULT_TOP_K, find_files
 from pasr.ledger import append_ledger, entry_from_receipt, read_ledger, render_report, summarize
 from pasr.receipt import receipt_bytes, render_markdown, write_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
@@ -39,6 +41,23 @@ def context_metrics(result: dict) -> dict:
         # estimate: one PASR call replaces the agent opening each scanned file
         "round_trips_saved": max(0, len(files) - 1),
     }
+
+
+def _find(args: argparse.Namespace) -> int:
+    try:
+        result = find_files(args.workspace, query=args.query, include=args.paths or None, top_k=args.top_k)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    if args.json:
+        print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
+        return 0
+    print(f"# {result['total_candidates']} candidate file(s), top {len(result['matches'])}\n")
+    for match in result["matches"]:
+        score = f"{match['match_score']:.2f}" if match["match_score"] is not None else "-"
+        keywords = ", ".join(match["matched_keywords"]) or "-"
+        print(f"{score}  {match['path']}  ({keywords})")
+    return 0
 
 
 def _explain(args: argparse.Namespace) -> int:
@@ -215,6 +234,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"pasr {__version__}")
     parser.add_argument("--workspace", type=Path, default=Path.cwd(), help="Workspace root (default: cwd).")
     sub = parser.add_subparsers(dest="command", required=True)
+
+    find = sub.add_parser("find", help="Rank workspace files by path/filename match for a query.")
+    find.add_argument("query")
+    find.add_argument("paths", nargs="*", help="Globs / directories (default: whole workspace).")
+    find.add_argument("--top-k", type=int, default=DEFAULT_TOP_K, dest="top_k")
+    find.add_argument("--json", action="store_true", help="Emit matches as JSON.")
+    find.set_defaults(func=_find)
 
     explain = sub.add_parser("explain", help="Run select_context and print the receipt.")
     explain.add_argument("query")

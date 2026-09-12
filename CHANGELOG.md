@@ -5,6 +5,15 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **New tool: `find_files`.** An agent wired to PASR's tools alone (no generic
+  grep/glob) had no way to learn real file paths before calling `select_context`/
+  `trace_dependencies` — it guessed plausible names (`main.rs`, `server.rs`, ...),
+  almost all wrong, and burned calls on "file does not exist" / "exceeding
+  max_files" until it ran out of turns (measured: an agent given only PASR's tools
+  spent 8 of 14 turns on wrong-path guesses before giving up on one real question).
+  `find_files(query, include=None, top_k=30)` ranks workspace files by how many
+  query terms occur in their own path — no `max_files` ceiling, safe to call
+  broad or empty. `pasr find "<query>" [paths...]` on the CLI.
 - **Filename/path terms now count as query evidence.** Lexical candidate generation
   and coverage accounting only ever looked at file *content* — a file whose name
   alone answered the query (e.g. `stale_socket_gc.py` for "stale socket cleanup")

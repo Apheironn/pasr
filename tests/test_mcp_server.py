@@ -15,7 +15,7 @@ def test_lists_all_tools_with_schemas(mini_workspace: Path):
     server = create_server(mini_workspace)
     tools = {tool.name: tool for tool in anyio.run(server.list_tools)}
 
-    assert set(tools) == {"select_context", "trace_dependencies", "explain_selection", "expand_context"}
+    assert set(tools) == {"find_files", "select_context", "trace_dependencies", "explain_selection", "expand_context"}
     props = set(tools["select_context"].input_schema.get("properties", {}))
     assert {"query", "files", "include", "budget_tokens", "prefix_tokens", "tail_tokens"} <= props
 
