@@ -222,3 +222,32 @@ class RunSelectContextTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_outline_returns_a_definitions_index_instead_of_bodies(mini_workspace: Path):
+    """The cheap rung: what is in these files, for a fraction of a body slice."""
+    from pasr.schema import validate_select_context_request
+    from pasr.select import run_select_context
+
+    def run(outline: bool):
+        request = validate_select_context_request(
+            {
+                "query": "rate limit headers on the response",
+                "include": ["api/ratelimit.py"],
+                "budget_tokens": 2000,
+                "outline": outline,
+            },
+            workspace_root=mini_workspace,
+        )
+        return run_select_context(request, write_receipt_file=False)
+
+    outline = run(True)
+    bodies = run(False)
+
+    assert outline["route"] == "outline"
+    assert outline["spans"] == []
+    assert outline["context"].startswith("# symbol map\n")
+    assert outline["token_count"] < bodies["token_count"]
+    assert outline["confidence"] == 0.0, "an index is not evidence"
+    assert "does not answer" in outline["advice"][0]
+    assert all(":" in line for line in outline["context"].splitlines()[1:])

@@ -33,6 +33,7 @@ class SelectContextRequest:
     semantic: str
     map_tokens: int
     trace: str
+    outline: bool = False
 
 
 @dataclass(frozen=True)
@@ -83,6 +84,7 @@ def validate_select_context_request(payload: dict[str, Any], workspace_root: Pat
         semantic="" if semantic == "none" else semantic,
         map_tokens=_non_negative_int(payload.get("map_tokens", 0), "map_tokens"),
         trace=str(payload.get("trace", "") or "").strip(),
+        outline=bool(payload.get("outline", False)),
     )
 
 

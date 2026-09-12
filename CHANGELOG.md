@@ -5,6 +5,17 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **`select_context(outline=true)` — shape without bodies.** In an agent loop a
+  returned slice is re-sent to the model on every later turn, so its real cost is
+  (tokens × turns still to come): on a measured rust-analyzer run, 87% of all
+  tokens spent were re-transmission of early full-body slices. `outline` returns
+  the query-ranked `file:line kind name` index for the resolved files and no code
+  — 585 tokens where the body slice for the same question cost 4,017 — so the
+  first call can locate cheaply and later calls fetch bodies only where they
+  matter. Its receipt reports `route: "outline"` and confidence 0, because an
+  index is a map, not evidence. `pasr explain --outline` on the CLI. Measured
+  effect on a lexical question over 3 runs: 49k tokens / 8 calls and 3/3 answers,
+  against grep+read's 80k / 15 calls and 2/3.
 - **New tool: `find_symbols` — "where is this defined?" in one call.** PASR could
   locate *paths* and extract *spans*, but nothing answered the question an agent
   actually hits mid-search: a symbol is referenced here, where does it live? The

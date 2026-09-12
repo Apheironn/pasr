@@ -85,6 +85,29 @@ def assess(query_class: str, result: dict[str, Any]) -> dict[str, Any]:
     diagnostics = result["diagnostics"]
     spans = result["spans"]
 
+    if result["route"] == "outline":
+        # An outline is a map, not evidence: scoring it on keyword coverage would report
+        # a confident-sounding number for a slice that contains no code at all.
+        line_count = int(diagnostics.get("symbol_line_count", 0))
+        if not line_count:
+            return {
+                "query_class": query_class,
+                "confidence": 0.0,
+                "advice": [
+                    "No symbols were indexed for these files (unsupported language, or no definitions). "
+                    "Call select_context without `outline` to read the text itself."
+                ],
+            }
+        return {
+            "query_class": query_class,
+            "confidence": 0.0,
+            "advice": [
+                f"Outline only: {line_count} definition(s) listed, no bodies - this locates, it does not "
+                "answer. Pick the definitions you need and call select_context again with those `files` "
+                "and a query naming them (or find_symbols for an exact name)."
+            ],
+        }
+
     scored_spans = [span for span in spans if span["selection_reasons"] != ["active_window"]]
     multi_signal = (
         sum(len(span["selection_reasons"]) >= 2 for span in scored_spans) / len(scored_spans) if scored_spans else 0.0

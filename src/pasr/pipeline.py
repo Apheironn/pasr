@@ -23,6 +23,7 @@ from pasr.window import plan_active_window
 
 ROUTE_LOSSLESS = "lossless"
 ROUTE_SELECTED = "selected"
+ROUTE_OUTLINE = "outline"  # symbol index only; set by select.py, never by assemble()
 _RECALL_STRATEGIES = ("score_only", "coverage_aware")
 
 

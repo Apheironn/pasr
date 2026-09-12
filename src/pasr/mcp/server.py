@@ -57,7 +57,11 @@ _SELECT_CONTEXT_DESCRIPTION = (
     "(globs/directories) or `files` (explicit paths) scoped to where the answer likely "
     "lives. If you don't already know real file paths, call `find_files` first instead "
     "of guessing plausible-looking names or a broad `include` — a wrong guess errors, "
-    "and a too-broad `include` can exceed `max_files`."
+    "and a too-broad `include` can exceed `max_files`. Spend little on early calls: "
+    "whatever a call returns is re-sent to the model on every later turn, so a big "
+    "first slice is the most expensive thing you can ask for. When you only need to see "
+    "what a file contains, pass `outline=true` for a definitions-only index (a few "
+    "hundred tokens), then call again for bodies at the places that matter."
 )
 _TRACE_DEPENDENCIES_DESCRIPTION = (
     "Return the transitive definition closure for a symbol: every function / class / "
@@ -100,7 +104,12 @@ class _CallGuard:
     """
 
     REPEAT_LIMIT = 2
-    ZERO_NOVELTY_LIMIT = 2
+    LOW_NOVELTY_LIMIT = 2
+    # Re-reading a file at a slightly different budget returns a few unseen lines around
+    # evidence already delivered. That is not progress, and a strict "zero new spans" rule
+    # never fires on it, so novelty is a ratio: below this, the call added nothing worth
+    # the tokens it will now cost on every remaining turn.
+    NOVELTY_FLOOR = 0.25
 
     def __init__(self) -> None:
         self._seen: dict[str, tuple[str, int]] = {}
@@ -140,17 +149,18 @@ class _CallGuard:
         provenances = {str(span.get("provenance")) for span in result.get("spans", []) if span.get("provenance")}
         if not provenances:
             return
-        if provenances - self._delivered:
-            self._delivered |= provenances
+        novelty = len(provenances - self._delivered) / len(provenances)
+        self._delivered |= provenances
+        if novelty >= self.NOVELTY_FLOOR:
             self._zero_novelty = 0
             return
 
         self._zero_novelty += 1
-        if self._zero_novelty < self.ZERO_NOVELTY_LIMIT:
+        if self._zero_novelty < self.LOW_NOVELTY_LIMIT:
             return
         sources = sorted({p.rsplit(":", 1)[0] for p in self._delivered})
         raise ToolError(
-            f"Refused: the last {self._zero_novelty} selections returned only spans you have already "
+            f"Refused: the last {self._zero_novelty} selections returned essentially only spans you have already "
             f"been given. You currently hold {len(self._delivered)} span(s) across {len(sources)} file(s): "
             f"{', '.join(sources[:8])}{' ...' if len(sources) > 8 else ''}. More retrieval will not add "
             "evidence - answer the question from these spans, naming what you could not determine."
@@ -236,6 +246,7 @@ def create_server(workspace_root: Path) -> MCPServer:
         semantic: str = "",
         map_tokens: int = 0,
         trace: str = "",
+        outline: bool = False,
         pack: str = "",
         save_as: str = "",
     ) -> dict[str, Any]:
@@ -276,6 +287,7 @@ def create_server(workspace_root: Path) -> MCPServer:
                     "semantic": semantic,
                     "map_tokens": map_tokens,
                     "trace": trace,
+                    "outline": outline,
                 },
                 workspace_root=root,
             )

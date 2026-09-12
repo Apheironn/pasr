@@ -98,6 +98,7 @@ def _explain(args: argparse.Namespace) -> int:
             "semantic": args.semantic,
             "map_tokens": args.map_tokens,
             "trace": args.trace,
+            "outline": args.outline,
         },
         workspace_root=args.workspace,
     )
@@ -292,6 +293,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Prepend a query-ranked symbol index of this many tokens (carved from --budget).",
     )
     explain.add_argument("--trace", default="", help="Also fold this symbol's dependency closure into the slice.")
+    explain.add_argument(
+        "--outline",
+        action="store_true",
+        help="Definitions-only index for the files (no bodies) - locate cheaply, then read.",
+    )
     explain.add_argument("--json", action="store_true", help="Emit the receipt as JSON.")
     explain.add_argument("--no-write", action="store_true", help="Do not write the receipt file.")
     explain.add_argument("--no-ledger", action="store_true", help="Do not append to .pasr/ledger.jsonl.")

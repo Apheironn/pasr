@@ -12,7 +12,7 @@ from typing import Any
 from pasr.chunker import chunk_text
 from pasr.evidence import account_query_evidence, build_evidence_span
 from pasr.packs import build_pack, load_pack, pack_staleness, write_pack
-from pasr.pipeline import AssembleConfig, RetrievalConfig, assemble
+from pasr.pipeline import ROUTE_OUTLINE, AssembleConfig, ContextPack, RetrievalConfig, assemble
 from pasr.receipt import build_receipt, read_receipt, write_receipt
 from pasr.redaction import Redactor, identity_redactor
 from pasr.routing import assess, classify_query
@@ -37,6 +37,7 @@ def _canonical_request(request: SelectContextRequest) -> dict[str, Any]:
         "semantic": request.semantic,
         "map_tokens": request.map_tokens,
         "trace": request.trace,
+        "outline": request.outline,
     }
 
 
@@ -170,31 +171,53 @@ def _run(
     # when the whole context already fits: a query-ranked symbol index (map_tokens) and
     # a named dependency closure (trace).
     map_text, map_tokens, map_lines = "", 0, 0
-    if request.map_tokens > 0 and parsed_symbols:
-        cap = min(request.map_tokens, request.budget_tokens // 2)
-        map_text, map_tokens, map_lines = _symbol_map_header(parsed_symbols, request.query, tok, cap)
-
     trace_text, trace_tokens, trace_meta = "", 0, {}
-    if request.trace:
-        remaining = max(request.budget_tokens - map_tokens, 0) // 2
-        trace_text, trace_tokens, trace_meta = _trace_header(request.trace, texts_by_source, tok, remaining)
 
-    pack = assemble(
-        request.query,
-        spans,
-        AssembleConfig(
-            budget_tokens=request.budget_tokens - map_tokens - trace_tokens,
-            prefix_tokens=request.prefix_tokens,
-            tail_tokens=request.tail_tokens,
-            recall_strategy=request.recall_strategy,
-            retrieval=RetrievalConfig(semantic=request.semantic),
-        ),
-        extra_candidate_groups={"symbols": sym_candidates} if sym_candidates else None,
-        collect_candidates=True,
-    )
-    if pack.route == "lossless":  # full context already present; a header would only bloat it
-        map_text, map_tokens, map_lines = "", 0, 0
-        trace_text, trace_tokens, trace_meta = "", 0, {}
+    if request.outline:
+        # Shape without bodies. In an agent loop a returned slice is re-sent with every
+        # later turn, so its real cost is (tokens x turns still to come): the cheapest
+        # place to spend is the first call, and the first call usually only needs to
+        # know *what is in here*. Measured on rust-analyzer, 87% of a run's tokens were
+        # re-transmission of early full-body slices.
+        map_text, map_tokens, map_lines = _symbol_map_header(parsed_symbols, request.query, tok, request.budget_tokens)
+        pack = ContextPack(
+            route=ROUTE_OUTLINE,
+            spans=(),
+            text=map_text,
+            token_count=map_tokens,
+            budget_tokens=request.budget_tokens,
+            diagnostics={
+                "reason": "outline: query-ranked symbol index, no bodies",
+                "span_count": 0,
+                "symbol_line_count": map_lines,
+            },
+        )
+        map_text, map_tokens = "", 0  # it *is* the context here, not a header on top of one
+    else:
+        if request.map_tokens > 0 and parsed_symbols:
+            cap = min(request.map_tokens, request.budget_tokens // 2)
+            map_text, map_tokens, map_lines = _symbol_map_header(parsed_symbols, request.query, tok, cap)
+
+        if request.trace:
+            remaining = max(request.budget_tokens - map_tokens, 0) // 2
+            trace_text, trace_tokens, trace_meta = _trace_header(request.trace, texts_by_source, tok, remaining)
+
+        pack = assemble(
+            request.query,
+            spans,
+            AssembleConfig(
+                budget_tokens=request.budget_tokens - map_tokens - trace_tokens,
+                prefix_tokens=request.prefix_tokens,
+                tail_tokens=request.tail_tokens,
+                recall_strategy=request.recall_strategy,
+                retrieval=RetrievalConfig(semantic=request.semantic),
+            ),
+            extra_candidate_groups={"symbols": sym_candidates} if sym_candidates else None,
+            collect_candidates=True,
+        )
+        if pack.route == "lossless":  # full context already present; a header would only bloat it
+            map_text, map_tokens, map_lines = "", 0, 0
+            trace_text, trace_tokens, trace_meta = "", 0, {}
 
     evidence = account_query_evidence(
         request.query,

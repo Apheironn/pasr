@@ -273,3 +273,14 @@ def test_novel_spans_reset_the_stopping_rule(mini_workspace: Path):
         server, "select_context", {"query": "session", "include": ["auth/session.py"], "budget_tokens": 3000}
     )
     assert result.is_error is False
+
+
+def test_a_mostly_repeated_slice_counts_as_no_progress(mini_workspace: Path):
+    """Re-reading a file at a nudged budget returns a few unseen lines; that is not progress."""
+    server = create_server(mini_workspace)
+    base = {"include": ["api/ratelimit.py"]}
+
+    _call(server, "select_context", {"query": "rate limit headers", "budget_tokens": 2000, **base})
+    _call(server, "select_context", {"query": "throttling responses", "budget_tokens": 2100, **base})
+    with pytest.raises(Exception, match="already"):
+        _call(server, "select_context", {"query": "429 emission", "budget_tokens": 2200, **base})
