@@ -15,7 +15,14 @@ def test_lists_all_tools_with_schemas(mini_workspace: Path):
     server = create_server(mini_workspace)
     tools = {tool.name: tool for tool in anyio.run(server.list_tools)}
 
-    assert set(tools) == {"find_files", "select_context", "trace_dependencies", "explain_selection", "expand_context"}
+    assert set(tools) == {
+        "find_files",
+        "find_symbols",
+        "select_context",
+        "trace_dependencies",
+        "explain_selection",
+        "expand_context",
+    }
     props = set(tools["select_context"].input_schema.get("properties", {}))
     assert {"query", "files", "include", "budget_tokens", "prefix_tokens", "tail_tokens"} <= props
 
@@ -216,3 +223,26 @@ def test_select_context_unknown_pack_is_a_clean_error(mini_workspace: Path):
     server = create_server(mini_workspace)
     with pytest.raises(Exception, match="no pack named"):
         _call(server, "select_context", {"query": "", "pack": "ghost"})
+
+
+def test_identical_calls_stay_deterministic_then_stop(mini_workspace: Path):
+    """Repeats return the same bytes (receipts stay reproducible) until the loop rule fires."""
+    server = create_server(mini_workspace)
+    args = {"query": "session cookie rotation", "include": ["auth"], "budget_tokens": 400}
+
+    first = json.loads(_call(server, "select_context", args).content[0].text)
+    second = json.loads(_call(server, "select_context", args).content[0].text)
+    assert first == second, "identical calls must stay byte-identical while allowed"
+
+    with pytest.raises(Exception, match="cannot add evidence"):
+        _call(server, "select_context", args)
+
+
+def test_find_symbols_returns_definition_provenance(mini_workspace: Path):
+    server = create_server(mini_workspace)
+    result = _call(server, "find_symbols", {"query": "rate_limit"})
+
+    assert result.is_error is False
+    payload = json.loads(result.content[0].text)
+    assert payload["matches"], payload
+    assert all(":" in match["provenance"] for match in payload["matches"])

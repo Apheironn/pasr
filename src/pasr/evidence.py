@@ -51,6 +51,9 @@ _STOPWORDS = frozenset(
         "with",
     }
 )
+STOPWORDS = _STOPWORDS
+"""Non-discriminative terms, shared with symbol/path matching (``is_quiescent``
+must not match ``is_verbose`` on the strength of "is")."""
 
 
 @dataclass(frozen=True)

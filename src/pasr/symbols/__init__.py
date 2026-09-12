@@ -10,13 +10,14 @@ from __future__ import annotations
 from pasr.symbols.base import FileSymbols, SymbolDef, SymbolProvider
 from pasr.symbols.candidates import file_symbol_candidates, symbol_candidates
 from pasr.symbols.python_symbols import generate_python_symbol_candidates
-from pasr.symbols.registry import get_provider, supported_extensions
+from pasr.symbols.registry import get_provider, parse_symbols, supported_extensions
 
 __all__ = [
     "FileSymbols",
     "SymbolDef",
     "SymbolProvider",
     "get_provider",
+    "parse_symbols",
     "supported_extensions",
     "symbol_candidates",
     "file_symbol_candidates",

@@ -122,22 +122,32 @@ def assess(query_class: str, result: dict[str, Any]) -> dict[str, Any]:
     if coverage < 0.5 and query_class not in ("aggregation", "unknown"):
         uncovered = _uncovered_keywords(result["evidence_accounting"])
         listed = f" ({', '.join(uncovered[:6])})" if uncovered else ""
+        # Name one concrete next action. Open-ended advice ("search some more") is the
+        # documented way to push a tool-using agent into an unbounded retrieval loop:
+        # it never reads as done, so the agent keeps paying for another call.
         if result["route"] == "lossless":
             advice.append(
-                f"Full context included, but only {round(coverage * 100)}% of query terms appear{listed} - "
-                "widen `include` to more files; the answer may be elsewhere."
+                f"Full context included, but only {round(coverage * 100)}% of query terms appear{listed}. "
+                "These files are fully in context - re-reading them will not add evidence. "
+                "If that is not enough, locate the missing terms with find_symbols (definitions) "
+                "or find_files (paths), then select_context on what those return."
             )
         else:
             advice.append(
-                f"Low keyword coverage ({round(coverage * 100)}%). Also grep for{listed or ' the missing terms'}, "
-                "or call expand_context with more budget."
+                f"Low keyword coverage ({round(coverage * 100)}%){listed}. Do NOT re-run this same query: "
+                "call find_symbols for the missing identifiers (it returns file:line definitions) or "
+                "find_files for paths, then select_context on those exact files. Use expand_context only "
+                "if the slice was truncated mid-evidence."
             )
     if diagnostics.get("active_window_dropped"):
         advice.append(
             "Budget too small for the prefix/tail window - raise budget_tokens or lower prefix_tokens/tail_tokens."
         )
     if not advice:
-        advice.append("Looks complete for a localized question.")
+        advice.append(
+            "Looks complete for a localized question: the slice covers the query's terms. "
+            "Answer from it - further retrieval calls are unlikely to add evidence."
+        )
 
     return {"query_class": query_class, "confidence": confidence, "advice": advice}
 

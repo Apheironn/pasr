@@ -1,11 +1,16 @@
 """PASR MCP server (stdio).
 
-Tools:
+Tools (the localization ladder: path -> symbol -> span):
   find_files         — rank workspace files by path/filename match for a query
+  find_symbols       — where a symbol is defined, as file:line, across the workspace
   select_context     — a budgeted, provenance-carrying slice of the workspace
   trace_dependencies — the transitive definition closure for a symbol
   explain_selection  — the stored receipt for a prior select_context run
   expand_context     — re-run a prior selection once with a larger budget
+
+Every tool result carries a decisive next step, and identical repeat calls are
+flagged (see :class:`_CallGuard`): a retrieval broker that answers "maybe search
+some more" is how an agent ends up spending a whole turn budget without an answer.
 
 Runs fully offline.
 
@@ -15,6 +20,7 @@ Runs fully offline.
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +34,7 @@ from pasr.ledger import append_ledger, ledger_entry
 from pasr.receipt import read_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
 from pasr.select import run_expand_context, run_pack, run_select_context, save_pack
+from pasr.symbol_search import find_symbols as _find_symbols
 from pasr.trace import trace_dependencies as _trace_dependencies
 
 _FIND_FILES_DESCRIPTION = (
@@ -55,7 +62,7 @@ _SELECT_CONTEXT_DESCRIPTION = (
 _TRACE_DEPENDENCIES_DESCRIPTION = (
     "Return the transitive definition closure for a symbol: every function / class / "
     "import it needs, in source order, with file:line provenance, at a fraction of the "
-    "tokens of the whole codebase. Deterministic. Python and JavaScript/TypeScript."
+    "tokens of the whole codebase. Deterministic. Python, JavaScript/TypeScript, Rust."
 )
 _EXPLAIN_SELECTION_DESCRIPTION = (
     "Return the stored receipt for a prior select_context run by its id: the kept "
@@ -67,12 +74,63 @@ _EXPAND_CONTEXT_DESCRIPTION = (
     "(budget_tokens + extra_budget). Use it when the earlier slice's advice said "
     "coverage was low. One pass, still a hard token cap."
 )
+_FIND_SYMBOLS_DESCRIPTION = (
+    "Where is this symbol DEFINED? Returns file:line definitions for functions, "
+    "classes/structs, traits, enums, types and modules matching your query, across the "
+    "whole workspace (Python, JavaScript/TypeScript, Rust). Call this the moment you see "
+    "a symbol referenced and need its definition -- it answers in one call, exactly, "
+    "instead of guessing which file holds it. An exact name match is returned alone; "
+    "vaguer queries return the closest-named definitions ranked."
+)
+
+
+class _CallGuard:
+    """Per-session stopping rule for identical, identically-answered calls.
+
+    An agent that has lost track of what it already tried re-issues the same call and
+    quietly burns the caller's whole turn budget. The rule has to be a hard one --
+    a model that is unsure whether it has enough evidence will not stop on a hint.
+
+    It must not, however, cost PASR its determinism: the same request always returns
+    the same bytes, in this session or a fresh one, which is what makes receipts
+    reproducible. So results are never rewritten. Instead the *returned result* is
+    fingerprinted: a repeat that produces a different fingerprint (the file changed
+    under it) passes untouched, and only a repeat that would hand back bytes the
+    caller has already seen ``REPEAT_LIMIT`` times is refused.
+    """
+
+    REPEAT_LIMIT = 2
+
+    def __init__(self) -> None:
+        self._seen: dict[str, tuple[str, int]] = {}
+
+    @staticmethod
+    def _key(tool: str, arguments: dict[str, Any]) -> str:
+        return f"{tool}:{json.dumps(arguments, sort_keys=True, default=str)}"
+
+    def guarded(self, tool: str, arguments: dict[str, Any], run: Any) -> Any:
+        """Run ``run()``, refusing once its output has repeated verbatim too often."""
+        key = self._key(tool, arguments)
+        result = run()
+        fingerprint = json.dumps(result, sort_keys=True, default=str)
+        previous, count = self._seen.get(key, ("", 0))
+        count = count + 1 if fingerprint == previous else 1
+        self._seen[key] = (fingerprint, count)
+        if count > self.REPEAT_LIMIT:
+            raise ToolError(
+                f"Refused: this exact {tool} call has already returned these same results "
+                f"{count - 1} times in this session, and nothing has changed since. Another identical "
+                "call cannot add evidence. Answer from what you already have, or change approach - "
+                "find_symbols(<name>) for where a symbol is defined, find_files(<terms>) for paths."
+            )
+        return result
 
 
 def create_server(workspace_root: Path) -> MCPServer:
     """Build an MCP server whose tools resolve paths under ``workspace_root``."""
     root = Path(workspace_root).resolve()
     server = MCPServer("pasr", version=__version__)
+    guard = _CallGuard()
 
     @server.tool(name="find_files", description=_FIND_FILES_DESCRIPTION)
     def find_files(query: str = "", include: list[str] | None = None, top_k: int = DEFAULT_TOP_K) -> dict[str, Any]:
@@ -80,10 +138,58 @@ def create_server(workspace_root: Path) -> MCPServer:
         how many ``query`` terms appear in their own path. Returns up to ``top_k``
         candidates, best match first, each with the path and which terms matched.
         """
-        try:
-            return _find_files(root, query=query, include=include, top_k=top_k)
-        except ValueError as exc:
-            raise ToolError(str(exc)) from exc
+
+        def run() -> dict[str, Any]:
+            try:
+                result = _find_files(root, query=query, include=include, top_k=top_k)
+            except ValueError as exc:
+                raise ToolError(str(exc)) from exc
+            if not result["matches"]:
+                result["advice"] = [
+                    f"No path matched these terms among {result['total_candidates']} files. Paths rarely "
+                    "spell out conceptual words - try find_symbols for the identifier, or call again with "
+                    'query="" and a directory in `include` to see the real names.'
+                ]
+            return result
+
+        return guard.guarded("find_files", {"query": query, "include": include, "top_k": top_k}, run)
+
+    @server.tool(name="find_symbols", description=_FIND_SYMBOLS_DESCRIPTION)
+    def find_symbols(
+        query: str = "",
+        include: list[str] | None = None,
+        kinds: list[str] | None = None,
+        top_k: int = DEFAULT_TOP_K,
+    ) -> dict[str, Any]:
+        """Return ``file:line`` definitions whose symbol name matches ``query``.
+
+        ``include`` (globs / directories) scopes the index, ``kinds`` filters to e.g.
+        ``["function", "struct"]``. Definitions come from the same deterministic
+        tree-sitter / ``ast`` parse the selector uses -- no model, no embeddings.
+        """
+
+        def run() -> dict[str, Any]:
+            try:
+                result = _find_symbols(root, query=query, include=include, kinds=kinds, top_k=top_k)
+            except ValueError as exc:
+                raise ToolError(str(exc)) from exc
+            if not result["matches"]:
+                unparsed = ", ".join(result["unparsed_extensions"][:5])
+                result["advice"] = [
+                    f"No definition matched in {result['files_indexed']} indexed file(s)"
+                    + (f" (unindexed extensions here: {unparsed})" if unparsed else "")
+                    + ". The symbol may be named differently - widen `include`, try one distinctive "
+                    "part of the name, or use find_files/select_context on the concept instead."
+                ]
+            elif result["matches"][0]["exact_name_match"]:
+                first = result["matches"][0]
+                result["advice"] = [
+                    f"Exact definition: {first['provenance']}. Read it with "
+                    f'select_context(files=["{first["source"]}"]) - no further searching needed.'
+                ]
+            return result
+
+        return guard.guarded("find_symbols", {"query": query, "include": include, "kinds": kinds, "top_k": top_k}, run)
 
     @server.tool(name="select_context", description=_SELECT_CONTEXT_DESCRIPTION)
     def select_context(
@@ -142,7 +248,11 @@ def create_server(workspace_root: Path) -> MCPServer:
                 },
                 workspace_root=root,
             )
-            result = run_select_context(request)
+            result = guard.guarded(
+                "select_context",
+                {"query": query, "files": files, "include": include, "budget_tokens": budget_tokens},
+                lambda: run_select_context(request),
+            )
             if save_as:
                 path, _ = save_pack(save_as, request, result=result)
                 result["saved_pack"] = str(path)

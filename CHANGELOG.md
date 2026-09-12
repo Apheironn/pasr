@@ -5,6 +5,31 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **New tool: `find_symbols` — "where is this defined?" in one call.** PASR could
+  locate *paths* and extract *spans*, but nothing answered the question an agent
+  actually hits mid-search: a symbol is referenced here, where does it live? The
+  agent had to guess files. Measured on rust-analyzer, that guessing consumed a
+  full 18-turn budget with no answer, three runs running. `find_symbols(query,
+  include=None, kinds=None, top_k=30)` returns `file:line` definitions from the
+  same deterministic tree-sitter/`ast` parse the selector already runs, an exact
+  name match on its own so the answer is decisive. `pasr symbols "<query>"` on the
+  CLI. Together with `find_files` this completes the path → symbol → span
+  localization ladder that the code-localization literature converges on.
+- **Rust is a first-class language.** `.rs` had no symbol provider at all, so on a
+  Rust repo `trace_dependencies` always answered "not found", the `map_tokens`
+  symbol index came back empty, and symbol-aware candidate ranking silently did
+  nothing — on a codebase that is, ironically, the kind PASR is pitched at. Added
+  a tree-sitter Rust provider (functions, structs, enums, traits, impls, modules,
+  consts, type aliases, macros; `impl GlobalState` indexes under `GlobalState`).
+- **Retrieval advice now names one concrete next action, and repeats stop.**
+  Low-coverage advice used to say "also grep for the missing terms, or call
+  expand_context with more budget" — open-ended feedback is the documented way to
+  push a tool-using agent into an unbounded retrieval loop. It now points at
+  `find_symbols`/`find_files` with the specific missing identifiers, and a complete
+  slice says so plainly ("answer from it"). The MCP server also refuses a call that
+  has already returned the same bytes twice in a session; results themselves are
+  never rewritten, so identical requests stay byte-identical and receipts stay
+  reproducible.
 - **New tool: `find_files`.** An agent wired to PASR's tools alone (no generic
   grep/glob) had no way to learn real file paths before calling `select_context`/
   `trace_dependencies` — it guessed plausible names (`main.rs`, `server.rs`, ...),

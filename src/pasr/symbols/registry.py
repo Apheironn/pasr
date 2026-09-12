@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from pasr.symbols.base import SymbolProvider
+from pasr.symbols.base import FileSymbols, SymbolProvider
 from pasr.symbols.python_provider import PythonSymbolProvider
 
 _EXTENSION_LANGUAGE = {
@@ -18,6 +18,7 @@ _EXTENSION_LANGUAGE = {
     ".mts": "typescript",
     ".cts": "typescript",
     ".tsx": "tsx",
+    ".rs": "rust",
 }
 
 
@@ -33,7 +34,7 @@ def _provider_for_language(language: str) -> SymbolProvider | None:
         return PythonSymbolProvider()
     from pasr.symbols.treesitter_provider import TreeSitterProvider
 
-    provider = TreeSitterProvider("javascript" if language == "javascript" else language)
+    provider = TreeSitterProvider(language)
     return provider if provider.available() else None
 
 
@@ -48,3 +49,17 @@ def get_provider(source: str) -> SymbolProvider | None:
 
 def supported_extensions() -> frozenset[str]:
     return frozenset(_EXTENSION_LANGUAGE)
+
+
+@lru_cache(maxsize=2048)
+def parse_symbols(provider: SymbolProvider, source: str, text: str) -> FileSymbols:
+    """Memoize a provider's parse by (provider, source, exact text).
+
+    Providers re-walk the whole file on every call with no cache of their own, and a
+    long-lived session parses the same unchanged files repeatedly (once per
+    ``select_context``, again per ``find_symbols``). Keyed on the file's actual text,
+    so a changed file simply misses the cache instead of needing invalidation.
+    Providers are singletons via :func:`_provider_for_language`, so keying on the
+    instance is stable.
+    """
+    return provider.parse(source, text)

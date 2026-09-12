@@ -1,4 +1,4 @@
-"""Generic tree-sitter symbol provider (JavaScript / TypeScript).
+"""Generic tree-sitter symbol provider (JavaScript / TypeScript / Rust).
 
 A node-walk with a small per-language config rather than tree-sitter queries: fewer
 moving parts, fully deterministic. Grammars are imported lazily so the base package
@@ -7,7 +7,7 @@ stays light until a non-Python file is actually parsed.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 
 from pasr.symbols.base import FileSymbols, SymbolDef
@@ -34,6 +34,36 @@ _FUNC_SCOPE = frozenset(
 )
 
 
+_RUST_DEF_NODES = frozenset(
+    {
+        "function_item",
+        "struct_item",
+        "enum_item",
+        "union_item",
+        "trait_item",
+        "impl_item",
+        "mod_item",
+        "const_item",
+        "static_item",
+        "type_item",
+        "macro_definition",
+    }
+)
+_RUST_KINDS = {
+    "function_item": "function",
+    "struct_item": "struct",
+    "enum_item": "enum",
+    "union_item": "struct",
+    "trait_item": "trait",
+    "impl_item": "impl",
+    "mod_item": "module",
+    "const_item": "variable",
+    "static_item": "variable",
+    "type_item": "type",
+    "macro_definition": "macro",
+}
+
+
 @dataclass(frozen=True)
 class LanguageConfig:
     language: str
@@ -43,6 +73,8 @@ class LanguageConfig:
     import_nodes: frozenset[str]
     params_fields: tuple[str, ...] = ("parameters", "formal_parameters")
     grammar: str = ""  # dotted "module:function" producing a tree-sitter Language capsule
+    name_fields: tuple[str, ...] = ("name",)
+    kind_by_node: dict[str, str] = field(default_factory=dict)
 
 
 _CONFIGS: dict[str, LanguageConfig] = {
@@ -69,6 +101,19 @@ _CONFIGS: dict[str, LanguageConfig] = {
         ident_nodes=_JS_IDENT_NODES,
         import_nodes=frozenset({"import_statement"}),
         grammar="tree_sitter_typescript:language_tsx",
+    ),
+    "rust": LanguageConfig(
+        language="rust",
+        def_nodes=_RUST_DEF_NODES,
+        func_value_nodes=frozenset({"closure_expression"}),
+        ident_nodes=frozenset({"identifier", "type_identifier", "field_identifier"}),
+        import_nodes=frozenset({"use_declaration"}),
+        params_fields=("parameters",),
+        grammar="tree_sitter_rust:language",
+        # `impl_item` has no `name`; its `type` field carries the type being implemented,
+        # so `impl GlobalState` indexes under "GlobalState" rather than "<anonymous>".
+        name_fields=("name", "type"),
+        kind_by_node=_RUST_KINDS,
     ),
 }
 
@@ -144,7 +189,10 @@ class TreeSitterProvider:
 
 
 def _def_symbol(node, source, text, byte_char, config: LanguageConfig, force_kind: str | None = None) -> SymbolDef:
-    name_node = node.child_by_field_name("name")
+    name_node = next(
+        (n for n in (node.child_by_field_name(f) for f in config.name_fields) if n is not None),
+        None,
+    )
     name = _node_text(name_node, text, byte_char) if name_node is not None else ""
 
     defines: set[str] = {name} if name else set()
@@ -154,7 +202,11 @@ def _def_symbol(node, source, text, byte_char, config: LanguageConfig, force_kin
             defines.update(_ident_texts(params, text, byte_char, config))
 
     refs = _ident_texts(node, text, byte_char, config) - defines
-    kind = force_kind or ("class" if "class" in node.type or "interface" in node.type else "function")
+    kind = (
+        force_kind
+        or config.kind_by_node.get(node.type)
+        or ("class" if "class" in node.type or "interface" in node.type else "function")
+    )
     return _build(node, name or "<anonymous>", kind, source, text, byte_char, defines, refs)
 
 

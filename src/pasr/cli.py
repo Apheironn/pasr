@@ -1,6 +1,7 @@
 """``pasr`` CLI — run PASR without an agent.
 
 pasr find "<query>" [globs...]           rank files by path/filename match
+pasr symbols "<query>" [globs...]        where matching symbols are defined (file:line)
 pasr explain "<query>" [globs...]        show the selection receipt
 pasr trace <symbol> [globs...]           a dependency closure (--callers to reverse it)
 pasr pack <name> "<query>" [globs...]    save a Context Pack
@@ -23,6 +24,8 @@ from pasr.ledger import append_ledger, entry_from_receipt, read_ledger, render_r
 from pasr.receipt import receipt_bytes, render_markdown, write_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
 from pasr.select import build_select_receipt, run_select_context, save_pack
+from pasr.symbol_search import DEFAULT_TOP_K as SYMBOL_TOP_K
+from pasr.symbol_search import find_symbols
 from pasr.trace import trace_dependencies
 
 
@@ -57,6 +60,28 @@ def _find(args: argparse.Namespace) -> int:
         score = f"{match['match_score']:.2f}" if match["match_score"] is not None else "-"
         keywords = ", ".join(match["matched_keywords"]) or "-"
         print(f"{score}  {match['path']}  ({keywords})")
+    return 0
+
+
+def _symbols(args: argparse.Namespace) -> int:
+    try:
+        result = find_symbols(
+            args.workspace, query=args.query, include=args.paths or None, kinds=args.kinds or None, top_k=args.top_k
+        )
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    if args.json:
+        print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
+        return 0
+    print(
+        f"# {result['symbol_match_count']} definition(s) matched across "
+        f"{result['files_indexed']} indexed file(s), top {len(result['matches'])}\n"
+    )
+    for match in result["matches"]:
+        print(f"{match['match_score']:.2f}  {match['kind']:<9} {match['name']}  {match['provenance']}")
+    if not result["matches"] and result["unparsed_extensions"]:
+        print(f"\nno symbol provider for: {', '.join(result['unparsed_extensions'][:10])}", file=sys.stderr)
     return 0
 
 
@@ -241,6 +266,14 @@ def build_parser() -> argparse.ArgumentParser:
     find.add_argument("--top-k", type=int, default=DEFAULT_TOP_K, dest="top_k")
     find.add_argument("--json", action="store_true", help="Emit matches as JSON.")
     find.set_defaults(func=_find)
+
+    symbols = sub.add_parser("symbols", help="Find where matching symbols are defined (file:line).")
+    symbols.add_argument("query")
+    symbols.add_argument("paths", nargs="*", help="Globs / directories (default: whole workspace).")
+    symbols.add_argument("--kind", action="append", dest="kinds", help="Filter by kind (repeatable).")
+    symbols.add_argument("--top-k", type=int, default=SYMBOL_TOP_K, dest="top_k")
+    symbols.add_argument("--json", action="store_true", help="Emit matches as JSON.")
+    symbols.set_defaults(func=_symbols)
 
     explain = sub.add_parser("explain", help="Run select_context and print the receipt.")
     explain.add_argument("query")
