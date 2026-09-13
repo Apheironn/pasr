@@ -2,6 +2,7 @@
 
 pasr find "<query>" [globs...]           rank files by path/filename match
 pasr symbols "<query>" [globs...]        where matching symbols are defined (file:line)
+pasr usages <symbol> [globs...]          every line using a symbol, with its owner
 pasr explain "<query>" [globs...]        show the selection receipt
 pasr trace <symbol> [globs...]           a dependency closure (--callers to reverse it)
 pasr pack <name> "<query>" [globs...]    save a Context Pack
@@ -25,7 +26,7 @@ from pasr.receipt import receipt_bytes, render_markdown, write_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
 from pasr.select import build_select_receipt, run_select_context, save_pack
 from pasr.symbol_search import DEFAULT_TOP_K as SYMBOL_TOP_K
-from pasr.symbol_search import find_symbols
+from pasr.symbol_search import find_symbols, find_usages
 from pasr.trace import trace_dependencies
 
 
@@ -82,6 +83,26 @@ def _symbols(args: argparse.Namespace) -> int:
         print(f"{match['match_score']:.2f}  {match['kind']:<9} {match['name']}  {match['provenance']}")
     if not result["matches"] and result["unparsed_extensions"]:
         print(f"\nno symbol provider for: {', '.join(result['unparsed_extensions'][:10])}", file=sys.stderr)
+    return 0
+
+
+def _usages(args: argparse.Namespace) -> int:
+    try:
+        result = find_usages(args.workspace, args.symbol, include=args.paths or None, top_k=args.top_k)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    if args.json:
+        print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
+        return 0
+    total = result["usage_count"] + result["definition_count"]
+    print(
+        f"# {result['symbol']}: {result['definition_count']} definition(s), {result['usage_count']} "
+        f"usage(s) across {result['files_scanned']} scanned file(s), "
+        f"showing {len(result['hits'])} of {total}\n"
+    )
+    for hit in result["hits"]:
+        print(f"{hit['role']:<10} {hit['provenance']:<44} in {hit['in']:<26} {hit['text'][:70]}")
     return 0
 
 
@@ -275,6 +296,13 @@ def build_parser() -> argparse.ArgumentParser:
     symbols.add_argument("--top-k", type=int, default=SYMBOL_TOP_K, dest="top_k")
     symbols.add_argument("--json", action="store_true", help="Emit matches as JSON.")
     symbols.set_defaults(func=_symbols)
+
+    usages = sub.add_parser("usages", help="Every line that uses a symbol, with its enclosing definition.")
+    usages.add_argument("symbol")
+    usages.add_argument("paths", nargs="*", help="Globs / directories (default: whole workspace).")
+    usages.add_argument("--top-k", type=int, default=SYMBOL_TOP_K, dest="top_k")
+    usages.add_argument("--json", action="store_true", help="Emit hits as JSON.")
+    usages.set_defaults(func=_usages)
 
     explain = sub.add_parser("explain", help="Run select_context and print the receipt.")
     explain.add_argument("query")

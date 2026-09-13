@@ -82,3 +82,19 @@ def test_reports_unindexed_extensions_rather_than_silently_dropping(mini_workspa
 def test_top_k_must_be_positive(mini_workspace: Path):
     with pytest.raises(ValueError, match="top_k"):
         find_symbols(mini_workspace, query="session", top_k=0)
+
+
+def test_kind_aliases_are_accepted(rust_workspace: Path):
+    """A caller guessing "func" or "fn" should not get a silent empty result."""
+    for alias in ("func", "fn", "method"):
+        assert [m["name"] for m in find_symbols(rust_workspace, query="is_quiescent", kinds=[alias])["matches"]] == [
+            "is_quiescent"
+        ]
+
+
+def test_a_kind_filter_that_hides_a_real_match_says_so(rust_workspace: Path):
+    result = find_symbols(rust_workspace, query="is_quiescent", kinds=["struct"])
+
+    assert result["matches"] == []
+    assert result["kinds_filtered_out"] == 1
+    assert result["kinds_available"] == ["function"]

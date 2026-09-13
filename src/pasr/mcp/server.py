@@ -3,6 +3,7 @@
 Tools (the localization ladder: path -> symbol -> span):
   find_files         — rank workspace files by path/filename match for a query
   find_symbols       — where a symbol is defined, as file:line, across the workspace
+  find_usages        — every place a symbol is used, with the line and its owner
   select_context     — a budgeted, provenance-carrying slice of the workspace
   trace_dependencies — the transitive definition closure for a symbol
   explain_selection  — the stored receipt for a prior select_context run
@@ -35,6 +36,7 @@ from pasr.receipt import read_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
 from pasr.select import run_expand_context, run_pack, run_select_context, save_pack
 from pasr.symbol_search import find_symbols as _find_symbols
+from pasr.symbol_search import find_usages as _find_usages
 from pasr.trace import trace_dependencies as _trace_dependencies
 
 _FIND_FILES_DESCRIPTION = (
@@ -77,6 +79,13 @@ _EXPAND_CONTEXT_DESCRIPTION = (
     "Re-run a prior select_context (by its receipt id) once with a larger budget "
     "(budget_tokens + extra_budget). Use it when the earlier slice's advice said "
     "coverage was low. One pass, still a hard token cap."
+)
+_FIND_USAGES_DESCRIPTION = (
+    "Where is this symbol USED? Returns every line that writes the name, across the "
+    "workspace, each with the code on that line and the function/struct it sits inside "
+    "-- the definition first, then the call sites. Use it for questions whose answer is "
+    'a chain rather than a single definition ("what checks this, and who reports it?"): '
+    "one call replaces walking file by file. Cheap and one hop -- it does not pull bodies."
 )
 _FIND_SYMBOLS_DESCRIPTION = (
     "Where is this symbol DEFINED? Returns file:line definitions for functions, "
@@ -214,7 +223,13 @@ def create_server(workspace_root: Path) -> MCPServer:
                 result = _find_symbols(root, query=query, include=include, kinds=kinds, top_k=top_k)
             except ValueError as exc:
                 raise ToolError(str(exc)) from exc
-            if not result["matches"]:
+            if not result["matches"] and result.get("kinds_filtered_out"):
+                result["advice"] = [
+                    f"{result['kinds_filtered_out']} definition(s) matched the name but were dropped by your "
+                    f"`kinds` filter. Kinds actually present here: {', '.join(result['kinds_available'])}. "
+                    "Retry without `kinds`, or with one of those."
+                ]
+            elif not result["matches"]:
                 unparsed = ", ".join(result["unparsed_extensions"][:5])
                 result["advice"] = [
                     f"No definition matched in {result['files_indexed']} indexed file(s)"
@@ -231,6 +246,29 @@ def create_server(workspace_root: Path) -> MCPServer:
             return result
 
         return guard.guarded("find_symbols", {"query": query, "include": include, "kinds": kinds, "top_k": top_k}, run)
+
+    @server.tool(name="find_usages", description=_FIND_USAGES_DESCRIPTION)
+    def find_usages(symbol: str, include: list[str] | None = None, top_k: int = DEFAULT_TOP_K) -> dict[str, Any]:
+        """Return every line referencing ``symbol``, with its text and enclosing definition."""
+
+        def run() -> dict[str, Any]:
+            try:
+                result = _find_usages(root, symbol, include=include, top_k=top_k)
+            except ValueError as exc:
+                raise ToolError(str(exc)) from exc
+            if not result["hits"]:
+                result["advice"] = [
+                    f"'{symbol}' appears in none of the {result['files_scanned']} scanned file(s). Check "
+                    "the spelling with find_symbols, or widen `include`."
+                ]
+            elif result["truncated"]:
+                result["advice"] = [
+                    f"Showing {len(result['hits'])} of {result['usage_count'] + result['definition_count']} "
+                    "hits. Raise top_k or scope `include` to one directory if you need the rest."
+                ]
+            return result
+
+        return guard.guarded("find_usages", {"symbol": symbol, "include": include, "top_k": top_k}, run)
 
     @server.tool(name="select_context", description=_SELECT_CONTEXT_DESCRIPTION)
     def select_context(

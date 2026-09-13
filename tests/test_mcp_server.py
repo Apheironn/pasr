@@ -18,6 +18,7 @@ def test_lists_all_tools_with_schemas(mini_workspace: Path):
     assert set(tools) == {
         "find_files",
         "find_symbols",
+        "find_usages",
         "select_context",
         "trace_dependencies",
         "explain_selection",
