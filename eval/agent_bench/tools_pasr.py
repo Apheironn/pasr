@@ -8,7 +8,6 @@ import re
 from pathlib import Path
 
 from pasr.find_files import find_files as _find_files
-from pasr.investigate import investigate as _investigate
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
 from pasr.select import run_expand_context, run_select_context
 from pasr.symbol_search import find_evidence as _find_evidence
@@ -125,17 +124,6 @@ def tool_find_files(query: str = "", include: list | None = None, top_k: int = 3
             f"No path matched among {r['total_candidates']} files. Paths rarely spell out concepts - "
             "try find_symbols for an identifier, or query='' with a directory to list real names."
         ]
-    return json.dumps(r, ensure_ascii=False)
-
-
-def tool_investigate(question: str, include: list | None = None, budget_tokens: int = 3000, max_files: int = 3) -> str:
-    try:
-        r = _investigate(WORKSPACE, question, include=include, budget_tokens=budget_tokens, max_files=max_files)
-    except ValueError as exc:
-        return json.dumps({"error": str(exc)})
-    refusal = _novelty_refusal(r)
-    if refusal is not None:
-        return refusal
     return json.dumps(r, ensure_ascii=False)
 
 
@@ -281,14 +269,6 @@ def run_baseline(name: str, inp: dict) -> str:
 
 
 def run_pasr(name: str, inp: dict) -> str:
-    if name == "investigate":
-        return _guard(
-            name,
-            inp,
-            tool_investigate(
-                inp["question"], inp.get("include"), inp.get("budget_tokens", 3000), inp.get("max_files", 3)
-            ),
-        )
     if name == "find_evidence":
         return _guard(
             name,

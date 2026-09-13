@@ -158,27 +158,6 @@ PASR = [
     },
 ]
 
-INVESTIGATE_TOOL = {
-    "name": "investigate",
-    "description": (
-        "Answer-shaped first call for an open question about the codebase: finds the lines anywhere "
-        "that bear on it, follows the code's own names one hop out, and returns a budgeted slice of "
-        "the files it chose - locate and read in a single call, with file:line provenance. Start "
-        "here when you do not yet know any file or symbol; use the narrower tools to follow up."
-    ),
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "question": {"type": "string"},
-            "include": {"type": "array", "items": {"type": "string"}},
-            "budget_tokens": {"type": "integer"},
-        },
-        "required": ["question"],
-    },
-}
-
-PASR_PLUS = [INVESTIGATE_TOOL, *PASR]
-
 
 def anthropic(tools: list[dict]) -> list[dict]:
     return [{"name": t["name"], "description": t["description"], "input_schema": t["parameters"]} for t in tools]

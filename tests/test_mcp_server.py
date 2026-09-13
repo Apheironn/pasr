@@ -16,7 +16,6 @@ def test_lists_all_tools_with_schemas(mini_workspace: Path):
     tools = {tool.name: tool for tool in anyio.run(server.list_tools)}
 
     assert set(tools) == {
-        "investigate",
         "find_files",
         "find_evidence",
         "find_symbols",

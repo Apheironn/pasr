@@ -10,7 +10,7 @@ from pathlib import Path
 
 import runner
 
-ARMS = ["baseline", "pasr", "pasr_plus"]
+ARMS = ["baseline", "pasr"]
 
 
 def main() -> None:

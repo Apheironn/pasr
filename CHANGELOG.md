@@ -5,6 +5,18 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **Measured, not assumed.** `eval/agent_bench` runs the same question through
+  grep+read and through PASR's tools with the same model, prompt and turn cap, and
+  scores each answer against the function and file that actually answer it. On
+  rust-analyzer (1,484 Rust files) over six repetitions with a 9B local model,
+  median: the conceptual question went from **0/6 correct** with grep+read to
+  **5/6** with PASR, and the lexical one from 3/6 at 73k tokens to 5/6 at 49k. With
+  a stronger model (Haiku 4.5, four repetitions) both arms answer, and PASR's
+  advantage narrows to about 40% fewer tool calls and 4/4 correct against 3/4 —
+  weak models need good tools most. A composite "one call does everything" tool was
+  built, measured against the primitives on both models, and removed: it was
+  bimodal (three calls or the whole budget) and never more correct.
+
 - **Read exactly what a locator pointed at.** `files` now accepts the
   `path:start-end` provenance every PASR tool already reports, and chunks those
   entries finely: `files=["src/command.rs:190-193"]` returns 59 tokens where the
