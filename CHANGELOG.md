@@ -5,6 +5,28 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **Read exactly what a locator pointed at.** `files` now accepts the
+  `path:start-end` provenance every PASR tool already reports, and chunks those
+  entries finely: `files=["src/command.rs:190-193"]` returns 59 tokens where the
+  whole file cost 1,860. This matters more than it looks — in an agent loop every
+  returned slice is re-sent on each later turn, and instrumenting real runs showed
+  72% of all tokens spent were that re-transmission.
+- **New tool: `find_evidence`** — which lines anywhere in the workspace bear on a
+  question, ranked by how rare each term is. The only tool that bridges a question
+  worded differently from the code: asking how a server goes "idle" finds nothing
+  by path or by symbol (rust-analyzer says "quiescent", and "idle" appears in none
+  of its 1,484 files), but the question's other word, "indexing", occurs in two
+  files — one of them `/// Unlike is_quiescent, this returns false when we're
+  indexing`. Ordinary English is filtered out first, since in a code corpus
+  "rather" is rarer than any domain term, and terms present in no file are
+  reported as absent so the caller stops hunting them.
+- **New tool: `find_usages`** — where a symbol is used, cross-file: every line
+  with its code and the function or struct it sits inside, definition first. The
+  chain questions PASR used to lose (defined here, checked there, reported
+  somewhere else) now take one call: 472 tokens where
+  `trace_dependencies(direction="callers")` answered the same question with 662
+  spans and 280k tokens of bodies.
+
 - **`select_context(outline=true)` — shape without bodies.** In an agent loop a
   returned slice is re-sent to the model on every later turn, so its real cost is
   (tokens × turns still to come): on a measured rust-analyzer run, 87% of all

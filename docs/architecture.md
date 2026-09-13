@@ -94,7 +94,11 @@ stays as a utility for adaptive-settings callers.
 
 | Tool | Purpose |
 |---|---|
-| `select_context` | budgeted, traceable slice for a query (+ `map_tokens`, `trace=`, Context Packs) |
+| `find_evidence` | IDF-ranked content search over the whole workspace; lines, never bodies |
+| `find_files` | path/filename ranking |
+| `find_symbols` | definition index (`file:line kind name`) |
+| `find_usages` | one-hop reference index, each hit with its line and enclosing definition |
+| `select_context` | budgeted, traceable slice for a query (+ `outline`, `path:start-end` reads, `map_tokens`, `trace=`, Context Packs) |
 | `trace_dependencies` | deterministic def/reference closure for a symbol; `direction="callers"` reverses it |
 | `expand_context` | one bounded widening pass when the slice was insufficient |
 | `explain_selection` | return the receipt for a prior selection id |

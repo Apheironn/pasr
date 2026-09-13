@@ -71,8 +71,8 @@ Or paste this into your client's MCP config (Claude Desktop, Windsurf, Cline, Ze
 
 After that you **never type `pasr`**. Ask your agent a question the normal way — *"how
 does redirect handling work here?"*, *"what breaks if I change `HTTPAdapter`?"* — and the
-model calls `select_context` / `trace_dependencies` itself instead of opening whole
-files.
+model calls `find_evidence` / `find_symbols` / `select_context` itself instead of opening
+whole files.
 
 <p align="center"><img src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/concept-mcp.svg" width="760" alt="Add PASR once: one block in the MCP config, then the agent calls select_context on its own — 2,718 tokens with a receipt instead of 42,768 across 12 files"></p>
 
@@ -156,12 +156,26 @@ spans only, dependency-ordered.
 
 ## MCP tools
 
+The tools form a ladder: locate cheaply, then read exactly what you located. Every
+locator returns `path:start-end`, and `select_context` takes that string straight back,
+so "find it" and "read it" compose without paying for a whole file in between.
+
 | Tool | Purpose |
 |---|---|
-| `select_context` | budgeted, provenance-tracked slice for a query — plus `map_tokens` (a query-ranked symbol-index header, carved *out* of the budget) and `trace=` (fold a symbol's dependency closure into the same slice) |
-| `trace_dependencies` | deterministic def/reference closure for a symbol (Python, JS/TS); `direction="callers"` reverses it for impact analysis |
+| `find_evidence` | which lines *anywhere* bear on a question, ranked by term rarity — the only tool that bridges a question worded differently from the code |
+| `find_files` | rank files by path/filename match |
+| `find_symbols` | where a symbol is **defined**, as `file:line` (Python, JS/TS, Rust) |
+| `find_usages` | where a symbol is **used**: every line, with its code and enclosing definition |
+| `select_context` | budgeted, provenance-tracked slice for a query — `outline=true` for a definitions-only index, `files=["path.rs:190-193"]` to read exactly those lines, plus `map_tokens` and `trace=` |
+| `trace_dependencies` | deterministic def/reference closure for a symbol; `direction="callers"` reverses it for impact analysis |
 | `explain_selection` | return the stored receipt for a prior selection |
 | `expand_context` | re-run a prior selection once with a larger budget |
+
+A retrieval broker also has to know when to stop. Advice on every result names one
+concrete next action rather than "search some more", terms that appear in no file are
+reported as absent, and the server refuses a call that has already returned the same
+evidence — open-ended feedback is the documented way to spend an agent's whole turn
+budget without an answer.
 
 ## CLI
 
