@@ -23,6 +23,7 @@ from pasr.tokenize import Tokenizer, get_tokenizer
 from pasr.trace import trace_dependencies
 
 TOOL_NAME = "select_context"
+_RANGED_BLOCK = 64  # fine chunking for `path:start-end` reads
 
 
 def _canonical_request(request: SelectContextRequest) -> dict[str, Any]:
@@ -148,7 +149,15 @@ def _run(
         source = meta["relative_path"]
         text = path.read_text(encoding="utf-8", errors="replace")
         texts_by_source[source] = text
-        file_spans = chunk_text(source, text, tok, request.block_size)
+        line_range = meta.get("line_range")
+        # `files=["path.rs:190-193"]`: chunk that file finely and keep only the blocks
+        # overlapping those lines, so the caller gets what the locator pointed at. At the
+        # normal block size a four-line function comes back inside a 400-token block of
+        # its neighbours, which defeats the point of having been given a line number.
+        file_spans = chunk_text(source, text, tok, _RANGED_BLOCK if line_range else request.block_size)
+        if line_range:
+            low, high = line_range
+            file_spans = [span for span in file_spans if span.line_start <= high and span.line_end >= low]
         spans.extend(file_spans)
         per_file.append(
             {

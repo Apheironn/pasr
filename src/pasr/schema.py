@@ -6,6 +6,7 @@ Torch-free port of ``researchv2``'s request schema, retargeted at
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from typing import Any
@@ -109,6 +110,29 @@ def validate_trace_dependencies_request(payload: dict[str, Any], workspace_root:
     )
 
 
+_PROVENANCE_RE = re.compile(r"^(?P<path>.+?):(?P<start>\d+)(?:-(?P<end>\d+))?$")
+
+
+def _split_provenance(raw: Any) -> tuple[Any, tuple[int, int] | None]:
+    """Accept ``path/to/file.rs:190-193`` wherever a file path is accepted.
+
+    Every locator in PASR -- find_symbols, find_usages, find_evidence, a receipt's
+    spans -- already reports exactly this string, so letting `files` take it back means
+    an agent that has just been told where something is can read precisely that, instead
+    of paying for a whole budgeted slice of the file to get at four lines.
+    """
+    if not isinstance(raw, str):
+        return raw, None
+    match = _PROVENANCE_RE.match(raw.strip())
+    if match is None:
+        return raw, None
+    start = int(match.group("start"))
+    end = int(match.group("end") or start)
+    if start < 1 or end < start:
+        raise ValueError(f"line range must satisfy 1 <= start <= end: {raw}")
+    return match.group("path"), (start, end)
+
+
 def _resolve_files(
     payload: dict[str, Any], workspace_root: Path
 ) -> tuple[tuple[Path, ...], tuple[dict[str, Any], ...]]:
@@ -119,13 +143,15 @@ def _resolve_files(
     if raw_files is not None:
         if not isinstance(raw_files, list) or not raw_files:
             raise ValueError("files must be a non-empty list when provided.")
-        for raw_path in raw_files:
+        for raw_entry in raw_files:
+            raw_path, line_range = _split_provenance(raw_entry)
             path = _resolve_workspace_file(raw_path, workspace_root)
             resolved.append(path)
             metadata_by_path[path] = {
                 "source": "explicit",
                 "relative_path": path.relative_to(workspace_root).as_posix(),
                 "size_bytes": path.stat().st_size,
+                **({"line_range": list(line_range)} if line_range else {}),
             }
 
     include = payload.get("include") if payload.get("include") is not None else payload.get("include_patterns")

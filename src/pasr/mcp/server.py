@@ -1,6 +1,7 @@
 """PASR MCP server (stdio).
 
 Tools (the localization ladder: path -> symbol -> span):
+  investigate        — one call: locate by content, hop one symbol out, return a slice
   find_files         — rank workspace files by path/filename match for a query
   find_evidence      — which lines anywhere bear on a question, rarest term first
   find_symbols       — where a symbol is defined, as file:line, across the workspace
@@ -32,6 +33,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from pasr import __version__
 from pasr.find_files import DEFAULT_TOP_K
 from pasr.find_files import find_files as _find_files
+from pasr.investigate import investigate as _investigate
 from pasr.ledger import append_ledger, ledger_entry
 from pasr.receipt import read_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
@@ -65,7 +67,10 @@ _SELECT_CONTEXT_DESCRIPTION = (
     "whatever a call returns is re-sent to the model on every later turn, so a big "
     "first slice is the most expensive thing you can ask for. When you only need to see "
     "what a file contains, pass `outline=true` for a definitions-only index (a few "
-    "hundred tokens), then call again for bodies at the places that matter."
+    "hundred tokens), then call again for bodies at the places that matter. `files` also "
+    "accepts the `path:start-end` provenance every other tool reports, e.g. "
+    '`files=["src/command.rs:190-193"]` -- reading exactly the lines you were just '
+    "pointed at costs a few dozen tokens instead of a slice of the whole file."
 )
 _TRACE_DEPENDENCIES_DESCRIPTION = (
     "Return the transitive definition closure for a symbol: every function / class / "
@@ -81,6 +86,14 @@ _EXPAND_CONTEXT_DESCRIPTION = (
     "Re-run a prior select_context (by its receipt id) once with a larger budget "
     "(budget_tokens + extra_budget). Use it when the earlier slice's advice said "
     "coverage was low. One pass, still a hard token cap."
+)
+_INVESTIGATE_DESCRIPTION = (
+    "Answer-shaped first call for an open question about the codebase: finds the lines "
+    "anywhere that bear on it, follows the code's own names one hop out, and returns a "
+    "budgeted slice of the files it chose -- locate and read in a single call, with "
+    "file:line provenance throughout. Start here when you do not yet know any file or "
+    "symbol; use the narrower tools (find_evidence, find_symbols, find_usages, "
+    "select_context) to follow up on what it names."
 )
 _FIND_EVIDENCE_DESCRIPTION = (
     "Search the CONTENT of every file for a question, and get back the lines that bear "
@@ -258,6 +271,26 @@ def create_server(workspace_root: Path) -> MCPServer:
 
         return guard.guarded("find_symbols", {"query": query, "include": include, "kinds": kinds, "top_k": top_k}, run)
 
+    @server.tool(name="investigate", description=_INVESTIGATE_DESCRIPTION)
+    def investigate(
+        question: str, include: list[str] | None = None, budget_tokens: int = 3000, max_files: int = 3
+    ) -> dict[str, Any]:
+        """Locate by content, hop one symbol out, and return a budgeted slice, in one call."""
+
+        def run() -> dict[str, Any]:
+            try:
+                return _investigate(root, question, include=include, budget_tokens=budget_tokens, max_files=max_files)
+            except ValueError as exc:
+                raise ToolError(str(exc)) from exc
+
+        result = guard.guarded(
+            "investigate",
+            {"question": question, "include": include, "budget_tokens": budget_tokens, "max_files": max_files},
+            run,
+        )
+        guard.check_novelty(result)
+        return result
+
     @server.tool(name="find_evidence", description=_FIND_EVIDENCE_DESCRIPTION)
     def find_evidence(
         query: str = "", include: list[str] | None = None, top_k: int = DEFAULT_TOP_K, per_file: int = 2
@@ -269,11 +302,22 @@ def create_server(workspace_root: Path) -> MCPServer:
                 result = _find_evidence(root, query=query, include=include, top_k=top_k, per_file=per_file)
             except ValueError as exc:
                 raise ToolError(str(exc)) from exc
+            absent = sorted(t for t, n in result["term_file_counts"].items() if not n)
+            notes = []
+            if absent:
+                # Knowing a word is nowhere in the workspace bounds the search: without it an
+                # agent keeps trying synonyms of a term the codebase simply never uses.
+                notes.append(
+                    f"These words appear in no file here: {', '.join(absent)}. Stop searching for them - "
+                    "this codebase words the concept differently; follow the hits below instead."
+                )
             if not result["hits"]:
-                result["advice"] = [
+                notes.append(
                     f"No line in {result['files_scanned']} file(s) matched any term of this query. Try the "
                     "words the code itself would use, or find_files to see what is here."
-                ]
+                )
+            if notes:
+                result["advice"] = notes
             return result
 
         return guard.guarded(

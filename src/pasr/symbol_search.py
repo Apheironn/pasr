@@ -24,6 +24,24 @@ from pasr.file_discovery import FileDiscoveryConfig, discover_workspace_files
 from pasr.symbols import get_provider, parse_symbols
 from pasr.symbols.base import identifier_terms
 
+# Ordinary English carries no topical signal, but in a *code* corpus it is rarer than any
+# domain term -- a comment containing "rather" outranks the file that matches "indexing",
+# which is backwards. `pasr.evidence.STOPWORDS` stays as it is (coverage accounting and
+# symbol matching depend on it); content search needs the longer list.
+_PROSE_STOPWORDS = STOPWORDS | frozenset(
+    """about after again against all also am among any because been before being below
+    between both but did does doing down during each few further had has have having her
+    here hers him his if into itself just me more most must my no nor not now off once
+    only other our out over own rather same should so some such than then there these they
+    this those through too under until up very we were what when while why will with would
+    you your become became get got make made use used using like may might could need want
+    see look know knows knowing thing things way ways one two first last new old
+    """.split()
+)
+# A term present in most of the corpus cannot discriminate between its files, whatever
+# its IDF works out to.
+_MAX_DOCUMENT_SHARE = 0.2
+
 DEFAULT_TOP_K = 30
 _EXACT_BONUS = 2.0
 # A caller guessing "func" or "fn" for `kinds` used to get a silent empty result and no
@@ -252,7 +270,7 @@ def find_evidence(
     """
     if top_k <= 0 or per_file <= 0:
         raise ValueError("top_k and per_file must be positive.")
-    query_terms = [term for term in extract_keywords(query) if term not in STOPWORDS]
+    query_terms = [term for term in extract_keywords(query) if term not in _PROSE_STOPWORDS]
     if not query_terms:
         raise ValueError("query needs at least one content word.")
 
@@ -276,8 +294,19 @@ def find_evidence(
             document_frequency[term] += 1
 
     total = max(len(records), 1)
+    too_common = max(1, int(total * _MAX_DOCUMENT_SHARE))
     idf = {
-        term: math.log(1.0 + (total - df + 0.5) / (df + 0.5)) if df else 0.0 for term, df in document_frequency.items()
+        term: math.log(1.0 + (total - df + 0.5) / (df + 0.5)) if 0 < df <= too_common else 0.0
+        for term, df in document_frequency.items()
+    }
+
+    # Rank files before lines. Scoring lines alone lets one accidentally rare word carry a
+    # whole file: in a code corpus ordinary English ("rather", "became") is rarer than any
+    # domain term, so a comment that happens to contain one outranks the file that matches
+    # three real terms. A file's score is the IDF of the distinct query terms it contains.
+    file_scores = {
+        source: sum(idf[term] for term in terms) + len(terms) / (len(query_terms) + 1)
+        for source, terms in matched_terms.items()
     }
 
     hits: list[tuple[float, dict[str, Any]]] = []
@@ -311,7 +340,9 @@ def find_evidence(
                 )
             )
         per_file_hits.sort(key=lambda item: (-item[0], item[1]["line"]))
-        hits.extend(per_file_hits[:per_file])
+        # The file's rank decides the order; the line's own score only picks which lines of
+        # that file to show.
+        hits.extend((file_scores[source], row) for _, row in per_file_hits[:per_file])
 
     hits.sort(key=lambda item: (-item[0], item[1]["source"], item[1]["line"]))
     return {

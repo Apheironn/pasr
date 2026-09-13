@@ -16,6 +16,7 @@ def test_lists_all_tools_with_schemas(mini_workspace: Path):
     tools = {tool.name: tool for tool in anyio.run(server.list_tools)}
 
     assert set(tools) == {
+        "investigate",
         "find_files",
         "find_evidence",
         "find_symbols",
@@ -286,3 +287,14 @@ def test_a_mostly_repeated_slice_counts_as_no_progress(mini_workspace: Path):
     _call(server, "select_context", {"query": "throttling responses", "budget_tokens": 2100, **base})
     with pytest.raises(Exception, match="already"):
         _call(server, "select_context", {"query": "429 emission", "budget_tokens": 2200, **base})
+
+
+def test_find_evidence_names_the_words_that_appear_nowhere(mini_workspace: Path):
+    """Knowing a word is absent bounds the search; without it an agent tries synonyms forever."""
+    server = create_server(mini_workspace)
+    result = _call(server, "find_evidence", {"query": "ratelimit kubernetes helm"})
+
+    payload = json.loads(result.content[0].text)
+    assert payload["term_file_counts"]["kubernetes"] == 0
+    assert any("appear in no file here" in line for line in payload["advice"])
+    assert payload["hits"], "the real term should still return hits"

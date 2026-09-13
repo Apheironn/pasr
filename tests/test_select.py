@@ -251,3 +251,43 @@ def test_outline_returns_a_definitions_index_instead_of_bodies(mini_workspace: P
     assert outline["confidence"] == 0.0, "an index is not evidence"
     assert "does not answer" in outline["advice"][0]
     assert all(":" in line for line in outline["context"].splitlines()[1:])
+
+
+def test_files_accept_the_provenance_string_the_locators_emit(mini_workspace: Path):
+    """`find_symbols` says `api/ratelimit.py:12-20`; reading exactly that must be cheap."""
+    from pasr.schema import validate_select_context_request
+    from pasr.select import run_select_context
+
+    def run(spec: str):
+        request = validate_select_context_request(
+            {"query": "rate limit headers", "files": [spec], "budget_tokens": 3000},
+            workspace_root=mini_workspace,
+        )
+        return run_select_context(request, write_receipt_file=False)
+
+    whole = run("api/ratelimit.py")
+    ranged = run("api/ratelimit.py:1-6")
+
+    assert ranged["token_count"] < whole["token_count"]
+    assert ranged["sources"] == ["api/ratelimit.py"]
+    for span in ranged["spans"]:
+        assert span["line_start"] <= 6, span
+    assert ranged["spans"], "the requested lines must come back"
+
+
+def test_a_single_line_provenance_is_accepted(mini_workspace: Path):
+    from pasr.schema import validate_select_context_request
+
+    request = validate_select_context_request(
+        {"query": "rate limit", "files": ["api/ratelimit.py:3"]}, workspace_root=mini_workspace
+    )
+    assert request.file_metadata[0]["line_range"] == [3, 3]
+
+
+def test_a_backwards_line_range_is_rejected(mini_workspace: Path):
+    from pasr.schema import validate_select_context_request
+
+    with pytest.raises(ValueError, match="line range"):
+        validate_select_context_request(
+            {"query": "x", "files": ["api/ratelimit.py:20-3"]}, workspace_root=mini_workspace
+        )
