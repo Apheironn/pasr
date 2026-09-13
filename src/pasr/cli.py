@@ -3,6 +3,7 @@
 pasr find "<query>" [globs...]           rank files by path/filename match
 pasr symbols "<query>" [globs...]        where matching symbols are defined (file:line)
 pasr usages <symbol> [globs...]          every line using a symbol, with its owner
+pasr evidence "<question>" [globs...]    lines anywhere that bear on a question
 pasr explain "<query>" [globs...]        show the selection receipt
 pasr trace <symbol> [globs...]           a dependency closure (--callers to reverse it)
 pasr pack <name> "<query>" [globs...]    save a Context Pack
@@ -26,7 +27,7 @@ from pasr.receipt import receipt_bytes, render_markdown, write_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
 from pasr.select import build_select_receipt, run_select_context, save_pack
 from pasr.symbol_search import DEFAULT_TOP_K as SYMBOL_TOP_K
-from pasr.symbol_search import find_symbols, find_usages
+from pasr.symbol_search import find_evidence, find_symbols, find_usages
 from pasr.trace import trace_dependencies
 
 
@@ -103,6 +104,23 @@ def _usages(args: argparse.Namespace) -> int:
     )
     for hit in result["hits"]:
         print(f"{hit['role']:<10} {hit['provenance']:<44} in {hit['in']:<26} {hit['text'][:70]}")
+    return 0
+
+
+def _evidence(args: argparse.Namespace) -> int:
+    try:
+        result = find_evidence(args.workspace, query=args.query, include=args.paths or None, top_k=args.top_k)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    if args.json:
+        print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
+        return 0
+    rare = ", ".join(f"{t}={n}" for t, n in sorted(result["term_file_counts"].items(), key=lambda kv: kv[1]) if n)
+    print(f"# {result['hit_count']} line(s) in {result['files_with_a_match']} file(s); term file counts: {rare}")
+    print()
+    for hit in result["hits"]:
+        print(f"{hit['score']:6.2f}  {hit['provenance']:<44} in {hit['in']:<24} {hit['text'][:66]}")
     return 0
 
 
@@ -303,6 +321,13 @@ def build_parser() -> argparse.ArgumentParser:
     usages.add_argument("--top-k", type=int, default=SYMBOL_TOP_K, dest="top_k")
     usages.add_argument("--json", action="store_true", help="Emit hits as JSON.")
     usages.set_defaults(func=_usages)
+
+    evidence = sub.add_parser("evidence", help="Lines anywhere in the workspace that bear on a question.")
+    evidence.add_argument("query")
+    evidence.add_argument("paths", nargs="*", help="Globs / directories (default: whole workspace).")
+    evidence.add_argument("--top-k", type=int, default=SYMBOL_TOP_K, dest="top_k")
+    evidence.add_argument("--json", action="store_true", help="Emit hits as JSON.")
+    evidence.set_defaults(func=_evidence)
 
     explain = sub.add_parser("explain", help="Run select_context and print the receipt.")
     explain.add_argument("query")

@@ -14,6 +14,7 @@ Deterministic, offline, no model: definitions come from the same tree-sitter /
 
 from __future__ import annotations
 
+import math
 import re
 from pathlib import Path
 from typing import Any
@@ -226,3 +227,98 @@ def _innermost_owner(definitions: tuple[Any, ...], line_no: int) -> Any | None:
             if owner is None or definition.line_start > owner.line_start:
                 owner = definition
     return owner
+
+
+def find_evidence(
+    workspace_root: Path,
+    query: str = "",
+    include: list[str] | None = None,
+    top_k: int = DEFAULT_TOP_K,
+    per_file: int = 2,
+    config: FileDiscoveryConfig | None = None,
+) -> dict[str, Any]:
+    """Which lines anywhere in the workspace bear on ``query``, rarest term first.
+
+    The rung that decides questions asked in words the code does not use. A reader
+    asks about the server going "idle"; rust-analyzer calls it "quiescent" and the
+    words "idle" and "busy" appear in none of its files. No path search and no symbol
+    index can bridge that -- but the question's other word, "indexing", appears in two
+    files, one of them the line ``/// Unlike `is_quiescent`, this returns false when
+    we're indexing``. Whole-workspace content search is the only thing that finds it.
+
+    Hits are ranked by the inverse document frequency of the terms they match, so a
+    term occurring in two files outranks one occurring in two hundred, and each hit
+    carries its line and enclosing definition rather than a body.
+    """
+    if top_k <= 0 or per_file <= 0:
+        raise ValueError("top_k and per_file must be positive.")
+    query_terms = [term for term in extract_keywords(query) if term not in STOPWORDS]
+    if not query_terms:
+        raise ValueError("query needs at least one content word.")
+
+    records = discover_workspace_files(Path(workspace_root), include or ["."], config=config)
+    texts: dict[str, str] = {}
+    matched_terms: dict[str, set[str]] = {}
+    document_frequency: dict[str, int] = dict.fromkeys(query_terms, 0)
+
+    for record in records:
+        try:
+            text = record.path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        folded = text.casefold()
+        present = {term for term in query_terms if term in folded}
+        if not present:
+            continue
+        texts[record.relative_path] = text
+        matched_terms[record.relative_path] = present
+        for term in present:
+            document_frequency[term] += 1
+
+    total = max(len(records), 1)
+    idf = {
+        term: math.log(1.0 + (total - df + 0.5) / (df + 0.5)) if df else 0.0 for term, df in document_frequency.items()
+    }
+
+    hits: list[tuple[float, dict[str, Any]]] = []
+    for source, text in texts.items():
+        patterns = [(term, re.compile(rf"\b{re.escape(term)}\b", re.IGNORECASE)) for term in matched_terms[source]]
+        provider = get_provider(source)
+        definitions: tuple[Any, ...] = ()
+        if provider is not None:
+            try:
+                definitions = parse_symbols(provider, source, text).definitions
+            except (OSError, ValueError):
+                definitions = ()
+
+        per_file_hits: list[tuple[float, dict[str, Any]]] = []
+        for line_no, line in enumerate(text.splitlines(), start=1):
+            found = [term for term, pattern in patterns if pattern.search(line)]
+            if not found:
+                continue
+            owner = _innermost_owner(definitions, line_no)
+            per_file_hits.append(
+                (
+                    sum(idf[term] for term in found),
+                    {
+                        "provenance": f"{source}:{line_no}",
+                        "source": source,
+                        "line": line_no,
+                        "text": line.strip()[:160],
+                        "in": f"{owner.kind} {owner.name}" if owner is not None else "(module level)",
+                        "matched_terms": sorted(found),
+                    },
+                )
+            )
+        per_file_hits.sort(key=lambda item: (-item[0], item[1]["line"]))
+        hits.extend(per_file_hits[:per_file])
+
+    hits.sort(key=lambda item: (-item[0], item[1]["source"], item[1]["line"]))
+    return {
+        "query": query,
+        "files_scanned": len(records),
+        "files_with_a_match": len(texts),
+        "hit_count": len(hits),
+        "term_file_counts": {term: document_frequency[term] for term in query_terms},
+        "hits": [{**row, "score": round(score, 3)} for score, row in hits[:top_k]],
+    }

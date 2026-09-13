@@ -2,6 +2,7 @@
 
 Tools (the localization ladder: path -> symbol -> span):
   find_files         — rank workspace files by path/filename match for a query
+  find_evidence      — which lines anywhere bear on a question, rarest term first
   find_symbols       — where a symbol is defined, as file:line, across the workspace
   find_usages        — every place a symbol is used, with the line and its owner
   select_context     — a budgeted, provenance-carrying slice of the workspace
@@ -35,6 +36,7 @@ from pasr.ledger import append_ledger, ledger_entry
 from pasr.receipt import read_receipt
 from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
 from pasr.select import run_expand_context, run_pack, run_select_context, save_pack
+from pasr.symbol_search import find_evidence as _find_evidence
 from pasr.symbol_search import find_symbols as _find_symbols
 from pasr.symbol_search import find_usages as _find_usages
 from pasr.trace import trace_dependencies as _trace_dependencies
@@ -79,6 +81,15 @@ _EXPAND_CONTEXT_DESCRIPTION = (
     "Re-run a prior select_context (by its receipt id) once with a larger budget "
     "(budget_tokens + extra_budget). Use it when the earlier slice's advice said "
     "coverage was low. One pass, still a hard token cap."
+)
+_FIND_EVIDENCE_DESCRIPTION = (
+    "Search the CONTENT of every file for a question, and get back the lines that bear "
+    "on it, each with its enclosing function and the terms it matched. Ranked by how rare "
+    "each term is, so a word appearing in two files outranks one appearing in two hundred. "
+    "Use this when the question is conceptual and you do not yet know any file, path or "
+    "symbol name -- it is the only tool that can bridge a question worded differently from "
+    'the code (asking about a server going "idle" when the code says "quiescent"). '
+    "No max_files limit, no bodies returned."
 )
 _FIND_USAGES_DESCRIPTION = (
     "Where is this symbol USED? Returns every line that writes the name, across the "
@@ -246,6 +257,28 @@ def create_server(workspace_root: Path) -> MCPServer:
             return result
 
         return guard.guarded("find_symbols", {"query": query, "include": include, "kinds": kinds, "top_k": top_k}, run)
+
+    @server.tool(name="find_evidence", description=_FIND_EVIDENCE_DESCRIPTION)
+    def find_evidence(
+        query: str = "", include: list[str] | None = None, top_k: int = DEFAULT_TOP_K, per_file: int = 2
+    ) -> dict[str, Any]:
+        """Return the workspace lines matching ``query``, ranked by term rarity."""
+
+        def run() -> dict[str, Any]:
+            try:
+                result = _find_evidence(root, query=query, include=include, top_k=top_k, per_file=per_file)
+            except ValueError as exc:
+                raise ToolError(str(exc)) from exc
+            if not result["hits"]:
+                result["advice"] = [
+                    f"No line in {result['files_scanned']} file(s) matched any term of this query. Try the "
+                    "words the code itself would use, or find_files to see what is here."
+                ]
+            return result
+
+        return guard.guarded(
+            "find_evidence", {"query": query, "include": include, "top_k": top_k, "per_file": per_file}, run
+        )
 
     @server.tool(name="find_usages", description=_FIND_USAGES_DESCRIPTION)
     def find_usages(symbol: str, include: list[str] | None = None, top_k: int = DEFAULT_TOP_K) -> dict[str, Any]:
