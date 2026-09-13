@@ -177,6 +177,8 @@ class Local:
 def one(backend, question_key: str, arm: str) -> dict:
     question = Q1 if question_key == "Q1" else Q2
     tools_pasr.reset_session()
+    if arm not in {"baseline", "pasr"}:
+        raise ValueError(f"unknown arm {arm!r}: expected baseline or pasr")
     tools = schemas.BASELINE if arm == "baseline" else schemas.PASR
     executor = tools_pasr.run_baseline if arm == "baseline" else tools_pasr.run_pasr
     result = backend.run(question, tools, executor)

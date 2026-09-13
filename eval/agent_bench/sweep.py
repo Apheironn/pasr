@@ -19,7 +19,7 @@ def main() -> None:
     tag = sys.argv[3] if len(sys.argv) > 3 else backend_name
     backend = runner.Local() if backend_name == "local" else runner.Anthropic()
     global ARMS
-    ARMS = sys.argv[4].split(",") if len(sys.argv) > 4 else ["baseline", "pasr", "pasr_plus"]
+    ARMS = sys.argv[4].split(",") if len(sys.argv) > 4 else ["baseline", "pasr"]
 
     rows: dict[str, list[dict]] = {}
     for rep in range(reps):

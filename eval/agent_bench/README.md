@@ -34,19 +34,26 @@ question and arm, so the sweep reports medians and a correct-answer count, and
 
 ## What it measured
 
-On rust-analyzer (1,484 Rust files, ~586k lines), qwen3.5-9B, 6 repetitions, median:
+rust-analyzer (1,484 Rust files, ~586k lines), qwen3.5-9B, pooled over 18 PASR runs and
+12 grep+read runs, median per run:
 
-| | tokens | calls | correct |
-|---|---|---|---|
-| Q1 lexical, baseline | 72.7k | 11 | 3/6 |
-| Q1 lexical, **pasr** | **49.3k** | **6** | **5/6** |
-| Q2 conceptual, baseline | 58.1k | 18 | **0/6** |
-| Q2 conceptual, **pasr** | 151.3k | 11 | **5/6** |
+| | tokens | calls | correct | tokens per correct answer |
+|---|---|---|---|---|
+| Q1 lexical, grep+read | 50.8k | 9 | 7/12 (58%) | 99.5k |
+| Q1 lexical, **PASR** | 53.9k | **6** | **16/18 (88%)** | **78.5k** |
+| Q2 conceptual, grep+read | 112.3k | 18 | 2/12 (17%) | 673k |
+| Q2 conceptual, **PASR** | 112.2k | **9** | **14/18 (78%)** | **162.8k** |
 
-Q2 is the case the tools were built for: the question asks how the server knows it is
-"idle", and that word appears in none of the 1,484 files — the codebase says "quiescent".
-Content search over the whole workspace is what bridges it, and without that bridge the
-baseline spends its entire turn budget and never gets there.
+Q2 is the case the locators were built for. It asks how the server knows it has gone
+"idle" — a word that appears in none of the 1,484 files, because the codebase says
+"quiescent". Content search over the whole workspace is what bridges that, and without
+the bridge the agent spends its entire turn budget and lands on the answer twice in
+twelve tries.
+
+With a stronger model (Haiku 4.5, four repetitions) both arms answer and the gap
+narrows: PASR uses about 40% fewer tool calls and is right 4/4 against 3/4 on Q2, at
+comparable tokens. A capable model can reason its way around blunt tools; a small one
+cannot, which is where the tools earn their keep.
 
 ## Adding questions
 
