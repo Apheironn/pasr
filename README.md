@@ -135,11 +135,16 @@ A **bounded efficiency result, not a superiority claim.** Pre-registered, with t
 supporting runs: [`eval/RESULTS.md`](https://github.com/Apheironn/pasr/blob/main/eval/RESULTS.md) · narrative:
 [`docs/blog/what-worked.md`](https://github.com/Apheironn/pasr/blob/main/docs/blog/what-worked.md).
 
+For live tool-use measurements, including targeted-read optimizations and a separate
+mechanism/grounding audit, see [`eval/agent_bench/README.md`](eval/agent_bench/README.md).
+Those runs count cumulative conversation tokens; smaller retrieved context alone
+does not establish a cheaper or more accurate agent trajectory.
+
 ## How it works
 
 ```
-query + file globs
-  → discover safe workspace files, tokenize, line-aligned chunks
+query + files / line ranges / globs
+  → discover safe files, read requested sections, tokenize, line-aligned chunks
   → lossless-under-budget check: does the whole thing already fit? return it
   → candidates:  BM25 (Okapi)  +  lexical-anchor coverage  +  tree-sitter symbols
                  +  optional sub-word / MiniLM semantic scorer
@@ -162,14 +167,29 @@ so "find it" and "read it" compose without paying for a whole file in between.
 
 | Tool | Purpose |
 |---|---|
-| `find_evidence` | which lines *anywhere* bear on a question, ranked by term rarity — the only tool that bridges a question worded differently from the code |
+| `find_evidence` | repository-wide lexical content search ranked by term rarity; the top hits carry a bounded `read_lines` span for nearby code |
 | `find_files` | rank files by path/filename match |
 | `find_symbols` | where a symbol is **defined**, as `file:line` (Python, JS/TS, Rust) |
-| `find_usages` | where a symbol is **used**: every line, with its code and enclosing definition |
-| `select_context` | budgeted, provenance-tracked slice for a query — `outline=true` for a definitions-only index, `files=["path.rs:190-193"]` to read exactly those lines, plus `map_tokens` and `trace=` |
+| `find_usages` | where a symbol is **used**: matching lines, enclosing definitions, and bounded `read_lines` spans on the top hits |
+| `select_context` | budgeted, provenance-tracked slice for a query — `outline=true` for definitions only; `files=["path.rs:42-56"]` reads only those inclusive lines; also supports `map_tokens` and `trace=` |
 | `trace_dependencies` | deterministic def/reference closure for a symbol; `direction="callers"` reverses it for impact analysis |
 | `explain_selection` | return the stored receipt for a prior selection |
-| `expand_context` | re-run a prior selection once with a larger budget |
+| `expand_context` | increase a prior selection's budget without widening its source ranges or changing outline mode |
+
+Join a hit's `source` with its `read_lines` and pass that to
+`select_context(query=..., files=["path.rs:42-56"])` rather than reading the whole file. A suggestion contains the enclosing function when it
+is at most 40 lines; otherwise it contains up to eight lines on each side of the
+hit. Large functions may require a wider explicit range or `find_symbols` to locate
+the complete definition. Existing snippets, ranking, counts and warnings are retained.
+
+Multiple ranges from the same file are unioned: overlapping lines are returned only
+once, and gaps stay excluded. An explicitly listed whole file overrides its ranges.
+Adding an `include` pattern does not widen an explicitly ranged file. Ranges also
+constrain symbol candidates, outlines, maps and embedded dependency traces.
+Complete range reads mean the requested sections are included, not that caller or
+dependency behavior has been covered. Follow those relationships when the question
+requires them. `expand_context` increases the budget inside the same scope; request
+wider ranges explicitly to read surrounding code.
 
 A retrieval broker also has to know when to stop. Advice on every result names one
 concrete next action rather than "search some more", terms that appear in no file are

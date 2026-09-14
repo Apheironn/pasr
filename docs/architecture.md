@@ -94,14 +94,32 @@ stays as a utility for adaptive-settings callers.
 
 | Tool | Purpose |
 |---|---|
-| `find_evidence` | IDF-ranked content search over the whole workspace; lines, never bodies |
+| `find_evidence` | IDF-ranked workspace content search; matching lines and bounded `read_lines` spans on the top hits, never bodies |
 | `find_files` | path/filename ranking |
 | `find_symbols` | definition index (`file:line kind name`) |
-| `find_usages` | one-hop reference index, each hit with its line and enclosing definition |
+| `find_usages` | one-hop reference index; each hit has its line and enclosing definition, the top hits a bounded `read_lines` |
 | `select_context` | budgeted, traceable slice for a query (+ `outline`, `path:start-end` reads, `map_tokens`, `trace=`, Context Packs) |
 | `trace_dependencies` | deterministic def/reference closure for a symbol; `direction="callers"` reverses it |
-| `expand_context` | one bounded widening pass when the slice was insufficient |
+| `expand_context` | increase the budget while retaining the prior source ranges and outline mode |
 | `explain_selection` | return the receipt for a prior selection id |
+
+Ranged selection operates on merged, inclusive source sections before chunking and
+tokenization. Original line/character provenance is preserved; token coordinates
+cover only selected sections. Whole-file symbol candidates cannot reintroduce
+excluded text. Maps/outlines retain only complete in-range definitions, and embedded
+traces parse source with excluded lines removed from consideration. Receipts store
+the original range selectors so expansion cannot silently widen the read.
+Routing advice distinguishes complete requested sections from whole-file or
+caller/dependency coverage. A lossless ranged read does not need query refinement
+or more budget for the same scope; additional relationships require new source reads.
+
+Locator `read_lines` values preserve a complete enclosing function up to 40 lines,
+otherwise a neighborhood of up to eight lines before and after the hit. This is
+navigation guidance, not a body truncation policy: original hit text and ranking
+remain unchanged, and callers can request larger ranges or complete definitions.
+Only the leading hits carry the span, and it omits the path the hit already reports:
+a search result is re-sent on every later turn, so a hint repeated across thirty hits
+cost more than the narrower reads it enabled saved.
 
 ## Design rules
 

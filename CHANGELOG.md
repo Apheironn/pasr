@@ -5,6 +5,42 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-14
+
+- **Targeted retrieval, without opaque compression.** The leading evidence and usage
+  hits now carry a bounded `read_lines` span within that hit's `source`: a complete
+  enclosing function up to 40 lines, otherwise up to eight lines on each side. Only
+  the top few hits carry it, and it holds no path -- a hint repeated on every hit
+  cost a re-sent search result more than the narrower read saved. Exact-symbol advice
+  supplies an executable `select_context(query=..., files=[provenance])` call instead
+  of suggesting a whole file. Named JSON, existing snippets/ranking, warnings and token budgets are retained.
+- **A locator in `include` says where it belongs.** `include` takes paths and globs; a
+  `path:start-end` pasted there resolved to nothing and the error named neither the
+  range nor `files`, so the caller retried the same dead call.
+- **Literal range boundaries and scope-preserving expansion.** Selection now chunks
+  only requested lines, excludes out-of-range symbol/map/trace bodies, unions repeated
+  ranges, and preserves range selectors and outline mode in expansion. An explicit
+  whole-file entry dominates ranges; discovery cannot widen explicit ranges.
+- **Scope-aware stopping advice.** Complete range reads no longer imply that whole
+  files or caller/dependency closures are loaded, or ask for needless query refinement.
+  Advice distinguishes more budget within a range from explicitly widening it.
+- **Reproducible source-version comparison.** `eval/agent_bench/compare_sources.py`
+  compares grep/read, a frozen pre-change PASR snapshot, and an optimized snapshot
+  in isolated workers, with randomized repetition blocks and complete transcripts.
+  Production descriptions no longer include answer-specific benchmark examples.
+- **Token results remain qualified.** The earlier run reported as a backend fault was
+  GPU contention, and its three blocks did not survive eight complete repetitions. Two
+  32-run comparisons against a frozen pre-change snapshot now stand. A `read_range` on
+  every hit cost Q1 33.8% more conversation tokens while Q2 fell 35.7%: reads shrank
+  13%, but `find_evidence` grew 22% and `find_usages` 167%, and a search result is
+  re-sent on every later turn. With the hint on the leading hits only, Q1 fell 9.0% and
+  Q2 47.1%; pooled tokens per correct answer fell 43.7% at 15/16 localized against
+  13/16, and turn-limit failures fell from 3 to 1. At eight repetitions the spread is
+  wide enough that the per-question medians are directional, not established (a
+  permutation test returns p=0.49 and p=0.21); the payload measurements and the failure
+  rates are the firmer evidence. Full transcripts, frozen sources and grounding audits
+  are in `eval/agent_bench`.
+
 - **Measured, not assumed.** `eval/agent_bench` runs the same question through
   grep+read and through PASR's tools with the same model, prompt and turn cap, and
   scores each answer against the function and file that actually answer it. On
@@ -17,12 +53,12 @@ this project uses [Semantic Versioning](https://semver.org/).
   built, measured against the primitives on both models, and removed: it was
   bimodal (three calls or the whole budget) and never more correct.
 
-- **Read exactly what a locator pointed at.** `files` now accepts the
-  `path:start-end` provenance every PASR tool already reports, and chunks those
-  entries finely: `files=["src/command.rs:190-193"]` returns 59 tokens where the
-  whole file cost 1,860. This matters more than it looks — in an agent loop every
-  returned slice is re-sent on each later turn, and instrumenting real runs showed
-  72% of all tokens spent were that re-transmission.
+- **Read exactly what a locator pointed at.** `files` accepts `path:start-end`
+  provenance. The original fine-chunk implementation returned 59 tokens for
+  `command.rs:190-193`, but included neighboring lines 187–194. Literal slicing now
+  returns exactly the four requested lines at **32 selected tokens**, versus 1,860
+  for the whole file in the earlier measurement. Source boundaries are enforced
+  before ranking rather than merely selecting overlapping chunks.
 - **New tool: `find_evidence`** — which lines anywhere in the workspace bear on a
   question, ranked by how rare each term is. The only tool that bridges a question
   worded differently from the code: asking how a server goes "idle" finds nothing
@@ -185,6 +221,7 @@ saved, route.
   retriever" — add an arm and measure it against the same 50 tasks. Results:
   `eval/RESULTS.md`, `docs/competitors-benchmark.md`.
 
-[Unreleased]: https://github.com/Apheironn/pasr/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/Apheironn/pasr/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Apheironn/pasr/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/Apheironn/pasr/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Apheironn/pasr/releases/tag/v0.2.0
