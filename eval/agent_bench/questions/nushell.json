@@ -1,0 +1,11 @@
+{
+  "corpus": "nushell",
+  "_revision": "76ba59d425c25b74ac5c9257ccfb36ddc0d352ed",
+  "_shape": "Q1 lexical: the words of the question appear in crate and file names. Q2 semantic: the question says ctrl-c/cancel/stop, the code says Signals/interrupted/trigger.",
+  "Q1": "After you run a command from a nushell plugin, the plugin's process is kept alive for reuse rather than shut down immediately. What decides when an idle plugin finally gets stopped, and which code actually stops the process?",
+  "Q2": "When a user presses Ctrl-C while a long-running nushell pipeline is producing output, how does the code that is running actually notice and stop? What does it check, and where does that shared state live?",
+  "truth": {
+    "Q1": {"must": ["PluginGc", "gc.rs"], "any": ["stop_internal", "PersistentPlugin", "stop_after", "PluginGcConfig"]},
+    "Q2": {"must": ["signals.rs", "interrupted"], "any": ["AtomicBool", "trigger", "ShellError::Interrupted", "EngineState"]}
+  }
+}

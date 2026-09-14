@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import pathlib
 import time
 
 import schemas
@@ -14,8 +15,15 @@ MAX_TURNS = 18
 MAX_OUT = 1200
 TOOL_RESULT_CAP = 12000
 
-SYSTEM_PROMPT = (
-    "You are a coding assistant answering a question about the rust-analyzer codebase "
+# A question set is corpus-specific: the prompt names the codebase, and scoring needs the
+# symbols that actually answer each question. Point PASR_BENCH_QUESTIONS at a JSON file
+# ({"corpus", "Q1", "Q2", "truth"}) to measure a different repository without editing this
+# module -- the arms, budgets, turn cap and scorer stay exactly as they are.
+QUESTIONS_ENV = "PASR_BENCH_QUESTIONS"
+CORPUS = "rust-analyzer"
+
+_SYSTEM_PROMPT_TEMPLATE = (
+    "You are a coding assistant answering a question about the {corpus} codebase "
     "using only the provided tools (no prior knowledge of this exact codebase). "
     "Ground every claim in what the tools actually returned: cite file paths (and line "
     "numbers/function names when you have them). You have a limited number of tool calls "
@@ -42,6 +50,12 @@ TRUTH = {
     "Q1": {"must": ["cancel_check_process", "command.rs"], "any": ["CommandHandle", "kill"]},
     "Q2": {"must": ["is_quiescent", "reload.rs"], "any": ["is_fully_ready", "current_status", "ServerStatus"]},
 }
+
+if os.environ.get(QUESTIONS_ENV):
+    _set = json.loads(pathlib.Path(os.environ[QUESTIONS_ENV]).read_text(encoding="utf-8"))
+    CORPUS, Q1, Q2, TRUTH = _set["corpus"], _set["Q1"], _set["Q2"], _set["truth"]
+
+SYSTEM_PROMPT = _SYSTEM_PROMPT_TEMPLATE.format(corpus=CORPUS)
 
 
 def score(question_key: str, answer: str) -> dict:
