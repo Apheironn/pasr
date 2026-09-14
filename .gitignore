@@ -224,3 +224,6 @@ eval/runs/
 eval/pasr_eval/runs/
 pasr-bench-runs/
 .eval-checkouts/
+
+# Benchmark evidence: harness lives here, raw transcripts are archived outside the repo
+eval/agent_bench/results/
