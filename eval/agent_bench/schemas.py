@@ -40,9 +40,12 @@ PASR = [
             "Search the CONTENT of every file for a question and get back the lines that bear on it, "
             "each with its enclosing function and the terms it matched, ranked by how rare each term "
             "is (a word in two files outranks a word in two hundred). Use this FIRST when the question "
-            "is conceptual and you do not yet know any file, path or symbol name - it is the only tool "
-            "that bridges a question worded differently from the code (asking about a server going "
-            "idle when the code says quiescent). No max_files limit, no bodies."
+            "is conceptual and you do not yet know any file, path or symbol name. Search overlapping "
+            "question terms to discover the vocabulary used by the code. Lexical matching, not "
+            "semantic synonym expansion. No max_files limit, no bodies. The top hits carry read_lines, "
+            "a bounded span within that hit's source: a complete enclosing function up to 40 lines, "
+            "otherwise at most 8 lines on either side. Read one by joining them -- "
+            'select_context(query=..., files=["<source>:<read_lines>"]).'
         ),
         "parameters": {
             "type": "object",
@@ -96,7 +99,10 @@ PASR = [
             "Where is a symbol USED? Returns every line that writes the name, across the workspace, each "
             "with the code on that line and the function/struct it sits inside - definition first, then "
             "call sites. Use it when the answer is a chain rather than one definition (what checks this, "
-            "and who reports it): one call replaces walking file by file."
+            "and who reports it): one call replaces walking file by file. The top hits carry read_lines, "
+            "a bounded span within that hit's source: a complete enclosing function up to 40 lines, "
+            "otherwise at most 8 lines on either side. Read one with "
+            'select_context(query=..., files=["<source>:<read_lines>"]).'
         ),
         "parameters": {
             "type": "object",
@@ -117,9 +123,8 @@ PASR = [
             "model on every later turn, so a big first slice is the most expensive thing you can ask "
             "for. To see what a file contains, pass outline=true for a definitions-only index (a few "
             "hundred tokens), then call again for bodies where they matter. files also accepts the "
-            "path:start-end provenance every other tool reports, e.g. files=[src/command.rs:190-193] - "
-            "reading exactly the lines you were just pointed at costs a few dozen tokens instead of a "
-            "slice of the whole file."
+            "path:start-end provenance every other tool reports - reading exactly the lines you were "
+            "just pointed at costs a few dozen tokens instead of a slice of the whole file."
         ),
         "parameters": {
             "type": "object",

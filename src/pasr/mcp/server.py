@@ -67,7 +67,7 @@ _SELECT_CONTEXT_DESCRIPTION = (
     "what a file contains, pass `outline=true` for a definitions-only index (a few "
     "hundred tokens), then call again for bodies at the places that matter. `files` also "
     "accepts the `path:start-end` provenance every other tool reports, e.g. "
-    '`files=["src/command.rs:190-193"]` -- reading exactly the lines you were just '
+    '`files=["src/parser.py:20-23"]` -- reading exactly the lines you were just '
     "pointed at costs a few dozen tokens instead of a slice of the whole file."
 )
 _TRACE_DEPENDENCIES_DESCRIPTION = (
@@ -91,15 +91,21 @@ _FIND_EVIDENCE_DESCRIPTION = (
     "each term is, so a word appearing in two files outranks one appearing in two hundred. "
     "Use this when the question is conceptual and you do not yet know any file, path or "
     "symbol name -- it is the only tool that can bridge a question worded differently from "
-    'the code (asking about a server going "idle" when the code says "quiescent"). '
-    "No max_files limit, no bodies returned."
+    "the code, by following overlapping terms to discover its vocabulary. "
+    "No max_files limit, no bodies returned. The top hits carry `read_lines`, a bounded "
+    "span within that hit's `source`: a complete enclosing function up to 40 lines, "
+    "otherwise at most 8 lines on either side. Read one by joining them -- "
+    '`select_context(query=..., files=["<source>:<read_lines>"])`.'
 )
 _FIND_USAGES_DESCRIPTION = (
     "Where is this symbol USED? Returns every line that writes the name, across the "
     "workspace, each with the code on that line and the function/struct it sits inside "
     "-- the definition first, then the call sites. Use it for questions whose answer is "
     'a chain rather than a single definition ("what checks this, and who reports it?"): '
-    "one call replaces walking file by file. Cheap and one hop -- it does not pull bodies."
+    "one call replaces walking file by file. Cheap and one hop -- it does not pull bodies. "
+    "The top hits carry `read_lines`, a bounded span within that hit's `source`: a "
+    "complete enclosing function up to 40 lines, otherwise at most 8 lines on either "
+    'side. Read one with `select_context(query=..., files=["<source>:<read_lines>"])`.'
 )
 _FIND_SYMBOLS_DESCRIPTION = (
     "Where is this symbol DEFINED? Returns file:line definitions for functions, "
@@ -255,8 +261,10 @@ def create_server(workspace_root: Path) -> MCPServer:
                 first = result["matches"][0]
                 result["advice"] = [
                     f"Exact definition: {first['provenance']}. Read it with "
-                    f'select_context(files=["{first["source"]}"]) - no further searching needed.'
+                    f"select_context(query={query!r}, files={[first['provenance']]!r})."
                 ]
+                if first["kind"] == "function":
+                    result["advice"].append(f"If caller behavior matters, use find_usages(symbol={first['name']!r}).")
             return result
 
         return guard.guarded("find_symbols", {"query": query, "include": include, "kinds": kinds, "top_k": top_k}, run)
@@ -285,6 +293,15 @@ def create_server(workspace_root: Path) -> MCPServer:
                 notes.append(
                     f"No line in {result['files_scanned']} file(s) matched any term of this query. Try the "
                     "words the code itself would use, or find_files to see what is here."
+                )
+            elif "read_lines" in result["hits"][0]:
+                # One worked example beats a paragraph: the model copies it verbatim, and it
+                # costs the same whether the result carries five hits or thirty.
+                top = result["hits"][0]
+                notes.append(
+                    "To read a hit's code, join its source and read_lines: "
+                    f'select_context(query={query!r}, files=["{top["source"]}:{top["read_lines"]}"]). '
+                    "A bounded span holds a small function whole, but only part of a large one."
                 )
             if notes:
                 result["advice"] = notes

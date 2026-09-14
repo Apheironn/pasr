@@ -141,6 +141,13 @@ def tool_find_evidence(query: str = "", include: list | None = None, top_k: int 
         )
     if not r["hits"]:
         notes.append(f"No line in {r['files_scanned']} file(s) matched any term. Try words the code itself would use.")
+    elif "read_lines" in r["hits"][0]:
+        top = r["hits"][0]
+        notes.append(
+            "To read a hit's code, join its source and read_lines: "
+            f'select_context(query={query!r}, files=["{top["source"]}:{top["read_lines"]}"]). '
+            "A bounded span holds a small function whole, but only part of a large one."
+        )
     if notes:
         r["advice"] = notes
     return json.dumps(r, ensure_ascii=False)
@@ -164,9 +171,11 @@ def tool_find_symbols(query: str = "", include: list | None = None, kinds: list 
     elif r["matches"][0]["exact_name_match"]:
         f = r["matches"][0]
         r["advice"] = [
-            f"Exact definition: {f['provenance']}. Use find_usages with symbol={f['name']} to see who calls "
-            f"it, or select_context on {f['source']} to read it."
+            f"Exact definition: {f['provenance']}. Read it with "
+            f"select_context(query={query!r}, files={[f['provenance']]!r})."
         ]
+        if f["kind"] == "function":
+            r["advice"].append(f"If caller behavior matters, use find_usages(symbol={f['name']!r}).")
     return json.dumps(r, ensure_ascii=False)
 
 
@@ -186,6 +195,18 @@ def tool_find_usages(symbol: str, include: list | None = None, top_k: int = 30) 
             "scope include if you need the rest."
         ]
     return json.dumps(r, ensure_ascii=False)
+
+
+def _context_with_sources(result: dict) -> str:
+    """Keep body provenance that the full production result carries in its spans."""
+    if not result["spans"]:
+        return result["context"]  # outlines already contain locators
+    diagnostics = result.get("diagnostics", {})
+    if diagnostics.get("symbol_map", {}).get("header_tokens") or diagnostics.get("trace", {}).get("found"):
+        # Map/trace headers live only in context, not in spans. Keep those intact.
+        sources = "\n".join(str(span["provenance"]) for span in result["spans"])
+        return f"Sources (span order):\n{sources}\n\n{result['context']}"
+    return "\n\n".join(f"[{span['provenance']}]\n{span['text']}" for span in result["spans"])
 
 
 def tool_select_context(**kw) -> str:
@@ -219,7 +240,7 @@ def tool_select_context(**kw) -> str:
             "confidence": result.get("confidence"),
             "advice": result.get("advice"),
             "token_count": result["token_count"],
-            "context": result["context"],
+            "context": _context_with_sources(result),
         },
         ensure_ascii=False,
     )
@@ -239,7 +260,7 @@ def tool_expand_context(receipt_id: str, extra_budget: int = 2000) -> str:
             "route": result["route"],
             "advice": result.get("advice"),
             "token_count": result["token_count"],
-            "context": result["context"],
+            "context": _context_with_sources(result),
         },
         ensure_ascii=False,
     )

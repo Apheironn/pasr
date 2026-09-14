@@ -1,3 +1,5 @@
+import ast
+import importlib.util
 import json
 from pathlib import Path
 
@@ -295,5 +297,98 @@ def test_find_evidence_names_the_words_that_appear_nowhere(mini_workspace: Path)
 
     payload = json.loads(result.content[0].text)
     assert payload["term_file_counts"]["kubernetes"] == 0
-    assert any("appear in no file here" in line for line in payload["advice"])
+    assert any("kubernetes" in line for line in payload["advice"])
     assert payload["hits"], "the real term should still return hits"
+
+
+@pytest.fixture(params=["mcp", "benchmark"])
+def locator_surface(request, tmp_path: Path):
+    if request.param == "mcp":
+        server = create_server(tmp_path)
+
+        def call(name, arguments):
+            result = _call(server, name, arguments)
+            assert not result.is_error
+            return json.loads(result.content[0].text)
+
+    else:
+        # Load a fresh benchmark session so its repetition guard cannot leak between tests.
+        path = Path(__file__).parents[1] / "eval" / "agent_bench" / "tools_pasr.py"
+        spec = importlib.util.spec_from_file_location("locator_benchmark", path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        module.WORKSPACE = tmp_path
+
+        def call(name, arguments):
+            return json.loads(module.run_pasr(name, arguments))
+
+    return call
+
+
+def test_exact_symbol_advice_executes_a_definition_only_read(tmp_path: Path, locator_surface):
+    definition = "def calculate(value):\n    doubled = value * 2\n    return doubled\n"
+    (tmp_path / "worker.py").write_text(
+        "UNRELATED_PREFIX = 1\n\n" + definition + "\nUNRELATED_SUFFIX = 2\n", encoding="utf-8"
+    )
+
+    found = locator_surface("find_symbols", {"query": "calculate"})
+    advice = next(note for note in found["advice"] if "select_context(" in note)
+    expression = "select_context(" + advice.partition("select_context(")[2].rsplit(").", 1)[0] + ")"
+    call = ast.parse(expression, mode="eval").body
+    arguments = {keyword.arg: ast.literal_eval(keyword.value) for keyword in call.keywords}
+
+    selected = locator_surface("select_context", arguments)
+
+    assert definition.rstrip() in selected["context"]
+    assert "UNRELATED_PREFIX" not in selected["context"]
+    assert "UNRELATED_SUFFIX" not in selected["context"]
+
+
+@pytest.mark.parametrize("tool", ["find_evidence", "find_usages"])
+def test_locator_read_lines_fetch_complete_small_function(tmp_path: Path, locator_surface, tool: str):
+    definition = "def calculate(value):\n    checkpoint(value)\n    return value * 2\n"
+    (tmp_path / "worker.py").write_text(
+        "UNRELATED_PREFIX = 1\n\n" + definition + "\nUNRELATED_SUFFIX = 2\n", encoding="utf-8"
+    )
+    arguments = {"query": "checkpoint"} if tool == "find_evidence" else {"symbol": "checkpoint"}
+
+    found = locator_surface(tool, arguments)
+    hit = found["hits"][0]
+    selector = f"{hit['source']}:{hit['read_lines']}"
+    selected = locator_surface("select_context", {"query": "checkpoint", "files": [selector]})
+
+    assert definition.rstrip() in selected["context"]
+    assert "UNRELATED_PREFIX" not in selected["context"]
+    assert "UNRELATED_SUFFIX" not in selected["context"]
+
+
+def test_read_lines_guidance_preserves_absence_and_truncation_warnings(tmp_path: Path, locator_surface):
+    (tmp_path / "worker.py").write_text("def checkpoint():\n    return 1\n\ncheckpoint()\n", encoding="utf-8")
+
+    evidence = locator_surface("find_evidence", {"query": "checkpoint absentmarker"})
+    assert evidence["term_file_counts"]["absentmarker"] == 0
+    assert any("absentmarker" in note for note in evidence["advice"])
+    assert evidence["hits"][0]["read_lines"] == "1-2"
+    # One composed example the caller can copy, rather than a rule to apply per hit.
+    assert any('files=["worker.py:1-2"]' in note for note in evidence["advice"])
+
+    usages = locator_surface("find_usages", {"symbol": "checkpoint", "top_k": 1})
+    assert usages["truncated"] is True
+    assert usages["definition_count"] == 1
+    assert usages["usage_count"] == 1
+    assert [hit["provenance"] for hit in usages["hits"]] == ["worker.py:1"]
+    assert any("top_k" in note for note in usages["advice"])
+    # The read hint lives in the tool description, sent once -- not in every result.
+    assert not any("read_lines" in note for note in usages["advice"])
+
+
+@pytest.mark.parametrize("tool", ["find_evidence", "find_usages"])
+def test_only_the_leading_hits_carry_read_lines(tmp_path: Path, locator_surface, tool: str):
+    body = "".join(f"def checkpoint{index}():\n    checkpoint()\n\n" for index in range(8))
+    (tmp_path / "worker.py").write_text(body, encoding="utf-8")
+    arguments = {"query": "checkpoint", "per_file": 8} if tool == "find_evidence" else {"symbol": "checkpoint"}
+
+    hits = locator_surface(tool, {**arguments, "top_k": 8})["hits"]
+
+    assert len(hits) == 8
+    assert [("read_lines" in hit) for hit in hits] == [True] * 5 + [False] * 3

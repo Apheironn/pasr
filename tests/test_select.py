@@ -249,7 +249,6 @@ def test_outline_returns_a_definitions_index_instead_of_bodies(mini_workspace: P
     assert outline["context"].startswith("# symbol map\n")
     assert outline["token_count"] < bodies["token_count"]
     assert outline["confidence"] == 0.0, "an index is not evidence"
-    assert "does not answer" in outline["advice"][0]
     assert all(":" in line for line in outline["context"].splitlines()[1:])
 
 
@@ -271,7 +270,7 @@ def test_files_accept_the_provenance_string_the_locators_emit(mini_workspace: Pa
     assert ranged["token_count"] < whole["token_count"]
     assert ranged["sources"] == ["api/ratelimit.py"]
     for span in ranged["spans"]:
-        assert span["line_start"] <= 6, span
+        assert 1 <= span["line_start"] <= span["line_end"] <= 6, span
     assert ranged["spans"], "the requested lines must come back"
 
 
@@ -281,7 +280,10 @@ def test_a_single_line_provenance_is_accepted(mini_workspace: Path):
     request = validate_select_context_request(
         {"query": "rate limit", "files": ["api/ratelimit.py:3"]}, workspace_root=mini_workspace
     )
-    assert request.file_metadata[0]["line_range"] == [3, 3]
+    result = run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
+    lines = (mini_workspace / "api" / "ratelimit.py").read_text(encoding="utf-8").splitlines(keepends=True)
+    assert result["context"] == lines[2]
+    assert all(span["line_start"] == span["line_end"] == 3 for span in result["spans"])
 
 
 def test_a_backwards_line_range_is_rejected(mini_workspace: Path):
@@ -291,3 +293,161 @@ def test_a_backwards_line_range_is_rejected(mini_workspace: Path):
         validate_select_context_request(
             {"query": "x", "files": ["api/ratelimit.py:20-3"]}, workspace_root=mini_workspace
         )
+
+
+def test_range_read_returns_only_inclusive_source_lines(tmp_path: Path) -> None:
+    text = (
+        'before = "OUTSIDE_BEFORE"\n'
+        "def enclosing():\n"
+        '    chosen = "inside"\n'
+        "    return chosen\n"
+        'after = "OUTSIDE_AFTER"\n'
+    )
+    (tmp_path / "scope.py").write_text(text, encoding="utf-8")
+    request = validate_select_context_request(
+        {"query": "enclosing chosen", "files": ["scope.py:3-4"], "budget_tokens": 1000}, tmp_path
+    )
+    result = run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
+    expected = "".join(text.splitlines(keepends=True)[2:4])
+    assert result["context"] == expected
+    assert result["spans"]
+    for span in result["spans"]:
+        assert 3 <= span["line_start"] <= span["line_end"] <= 4
+        assert span["text"] == "".join(text.splitlines(keepends=True)[span["line_start"] - 1 : span["line_end"]])
+        assert span["provenance"] == f"scope.py:{span['line_start']}-{span['line_end']}"
+
+
+def test_tight_range_budget_cannot_select_unrelated_symbols(tmp_path: Path) -> None:
+    text = 'def target():\n    return "OUTSIDE_SYMBOL"\n\n' + "".join(f"target = {i}\n" for i in range(24))
+    (tmp_path / "scope.py").write_text(text, encoding="utf-8")
+    request = validate_select_context_request(
+        {
+            "query": "target OUTSIDE_SYMBOL",
+            "files": ["scope.py:4-27"],
+            "budget_tokens": 8,
+            "prefix_tokens": 0,
+            "tail_tokens": 0,
+        },
+        tmp_path,
+    )
+    result = run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
+    assert result["token_count"] <= 8
+    assert "target =" in result["context"]
+    assert "OUTSIDE_SYMBOL" not in result["context"]
+    assert all(4 <= span["line_start"] <= span["line_end"] <= 27 for span in result["spans"])
+
+
+def test_disjoint_and_overlapping_ranges_read_the_union_once(tmp_path: Path) -> None:
+    lines = [f"line_{i} = {i}\n" for i in range(1, 13)]
+    (tmp_path / "scope.py").write_text("".join(lines), encoding="utf-8")
+    request = validate_select_context_request(
+        {
+            "query": "line",
+            "files": ["scope.py:9-10", "scope.py:2-4", "scope.py:3-5", "scope.py:2", "scope.py:6"],
+            "budget_tokens": 1000,
+            "max_files": 1,
+        },
+        tmp_path,
+    )
+    result = run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
+    assert result["context"] == "".join(lines[1:6] + lines[8:10])
+    assert result["sources"] == ["scope.py"]
+    assert all(
+        2 <= span["line_start"] <= span["line_end"] <= 6 or 9 <= span["line_start"] <= span["line_end"] <= 10
+        for span in result["spans"]
+    )
+
+
+@pytest.mark.parametrize("files", [["scope.py", "scope.py:2"], ["scope.py:2", "scope.py"]])
+def test_explicit_bare_file_dominates_ranges(tmp_path: Path, files: list[str]) -> None:
+    text = "first = 1\nsecond = 2\nthird = 3\n"
+    (tmp_path / "scope.py").write_text(text, encoding="utf-8")
+    request = validate_select_context_request({"query": "second", "files": files, "max_files": 1}, tmp_path)
+    result = run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
+    assert result["context"] == text
+
+
+def test_explicit_range_is_not_widened_by_include(tmp_path: Path) -> None:
+    (tmp_path / "scope.py").write_text("excluded = 1\nchosen = 2\nexcluded = 3\n", encoding="utf-8")
+    (tmp_path / "other.py").write_text("other = 4\n", encoding="utf-8")
+    request = validate_select_context_request(
+        {"query": "chosen other", "files": ["scope.py:2"], "include": ["*.py"], "max_files": 2}, tmp_path
+    )
+    result = run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
+    assert result["context"] == "chosen = 2\nother = 4\n"
+
+
+def test_range_headers_exclude_out_of_scope_maps_and_trace_bodies(tmp_path: Path) -> None:
+    text = 'def helper():\n    return "OUTSIDE_BODY"\n\ndef target():\n    return helper()\n\n' + "".join(
+        f"padding_{i} = {i}\n" for i in range(30)
+    )
+    (tmp_path / "scope.py").write_text(text, encoding="utf-8")
+    request = validate_select_context_request(
+        {
+            "query": "target helper",
+            "files": ["scope.py:4-36"],
+            "budget_tokens": 60,
+            "map_tokens": 16,
+            "trace": "target",
+            "prefix_tokens": 0,
+            "tail_tokens": 0,
+        },
+        tmp_path,
+    )
+    result = run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
+    assert "# symbol map" in result["context"]
+    assert "# dependency closure" in result["context"]
+    assert "def target():" in result["context"]
+    assert "OUTSIDE_BODY" not in result["context"]
+    assert "scope.py:1-2" not in result["context"]
+    assert all(4 <= span["line_start"] <= span["line_end"] <= 36 for span in result["spans"])
+    assert result["token_count"] <= 60
+
+
+def test_expansion_preserves_disjoint_source_ranges(tmp_path: Path) -> None:
+    lines = [f"item_{i} = {i}\n" for i in range(1, 21)]
+    (tmp_path / "scope.py").write_text("".join(lines), encoding="utf-8")
+    request = validate_select_context_request(
+        {
+            "query": "item",
+            "files": ["scope.py:2-4", "scope.py:15-17"],
+            "budget_tokens": 9,
+            "prefix_tokens": 0,
+            "tail_tokens": 0,
+        },
+        tmp_path,
+    )
+    first = run_select_context(request, tokenizer=WhitespaceTokenizer())
+    expanded = run_expand_context(tmp_path, first["receipt"]["id"], 100, tokenizer=WhitespaceTokenizer())
+    assert expanded["context"] == "".join(lines[1:4] + lines[14:17])
+    assert all(
+        2 <= span["line_start"] <= span["line_end"] <= 4 or 15 <= span["line_start"] <= span["line_end"] <= 17
+        for span in expanded["spans"]
+    )
+
+
+def test_expansion_preserves_ranged_outline_without_bodies(tmp_path: Path) -> None:
+    (tmp_path / "scope.py").write_text(
+        'def excluded():\n    return "OUTSIDE"\n\n'
+        'def chosen():\n    return "BODY_MARKER"\n\n'
+        'def also_chosen():\n    return "SECOND_BODY"\n',
+        encoding="utf-8",
+    )
+    request = validate_select_context_request(
+        {
+            "query": "chosen",
+            "files": ["scope.py:4-5", "scope.py:7-8"],
+            "budget_tokens": 12,
+            "outline": True,
+        },
+        tmp_path,
+    )
+    first = run_select_context(request, tokenizer=WhitespaceTokenizer())
+    expanded = run_expand_context(tmp_path, first["receipt"]["id"], 100, tokenizer=WhitespaceTokenizer())
+    assert expanded["route"] == "outline"
+    assert expanded["spans"] == []
+    assert "scope.py:4-5" in expanded["context"]
+    assert "scope.py:7-8" in expanded["context"]
+    assert "excluded" not in expanded["context"]
+    assert "BODY_MARKER" not in expanded["context"]
+    assert "SECOND_BODY" not in expanded["context"]

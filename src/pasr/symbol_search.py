@@ -44,6 +44,11 @@ _MAX_DOCUMENT_SHARE = 0.2
 
 DEFAULT_TOP_K = 30
 _EXACT_BONUS = 2.0
+_READ_FUNCTION_LINES = 40
+_READ_NEIGHBOR_LINES = 8
+# A caller acts on one or two hits, not thirty. Repeating a read hint on every hit cost
+# more than the hints saved: the search result is re-sent on every later turn.
+_READ_LINES_TOP_N = 5
 # A caller guessing "func" or "fn" for `kinds` used to get a silent empty result and no
 # way to tell that from "no such symbol"; a weaker model then loops on the wrong filter.
 _KIND_ALIASES = {
@@ -187,6 +192,7 @@ def find_usages(
 
     records = discover_workspace_files(Path(workspace_root), include or ["."], config=config)
     hits: list[dict[str, Any]] = []
+    read_sources: dict[str, tuple[int, tuple[Any, ...]]] = {}
     files_scanned = 0
     definition_count = 0
 
@@ -207,7 +213,9 @@ def find_usages(
             except (OSError, ValueError):
                 definitions = ()
 
-        for line_no, line in enumerate(text.splitlines(), start=1):
+        lines = text.splitlines()
+        read_sources[record.relative_path] = (len(lines), definitions)
+        for line_no, line in enumerate(lines, start=1):
             if not pattern.search(line):
                 continue
             owner = _innermost_owner(definitions, line_no)
@@ -227,13 +235,16 @@ def find_usages(
     # Definitions first (that is the anchor), then file order: deterministic, and the
     # caller reads the chain in the order it exists on disk.
     hits.sort(key=lambda hit: (hit["role"] != "definition", hit["source"], hit["line"]))
+    returned_hits = hits[:top_k]
+    for hit in returned_hits[:_READ_LINES_TOP_N]:
+        hit["read_lines"] = _read_lines(hit["line"], *read_sources[hit["source"]])
     return {
         "symbol": name,
         "files_scanned": files_scanned,
         "usage_count": len(hits) - definition_count,
         "definition_count": definition_count,
         "truncated": len(hits) > top_k,
-        "hits": hits[:top_k],
+        "hits": returned_hits,
     }
 
 
@@ -245,6 +256,26 @@ def _innermost_owner(definitions: tuple[Any, ...], line_no: int) -> Any | None:
             if owner is None or definition.line_start > owner.line_start:
                 owner = definition
     return owner
+
+
+def _read_lines(line_no: int, line_count: int, definitions: tuple[Any, ...]) -> str:
+    """Suggest a complete small function or a bounded neighborhood containing the hit.
+
+    Only the line span: the hit already carries ``source`` and ``provenance``, and repeating
+    the path on every hit costs more than the narrower read saves.
+    """
+    function = None
+    for definition in definitions:
+        if definition.kind != "function" or not definition.line_start <= line_no <= definition.line_end:
+            continue
+        if function is None or definition.line_end - definition.line_start < function.line_end - function.line_start:
+            function = definition
+    if function is not None and function.line_end - function.line_start + 1 <= _READ_FUNCTION_LINES:
+        start, end = function.line_start, function.line_end
+    else:
+        start = max(1, line_no - _READ_NEIGHBOR_LINES)
+        end = min(line_count, line_no + _READ_NEIGHBOR_LINES)
+    return f"{start}-{end}"
 
 
 def find_evidence(
@@ -310,6 +341,7 @@ def find_evidence(
     }
 
     hits: list[tuple[float, dict[str, Any]]] = []
+    read_sources: dict[str, tuple[int, tuple[Any, ...]]] = {}
     for source, text in texts.items():
         patterns = [(term, re.compile(rf"\b{re.escape(term)}\b", re.IGNORECASE)) for term in matched_terms[source]]
         provider = get_provider(source)
@@ -321,7 +353,9 @@ def find_evidence(
                 definitions = ()
 
         per_file_hits: list[tuple[float, dict[str, Any]]] = []
-        for line_no, line in enumerate(text.splitlines(), start=1):
+        lines = text.splitlines()
+        read_sources[source] = (len(lines), definitions)
+        for line_no, line in enumerate(lines, start=1):
             found = [term for term, pattern in patterns if pattern.search(line)]
             if not found:
                 continue
@@ -345,11 +379,14 @@ def find_evidence(
         hits.extend((file_scores[source], row) for _, row in per_file_hits[:per_file])
 
     hits.sort(key=lambda item: (-item[0], item[1]["source"], item[1]["line"]))
+    returned_hits = [{**row, "score": round(score, 3)} for score, row in hits[:top_k]]
+    for hit in returned_hits[:_READ_LINES_TOP_N]:
+        hit["read_lines"] = _read_lines(hit["line"], *read_sources[hit["source"]])
     return {
         "query": query,
         "files_scanned": len(records),
         "files_with_a_match": len(texts),
         "hit_count": len(hits),
         "term_file_counts": {term: document_frequency[term] for term in query_terms},
-        "hits": [{**row, "score": round(score, 3)} for score, row in hits[:top_k]],
+        "hits": returned_hits,
     }

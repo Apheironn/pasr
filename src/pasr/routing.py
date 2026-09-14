@@ -73,7 +73,7 @@ def classify_query(query: str) -> tuple[str, list[str]]:
     return "localized", []
 
 
-def assess(query_class: str, result: dict[str, Any]) -> dict[str, Any]:
+def assess(query_class: str, result: dict[str, Any], *, has_line_ranges: bool = False) -> dict[str, Any]:
     """Score a completed selection and produce routing advice.
 
     ``result`` is the dict from :func:`pasr.select.run_select_context` (before the
@@ -105,6 +105,18 @@ def assess(query_class: str, result: dict[str, Any]) -> dict[str, Any]:
                 f"Outline only: {line_count} definition(s) listed, no bodies - this locates, it does not "
                 "answer. Pick the definitions you need and call select_context again with those `files` "
                 "and a query naming them (or find_symbols for an exact name)."
+            ],
+        }
+
+    if has_line_ranges and result["route"] == "lossless":
+        return {
+            "query_class": query_class,
+            "confidence": 0.95,
+            "advice": [
+                "Requested source sections are fully included. Range completeness is not whole-file or "
+                "caller/dependency coverage. Re-reading or expanding this scope adds no evidence. "
+                "If the answer depends on other definitions or callers, follow them with "
+                "find_symbols/find_usages and read their ranges."
             ],
         }
 
@@ -170,6 +182,11 @@ def assess(query_class: str, result: dict[str, Any]) -> dict[str, Any]:
         advice.append(
             "Looks complete for a localized question: the slice covers the query's terms. "
             "Answer from it - further retrieval calls are unlikely to add evidence."
+        )
+    if has_line_ranges:
+        advice.append(
+            "Source scope is fixed by the request. expand_context adds budget within those same ranges; "
+            "widen the files ranges explicitly to read surrounding code."
         )
 
     return {"query_class": query_class, "confidence": confidence, "advice": advice}

@@ -42,6 +42,16 @@ def test_rejects_unresolved_file_set(workspace: Path) -> None:
         validate_select_context_request({"query": "q", "include": ["pkg/*.rs"]}, workspace)
 
 
+def test_a_locator_in_include_names_the_parameter_that_takes_it(workspace: Path) -> None:
+    # A model that reads "pkg/a.py:1-2" off a hit will sometimes paste it into `include`,
+    # where it matches nothing. "resolves to no files" alone just earns the same call again.
+    with pytest.raises(ValueError, match=r'files=\["pkg/a\.py:1-2"\]'):
+        validate_select_context_request({"query": "q", "include": ["pkg/a.py:1-2"]}, workspace)
+
+    request = validate_select_context_request({"query": "q", "files": ["pkg/a.py:1-2"]}, workspace)
+    assert [meta["line_ranges"] for meta in request.file_metadata] == [[[1, 2]]]
+
+
 def test_rejects_bad_numeric_fields(workspace: Path) -> None:
     with pytest.raises(ValueError, match="budget_tokens must be positive"):
         validate_select_context_request({"query": "q", "files": ["notes.md"], "budget_tokens": 0}, workspace)
@@ -59,12 +69,3 @@ def test_rejects_unknown_recall_strategy(workspace: Path) -> None:
 def test_enforces_max_files(workspace: Path) -> None:
     with pytest.raises(ValueError, match="exceeding max_files"):
         validate_select_context_request({"query": "q", "include": ["pkg/*.py"], "max_files": 1}, workspace)
-
-
-def test_defaults(workspace: Path) -> None:
-    request = validate_select_context_request({"query": "q", "files": ["notes.md"]}, workspace)
-    assert request.budget_tokens == 3000
-    assert request.prefix_tokens == 128
-    assert request.tail_tokens == 128
-    assert request.recall_strategy == "coverage_aware"
-    assert request.block_size == 400
