@@ -176,7 +176,7 @@ so "find it" and "read it" compose without paying for a whole file in between.
 | `explain_selection` | return the stored receipt for a prior selection |
 | `expand_context` | increase a prior selection's budget without widening its source ranges or changing outline mode |
 
-Join a hit's `source` with its `read_lines` and pass that to
+Join the path in a hit's `provenance` with its `read_lines` and pass that to
 `select_context(query=..., files=["path.rs:42-56"])` rather than reading the whole file. A suggestion contains the enclosing function when it
 is at most 40 lines; otherwise it contains up to eight lines on each side of the
 hit. Large functions may require a wider explicit range or `find_symbols` to locate

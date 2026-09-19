@@ -62,12 +62,20 @@ class HashingScorer:
         return {k: v / norm for k, v in counts.items()}
 
     def score(self, query: str, spans: Sequence[RawSpan]) -> list[float]:
+        return self.score_texts(query, [span.text for span in spans])
+
+    def score_texts(self, query: str, texts: Sequence[str]) -> list[float]:
+        """Cosine similarity of each text against the query, in the order given.
+
+        Callers that rank plain strings -- a file's blocks, say -- need this without
+        first wrapping them in spans.
+        """
         q = self._features(query)
         if not q:
-            return [0.0] * len(spans)
+            return [0.0] * len(texts)
         out = []
-        for span in spans:
-            doc = self._features(span.text)
+        for text in texts:
+            doc = self._features(text)
             small, large = (q, doc) if len(q) < len(doc) else (doc, q)
             out.append(sum(weight * large.get(key, 0.0) for key, weight in small.items()))
         return out

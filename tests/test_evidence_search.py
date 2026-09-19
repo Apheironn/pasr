@@ -83,8 +83,48 @@ def test_unparsed_read_lines_cover_hits_and_clamp_to_file_edges(tmp_path: Path, 
 def test_evidence_read_lines_preserve_rank_and_per_file_limit(workspace: Path):
     hits = find_evidence(workspace, "server work reindexing", top_k=3, per_file=1)["hits"]
 
-    assert [(hit["provenance"], hit["read_lines"]) for hit in hits] == [
-        ("src/state.rs:1", "1-4"),
-        ("src/noise0.rs:1", "1-5"),
-        ("src/noise1.rs:1", "1-5"),
-    ]
+    # The rare term still leads. The remaining two come from distinct files, but which of
+    # the six byte-identical noise files they are is not a property worth pinning: they
+    # differ only by a digit in the path, which similarity scoring legitimately sees.
+    assert hits[0] == {**hits[0], "provenance": "src/state.rs:1", "read_lines": "1-4"}
+    assert [hit["read_lines"] for hit in hits[1:]] == ["1-5", "1-5"]
+    assert len({hit["provenance"].rsplit(":", 1)[0] for hit in hits}) == 3
+
+
+_INACTIVITY = """\
+/// Garbage collector: monitors usage and stops a worker automatically after a period of
+/// inactivity, so workers do not stay running indefinitely.
+pub struct Collector {
+    after: u64,
+}
+"""
+_UNRELATED = """\
+/// Parses a colour name into a style. Nothing here concerns running code at all.
+pub fn parse_colour(name: &str) -> u8 {
+    0
+}
+"""
+
+
+def test_similarity_promotes_the_closer_file_when_rarity_cannot_choose(tmp_path: Path):
+    # Both files carry the query's rare term exactly once, so the lexical score ties and
+    # rarity has nothing left to say. What breaks the tie is that one of them is about the
+    # thing being asked about, in words the question never used: "inactivity" and "stops
+    # automatically" against "idle" and "shuts down".
+    root = tmp_path / "ws"
+    (root / "src").mkdir(parents=True)
+    (root / "src" / "collector.rs").write_text("// plugin\n" + _INACTIVITY, encoding="utf-8")
+    (root / "src" / "colour.rs").write_text("// plugin\n" + _UNRELATED, encoding="utf-8")
+
+    hits = find_evidence(root, "what shuts an idle plugin down automatically")["hits"]
+
+    assert hits[0]["provenance"].startswith("src/collector.rs:")
+
+
+def test_a_decisive_rarity_win_survives_similarity(workspace: Path):
+    # The counterweight, and the reason the similarity weight is 1.0 rather than higher:
+    # the six noise files are collectively the better similarity match here, and must still
+    # lose to the one file carrying the rare term.
+    hits = find_evidence(workspace, "server work reindexing")["hits"]
+
+    assert hits[0]["provenance"].startswith("src/state.rs:")

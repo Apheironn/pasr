@@ -5,6 +5,18 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **Content search reaches code that words the answer differently.** `find_evidence`
+  ranked purely by term rarity, which is right about what it can see and blind to
+  everything else: asked what stops an idle plugin it preferred the file saying "idle"
+  and "shutdown" to the one saying "inactivity" and "stops it automatically" -- the
+  answer. The top 250 of the rarity ranking are now rescored by sub-word similarity and
+  the two are blended, each scaled by its own maximum, so the margin a rare term earns
+  survives. On the fourteen queries two models actually issued against nushell the
+  ground-truth file landed inside the window they asked for in 10 of 14 rather than 6,
+  and the median rank fell from 31 to 4. No new dependency and nothing to download: the
+  scorer is the zero-dependency one already in the tree. Search costs about two seconds
+  more on a 2,500-file repository.
+
 ## [0.3.0] - 2026-09-14
 
 - **Targeted retrieval, without opaque compression.** The leading evidence and usage

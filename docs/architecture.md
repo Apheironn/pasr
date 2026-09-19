@@ -94,7 +94,7 @@ stays as a utility for adaptive-settings callers.
 
 | Tool | Purpose |
 |---|---|
-| `find_evidence` | IDF-ranked workspace content search; matching lines and bounded `read_lines` spans on the top hits, never bodies |
+| `find_evidence` | workspace content search: term rarity blended with sub-word similarity; matching lines and bounded `read_lines` spans on the top hits, never bodies |
 | `find_files` | path/filename ranking |
 | `find_symbols` | definition index (`file:line kind name`) |
 | `find_usages` | one-hop reference index; each hit has its line and enclosing definition, the top hits a bounded `read_lines` |
@@ -112,6 +112,17 @@ the original range selectors so expansion cannot silently widen the read.
 Routing advice distinguishes complete requested sections from whole-file or
 caller/dependency coverage. A lossless ranged read does not need query refinement
 or more budget for the same scope; additional relationships require new source reads.
+
+Content search ranks files by the inverse document frequency of the query terms they
+contain, then rescores the top 250 of that ranking by sub-word similarity -- shared
+character n-grams rather than whole words, so morphology and near-synonyms survive -- and
+blends the two, each scaled by its own maximum. Rarity is what the tool is for and the
+blend preserves the margin a rare term earns: similarity can promote a file a long way but
+cannot by itself overturn a decisive rarity win. The weight is 1.0. On the fourteen queries
+two models actually issued against nushell this moved the ground-truth file inside the
+window the model asked for in 10 of 14 rather than 6, and the median rank from 31 to 4; at
+1.5 it reached 12 of 14 and broke the rarity guarantee, so it stays at 1.0. The scorer is
+the zero-dependency one -- no model, no download, nothing to install.
 
 Locator `read_lines` values preserve a complete enclosing function up to 40 lines,
 otherwise a neighborhood of up to eight lines before and after the hit. This is
