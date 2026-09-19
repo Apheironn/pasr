@@ -79,10 +79,10 @@ def test_rejects_empty_symbol_and_bad_top_k(rust_workspace: Path):
 def test_read_lines_cover_complete_small_functions_in_hit_order(rust_workspace: Path):
     hits = find_usages(rust_workspace, "is_ready")["hits"]
 
-    assert [(hit["line"], hit["role"], hit["read_lines"]) for hit in hits] == [
-        (6, "definition", "6-8"),
-        (11, "usage", "10-12"),
-        (16, "usage", "15-17"),
+    assert [(hit["provenance"], hit["role"], hit["read_lines"]) for hit in hits] == [
+        ("srv/server.rs:6", "definition", "6-8"),
+        ("srv/server.rs:11", "usage", "10-12"),
+        ("srv/server.rs:16", "usage", "15-17"),
     ]
     assert [hit["text"] for hit in hits] == [
         "pub fn is_ready(&self) -> bool {",
@@ -100,7 +100,7 @@ def test_read_lines_switch_from_complete_function_to_neighborhood(tmp_path: Path
 
     hit = locate(tmp_path, "checkpoint")["hits"][0]
 
-    assert hit["line"] == 20
+    assert hit["provenance"] == "worker.py:20"
     assert hit["in"] == "function process"
     assert hit["read_lines"] == ("1-40" if function_lines == 40 else "12-28")
 

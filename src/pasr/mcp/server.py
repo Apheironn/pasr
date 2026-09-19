@@ -95,7 +95,7 @@ _FIND_EVIDENCE_DESCRIPTION = (
     "No max_files limit, no bodies returned. The top hits carry `read_lines`, a bounded "
     "span within that hit's `source`: a complete enclosing function up to 40 lines, "
     "otherwise at most 8 lines on either side. Read one by joining them -- "
-    '`select_context(query=..., files=["<source>:<read_lines>"])`.'
+    '`select_context(query=..., files=["<provenance path>:<read_lines>"])`.'
 )
 _FIND_USAGES_DESCRIPTION = (
     "Where is this symbol USED? Returns every line that writes the name, across the "
@@ -103,9 +103,9 @@ _FIND_USAGES_DESCRIPTION = (
     "-- the definition first, then the call sites. Use it for questions whose answer is "
     'a chain rather than a single definition ("what checks this, and who reports it?"): '
     "one call replaces walking file by file. Cheap and one hop -- it does not pull bodies. "
-    "The top hits carry `read_lines`, a bounded span within that hit's `source`: a "
+    "The top hits carry `read_lines`, a bounded span within that hit's `provenance` path: a "
     "complete enclosing function up to 40 lines, otherwise at most 8 lines on either "
-    'side. Read one with `select_context(query=..., files=["<source>:<read_lines>"])`.'
+    'side. Read one with `select_context(query=..., files=["<provenance path>:<read_lines>"])`.'
 )
 _FIND_SYMBOLS_DESCRIPTION = (
     "Where is this symbol DEFINED? Returns file:line definitions for functions, "
@@ -298,9 +298,10 @@ def create_server(workspace_root: Path) -> MCPServer:
                 # One worked example beats a paragraph: the model copies it verbatim, and it
                 # costs the same whether the result carries five hits or thirty.
                 top = result["hits"][0]
+                path = top["provenance"].rsplit(":", 1)[0]
                 notes.append(
-                    "To read a hit's code, join its source and read_lines: "
-                    f'select_context(query={query!r}, files=["{top["source"]}:{top["read_lines"]}"]). '
+                    "To read a hit's code, join its provenance path with read_lines: "
+                    f'select_context(query={query!r}, files=["{path}:{top["read_lines"]}"]). '
                     "A bounded span holds a small function whole, but only part of a large one."
                 )
             if notes:

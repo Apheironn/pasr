@@ -43,9 +43,9 @@ PASR = [
             "is conceptual and you do not yet know any file, path or symbol name. Search overlapping "
             "question terms to discover the vocabulary used by the code. Lexical matching, not "
             "semantic synonym expansion. No max_files limit, no bodies. The top hits carry read_lines, "
-            "a bounded span within that hit's source: a complete enclosing function up to 40 lines, "
+            "a bounded span within that hit's provenance path: a complete enclosing function up to 40 lines, "
             "otherwise at most 8 lines on either side. Read one by joining them -- "
-            'select_context(query=..., files=["<source>:<read_lines>"]).'
+            'select_context(query=..., files=["<provenance path>:<read_lines>"]).'
         ),
         "parameters": {
             "type": "object",
@@ -100,9 +100,9 @@ PASR = [
             "with the code on that line and the function/struct it sits inside - definition first, then "
             "call sites. Use it when the answer is a chain rather than one definition (what checks this, "
             "and who reports it): one call replaces walking file by file. The top hits carry read_lines, "
-            "a bounded span within that hit's source: a complete enclosing function up to 40 lines, "
+            "a bounded span within that hit's provenance path: a complete enclosing function up to 40 lines, "
             "otherwise at most 8 lines on either side. Read one with "
-            'select_context(query=..., files=["<source>:<read_lines>"]).'
+            'select_context(query=..., files=["<provenance path>:<read_lines>"]).'
         ),
         "parameters": {
             "type": "object",

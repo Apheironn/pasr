@@ -34,7 +34,6 @@ def worker(args) -> None:
     os.environ["PASR_BENCH_WORKSPACE"] = str(args.workspace.resolve())
     import efficiency
     import runner
-    from openai import OpenAI
 
     from pasr.symbols import get_provider, parse_symbols
 
@@ -44,9 +43,17 @@ def worker(args) -> None:
         for definition in parse_symbols(provider, "preflight.rs", "fn preflight() {}").definitions
     ):
         raise RuntimeError("Rust parsing is unavailable; refusing a degraded benchmark")
-    with OpenAI(base_url=args.base_url, api_key="lm-studio", max_retries=1, timeout=120) as client:
+    if args.backend == "local":
+        from openai import OpenAI
+
+        client = OpenAI(base_url=args.base_url, api_key="lm-studio", max_retries=1, timeout=120)
+    else:
+        import anthropic
+
+        client = anthropic.Anthropic(max_retries=1, timeout=120)
+    with client:
         arm = "baseline" if args.variant == "baseline" else "pasr"
-        result = efficiency.run_one(client, args.model, args.question, arm, "local")
+        result = efficiency.run_one(client, args.model, args.question, arm, args.backend)
     result.update(
         {
             "variant": args.variant,
@@ -111,6 +118,7 @@ def compare(args) -> None:
     report = {
         "config": {
             "model": args.model,
+            "backend": args.backend,
             "base_url": args.base_url,
             "workspace": str(args.workspace.resolve()),
             "repository_revision": subprocess.check_output(
@@ -161,6 +169,8 @@ def compare(args) -> None:
                 args.model,
                 "--base-url",
                 args.base_url,
+                "--backend",
+                args.backend,
                 "--worker-out",
                 str(output),
             ]
@@ -182,6 +192,7 @@ def compare(args) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workspace", type=Path, required=True)
+    parser.add_argument("--backend", choices=("anthropic", "local"), default="local")
     parser.add_argument("--model", default="qwen/qwen3.5-9b")
     parser.add_argument("--base-url", default="http://localhost:1234/v1")
     parser.add_argument("--control-root", type=Path)

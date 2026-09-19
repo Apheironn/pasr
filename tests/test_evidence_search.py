@@ -29,7 +29,7 @@ def test_a_rare_term_outranks_a_common_one(workspace: Path):
 
     assert result["term_file_counts"]["reindexing"] == 1
     assert result["term_file_counts"]["server"] == 6
-    assert result["hits"][0]["source"] == "src/state.rs"
+    assert result["hits"][0]["provenance"].startswith("src/state.rs:")
     assert "reindexing" in result["hits"][0]["matched_terms"]
 
 
@@ -43,7 +43,7 @@ def test_hits_carry_line_text_and_enclosing_definition(workspace: Path):
 
 def test_per_file_caps_how_much_one_file_can_flood(workspace: Path):
     result = find_evidence(workspace, "server work", per_file=1)
-    per_source = [hit["source"] for hit in result["hits"]]
+    per_source = [hit["provenance"].rsplit(":", 1)[0] for hit in result["hits"]]
     assert len(per_source) == len(set(per_source))
 
 
@@ -70,14 +70,14 @@ def test_unparsed_read_lines_cover_hits_and_clamp_to_file_edges(tmp_path: Path, 
     else:
         result = locate(tmp_path, "checkpoint")
 
-    assert [(hit["line"], hit["read_lines"]) for hit in result["hits"]] == [
-        (1, "1-9"),
-        (15, "7-23"),
-        (30, "22-30"),
+    assert [(hit["provenance"], hit["read_lines"]) for hit in result["hits"]] == [
+        ("notes.txt:1", "1-9"),
+        ("notes.txt:15", "7-23"),
+        ("notes.txt:30", "22-30"),
     ]
     for hit in result["hits"]:
         assert hit["in"] == "(module level)"
-        assert hit["text"] == lines[hit["line"] - 1][:160]
+        assert hit["text"] == lines[int(hit["provenance"].rsplit(":", 1)[1]) - 1][:160]
 
 
 def test_evidence_read_lines_preserve_rank_and_per_file_limit(workspace: Path):

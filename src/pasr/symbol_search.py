@@ -262,7 +262,7 @@ def find_usages(
         "usage_count": len(hits) - definition_count,
         "definition_count": definition_count,
         "truncated": len(hits) > top_k,
-        "hits": returned_hits,
+        "hits": _drop_redundant_location(returned_hits),
     }
 
 
@@ -274,6 +274,18 @@ def _innermost_owner(definitions: tuple[Any, ...], line_no: int) -> Any | None:
             if owner is None or definition.line_start > owner.line_start:
                 owner = definition
     return owner
+
+
+def _drop_redundant_location(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Send each hit's location once.
+
+    ``provenance`` is ``source:line``; carrying ``source`` and ``line`` beside it spends a
+    second copy of the path on every hit, and a search result is re-sent to the model on
+    every later turn. Both are used while the hits are built, then dropped here.
+    """
+    for hit in hits:
+        del hit["source"], hit["line"]
+    return hits
 
 
 def _read_lines(line_no: int, line_count: int, definitions: tuple[Any, ...]) -> str:
@@ -406,5 +418,5 @@ def find_evidence(
         "files_with_a_match": len(texts),
         "hit_count": len(hits),
         "term_file_counts": {term: document_frequency[term] for term in query_terms},
-        "hits": returned_hits,
+        "hits": _drop_redundant_location(returned_hits),
     }

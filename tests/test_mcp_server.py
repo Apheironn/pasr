@@ -354,7 +354,7 @@ def test_locator_read_lines_fetch_complete_small_function(tmp_path: Path, locato
 
     found = locator_surface(tool, arguments)
     hit = found["hits"][0]
-    selector = f"{hit['source']}:{hit['read_lines']}"
+    selector = f"{hit['provenance'].rsplit(':', 1)[0]}:{hit['read_lines']}"
     selected = locator_surface("select_context", {"query": "checkpoint", "files": [selector]})
 
     assert definition.rstrip() in selected["context"]

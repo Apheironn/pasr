@@ -143,9 +143,10 @@ def tool_find_evidence(query: str = "", include: list | None = None, top_k: int 
         notes.append(f"No line in {r['files_scanned']} file(s) matched any term. Try words the code itself would use.")
     elif "read_lines" in r["hits"][0]:
         top = r["hits"][0]
+        path = top["provenance"].rsplit(":", 1)[0]
         notes.append(
-            "To read a hit's code, join its source and read_lines: "
-            f'select_context(query={query!r}, files=["{top["source"]}:{top["read_lines"]}"]). '
+            "To read a hit's code, join its provenance path with read_lines: "
+            f'select_context(query={query!r}, files=["{path}:{top["read_lines"]}"]). '
             "A bounded span holds a small function whole, but only part of a large one."
         )
     if notes:
