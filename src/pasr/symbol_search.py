@@ -44,6 +44,13 @@ _MAX_DOCUMENT_SHARE = 0.2
 
 DEFAULT_TOP_K = 30
 _EXACT_BONUS = 2.0
+# Matching without regard to case is the right fallback -- but `Signals` returned six
+# `signals()` accessors and not the struct, because every one of them was "exact".
+_CASE_EXACT_BONUS = 1.0
+# An `impl` block carries the name of the type it extends. "Where is this defined"
+# means the declaration, not the six blocks hanging off it.
+_CONTAINER_KINDS = frozenset({"impl", "module", "mod"})
+_DECLARATION_BONUS = 0.5
 _READ_FUNCTION_LINES = 40
 _READ_NEIGHBOR_LINES = 8
 # A caller acts on one or two hits, not thirty. Repeating a read hint on every hit cost
@@ -90,9 +97,13 @@ def find_symbols(
     query_terms = extract_keywords(query)
     wanted_kinds = {_KIND_ALIASES.get(k.casefold(), k.casefold()) for k in kinds} if kinds else None
     query_names = {term.casefold() for term in query_terms}
+    # The literal words as typed: `Signals` is a different request from `signals`.
+    query_words = set(re.findall("[A-Za-z0-9_]+", query))
     # "is_quiescent" splits to {is, quiescent}; without dropping "is" every `is_*`
-    # helper in the repo scores 0.5 and buries the one real hit.
-    query_parts = {part for part in identifier_terms(query_terms) if part not in STOPWORDS}
+    # helper in the repo scores 0.5 and buries the one real hit. Split the words as typed
+    # too: `extract_keywords` folds case before splitting, so "PipelineData" arrives as one
+    # opaque token and could never overlap the symbol's own {pipeline, data}.
+    query_parts = {part for part in identifier_terms([*query_terms, *query_words]) if part not in STOPWORDS}
 
     scored: list[tuple[float, dict[str, Any]]] = []
     unsupported: set[str] = set()
@@ -118,7 +129,7 @@ def find_symbols(
                 continue
             folded = name.casefold()
             exact = folded in query_names
-            parts = set(identifier_terms([name]))
+            parts = {part.casefold() for part in identifier_terms([name])}
             overlap = len(query_parts & parts) / len(query_parts) if query_parts else 0.0
             if not exact and not overlap:
                 continue
@@ -126,9 +137,13 @@ def find_symbols(
             name_matches_any_kind += 1
             if wanted_kinds and definition.kind.casefold() not in wanted_kinds:
                 continue
+            case_exact = exact and name in query_words
             scored.append(
                 (
-                    (_EXACT_BONUS if exact else 0.0) + overlap,
+                    (_EXACT_BONUS if exact else 0.0)
+                    + (_CASE_EXACT_BONUS if case_exact else 0.0)
+                    + (0.0 if definition.kind.casefold() in _CONTAINER_KINDS else _DECLARATION_BONUS)
+                    + overlap,
                     {
                         "name": name,
                         "kind": definition.kind,
@@ -142,8 +157,11 @@ def find_symbols(
             )
 
     # A "go to definition" answer should be decisive: once the exact name is found,
-    # partial namesakes are noise that only invite another round of tool calls.
-    if any(row["exact_name_match"] for _, row in scored):
+    # partial namesakes are noise that only invite another round of tool calls. That holds
+    # only when the caller named one thing. Asking for "LocalSessionManager session idle
+    # timeout keep_alive" used to return a lone unrelated TIMEOUT constant, because one
+    # generic word matched it exactly and suppressed the symbol actually being asked about.
+    if len(query_names) == 1 and any(row["exact_name_match"] for _, row in scored):
         scored = [item for item in scored if item[1]["exact_name_match"]]
 
     scored.sort(key=lambda item: (-item[0], item[1]["source"], item[1]["line_start"]))

@@ -98,3 +98,72 @@ def test_a_kind_filter_that_hides_a_real_match_says_so(rust_workspace: Path):
     assert result["matches"] == []
     assert result["kinds_filtered_out"] == 1
     assert result["kinds_available"] == ["function"]
+
+
+_NAMESAKES = """\
+pub struct Signals {
+    inner: bool,
+}
+
+impl Signals {
+    pub fn check(&self) -> bool {
+        self.inner
+    }
+}
+
+pub struct Context {
+    flag: bool,
+}
+
+impl Context {
+    pub fn signals(&self) -> bool {
+        self.flag
+    }
+}
+
+pub const IDLE_TIMEOUT: u64 = 30;
+"""
+
+
+@pytest.fixture
+def namesake_workspace(tmp_path: Path) -> Path:
+    root = tmp_path / "ws"
+    (root / "core").mkdir(parents=True)
+    (root / "core" / "signals.rs").write_text(_NAMESAKES, encoding="utf-8")
+    return root
+
+
+def test_case_exact_declaration_outranks_its_lowercase_namesake(namesake_workspace: Path):
+    # `Signals` used to return the `signals()` accessor: case-folded matching made every
+    # namesake equally "exact", and the type the caller asked for lost on path order.
+    names = [(m["kind"], m["name"]) for m in find_symbols(namesake_workspace, "Signals")["matches"]]
+
+    assert names[0] == ("struct", "Signals")
+    assert ("function", "signals") in names  # still found, just not first
+
+
+def test_lowercase_query_still_prefers_the_accessor(namesake_workspace: Path):
+    names = [(m["kind"], m["name"]) for m in find_symbols(namesake_workspace, "signals")["matches"]]
+
+    assert names[0] == ("function", "signals")
+
+
+def test_declaration_outranks_the_impl_block_carrying_its_name(namesake_workspace: Path):
+    matches = find_symbols(namesake_workspace, "Signals", kinds=["struct", "impl"])["matches"]
+
+    assert [(m["kind"], m["name"]) for m in matches][:2] == [("struct", "Signals"), ("impl", "Signals")]
+
+
+def test_one_generic_word_does_not_suppress_a_multiword_query(namesake_workspace: Path):
+    # "Context session idle timeout": IDLE_TIMEOUT matches `timeout` exactly, and that
+    # alone used to discard every partial match -- including the type being asked about.
+    names = [m["name"] for m in find_symbols(namesake_workspace, "Context session idle timeout")["matches"]]
+
+    assert "IDLE_TIMEOUT" in names
+    assert "Context" in names
+
+
+def test_single_name_query_stays_decisive(namesake_workspace: Path):
+    matches = find_symbols(namesake_workspace, "Context")["matches"]
+
+    assert {m["name"] for m in matches} == {"Context"}
