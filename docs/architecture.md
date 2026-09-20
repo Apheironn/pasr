@@ -132,10 +132,18 @@ file nothing references gains nothing. Neither scorer is a model: no download, n
 install.
 
 Re-ranking can only reorder files that already matched a term. A file sharing no word with
-the query is not a candidate, and none of this reaches it. Block features are cached per
-file version, which takes a repeated search from 4.6s to about 2s on a 2,500-file
-repository; the first search still pays about 8s. A persistent index is the answer to that
-and is not built yet.
+the query is not a candidate, and none of this reaches it.
+
+Term matching reads every file every time. Everything else in the ranking is a property of
+the file rather than the query, and lives in `.pasr/index.sqlite3`: each file's block
+features and the symbols it defines, keyed on its size and mtime. On a 2,478-file, 429k-line
+repository the store is 8MB, and three searches in a fresh process take 6.2s against 21.6s
+without it -- the case that matters, since an agent starts a new session per task. Only the
+heaviest 256 features of a block are kept, which measured identically on every recorded
+query and is applied whether or not an index exists: an indexed search and an unindexed one
+return the same bytes. A missing, stale, corrupt, read-only or locked index costs speed and
+changes no result, and any change to the block size, the trim or the scorer discards the
+store rather than reading it back under new rules.
 
 A session's stopping rule counts delivered **lines**, not provenance strings. `f:1-95` and
 `f:1-100` are different strings and almost the same evidence, so counting strings called the

@@ -21,6 +21,7 @@ from typing import Any
 
 from pasr.evidence import STOPWORDS, extract_keywords
 from pasr.file_discovery import FileDiscoveryConfig, discover_workspace_files
+from pasr.index import FORMAT, EvidenceIndex, SymbolSpan, to_spans
 from pasr.retrieval.semantic import HashingScorer
 from pasr.symbols import get_provider, parse_symbols
 from pasr.symbols.base import identifier_terms
@@ -336,14 +337,27 @@ _GRAPH_ITERATIONS = 12
 _GRAPH_DAMPING = 0.85
 
 
-def _definitions(source: str, text: str) -> tuple[Any, ...]:
+def _definitions(source: str, text: str) -> tuple[SymbolSpan, ...]:
     provider = get_provider(source)
     if provider is None:
         return ()
     try:
-        return parse_symbols(provider, source, text).definitions
+        return to_spans(parse_symbols(provider, source, text).definitions)
     except (OSError, ValueError):
         return ()
+
+
+def _definitions_of(
+    source: str, text: str, index: EvidenceIndex | None, stat: tuple[int, int]
+) -> tuple[SymbolSpan, ...]:
+    if index is not None:
+        stored = index.definitions(source, *stat)
+        if stored is not None:
+            return stored
+    computed = _definitions(source, text)
+    if index is not None:
+        index.put_definitions(source, *stat, computed)
+    return computed
 
 
 def _reference_rank(
@@ -397,27 +411,48 @@ def _scaled(scores: dict[str, float]) -> dict[str, float]:
     return {source: (value / highest if highest > 0 else 0.0) for source, value in scores.items()}
 
 
-# Blocks are a property of the file, not of the query, and a session asks several questions
-# over overlapping candidates. Featurising dominated the call -- 3.3s of a 4.6s search --
-# so it happens once per file version, bounded so a long session cannot grow without limit.
-_FEATURE_CACHE: dict[tuple[str, int], list[dict[int, float]]] = {}
-_FEATURE_CACHE_FILES = 4096
+# Blocks are a property of the file, not of the query. Featurising dominated a cold search
+# -- 3.3s of 4.6s -- so it is stored, keyed on the file's size and mtime.
+#
+# There was a process-level cache here too, keyed on the relative path and the text length.
+# It was wrong: two workspaces holding a same-named file of the same length would share an
+# entry. The index is keyed correctly and is fast enough on its own.
+# Only the heaviest features of a block decide a cosine. Keeping the top slice measured
+# identically on every recorded query, down to 128, and takes the index for a 2,500-file
+# repository from 20MB to 8. The trim is part of the score, not of the cache: an indexed
+# search and an unindexed one must return the same bytes.
+_FEATURE_KEEP = 256
+# Everything the stored bytes depend on. Change any of it and the index is stale.
+_INDEX_SIGNATURE = f"{FORMAT}:{_RERANK_BLOCK}:{_FEATURE_KEEP}:{HashingScorer().name}"
 
 
-def _block_features(scorer: HashingScorer, source: str, text: str) -> list[dict[int, float]]:
-    key = (source, len(text))
-    cached = _FEATURE_CACHE.get(key)
-    if cached is not None:
-        return cached
+def _trimmed(features: dict[int, float]) -> dict[int, float]:
+    if len(features) <= _FEATURE_KEEP:
+        return features
+    heaviest = sorted(features.items(), key=lambda item: (-item[1], item[0]))[:_FEATURE_KEEP]
+    norm = math.sqrt(sum(weight * weight for _, weight in heaviest)) or 1.0
+    return {bucket: weight / norm for bucket, weight in heaviest}
+
+
+def _block_features(
+    scorer: HashingScorer,
+    source: str,
+    text: str,
+    index: EvidenceIndex | None,
+    stat: tuple[int, int],
+) -> list[dict[int, float]]:
+    if index is not None:
+        stored = index.blocks(source, *stat)
+        if stored is not None:
+            return stored
     lines = text.splitlines()
     # The path is part of what a block means: `nu-plugin-engine/src/gc.rs` says a lot.
     features = [
-        scorer._features(f"{source}\n" + "\n".join(lines[start : start + _RERANK_BLOCK]))
+        _trimmed(scorer._features(f"{source}\n" + "\n".join(lines[start : start + _RERANK_BLOCK])))
         for start in range(0, max(len(lines), 1), _RERANK_BLOCK)
     ]
-    if len(_FEATURE_CACHE) >= _FEATURE_CACHE_FILES:
-        _FEATURE_CACHE.clear()
-    _FEATURE_CACHE[key] = features
+    if index is not None:
+        index.put_blocks(source, *stat, features)
     return features
 
 
@@ -425,7 +460,9 @@ def _rerank_semantically(
     query: str,
     file_scores: dict[str, float],
     texts: dict[str, str],
-    definitions_by_source: dict[str, tuple[Any, ...]],
+    definitions_by_source: dict[str, tuple[SymbolSpan, ...]],
+    index: EvidenceIndex | None,
+    stats: dict[str, tuple[int, int]],
 ) -> dict[str, float]:
     """Blend the lexical file ranking with a sub-word similarity score of its head.
 
@@ -448,7 +485,7 @@ def _rerank_semantically(
     similarity: dict[str, float] = {}
     for source in head:
         best = 0.0
-        for features in _block_features(scorer, source, texts[source]):
+        for features in _block_features(scorer, source, texts[source], index, stats[source]):
             small, large = (
                 (query_features, features) if len(query_features) < len(features) else (features, query_features)
             )
@@ -497,6 +534,7 @@ def find_evidence(
 
     records = discover_workspace_files(Path(workspace_root), include or ["."], config=config)
     texts: dict[str, str] = {}
+    stats: dict[str, tuple[int, int]] = {}
     matched_terms: dict[str, set[str]] = {}
     document_frequency: dict[str, int] = dict.fromkeys(query_terms, 0)
 
@@ -510,6 +548,11 @@ def find_evidence(
         if not present:
             continue
         texts[record.relative_path] = text
+        try:
+            info = record.path.stat()
+            stats[record.relative_path] = (info.st_size, info.st_mtime_ns)
+        except OSError:
+            stats[record.relative_path] = (len(text), 0)
         matched_terms[record.relative_path] = present
         for term in present:
             document_frequency[term] += 1
@@ -539,8 +582,17 @@ def find_evidence(
         for source, terms in matched_terms.items()
     }
     # Parsed once here rather than in the hit loop: the reference graph needs them too.
-    definitions_by_source = {source: _definitions(source, text) for source, text in texts.items()}
-    file_scores = _rerank_semantically(query, file_scores, texts, definitions_by_source)
+    index = EvidenceIndex.open(Path(workspace_root), signature=_INDEX_SIGNATURE)
+    try:
+        definitions_by_source = {
+            source: _definitions_of(source, text, index, stats[source]) for source, text in texts.items()
+        }
+        file_scores = _rerank_semantically(query, file_scores, texts, definitions_by_source, index, stats)
+        if index is not None:
+            index.commit()
+    finally:
+        if index is not None:
+            index.close()
 
     hits: list[tuple[float, dict[str, Any]]] = []
     read_sources: dict[str, tuple[int, tuple[Any, ...]]] = {}

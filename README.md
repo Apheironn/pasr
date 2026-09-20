@@ -167,7 +167,7 @@ so "find it" and "read it" compose without paying for a whole file in between.
 
 | Tool | Purpose |
 |---|---|
-| `find_evidence` | repository-wide lexical content search ranked by term rarity; the top hits carry a bounded `read_lines` span for nearby code |
+| `find_evidence` | repository-wide content search: term rarity blended with sub-word similarity and reference-graph rank; the top hits carry a bounded `read_lines` span for nearby code |
 | `find_files` | rank files by path/filename match |
 | `find_symbols` | where a symbol is **defined**, as `file:line` (Python, JS/TS, Rust) |
 | `find_usages` | where a symbol is **used**: matching lines, enclosing definitions, and bounded `read_lines` spans on the top hits |

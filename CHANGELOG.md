@@ -5,6 +5,14 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **Content search keeps an index.** Block features and parsed symbols are properties of
+  the file, not of the query, and were recomputed on every cold start -- about eight
+  seconds of a 2,478-file repository, most of a short agent session. They now live in
+  `.pasr/index.sqlite3`, keyed on size and mtime. Three searches in a fresh process take
+  6.2s against 21.6s, for an 8MB store. It is strictly a cache: the same search returns
+  the same bytes with it, without it, or after deleting it, and a missing, corrupt,
+  read-only or locked index costs only speed.
+
 - **The session says what it is holding.** About half of every recorded trajectory, in
   PASR and grep/read arms alike, happened after the evidence was already in hand, and
   nothing in the loop ever said so. Every selection from the second file onward now
