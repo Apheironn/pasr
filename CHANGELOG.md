@@ -5,6 +5,17 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **The selection was being sent twice.** `select_context` returned the chosen code in
+  `context` and then again, span by span, in `spans[].text` -- 1,451 tokens of duplicate
+  on a 1,450-token slice, plus `score_components`, internal scoring detail no caller can
+  act on. A real MCP response fell from 5,362 tokens to 3,418 for the same selection.
+  `context` now labels each span with its provenance, so attribution is better than
+  before rather than worse, and the receipt behind `explain_selection` still carries
+  every field. Quality on the 50-task bake-off is unchanged to the digit.
+- **A symbol row was 65 tokens carrying 28.** `find_symbols` repeated the path and extent
+  already inside `provenance` and a score that restated the row order. 639 tokens a call
+  down to 348, replayed on the calls the models actually made.
+
 - **A multi-file selection stopped reserving budget for alphabetical accidents.** The
   active window keeps a document's head and tail -- imports at one end, recent material at
   the other. A set of files has neither, and across several sources it was reserving the

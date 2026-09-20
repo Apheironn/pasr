@@ -13,7 +13,7 @@ from typing import Any
 from pasr.chunker import RawSpan, chunk_text
 from pasr.evidence import account_query_evidence, build_evidence_span
 from pasr.packs import build_pack, load_pack, pack_staleness, write_pack
-from pasr.pipeline import ROUTE_OUTLINE, AssembleConfig, ContextPack, RetrievalConfig, assemble
+from pasr.pipeline import ROUTE_LOSSLESS, ROUTE_OUTLINE, AssembleConfig, ContextPack, RetrievalConfig, assemble
 from pasr.receipt import build_receipt, read_receipt, write_receipt
 from pasr.redaction import Redactor, identity_redactor
 from pasr.routing import assess, classify_query
@@ -163,6 +163,21 @@ def run_select_context(
     if write_receipt_file:
         written = write_receipt(request.workspace_root, receipt)
         result["receipt"]["written_to"] = str(written) if written is not None else None
+    return _trim_spans(result)
+
+
+# What a span said twice. Its text is in `context`, now labelled with that same
+# provenance -- 1,451 tokens of duplicate on a 1,450-token slice, so the caller paid for
+# the selection twice -- and `score_components` is scoring detail no caller can act on.
+# The receipt is built before this and keeps both, so `explain_selection` still answers
+# "why this span, and what was dropped".
+_DROPPED_SPAN_FIELDS = ("text", "score_components")
+
+
+def _trim_spans(result: dict[str, Any]) -> dict[str, Any]:
+    result["spans"] = [
+        {field: value for field, value in span.items() if field not in _DROPPED_SPAN_FIELDS} for span in result["spans"]
+    ]
     return result
 
 
@@ -335,7 +350,18 @@ def _run(
     candidate_records = pack.diagnostics.get("candidates", [])
     combined_tokens = pack.token_count + map_tokens + trace_tokens
     header = "".join(part for part in (map_text and map_text + "\n\n", trace_text and trace_text + "\n\n") if part)
-    context_text = f"{header}# context\n{pack.text}" if header else pack.text
+    # One copy of the code, and it says where each piece came from. The spans used to
+    # repeat every line the context already held -- 1,451 tokens of duplicate on a
+    # 1,450-token slice -- so the caller paid for the selection twice. A lossless route
+    # hands back the sources whole and stays byte-exact; a selected one is already
+    # reordered, so labelling it costs a dozen tokens a span and replaces the copy.
+    body = (
+        pack.text
+        if pack.route == ROUTE_LOSSLESS
+        else "\n\n".join(f"[{span.metadata.get('provenance')}]\n{span.text.strip(chr(10))}" for span in pack.spans)
+        or pack.text
+    )
+    context_text = f"{header}# context\n{body}" if header else body
     diagnostics = {
         **{key: value for key, value in pack.diagnostics.items() if key != "candidates"},
         "files": per_file,

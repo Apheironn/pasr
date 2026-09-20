@@ -93,8 +93,9 @@ def test_redactor_is_applied_to_returned_spans(mini_workspace: Path) -> None:
         redactor=lambda text: text.replace("RateLimit", "[REDACTED]"),
         write_receipt_file=False,
     )
+    # The context is the one copy of the code now, so that is where redaction has to land.
     assert "[REDACTED]" in result["context"]
-    assert all("X-RateLimit" not in span["text"] for span in result["spans"])
+    assert "X-RateLimit" not in result["context"]
 
 
 class RunSelectContextTests(unittest.TestCase):
@@ -313,7 +314,7 @@ def test_range_read_returns_only_inclusive_source_lines(tmp_path: Path) -> None:
     assert result["spans"]
     for span in result["spans"]:
         assert 3 <= span["line_start"] <= span["line_end"] <= 4
-        assert span["text"] == "".join(text.splitlines(keepends=True)[span["line_start"] - 1 : span["line_end"]])
+        # `context == expected` above is the stronger statement: it pins the exact bytes.
         assert span["provenance"] == f"scope.py:{span['line_start']}-{span['line_end']}"
 
 

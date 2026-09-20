@@ -8,7 +8,7 @@ pasr trace _parse_letter_version src --max-depth 3
 ```
 
 ```text
-# _parse_letter_version — 32 definitions, >99% fewer tokens than the index
+# _parse_letter_version -- 32 definitions, >99% fewer tokens than the index
 
 - src/packaging/_manylinux.py:10  (import NamedTuple)
 - src/packaging/_manylinux.py:16  (import Generator)

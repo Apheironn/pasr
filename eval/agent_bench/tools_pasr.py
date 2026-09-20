@@ -225,18 +225,6 @@ def tool_find_usages(symbol: str, include: list | None = None, top_k: int = 30) 
     return json.dumps(r, ensure_ascii=False)
 
 
-def _context_with_sources(result: dict) -> str:
-    """Keep body provenance that the full production result carries in its spans."""
-    if not result["spans"]:
-        return result["context"]  # outlines already contain locators
-    diagnostics = result.get("diagnostics", {})
-    if diagnostics.get("symbol_map", {}).get("header_tokens") or diagnostics.get("trace", {}).get("found"):
-        # Map/trace headers live only in context, not in spans. Keep those intact.
-        sources = "\n".join(str(span["provenance"]) for span in result["spans"])
-        return f"Sources (span order):\n{sources}\n\n{result['context']}"
-    return "\n\n".join(f"[{span['provenance']}]\n{span['text']}" for span in result["spans"])
-
-
 def tool_select_context(**kw) -> str:
     try:
         request = validate_select_context_request(
@@ -270,7 +258,7 @@ def tool_select_context(**kw) -> str:
             "confidence": result.get("confidence"),
             "advice": result.get("advice"),
             "token_count": result["token_count"],
-            "context": _context_with_sources(result),
+            "context": result["context"],
         },
         ensure_ascii=False,
     )
@@ -292,7 +280,7 @@ def tool_expand_context(receipt_id: str, extra_budget: int = 2000) -> str:
             "route": result["route"],
             "advice": result.get("advice"),
             "token_count": result["token_count"],
-            "context": _context_with_sources(result),
+            "context": result["context"],
         },
         ensure_ascii=False,
     )
