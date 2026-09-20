@@ -1,4 +1,11 @@
-"""PASR + baseline tool implementations, shared by every backend."""
+"""PASR + baseline tool implementations, shared by every backend.
+
+The select_context and expand_context tools hand back exactly the dict the MCP server
+hands back. They used to project it down to six fields, so every measurement taken
+through this adapter charged PASR about a thousand tokens a call less than a real
+client pays -- while the baseline's grep and read_file return plain text with no
+envelope to strip, and were always charged in full.
+"""
 
 from __future__ import annotations
 
@@ -251,17 +258,7 @@ def tool_select_context(**kw) -> str:
         return refusal
     if len(_covered) >= 2:
         result.setdefault("advice", []).append(_holdings())
-    return json.dumps(
-        {
-            "id": result["receipt"]["id"],
-            "route": result["route"],
-            "confidence": result.get("confidence"),
-            "advice": result.get("advice"),
-            "token_count": result["token_count"],
-            "context": result["context"],
-        },
-        ensure_ascii=False,
-    )
+    return json.dumps(result, ensure_ascii=False)
 
 
 def tool_expand_context(receipt_id: str, extra_budget: int = 2000) -> str:
@@ -274,16 +271,7 @@ def tool_expand_context(receipt_id: str, extra_budget: int = 2000) -> str:
         return refusal
     if len(_covered) >= 2:
         result.setdefault("advice", []).append(_holdings())
-    return json.dumps(
-        {
-            "id": result["receipt"]["id"],
-            "route": result["route"],
-            "advice": result.get("advice"),
-            "token_count": result["token_count"],
-            "context": result["context"],
-        },
-        ensure_ascii=False,
-    )
+    return json.dumps(result, ensure_ascii=False)
 
 
 def tool_trace_dependencies(symbol: str, include: list | None = None, direction: str = "dependencies") -> str:
