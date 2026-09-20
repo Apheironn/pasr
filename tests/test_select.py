@@ -472,7 +472,10 @@ def test_a_multi_file_scope_does_not_reserve_budget_for_alphabetical_accidents(t
     result = run_select_context(request, write_receipt_file=False)
 
     assert result["diagnostics"]["active_window"] is False
-    assert "sources have no shared head or tail" in result["diagnostics"]["active_window_dropped"]
+    assert "sources have no shared head or tail" in result["diagnostics"]["active_window_scope"]
+    # Not reported as a budget failure: raising the budget would not give a file set a head,
+    # and routing answers that diagnostic by telling the caller to do exactly that.
+    assert "active_window_dropped" not in result["diagnostics"]
     assert any("gc.py" in span["provenance"] for span in result["spans"])
     assert not any(reason == "active_window" for span in result["spans"] for reason in span["selection_reasons"])
 
