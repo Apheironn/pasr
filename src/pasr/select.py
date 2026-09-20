@@ -163,21 +163,34 @@ def run_select_context(
     if write_receipt_file:
         written = write_receipt(request.workspace_root, receipt)
         result["receipt"]["written_to"] = str(written) if written is not None else None
-    return _trim_spans(result)
+    return _trim_response(result)
 
 
-# What a span said twice. Its text is in `context`, now labelled with that same
-# provenance -- 1,451 tokens of duplicate on a 1,450-token slice, so the caller paid for
-# the selection twice -- and `score_components` is scoring detail no caller can act on.
-# The receipt is built before this and keeps both, so `explain_selection` still answers
-# "why this span, and what was dropped".
+# What the response said twice, or said on every call, or said to nobody. A span's text
+# is in `context`, labelled with that same provenance -- 1,451 tokens of duplicate on a
+# 1,450-token slice -- and `score_components` is scoring detail no caller can act on. A
+# claim restates the query it was built from and the keywords `diagnostics` already lists.
+# `limitations` is the same sentence every time, so it belongs in the tool description.
+# And the per-file breakdown of everything in scope is what a receipt is for: the response
+# says what you got and what it cost, `explain_selection` says exactly what happened.
+#
+# The receipt is built before any of this, so none of it is lost.
 _DROPPED_SPAN_FIELDS = ("text", "score_components")
+_DROPPED_CLAIM_FIELDS = ("text", "keywords")
 
 
-def _trim_spans(result: dict[str, Any]) -> dict[str, Any]:
+def _trim_response(result: dict[str, Any]) -> dict[str, Any]:
     result["spans"] = [
         {field: value for field, value in span.items() if field not in _DROPPED_SPAN_FIELDS} for span in result["spans"]
     ]
+    result["diagnostics"] = {key: value for key, value in result["diagnostics"].items() if key != "files"}
+    evidence = dict(result["evidence_accounting"])
+    evidence.pop("limitations", None)
+    evidence["claims"] = [
+        {field: value for field, value in claim.items() if field not in _DROPPED_CLAIM_FIELDS}
+        for claim in evidence.get("claims", [])
+    ]
+    result["evidence_accounting"] = evidence
     return result
 
 
@@ -343,7 +356,11 @@ def _run(
 
     evidence = account_query_evidence(
         request.query,
-        [build_evidence_span(span.to_dict()) for span in pack.spans],
+        # Address a span the way every other field does. The accounting used to mint a
+        # second scheme from token offsets -- `file#tokens=789:1153` beside the
+        # `file:125-178` in `spans`, `context` and every locator -- so a caller could not
+        # join what it was told about the evidence to the evidence itself.
+        [build_evidence_span({**span.to_dict(), "span_id": span.metadata.get("provenance")}) for span in pack.spans],
         {"budget_tokens": request.budget_tokens},
     )
     total_input_tokens = sum(entry["token_count"] for entry in per_file)

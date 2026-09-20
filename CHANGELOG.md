@@ -5,6 +5,18 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **The response stopped repeating itself.** A `select_context` reply was 5,362 tokens
+  where the selected code was 1,688. Every span repeated the code already in `context`;
+  `score_components` carried scoring detail no caller can act on; each claim restated the
+  query it was built from and the keywords `diagnostics` already lists; `limitations` was
+  the same sentence on every call, which belongs in the tool description; and the per-file
+  breakdown of everything in scope belongs in the receipt. The reply is 2,888 tokens, and
+  the selected code is 52% of it rather than 31%. `explain_selection` still carries every
+  one of those fields.
+- **Evidence accounting is joinable again.** It addressed spans as
+  `file#tokens=789:1153`, a second scheme beside the `file:125-178` that `spans`, the
+  labelled `context` and every locator use, so a caller could not match what it was told
+  about the evidence to the evidence. It uses the provenance now.
 - **The selection was being sent twice.** `select_context` returned the chosen code in
   `context` and then again, span by span, in `spans[].text` -- 1,451 tokens of duplicate
   on a 1,450-token slice, plus `score_components`, internal scoring detail no caller can

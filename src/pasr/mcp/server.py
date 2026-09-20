@@ -413,7 +413,11 @@ def create_server(workspace_root: Path) -> MCPServer:
         dependency closure into the slice (carved from ``budget_tokens``) -- a one-call
         "slice + closure" for trace-style questions. Returns the assembled ``context``
         plus per-span provenance, token accounting, routing, and a lexical evidence
-        diagnostic.
+        diagnostic. That diagnostic is lexical: a keyword counts as covered when it
+        appears in a span's text or its source path, which is evidence of coverage and
+        not of entailment. ``explain_selection`` on the returned receipt id gives the
+        per-file breakdown of everything in scope, each span's text and score
+        components, and what was dropped.
         """
         if pack:
             try:
