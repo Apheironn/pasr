@@ -147,3 +147,24 @@ def test_reference_rank_lifts_what_the_relevant_files_lean_on(tmp_path: Path):
     rank = _reference_rank({"src/api.rs": 1.0, "src/collector.rs": 0.0, "src/decoy.rs": 0.0}, texts, definitions)
 
     assert rank["src/collector.rs"] > rank["src/decoy.rs"]
+
+
+def test_a_long_file_does_not_win_by_mentioning_everything_somewhere(tmp_path: Path):
+    # A term counts as present if it appears anywhere in the file, so a long file is far
+    # likelier to contain all of a question's words somewhere than the short one that
+    # answers it. Without length normalisation it scored as if that were the same evidence:
+    # asked what stops an idle plugin, nushell's longest command file led on "tab stops".
+    root = tmp_path / "ws"
+    (root / "src").mkdir(parents=True)
+    sprawl = [f"// line {i} of an unrelated module\n" for i in range(400)]
+    sprawl[10] = "// account for tab stops from an arbitrary column\n"
+    sprawl[200] = "// an idle worker in a pool\n"
+    sprawl[390] = "// plugin authors should read this\n"
+    (root / "src" / "sprawl.rs").write_text("".join(sprawl), encoding="utf-8")
+    (root / "src" / "gc.rs").write_text(
+        "/// Stops an idle plugin after inactivity.\npub struct Gc {\n    after: u64,\n}\n", encoding="utf-8"
+    )
+
+    hits = find_evidence(root, "what stops an idle plugin")["hits"]
+
+    assert hits[0]["provenance"].startswith("src/gc.rs:")

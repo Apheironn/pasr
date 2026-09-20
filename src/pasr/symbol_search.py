@@ -317,6 +317,11 @@ def _read_lines(line_no: int, line_count: int, definitions: tuple[Any, ...]) -> 
 # queries two models actually issued was 12, 40, 49, 62 and 110 -- and shallow enough to
 # cost about a second. Rescoring the whole matched set measured identically.
 _RERANK_DEPTH = 250
+# How much a file's length discounts its score, as BM25's b does. Measured on the
+# queries two models issued and on natural-language phrasings of the same questions:
+# 0.25 and 0.5 were identical on the first (13 of 14, against 11 without it) and 0.5
+# better on the second. Past 0.75 both degrade.
+_LENGTH_NORM = 0.5
 _RERANK_BLOCK = 60
 # How far similarity may move a file against its rarity score. Both signals are scaled by
 # their own maximum, which keeps the lexical margin a rare term earns; at 1.0 similarity
@@ -577,8 +582,16 @@ def find_evidence(
     # score as a within-file sort key changed neither. The miss is not a weighting bug:
     # `gc.rs` answers "what stops an idle plugin" without containing "idle" or "shutdown",
     # so no lexical reweighting can reach it. That is what _rerank_semantically is for.
+    # Length-normalised, the way BM25 normalises a document. A term counted as present if
+    # it appears anywhere in the file, so a 4,784-line file was far likelier to contain all
+    # of a question's words somewhere than the 306-line file that answers it -- and scored
+    # as if that were the same evidence. Asked what stops an idle plugin, nushell's longest
+    # command file led on a comment about tab stops.
+    lengths = {source: max(len(text.splitlines()), 1) for source, text in texts.items()}
+    mean_length = (sum(lengths.values()) / len(lengths)) if lengths else 1.0
     file_scores = {
-        source: sum(idf[term] for term in terms) + len(terms) / (len(query_terms) + 1)
+        source: (sum(idf[term] for term in terms) + len(terms) / (len(query_terms) + 1))
+        / (1 - _LENGTH_NORM + _LENGTH_NORM * lengths[source] / mean_length)
         for source, terms in matched_terms.items()
     }
     # Parsed once here rather than in the hit loop: the reference graph needs them too.

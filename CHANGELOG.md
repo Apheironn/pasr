@@ -5,6 +5,14 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **Long files stopped winning by mentioning everything somewhere.** A query term counted
+  as present if it appeared anywhere in a file, with no discount for length, so nushell's
+  4,784-line command module outranked the 306-line garbage collector that answers "what
+  stops an idle plugin" -- on a comment about tab stops. File scores are now
+  length-normalised as BM25 normalises a document. On the queries two models issued the
+  ground-truth file lands inside the requested window in 12 of 14 rather than 10, and on
+  natural-language phrasings of the same questions it moves from rank 94 to rank 1.
+
 - **A search hit stopped repeating itself.** Hits no longer carry the terms they matched,
   which are visible in the line the hit already carries, or a score, which restated the
   position they were already returned in and on a blended rank was not interpretable. The

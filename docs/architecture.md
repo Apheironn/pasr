@@ -114,7 +114,10 @@ caller/dependency coverage. A lossless ranged read does not need query refinemen
 or more budget for the same scope; additional relationships require new source reads.
 
 Content search ranks files by the inverse document frequency of the query terms they
-contain, then rescores the top 250 of that ranking by sub-word similarity -- shared
+contain, discounted by file length the way BM25 discounts a document: a term counts as
+present if it appears anywhere, so a 4,784-line file was far likelier to hold all of a
+question's words somewhere than the 306-line file that answered it, and scored as though
+that were the same evidence. It then rescores the top 250 of that ranking by sub-word similarity -- shared
 character n-grams rather than whole words, so morphology and near-synonyms survive -- and
 blends them with a third: personalised PageRank over the graph of "this file names
 something that file defines", started from the lexical scores. That is how Aider ranks a
