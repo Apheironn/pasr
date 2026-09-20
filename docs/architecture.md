@@ -137,6 +137,14 @@ file version, which takes a repeated search from 4.6s to about 2s on a 2,500-fil
 repository; the first search still pays about 8s. A persistent index is the answer to that
 and is not built yet.
 
+A session's stopping rule counts delivered **lines**, not provenance strings. `f:1-95` and
+`f:1-100` are different strings and almost the same evidence, so counting strings called the
+re-read wholly new -- which is the loop the rule exists to catch. Two consecutive selections
+that are less than a quarter new are refused, and the refusal names what the caller already
+holds. From the second file onward every selection also carries that figure, whether or not
+anything is wrong: across every recorded trajectory, in PASR and grep/read arms alike, about
+half the calls happened after the evidence was in hand, and nothing in the loop ever said so.
+
 Locator `read_lines` values preserve a complete enclosing function up to 40 lines,
 otherwise a neighborhood of up to eight lines before and after the hit. This is
 navigation guidance, not a body truncation policy: original hit text and ranking

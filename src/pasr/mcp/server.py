@@ -142,7 +142,7 @@ class _CallGuard:
 
     def __init__(self) -> None:
         self._seen: dict[str, tuple[str, int]] = {}
-        self._delivered: set[str] = set()
+        self._covered: dict[str, set[int]] = {}
         self._zero_novelty = 0
 
     @staticmethod
@@ -166,33 +166,80 @@ class _CallGuard:
             )
         return result
 
+    @staticmethod
+    def _lines_of(provenance: str) -> tuple[str, range]:
+        source, _, span = provenance.rpartition(":")
+        start, _, end = span.partition("-")
+        try:
+            low = int(start)
+            high = int(end) if end else low
+        except ValueError:
+            return provenance, range(0)
+        return source, range(low, high + 1)
+
     def check_novelty(self, result: dict[str, Any]) -> None:
-        """Stop a selection that keeps re-delivering spans the caller already holds.
+        """Stop a selection that keeps re-delivering source the caller already holds.
 
         Hashing (tool, arguments) only catches verbatim repeats. The expensive loop in
         practice is the paraphrased one: a slightly reworded query over the same files,
         returning the same code under a new receipt id. PASR can see that directly --
-        it knows every span it has handed over this session -- so novelty is measured
-        in delivered spans, not in query strings.
+        it knows every line it has handed over this session.
+
+        Novelty is counted in lines, not in provenance strings. ``f:1-95`` and ``f:1-100``
+        are different strings and almost the same evidence; counting strings called the
+        second one wholly new, which is exactly the re-read this rule exists to catch.
         """
-        provenances = {str(span.get("provenance")) for span in result.get("spans", []) if span.get("provenance")}
-        if not provenances:
+        delivered = 0
+        fresh = 0
+        for span in result.get("spans", []):
+            provenance = span.get("provenance")
+            if not provenance:
+                continue
+            source, lines = self._lines_of(str(provenance))
+            seen = self._covered.setdefault(source, set())
+            delivered += len(lines)
+            fresh += sum(1 for line in lines if line not in seen)
+            seen.update(lines)
+        if not delivered:
             return
-        novelty = len(provenances - self._delivered) / len(provenances)
-        self._delivered |= provenances
-        if novelty >= self.NOVELTY_FLOOR:
+        if fresh / delivered >= self.NOVELTY_FLOOR:
             self._zero_novelty = 0
             return
 
         self._zero_novelty += 1
         if self._zero_novelty < self.LOW_NOVELTY_LIMIT:
             return
-        sources = sorted({p.rsplit(":", 1)[0] for p in self._delivered})
         raise ToolError(
-            f"Refused: the last {self._zero_novelty} selections returned essentially only spans you have already "
-            f"been given. You currently hold {len(self._delivered)} span(s) across {len(sources)} file(s): "
-            f"{', '.join(sources[:8])}{' ...' if len(sources) > 8 else ''}. More retrieval will not add "
-            "evidence - answer the question from these spans, naming what you could not determine."
+            f"Refused: the last {self._zero_novelty} selections returned source you already hold. "
+            f"{self.holdings()} More retrieval will not add evidence - answer the question from what "
+            "you have, naming what you could not determine."
+        )
+
+    def note_holdings(self, result: dict[str, Any]) -> None:
+        """Tell the caller what it is holding, before it has to be refused.
+
+        Half of every recorded trajectory, in PASR and grep/read arms alike, happened
+        after the evidence was already in hand: nothing in the loop ever said so. Stays
+        quiet until a second file has arrived, so it reads as "you have a lot now" rather
+        than as noise on the first read.
+        """
+        if len(self._covered) < 2:
+            return
+        result.setdefault("advice", []).append(self.holdings())
+
+    def holdings(self) -> str:
+        """One factual line on what this session has already been given.
+
+        Half of every recorded trajectory, in both PASR and grep/read arms, happened after
+        the evidence was in hand. Nothing in the loop ever told the model where it stood,
+        so this says it plainly on every selection rather than only at a refusal.
+        """
+        lines = sum(len(seen) for seen in self._covered.values())
+        sources = sorted(self._covered)
+        shown = ", ".join(sources[:6])
+        return (
+            f"You now hold {lines} line(s) of source across {len(sources)} file(s): "
+            f"{shown}{' ...' if len(sources) > 6 else ''}."
         )
 
 
@@ -400,6 +447,7 @@ def create_server(workspace_root: Path) -> MCPServer:
                 lambda: run_select_context(request),
             )
             guard.check_novelty(result)
+            guard.note_holdings(result)
             if save_as:
                 path, _ = save_pack(save_as, request, result=result)
                 result["saved_pack"] = str(path)
@@ -470,6 +518,7 @@ def create_server(workspace_root: Path) -> MCPServer:
         try:
             result = run_expand_context(root, receipt_id, extra_budget)
             guard.check_novelty(result)
+            guard.note_holdings(result)
             return result
         except FileNotFoundError as exc:
             raise ToolError(f"no receipt with id {receipt_id!r}") from exc

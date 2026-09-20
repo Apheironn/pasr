@@ -263,8 +263,10 @@ def test_reworded_queries_over_the_same_spans_stop_too(mini_workspace: Path):
     # Different query strings, so the byte-identical guard never fires -- but the same
     # file fits the budget losslessly, so no call after the first adds any evidence.
     _call(server, "select_context", {"query": "throttling behaviour on responses", **base})
-    with pytest.raises(Exception, match="already been given"):
+    with pytest.raises(Exception, match="Refused") as refusal:
         _call(server, "select_context", {"query": "how are 429s emitted", **base})
+    # The refusal has to say what the caller already holds, or it is just a wall.
+    assert "line(s) of source across" in str(refusal.value)
 
 
 def test_novel_spans_reset_the_stopping_rule(mini_workspace: Path):
@@ -392,3 +394,35 @@ def test_only_the_leading_hits_carry_read_lines(tmp_path: Path, locator_surface,
 
     assert len(hits) == 8
     assert [("read_lines" in hit) for hit in hits] == [True] * 5 + [False] * 3
+
+
+def test_a_reread_inside_lines_already_held_is_caught(mini_workspace: Path):
+    """Overlapping ranges are different strings and almost the same evidence."""
+    server = create_server(mini_workspace)
+    first = json.loads(
+        _call(server, "select_context", {"query": "rate limit", "include": ["."], "budget_tokens": 3000})
+        .content[0]
+        .text
+    )
+    held = [span["provenance"] for span in first["spans"]]
+    assert held, "fixture should return spans"
+
+    # Ask again for lines strictly inside what was already delivered, under new wording and
+    # a new receipt id each time. Counting provenance strings called these wholly new.
+    inner = [p.rsplit(":", 1)[0] + ":" + str(int(p.rsplit(":", 1)[1].split("-")[0]) + 1) for p in held[:2]]
+    _call(server, "select_context", {"query": "throttle behaviour", "files": inner, "budget_tokens": 3000})
+    with pytest.raises(Exception, match="already hold"):
+        _call(server, "select_context", {"query": "429 emission", "files": inner, "budget_tokens": 3000})
+
+
+def test_a_session_is_told_what_it_holds_before_it_is_refused(mini_workspace: Path):
+    server = create_server(mini_workspace)
+    server_call = lambda q, inc: json.loads(  # noqa: E731
+        _call(server, "select_context", {"query": q, "include": inc, "budget_tokens": 400}).content[0].text
+    )
+    first = server_call("rate limit headers", ["api/ratelimit.py"])
+    # Nothing to boast about after one file.
+    assert not any("You now hold" in note for note in first.get("advice", []))
+
+    second = server_call("session compromise", ["."])
+    assert any("line(s) of source across" in note for note in second.get("advice", []))

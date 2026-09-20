@@ -64,14 +64,14 @@ def tool_read_file(path: str, start_line: int = 1, end_line: int | None = None) 
 # --------------------------------------------------------------------- pasr tools
 _receipts: dict[str, dict] = {}
 _seen: dict[str, tuple[str, int]] = {}
-_delivered: set[str] = set()
+_covered: dict[str, set[int]] = {}
 _low_novelty = [0]
 
 
 def reset_session() -> None:
     _receipts.clear()
     _seen.clear()
-    _delivered.clear()
+    _covered.clear()
     _low_novelty[0] = 0
 
 
@@ -91,25 +91,52 @@ def _guard(name: str, inp: dict, output: str) -> str:
     return output
 
 
+def _lines_of(provenance: str) -> tuple[str, range]:
+    source, _, span = provenance.rpartition(":")
+    start, _, end = span.partition("-")
+    try:
+        low = int(start)
+        high = int(end) if end else low
+    except ValueError:
+        return provenance, range(0)
+    return source, range(low, high + 1)
+
+
+def _holdings() -> str:
+    """Mirror of the server's holdings note."""
+    lines = sum(len(seen) for seen in _covered.values())
+    srcs = sorted(_covered)
+    return (
+        f"You now hold {lines} line(s) of source across {len(srcs)} file(s): "
+        f"{', '.join(srcs[:6])}{' ...' if len(srcs) > 6 else ''}."
+    )
+
+
 def _novelty_refusal(result: dict) -> str | None:
-    """Mirror of the server's span-novelty rule (paraphrased loops)."""
-    provs = {str(s.get("provenance")) for s in result.get("spans", []) if s.get("provenance")}
-    if not provs:
+    """Mirror of the server's line-coverage novelty rule (paraphrased loops)."""
+    delivered = fresh = 0
+    for span in result.get("spans", []):
+        provenance = span.get("provenance")
+        if not provenance:
+            continue
+        source, lines = _lines_of(str(provenance))
+        seen = _covered.setdefault(source, set())
+        delivered += len(lines)
+        fresh += sum(1 for line in lines if line not in seen)
+        seen.update(lines)
+    if not delivered:
         return None
-    novelty = len(provs - _delivered) / len(provs)
-    _delivered.update(provs)
-    if novelty >= 0.25:
+    if fresh / delivered >= 0.25:
         _low_novelty[0] = 0
         return None
     _low_novelty[0] += 1
     if _low_novelty[0] < 2:
         return None
-    srcs = sorted({p.rsplit(":", 1)[0] for p in _delivered})
     return json.dumps(
         {
-            "error": f"Refused: the last {_low_novelty[0]} selections returned essentially only spans you "
-            f"already hold ({len(_delivered)} spans across {len(srcs)} files: {', '.join(srcs[:8])}). "
-            "Answer from these, naming what you could not determine."
+            "error": f"Refused: the last {_low_novelty[0]} selections returned source you already hold. "
+            f"{_holdings()} More retrieval will not add evidence - answer from what you have, "
+            "naming what you could not determine."
         }
     )
 
@@ -234,6 +261,8 @@ def tool_select_context(**kw) -> str:
     refusal = _novelty_refusal(result)
     if refusal is not None:
         return refusal
+    if len(_covered) >= 2:
+        result.setdefault("advice", []).append(_holdings())
     return json.dumps(
         {
             "id": result["receipt"]["id"],
@@ -255,6 +284,8 @@ def tool_expand_context(receipt_id: str, extra_budget: int = 2000) -> str:
     refusal = _novelty_refusal(result)
     if refusal is not None:
         return refusal
+    if len(_covered) >= 2:
+        result.setdefault("advice", []).append(_holdings())
     return json.dumps(
         {
             "id": result["receipt"]["id"],

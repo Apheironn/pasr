@@ -5,6 +5,13 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **The session says what it is holding.** About half of every recorded trajectory, in
+  PASR and grep/read arms alike, happened after the evidence was already in hand, and
+  nothing in the loop ever said so. Every selection from the second file onward now
+  reports how much source the session holds and where. The stopping rule also counts
+  lines rather than provenance strings: `f:1-95` followed by `f:1-100` is two different
+  strings and almost the same evidence, and used to count as wholly new.
+
 - **Content search reaches code that words the answer differently.** `find_evidence`
   ranked purely by term rarity, which is right about what it can see and blind to
   everything else: asked what stops an idle plugin it preferred the file saying "idle"
