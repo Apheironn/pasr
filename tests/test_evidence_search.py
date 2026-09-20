@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from pasr.symbol_search import find_evidence, find_usages
+from pasr.symbol_search import _definitions, _reference_rank, find_evidence, find_usages
 
 _COMMON = "\n".join(f"// server handles work item {i}" for i in range(5))
 _RARE = """\
@@ -128,3 +128,22 @@ def test_a_decisive_rarity_win_survives_similarity(workspace: Path):
     hits = find_evidence(workspace, "server work reindexing")["hits"]
 
     assert hits[0]["provenance"].startswith("src/state.rs:")
+
+
+def test_reference_rank_lifts_what_the_relevant_files_lean_on(tmp_path: Path):
+    # The unit the blend depends on: relevance flows along "api.rs names what collector.rs
+    # defines". A toy corpus is too small for a ranking signal to decide anything end to
+    # end -- its effect on a real repository is measured in the recorded-query replay, not
+    # pinned here -- so this asserts the mechanism rather than an ordering it cannot own.
+    texts = {
+        "src/api.rs": "pub fn stop_idle(c: &Collector) {\n    c.sweep();\n}\n",
+        "src/collector.rs": "pub struct Collector {\n    after: u64,\n}\n",
+        "src/decoy.rs": "pub const IDLE_TIMEOUT: u64 = 1;\n",
+    }
+    definitions = {source: _definitions(source, text) for source, text in texts.items()}
+    assert [d.name for d in definitions["src/collector.rs"]] == ["Collector"]
+
+    # api.rs is where the query landed; the other two are equal strangers to it.
+    rank = _reference_rank({"src/api.rs": 1.0, "src/collector.rs": 0.0, "src/decoy.rs": 0.0}, texts, definitions)
+
+    assert rank["src/collector.rs"] > rank["src/decoy.rs"]

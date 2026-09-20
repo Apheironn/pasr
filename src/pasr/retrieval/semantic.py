@@ -19,6 +19,7 @@ import re
 import zlib
 from collections import Counter
 from collections.abc import Sequence
+from functools import lru_cache
 from typing import Protocol, runtime_checkable
 
 from pasr.candidates import CandidateSpan, rank_candidates
@@ -26,6 +27,14 @@ from pasr.chunker import RawSpan
 from pasr.retrieval import raw_span_to_candidate
 
 _WORD_RE = re.compile(r"[A-Za-z0-9]+")
+
+
+# Source code repeats itself: scoring a 250-file candidate set hashed 4.7 million tokens
+# and only a small fraction were distinct. Same values, computed once each.
+@lru_cache(maxsize=1 << 18)
+def _bucket_of(token: str, dims: int) -> int:
+    # stable across processes (unlike the salted builtin hash)
+    return zlib.crc32(token.encode("utf-8")) % dims
 
 
 @runtime_checkable
@@ -47,8 +56,7 @@ class HashingScorer:
         self.char_ngrams = char_ngrams
 
     def _bucket(self, token: str) -> int:
-        # stable across processes (unlike the salted builtin hash)
-        return zlib.crc32(token.encode("utf-8")) % self.dims
+        return _bucket_of(token, self.dims)
 
     def _features(self, text: str) -> dict[int, float]:
         counts: Counter[int] = Counter()

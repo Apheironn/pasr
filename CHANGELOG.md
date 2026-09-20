@@ -14,8 +14,15 @@ this project uses [Semantic Versioning](https://semver.org/).
   survives. On the fourteen queries two models actually issued against nushell the
   ground-truth file landed inside the window they asked for in 10 of 14 rather than 6,
   and the median rank fell from 31 to 4. No new dependency and nothing to download: the
-  scorer is the zero-dependency one already in the tree. Search costs about two seconds
-  more on a 2,500-file repository.
+  scorer is the zero-dependency one already in the tree.
+- **And reaches what the relevant files lean on.** A third signal: personalised PageRank
+  over "this file names something that file defines", started from the lexical scores, the
+  way Aider ranks a repository. It sees what neither other signal can -- a file can be the
+  answer while saying none of the question's words, if the files that do say them call it.
+  Ground truth inside the window the model asked for went 6 of 14 to 10, median hit rank
+  31 to 5, worst 164 to 38, and no recorded query got worse. Block features are now cached
+  per file version: a repeated search on a 2,500-file repository takes about 2s, the first
+  about 8s.
 
 ## [0.3.0] - 2026-09-14
 

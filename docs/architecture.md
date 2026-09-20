@@ -116,13 +116,26 @@ or more budget for the same scope; additional relationships require new source r
 Content search ranks files by the inverse document frequency of the query terms they
 contain, then rescores the top 250 of that ranking by sub-word similarity -- shared
 character n-grams rather than whole words, so morphology and near-synonyms survive -- and
-blends the two, each scaled by its own maximum. Rarity is what the tool is for and the
+blends them with a third: personalised PageRank over the graph of "this file names
+something that file defines", started from the lexical scores. That is how Aider ranks a
+repository, and it is the signal the other two cannot see -- a file can be the answer while
+saying none of the question's words, as long as the files that do say them lean on it.
+`gc.rs` defines `PluginGc`, and `persistent.rs`, which the words do reach, calls it. All
+three are scaled by their own maximum. Rarity is what the tool is for and the
 blend preserves the margin a rare term earns: similarity can promote a file a long way but
-cannot by itself overturn a decisive rarity win. The weight is 1.0. On the fourteen queries
-two models actually issued against nushell this moved the ground-truth file inside the
-window the model asked for in 10 of 14 rather than 6, and the median rank from 31 to 4; at
-1.5 it reached 12 of 14 and broke the rarity guarantee, so it stays at 1.0. The scorer is
-the zero-dependency one -- no model, no download, nothing to install.
+cannot by itself overturn a decisive rarity win. Both added weights are 1.0. On the fourteen queries two models actually issued against
+nushell, the ground-truth file moved inside the window the model asked for in 10 of 14
+rather than 6, the median hit rank from 31 to 5 and the worst from 164 to 38. Similarity at
+1.5 reached 12 of 14 and broke the rarity guarantee, so it stays at 1.0; the graph weight
+measured the same anywhere between 0.5 and 2.0 and never threatened that guarantee, since a
+file nothing references gains nothing. Neither scorer is a model: no download, nothing to
+install.
+
+Re-ranking can only reorder files that already matched a term. A file sharing no word with
+the query is not a candidate, and none of this reaches it. Block features are cached per
+file version, which takes a repeated search from 4.6s to about 2s on a 2,500-file
+repository; the first search still pays about 8s. A persistent index is the answer to that
+and is not built yet.
 
 Locator `read_lines` values preserve a complete enclosing function up to 40 lines,
 otherwise a neighborhood of up to eight lines before and after the hit. This is

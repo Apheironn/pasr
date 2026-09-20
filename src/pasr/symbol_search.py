@@ -326,12 +326,107 @@ _RERANK_BLOCK = 60
 _SIMILARITY_WEIGHT = 1.0
 
 
+# An identifier long enough to be a name rather than a loop variable.
+_IDENTIFIER = re.compile("[A-Za-z_][A-Za-z0-9_]{2,}")
+# How far the reference graph may move a file. Flat between 0.5 and 2.0 on the recorded
+# queries -- it is not a tuned constant -- and unlike the similarity weight it never
+# threatened the rarity guarantee, because a file nothing references gains nothing.
+_GRAPH_WEIGHT = 1.0
+_GRAPH_ITERATIONS = 12
+_GRAPH_DAMPING = 0.85
+
+
+def _definitions(source: str, text: str) -> tuple[Any, ...]:
+    provider = get_provider(source)
+    if provider is None:
+        return ()
+    try:
+        return parse_symbols(provider, source, text).definitions
+    except (OSError, ValueError):
+        return ()
+
+
+def _reference_rank(
+    seed: dict[str, float], texts: dict[str, str], definitions_by_source: dict[str, tuple[Any, ...]]
+) -> dict[str, float]:
+    """Personalised PageRank over "this file names something that file defines".
+
+    Aider ranks a repository this way and it is the signal the other two cannot see: a file
+    can be the answer while saying none of the question's words, as long as the files that
+    do say them lean on it. `gc.rs` defines `PluginGc`; `persistent.rs`, which the question's
+    words do reach, calls it. The walk starts from the lexical scores, so relevance flows
+    along references rather than being invented.
+    """
+    candidates = set(seed)
+    defined_in: dict[str, set[str]] = {}
+    for source in candidates:
+        for definition in definitions_by_source.get(source, ()):
+            name = definition.name
+            if name and name != "<anonymous>":
+                defined_in.setdefault(name, set()).add(source)
+    outgoing = {
+        source: set().union(*(defined_in[name] for name in named)) - {source}
+        if (named := set(_IDENTIFIER.findall(texts[source])) & defined_in.keys())
+        else set()
+        for source in candidates
+    }
+
+    total = sum(seed.values()) or 1.0
+    start = {source: value / total for source, value in seed.items()}
+    rank = dict(start)
+    spread = 1.0 / len(candidates)
+    for _ in range(_GRAPH_ITERATIONS):
+        following = {source: (1.0 - _GRAPH_DAMPING) * start[source] for source in candidates}
+        for source, targets in outgoing.items():
+            moving = _GRAPH_DAMPING * rank[source]
+            if targets:
+                share = moving / len(targets)
+                for target in targets:
+                    following[target] += share
+            else:
+                # A file that references nothing in the candidate set is not evidence
+                # against anything; spread its mass rather than letting it drain away.
+                for target in candidates:
+                    following[target] += moving * spread
+        rank = following
+    return rank
+
+
 def _scaled(scores: dict[str, float]) -> dict[str, float]:
     highest = max(scores.values(), default=0.0)
     return {source: (value / highest if highest > 0 else 0.0) for source, value in scores.items()}
 
 
-def _rerank_semantically(query: str, file_scores: dict[str, float], texts: dict[str, str]) -> dict[str, float]:
+# Blocks are a property of the file, not of the query, and a session asks several questions
+# over overlapping candidates. Featurising dominated the call -- 3.3s of a 4.6s search --
+# so it happens once per file version, bounded so a long session cannot grow without limit.
+_FEATURE_CACHE: dict[tuple[str, int], list[dict[int, float]]] = {}
+_FEATURE_CACHE_FILES = 4096
+
+
+def _block_features(scorer: HashingScorer, source: str, text: str) -> list[dict[int, float]]:
+    key = (source, len(text))
+    cached = _FEATURE_CACHE.get(key)
+    if cached is not None:
+        return cached
+    lines = text.splitlines()
+    # The path is part of what a block means: `nu-plugin-engine/src/gc.rs` says a lot.
+    features = [
+        scorer._features(f"{source}\n" + "\n".join(lines[start : start + _RERANK_BLOCK]))
+        for start in range(0, max(len(lines), 1), _RERANK_BLOCK)
+    ]
+    if len(_FEATURE_CACHE) >= _FEATURE_CACHE_FILES:
+        _FEATURE_CACHE.clear()
+    _FEATURE_CACHE[key] = features
+    return features
+
+
+def _rerank_semantically(
+    query: str,
+    file_scores: dict[str, float],
+    texts: dict[str, str],
+    definitions_by_source: dict[str, tuple[Any, ...]],
+) -> dict[str, float]:
     """Blend the lexical file ranking with a sub-word similarity score of its head.
 
     Lexical ranking is right about what it can see and blind to everything else. Asked what
@@ -349,18 +444,25 @@ def _rerank_semantically(query: str, file_scores: dict[str, float], texts: dict[
         return file_scores
     head = sorted(file_scores, key=lambda source: -file_scores[source])[:_RERANK_DEPTH]
     scorer = HashingScorer()
+    query_features = scorer._features(query)
     similarity: dict[str, float] = {}
     for source in head:
-        lines = texts[source].splitlines()
-        # The path is part of what a block means: `nu-plugin-engine/src/gc.rs` says a lot.
-        blocks = [
-            f"{source}\n" + "\n".join(lines[start : start + _RERANK_BLOCK])
-            for start in range(0, max(len(lines), 1), _RERANK_BLOCK)
-        ]
-        similarity[source] = max(scorer.score_texts(query, blocks), default=0.0)
+        best = 0.0
+        for features in _block_features(scorer, source, texts[source]):
+            small, large = (
+                (query_features, features) if len(query_features) < len(features) else (features, query_features)
+            )
+            best = max(best, sum(weight * large.get(key, 0.0) for key, weight in small.items()))
+        similarity[source] = best
 
     lexical, similar = _scaled(file_scores), _scaled(similarity)
-    return {source: lexical[source] + _SIMILARITY_WEIGHT * similar.get(source, 0.0) for source in file_scores}
+    referenced = _scaled(_reference_rank({source: lexical[source] for source in head}, texts, definitions_by_source))
+    return {
+        source: lexical[source]
+        + _SIMILARITY_WEIGHT * similar.get(source, 0.0)
+        + _GRAPH_WEIGHT * referenced.get(source, 0.0)
+        for source in file_scores
+    }
 
 
 _RRF_K = 60
@@ -436,20 +538,15 @@ def find_evidence(
         source: sum(idf[term] for term in terms) + len(terms) / (len(query_terms) + 1)
         for source, terms in matched_terms.items()
     }
-    file_scores = _rerank_semantically(query, file_scores, texts)
+    # Parsed once here rather than in the hit loop: the reference graph needs them too.
+    definitions_by_source = {source: _definitions(source, text) for source, text in texts.items()}
+    file_scores = _rerank_semantically(query, file_scores, texts, definitions_by_source)
 
     hits: list[tuple[float, dict[str, Any]]] = []
     read_sources: dict[str, tuple[int, tuple[Any, ...]]] = {}
     for source, text in texts.items():
         patterns = [(term, re.compile(rf"\b{re.escape(term)}\b", re.IGNORECASE)) for term in matched_terms[source]]
-        provider = get_provider(source)
-        definitions: tuple[Any, ...] = ()
-        if provider is not None:
-            try:
-                definitions = parse_symbols(provider, source, text).definitions
-            except (OSError, ValueError):
-                definitions = ()
-
+        definitions = definitions_by_source[source]
         per_file_hits: list[tuple[float, dict[str, Any]]] = []
         lines = text.splitlines()
         read_sources[source] = (len(lines), definitions)
