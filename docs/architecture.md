@@ -94,7 +94,7 @@ stays as a utility for adaptive-settings callers.
 
 | Tool | Purpose |
 |---|---|
-| `find_evidence` | workspace content search: term rarity blended with sub-word similarity; matching lines and bounded `read_lines` spans on the top hits, never bodies |
+| `find_evidence` | workspace content search: term rarity blended with sub-word similarity and reference rank; matching lines and bounded `read_lines` spans on the top hits, never bodies |
 | `find_files` | path/filename ranking |
 | `find_symbols` | definition index (`file:line kind name`) |
 | `find_usages` | one-hop reference index; each hit has its line and enclosing definition, the top hits a bounded `read_lines` |
@@ -144,6 +144,16 @@ query and is applied whether or not an index exists: an indexed search and an un
 return the same bytes. A missing, stale, corrupt, read-only or locked index costs speed and
 changes no result, and any change to the block size, the trim or the scorer discards the
 store rather than reading it back under new rules.
+
+A hit carries its provenance, the matched line and its enclosing definition, and nothing
+that repeats them. It used to also carry the terms it matched -- visible in the line -- and
+a score, which restated its position and, on a blended rank, was not interpretable anyway.
+The two were a fifth of the payload of a search result, and a search result is re-sent to
+the model on every later turn. A thirty-hit result costs about 1,500 tokens against a
+grep's 700 for the same lines; the difference is the enclosing definition, which grep
+cannot give, and JSON structure. Grouping hits under their file would save a further 8%
+and change the shape every caller and every piece of advice depends on, which is not a
+trade worth making.
 
 A session's stopping rule counts delivered **lines**, not provenance strings. `f:1-95` and
 `f:1-100` are different strings and almost the same evidence, so counting strings called the

@@ -616,7 +616,6 @@ def find_evidence(
                         "line": line_no,
                         "text": line.strip()[:160],
                         "in": f"{owner.kind} {owner.name}" if owner is not None else "(module level)",
-                        "matched_terms": sorted(found),
                     },
                 )
             )
@@ -626,7 +625,11 @@ def find_evidence(
         hits.extend((file_scores[source], row) for _, row in per_file_hits[:per_file])
 
     hits.sort(key=lambda item: (-item[0], item[1]["source"], item[1]["line"]))
-    returned_hits = [{**row, "score": round(score, 3)} for score, row in hits[:top_k]]
+    # Neither a score nor the terms it matched survives here. Hits arrive in rank order, so
+    # the number restated the position, and on a blended rank it is not even interpretable;
+    # the matched terms are visible in the line the hit carries. Together they were a fifth
+    # of the payload of a search result, which is re-sent on every later turn.
+    returned_hits = [row for _, row in hits[:top_k]]
     for hit in returned_hits[:_READ_LINES_TOP_N]:
         hit["read_lines"] = _read_lines(hit["line"], *read_sources[hit["source"]])
     return {

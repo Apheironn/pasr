@@ -119,8 +119,8 @@ def _evidence(args: argparse.Namespace) -> int:
     rare = ", ".join(f"{t}={n}" for t, n in sorted(result["term_file_counts"].items(), key=lambda kv: kv[1]) if n)
     print(f"# {result['hit_count']} line(s) in {result['files_with_a_match']} file(s); term file counts: {rare}")
     print()
-    for hit in result["hits"]:
-        print(f"{hit['score']:6.2f}  {hit['provenance']:<44} in {hit['in']:<24} {hit['text'][:66]}")
+    for rank, hit in enumerate(result["hits"], start=1):
+        print(f"{rank:>3}.  {hit['provenance']:<44} in {hit['in']:<24} {hit['text'][:66]}")
     return 0
 
 

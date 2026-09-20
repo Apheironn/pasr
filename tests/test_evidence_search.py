@@ -30,7 +30,7 @@ def test_a_rare_term_outranks_a_common_one(workspace: Path):
     assert result["term_file_counts"]["reindexing"] == 1
     assert result["term_file_counts"]["server"] == 6
     assert result["hits"][0]["provenance"].startswith("src/state.rs:")
-    assert "reindexing" in result["hits"][0]["matched_terms"]
+    assert "reindexing" in result["hits"][0]["text"]  # the term it matched is in the line itself
 
 
 def test_hits_carry_line_text_and_enclosing_definition(workspace: Path):

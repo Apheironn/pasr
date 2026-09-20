@@ -5,6 +5,13 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **A search hit stopped repeating itself.** Hits no longer carry the terms they matched,
+  which are visible in the line the hit already carries, or a score, which restated the
+  position they were already returned in and on a blended rank was not interpretable. The
+  two were a fifth of a search result's payload, and a search result is re-sent on every
+  later turn: a thirty-hit result fell from 1,956 to 1,488 tokens. Nothing is lost and
+  ranking is untouched.
+
 - **Content search keeps an index.** Block features and parsed symbols are properties of
   the file, not of the query, and were recomputed on every cold start -- about eight
   seconds of a 2,478-file repository, most of a short agent session. They now live in
