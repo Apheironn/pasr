@@ -95,6 +95,7 @@ def find_symbols(
     if top_k <= 0:
         raise ValueError("top_k must be positive.")
     records = discover_workspace_files(Path(workspace_root), include or ["."], config=config)
+    index = EvidenceIndex.open(Path(workspace_root), signature=_INDEX_SIGNATURE)
 
     query_terms = extract_keywords(query)
     wanted_kinds = {_KIND_ALIASES.get(k.casefold(), k.casefold()) for k in kinds} if kinds else None
@@ -114,18 +115,29 @@ def find_symbols(
     files_indexed = 0
 
     for record in records:
-        provider = get_provider(record.relative_path)
-        if provider is None:
+        if get_provider(record.relative_path) is None:
             unsupported.add(record.path.suffix.lower() or "(no extension)")
             continue
+        # Parsing every file took fifteen seconds on a 2,500-file workspace while every
+        # other tool answered in under two. The symbols are already stored; read the file
+        # only when they are not.
         try:
-            text = record.path.read_text(encoding="utf-8", errors="replace")
-            file_symbols = parse_symbols(provider, record.relative_path, text)
-        except (OSError, ValueError):
+            info = record.path.stat()
+            stat = (info.st_size, info.st_mtime_ns)
+        except OSError:
             continue
+        definitions = index.definitions(record.relative_path, *stat) if index is not None else None
+        if definitions is None:
+            try:
+                text = record.path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            definitions = _definitions(record.relative_path, text)
+            if index is not None:
+                index.put_definitions(record.relative_path, *stat, definitions)
         files_indexed += 1
 
-        for definition in file_symbols.definitions:
+        for definition in definitions:
             name = definition.name
             if not name or name == "<anonymous>":
                 continue
@@ -149,8 +161,8 @@ def find_symbols(
                     {
                         "name": name,
                         "kind": definition.kind,
-                        "provenance": f"{definition.source}:{definition.line_start}-{definition.line_end}",
-                        "source": definition.source,
+                        "provenance": f"{record.relative_path}:{definition.line_start}-{definition.line_end}",
+                        "source": record.relative_path,
                         "line_start": definition.line_start,
                         "line_end": definition.line_end,
                         "exact_name_match": exact,
@@ -166,6 +178,9 @@ def find_symbols(
     if len(query_names) == 1 and any(row["exact_name_match"] for _, row in scored):
         scored = [item for item in scored if item[1]["exact_name_match"]]
 
+    if index is not None:
+        index.commit()
+        index.close()
     scored.sort(key=lambda item: (-item[0], item[1]["source"], item[1]["line_start"]))
     matches = [{**row, "match_score": round(score, 3)} for score, row in scored[:top_k]]
     result = {

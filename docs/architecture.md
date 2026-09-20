@@ -103,6 +103,16 @@ stays as a utility for adaptive-settings callers.
 | `expand_context` | increase the budget while retaining the prior source ranges and outline mode |
 | `explain_selection` | return the receipt for a prior selection id |
 
+The active window -- a mandatory head and tail carved out of the budget -- applies to a
+single source only. It keeps a document's imports and setup at one end and its most recent
+material at the other; a set of files has neither, and across several sources it reserved
+the opening lines of whichever file sorted first and the closing lines of whichever sorted
+last. Scoped to a directory at an 800-token budget that spent 646 tokens on two files the
+query never mentioned. On the 50-task selection suite, restricting it to one source raises
+critical-source hits from 11 to 18 at an 800-token budget and from 20 to 26 at 1,500; at
+the suite's own 6,000-token default the window is 8% of the budget and the defect is
+invisible, which is why it went unnoticed.
+
 Ranged selection operates on merged, inclusive source sections before chunking and
 tokenization. Original line/character provenance is preserved; token coordinates
 cover only selected sections. Whole-file symbol candidates cannot reintroduce

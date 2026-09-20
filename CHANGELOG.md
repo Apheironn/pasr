@@ -5,6 +5,19 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **A multi-file selection stopped reserving budget for alphabetical accidents.** The
+  active window keeps a document's head and tail -- imports at one end, recent material at
+  the other. A set of files has neither, and across several sources it was reserving the
+  opening lines of whichever file sorted first and the closing lines of whichever sorted
+  last. Scoped to a directory at an 800-token budget it spent 646 tokens on two files the
+  query never mentioned and returned no matching span at all. It now applies to one source
+  only. On the 50-task selection suite, critical-source hits go from 11 to 18 at an
+  800-token budget and 20 to 26 at 1,500; at the suite's own 6,000-token default nothing
+  changes, which is why this was never caught.
+- **`find_symbols` answers in under a second.** It parsed every file in the workspace on
+  every call -- fifteen seconds on 2,500 files, while every other tool answered in under
+  two. It reads the symbols the index already holds.
+
 - **Long files stopped winning by mentioning everything somewhere.** A query term counted
   as present if it appeared anywhere in a file, with no discount for length, so nushell's
   4,784-line command module outranked the 306-line garbage collector that answers "what

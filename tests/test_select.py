@@ -451,3 +451,45 @@ def test_expansion_preserves_ranged_outline_without_bodies(tmp_path: Path) -> No
     assert "excluded" not in expanded["context"]
     assert "BODY_MARKER" not in expanded["context"]
     assert "SECOND_BODY" not in expanded["context"]
+
+
+def test_a_multi_file_scope_does_not_reserve_budget_for_alphabetical_accidents(tmp_path: Path):
+    """The window keeps a document's head and tail. A set of files has neither."""
+    root = tmp_path / "ws"
+    (root / "src").mkdir(parents=True)
+    # `aaa` sorts first and `zzz` last, and neither has anything to do with the query.
+    (root / "src" / "aaa.py").write_text("".join(f"# filler line {i}\n" for i in range(60)), encoding="utf-8")
+    (root / "src" / "zzz.py").write_text("".join(f"# other filler {i}\n" for i in range(60)), encoding="utf-8")
+    (root / "src" / "gc.py").write_text(
+        "def stop_idle_plugin(after):\n    '''Stops an idle plugin once its timeout elapses.'''\n    return after\n",
+        encoding="utf-8",
+    )
+
+    request = validate_select_context_request(
+        {"query": "stop an idle plugin timeout", "include": ["."], "budget_tokens": 300},
+        workspace_root=root,
+    )
+    result = run_select_context(request, write_receipt_file=False)
+
+    assert result["diagnostics"]["active_window"] is False
+    assert "sources have no shared head or tail" in result["diagnostics"]["active_window_dropped"]
+    assert any("gc.py" in span["provenance"] for span in result["spans"])
+    assert not any(reason == "active_window" for span in result["spans"] for reason in span["selection_reasons"])
+
+
+def test_one_file_still_gets_its_head_and_tail(tmp_path: Path):
+    root = tmp_path / "ws"
+    (root / "src").mkdir(parents=True)
+    body = ["import os\n", "import sys\n"]
+    body += [f"# middle line {index}\n" for index in range(400)]
+    body += ["def stop_idle_plugin(after):\n", "    return after\n"]
+    (root / "src" / "gc.py").write_text("".join(body), encoding="utf-8")
+
+    # Large enough not to fit the budget losslessly, with room for a mandatory head and tail.
+    request = validate_select_context_request(
+        {"query": "stop an idle plugin timeout", "include": ["."], "budget_tokens": 900},
+        workspace_root=root,
+    )
+    result = run_select_context(request, write_receipt_file=False)
+
+    assert result["diagnostics"]["active_window"] is True
