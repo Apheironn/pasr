@@ -304,7 +304,7 @@ def create_server(workspace_root: Path) -> MCPServer:
                     + ". The symbol may be named differently - widen `include`, try one distinctive "
                     "part of the name, or use find_files/select_context on the concept instead."
                 ]
-            elif result["matches"][0]["exact_name_match"]:
+            elif result["exact_match"]:
                 first = result["matches"][0]
                 result["advice"] = [
                     f"Exact definition: {first['provenance']}. Read it with "

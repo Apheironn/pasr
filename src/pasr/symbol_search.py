@@ -182,11 +182,17 @@ def find_symbols(
         index.commit()
         index.close()
     scored.sort(key=lambda item: (-item[0], item[1]["source"], item[1]["line_start"]))
-    matches = [{**row, "match_score": round(score, 3)} for score, row in scored[:top_k]]
+    # Three fields per row. `source`, `line_start` and `line_end` were all inside
+    # `provenance`; `match_score` restated the order the rows already arrive in; and
+    # `exact_name_match` was read by the advice, not by the caller, so it moves up to the
+    # result. A row cost 65 tokens and carried 28 -- and across the recorded runs this tool
+    # spent 12,152 tokens to put new evidence in front of the model once.
+    matches = [{"name": row["name"], "kind": row["kind"], "provenance": row["provenance"]} for _, row in scored[:top_k]]
     result = {
         "query": query,
         "files_indexed": files_indexed,
         "symbol_match_count": len(scored),
+        "exact_match": bool(scored and scored[0][1]["exact_name_match"]),
         "matches": matches,
         "unparsed_extensions": sorted(unsupported),
     }

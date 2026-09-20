@@ -80,8 +80,8 @@ def _symbols(args: argparse.Namespace) -> int:
         f"# {result['symbol_match_count']} definition(s) matched across "
         f"{result['files_indexed']} indexed file(s), top {len(result['matches'])}\n"
     )
-    for match in result["matches"]:
-        print(f"{match['match_score']:.2f}  {match['kind']:<9} {match['name']}  {match['provenance']}")
+    for rank, match in enumerate(result["matches"], start=1):
+        print(f"{rank:>3}.  {match['kind']:<9} {match['name']}  {match['provenance']}")
     if not result["matches"] and result["unparsed_extensions"]:
         print(f"\nno symbol provider for: {', '.join(result['unparsed_extensions'][:10])}", file=sys.stderr)
     return 0

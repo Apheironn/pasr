@@ -55,7 +55,7 @@ def test_exact_name_match_is_returned_alone(rust_workspace: Path):
     assert [m["name"] for m in result["matches"]] == ["is_quiescent"]
     assert result["matches"][0]["kind"] == "function"
     assert result["matches"][0]["provenance"] == "net/table.rs:9-11"
-    assert result["matches"][0]["exact_name_match"] is True
+    assert result["exact_match"] is True
 
 
 def test_stopword_parts_do_not_drag_in_namesakes(rust_workspace: Path):

@@ -196,7 +196,7 @@ def tool_find_symbols(query: str = "", include: list | None = None, kinds: list 
             f"No definition matched in {r['files_indexed']} indexed file(s). Try one distinctive part of "
             "the name, or find_files on the concept."
         ]
-    elif r["matches"][0]["exact_name_match"]:
+    elif r["exact_match"]:
         f = r["matches"][0]
         r["advice"] = [
             f"Exact definition: {f['provenance']}. Read it with "
