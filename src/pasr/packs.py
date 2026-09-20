@@ -1,7 +1,7 @@
-"""Context Packs — a named, committable, byte-stable ``select_context`` result.
+"""Context Packs -- a named, committable, byte-stable ``select_context`` result.
 
 Saved to ``<workspace>/.pasr/packs/<name>.json`` (meant to be committed: a team's
-context library). Loading a pack is a warm start — zero chunking / retrieval — and the
+context library). Loading a pack is a warm start -- zero chunking / retrieval -- and the
 stored ``context`` is a byte-stable prefix (LF-normalised, no wall-clock, canonical
 span order) so downstream prompt caching keeps hitting across turns and machines.
 """

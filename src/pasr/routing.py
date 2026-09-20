@@ -3,7 +3,7 @@
 PASR is honest about when it is the wrong tool. ``classify_query`` labels a query
 ``localized`` / ``trace`` / ``aggregation`` / ``unknown`` from fixed signal phrases;
 ``assess`` turns a completed selection into a ``confidence`` score and short ``advice``
-(e.g. "aggregation-style question — read the files directly").
+(e.g. "aggregation-style question -- read the files directly").
 """
 
 from __future__ import annotations
@@ -60,7 +60,7 @@ _AGGREGATION_SIGNALS = (
 
 
 def classify_query(query: str) -> tuple[str, list[str]]:
-    """Return ``(class, matched_signals)`` for ``query`` — deterministic, no model."""
+    """Return ``(class, matched_signals)`` for ``query`` -- deterministic, no model."""
     lowered = query.casefold()
     if len(extract_keywords(query)) < 2:
         return "unknown", []

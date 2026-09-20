@@ -4,7 +4,7 @@
 
 | Feature | What it does | Evidence |
 |---|---|---|
-| `select_context(map_tokens=N)` | prepend a query-ranked symbol-index header, carved out of the budget — repo-map-style pointer coverage without dropping the bodies | bake-off `retrieval_ok` 0.70 → 0.90 (→ 0.96 at a 2k header); `docs/competitors-benchmark.md` |
+| `select_context(map_tokens=N)` | prepend a query-ranked symbol-index header, carved out of the budget — repo-map-style pointer coverage without dropping the bodies | bake-off `retrieval_ok` 0.70 -> 0.92 at a 1.2k header; `docs/competitors-benchmark.md` |
 | `select_context(trace="<symbol>")` | fold a symbol's dependency closure into the same slice — one call instead of two for trace-style questions | `diagnostics.trace` |
 | `trace_dependencies(direction="callers")` | reverse the edges — every definition that transitively references the symbol ("what breaks if I change this"); also `pasr trace --callers` | — |
 | usage ledger + `pasr report` | one row per real `select_context` call in `.pasr/ledger.jsonl`; `pasr report` summarises tokens / round trips saved, with an optional `--price-per-mtok` estimate | — |

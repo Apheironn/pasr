@@ -1,4 +1,4 @@
-"""``pasr`` CLI — run PASR without an agent.
+"""``pasr`` CLI -- run PASR without an agent.
 
 pasr find "<query>" [globs...]           rank files by path/filename match
 pasr symbols "<query>" [globs...]        where matching symbols are defined (file:line)
@@ -222,7 +222,7 @@ def _trace(args: argparse.Namespace) -> int:
         pct = result["token_reduction"] * 100
         pct_str = ">99" if pct >= 99.5 else str(round(pct))
         noun = "callers" if direction == "callers" else "definitions"
-        print(f"# {args.symbol} — {len(result['spans'])} {noun}, {pct_str}% fewer tokens than the index\n")
+        print(f"# {args.symbol} -- {len(result['spans'])} {noun}, {pct_str}% fewer tokens than the index\n")
         for span in result["spans"]:
             print(f"- {span['provenance']}  ({span['kind']} {span['name']})")
     return 0
@@ -276,7 +276,7 @@ def _context(args: argparse.Namespace) -> int:
         },
         workspace_root=args.workspace,
     )
-    # CI mode: don't litter .pasr/ — the context / metrics files are the outputs.
+    # CI mode: don't litter .pasr/ -- the context / metrics files are the outputs.
     result = run_select_context(request, write_receipt_file=args.receipt)
     metrics = context_metrics(result)
 
@@ -295,7 +295,7 @@ def _context(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="pasr", description="PASR context broker — CLI")
+    parser = argparse.ArgumentParser(prog="pasr", description="PASR context broker -- CLI")
     parser.add_argument("--version", action="version", version=f"pasr {__version__}")
     parser.add_argument("--workspace", type=Path, default=Path.cwd(), help="Workspace root (default: cwd).")
     sub = parser.add_subparsers(dest="command", required=True)

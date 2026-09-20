@@ -1,14 +1,14 @@
 """PASR MCP server (stdio).
 
 Tools (the localization ladder: path -> symbol -> span):
-  find_files         — rank workspace files by path/filename match for a query
-  find_evidence      — which lines anywhere bear on a question, rarest term first
-  find_symbols       — where a symbol is defined, as file:line, across the workspace
-  find_usages        — every place a symbol is used, with the line and its owner
-  select_context     — a budgeted, provenance-carrying slice of the workspace
-  trace_dependencies — the transitive definition closure for a symbol
-  explain_selection  — the stored receipt for a prior select_context run
-  expand_context     — re-run a prior selection once with a larger budget
+  find_files         -- rank workspace files by path/filename match for a query
+  find_evidence      -- which lines anywhere bear on a question, rarest term first
+  find_symbols       -- where a symbol is defined, as file:line, across the workspace
+  find_usages        -- every place a symbol is used, with the line and its owner
+  select_context     -- a budgeted, provenance-carrying slice of the workspace
+  trace_dependencies -- the transitive definition closure for a symbol
+  explain_selection  -- the stored receipt for a prior select_context run
+  expand_context     -- re-run a prior selection once with a larger budget
 
 Every tool result carries a decisive next step, and identical repeat calls are
 flagged (see :class:`_CallGuard`): a retrieval broker that answers "maybe search
@@ -57,10 +57,10 @@ _SELECT_CONTEXT_DESCRIPTION = (
     "Prefer this over reading whole files: it caps total tokens, keeps a mandatory "
     "prefix/tail active window, and reports where every span came from (file:line). "
     "Good for locating evidence in a large codebase or long document; not a code writer. "
-    "This tool does NOT search the whole repo by filename on its own — pass `include` "
+    "This tool does NOT search the whole repo by filename on its own -- pass `include` "
     "(globs/directories) or `files` (explicit paths) scoped to where the answer likely "
     "lives. If you don't already know real file paths, call `find_files` first instead "
-    "of guessing plausible-looking names or a broad `include` — a wrong guess errors, "
+    "of guessing plausible-looking names or a broad `include` -- a wrong guess errors, "
     "and a too-broad `include` can exceed `max_files`. Spend little on early calls: "
     "whatever a call returns is re-sent to the model on every later turn, so a big "
     "first slice is the most expensive thing you can ask for. When you only need to see "

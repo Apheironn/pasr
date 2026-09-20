@@ -1,15 +1,15 @@
-"""Optional semantic scoring — an extra fusion signal, off by default.
+"""Optional semantic scoring -- an extra fusion signal, off by default.
 
 Two scorers:
 
-* ``hashing`` — zero-dependency, deterministic sub-word bag-of-features (word tokens
+* ``hashing`` -- zero-dependency, deterministic sub-word bag-of-features (word tokens
   plus character n-grams), cosine similarity. Robust to morphology / reordering that
   word-level BM25 misses. This is the default when semantic scoring is enabled.
-* ``minilm`` — real sentence embeddings via ``sentence-transformers`` (the
+* ``minilm`` -- real sentence embeddings via ``sentence-transformers`` (the
   ``pasr-mcp[semantic]`` extra; downloads a small model on first use).
 
 If a scorer cannot be constructed the pipeline degrades to BM25 + lexical with a
-``RuntimeWarning`` — the default stays fully offline.
+``RuntimeWarning`` -- the default stays fully offline.
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ class SemanticScorer(Protocol):
 
 
 class HashingScorer:
-    """Deterministic sub-word cosine similarity — no model, no download."""
+    """Deterministic sub-word cosine similarity -- no model, no download."""
 
     name = "hashing"
 

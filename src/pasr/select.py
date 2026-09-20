@@ -408,7 +408,7 @@ def run_pack(workspace_root: Path, name: str, redactor: Redactor | None = None) 
     """Warm-start: return a stored Context Pack as a ``select_context``-shaped result.
 
     No chunking or retrieval. ``pack_stale`` lists sources that changed since the pack
-    was built (advisory — the stored context is still returned).
+    was built (advisory -- the stored context is still returned).
     """
     redact = redactor or identity_redactor
     pack = load_pack(workspace_root, name)
@@ -439,7 +439,7 @@ def run_expand_context(
     """Re-run a prior selection once with a larger budget.
 
     Reads ``<workspace>/.pasr/receipts/<receipt_id>.json``, re-runs
-    ``select_context`` with ``budget_tokens += extra_budget`` (a single pass — no
+    ``select_context`` with ``budget_tokens += extra_budget`` (a single pass -- no
     internal iteration), and returns the new result tagged ``expanded_from``.
     """
     if extra_budget <= 0:

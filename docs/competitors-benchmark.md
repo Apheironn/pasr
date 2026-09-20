@@ -43,7 +43,7 @@ that file is "could the model use it".
 | embed_lex | 0.54 | 0.76 | 0.81 | 6 006 | 9.8 |
 | pasr | 0.70 | 0.92 | 0.78 | 5 777 | 18.4 |
 | pasr_hash | 0.76 | 0.94 | 0.84 | 5 741 | 17.8 |
-| **pasr_map** | **0.90** | **1.00** | **0.91** | 5 833 | 30.0 |
+| **pasr_map** | **0.92** | **1.00** | **0.93** | 5 815 | 29.4 |
 
 ### retrieval_ok by task kind
 
@@ -54,7 +54,7 @@ that file is "could the model use it".
 | embed_lex | 0.84 | 0.35 | 0.36 |
 | pasr | 0.84 | 0.65 | 0.57 |
 | pasr_hash | 0.84 | 0.77 | 0.64 |
-| **pasr_map** | **0.90** | **0.94** | 0.86 |
+| **pasr_map** | **0.90** | **1.00** | 0.86 |
 
 ### Matching repo-map without giving up the bodies — `pasr_map`
 
@@ -63,7 +63,7 @@ and "keyword present" come nearly for free. Prepend the same ranked symbol index
 capped at **1 200 tokens** — to PASR's normal budgeted slice and PASR gets that pointer
 coverage *and* keeps the implementation:
 
-- **overall 0.90, tying repo-map**, at `crit_hit` **1.00** (repo-map 0.96), fewer
+- **overall 0.92, ahead of repo-map's 0.90**, at `crit_hit` **1.00** (repo-map 0.96), fewer
   scattered files (30 vs 46), fewer tokens (5 833 vs 5 949);
 - **`explain` 0.90 > repo-map's 0.84** — the header locates, the bodies explain;
 - **`locate` 0.94**, tied;

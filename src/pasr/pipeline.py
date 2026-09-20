@@ -138,7 +138,7 @@ def assemble(
     :func:`pasr.packing.pack_with_active_window` still raises).
 
     With ``collect_candidates=True``, ``diagnostics["candidates"]`` holds every fused
-    candidate the packer considered, each tagged ``selected`` — the input to a receipt.
+    candidate the packer considered, each tagged ``selected`` -- the input to a receipt.
     """
     cfg = config or AssembleConfig()
     ordered = list(spans)
