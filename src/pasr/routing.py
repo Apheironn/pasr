@@ -113,10 +113,16 @@ def assess(query_class: str, result: dict[str, Any], *, has_line_ranges: bool = 
             "query_class": query_class,
             "confidence": 0.95,
             "advice": [
-                "Requested source sections are fully included. Range completeness is not whole-file or "
-                "caller/dependency coverage. Re-reading or expanding this scope adds no evidence. "
-                "If the answer depends on other definitions or callers, follow them with "
-                "find_symbols/find_usages and read their ranges."
+                # Every other "you have it" message ends by telling the caller to answer. This one
+                # used to end by telling it to go follow callers, and a model that has just been
+                # handed the mechanism reads that as an instruction: in the runs that died at the
+                # turn cap, the answer was already in hand nine calls before the end, and the
+                # trajectory spent the rest chasing one more definition down the chain.
+                "The requested lines are fully included; re-reading or expanding this scope adds "
+                "nothing. If they answer the question, answer from them - further retrieval is "
+                "unlikely to add evidence. Range completeness is not whole-file or caller coverage, "
+                "so follow find_symbols/find_usages only if the mechanism genuinely continues "
+                "somewhere you have not read."
             ],
         }
 

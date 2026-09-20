@@ -60,3 +60,21 @@ class AssessTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CompleteScopeAdviceTests(unittest.TestCase):
+    """Every "you already have it" message must end the search, not extend it."""
+
+    def test_a_complete_ranged_read_tells_the_caller_to_answer(self):
+        advice = " ".join(assess("localized", _result(route="lossless"), has_line_ranges=True)["advice"])
+
+        # It used to close on "follow them with find_symbols/find_usages", which a model
+        # holding the mechanism reads as an instruction. Runs died at the turn cap with the
+        # answer already in hand, still walking one more link of the chain.
+        self.assertIn("answer from", advice.casefold())
+        self.assertLess(advice.casefold().index("answer from"), advice.casefold().index("find_symbols"))
+
+    def test_a_complete_whole_file_read_says_the_same_thing(self):
+        advice = " ".join(assess("localized", _result(route="lossless", coverage=0.95))["advice"])
+
+        self.assertIn("answer from", advice.casefold())
