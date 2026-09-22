@@ -104,14 +104,14 @@ _EXPAND_CONTEXT_DESCRIPTION = (
 )
 _FIND_EVIDENCE_DESCRIPTION = (
     "START HERE for a question about how something works or behaves. Searches the "
-    "CONTENT of every file and returns the lines that bear on it, each with its enclosing "
-    "function and the terms it matched. Ranked by how rare each term is, so a word "
+    "CONTENT of every file and returns the lines that bear on it, each with the "
+    "definition it sits in. Ranked by how rare each matched term is, so a word "
     "appearing in two files outranks one appearing in two hundred. It is the only tool "
     "that can bridge a question worded differently from the code, by following "
     "overlapping terms to discover its vocabulary -- so it is the right first call "
     "whenever you do not already know a file, path or symbol name to look under. "
     "No max_files limit, no bodies returned. The top hits carry `read_lines`, a bounded "
-    "span within that hit's `source`: a complete enclosing function up to 40 lines, "
+    "span within that hit's `provenance` path: a complete enclosing function up to 40 lines, "
     "otherwise at most 8 lines on either side. Read one by joining them -- "
     '`select_context(query=..., files=["<provenance path>:<read_lines>"])`.'
 )

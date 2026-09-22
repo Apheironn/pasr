@@ -55,6 +55,25 @@ _CONTAINER_KINDS = frozenset({"impl", "module", "mod"})
 _DECLARATION_BONUS = 0.5
 _READ_FUNCTION_LINES = 40
 _READ_NEIGHBOR_LINES = 8
+# A hit is one line, and the answer usually is not on it: across four corpora 87% of
+# ground-truth anchors sat in a file this search returned and only 27% inside the span it
+# pointed at, a median 77 lines away, generally in another definition of the same file.
+# Three ways of closing that gap have now been measured and none of them ships.
+#
+# Widening the span loses outright -- +/-8 lines reaches 9% of the missed anchors and
+# +/-80 only 51%, at 211 lines read per anchor against 61 today. Spending the budget
+# unevenly, so the top-ranked file gets three or five lines instead of one, raises the
+# aggregate from 5 to 7 anchors and collapses both airguard questions from 1 to 0: the
+# scarce resource is the five windowed slots, and one file takes them all.
+#
+# The third was to name the neighbours rather than show them -- listing, for the first
+# three files, the definitions whose own name echoes a query term. Deterministically it
+# worked: anchors reachable from one reply 10/37 to 12/37 for 7% more payload, nothing
+# regressing. End to end it was worse on both corpora it was tried on (airguard 11/12 to
+# 9/12, nushell 11/12 to 10/12, tokens +29% and +28%), and the mechanism was not the
+# dilution it was tested against: runs that fell into a native `read_file` loop went from
+# 5 of 24 to 12 of 24. Naming more places to look moved the model off select_context and
+# onto the bluntest read tool it had. Evidence: results/also_defines_*_20260922.json.
 # A caller acts on one or two hits, not thirty. Repeating a read hint on every hit cost
 # more than the hints saved: the search result is re-sent on every later turn.
 _READ_LINES_TOP_N = 5
