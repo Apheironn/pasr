@@ -1,0 +1,11 @@
+{
+  "corpus": "rust-analyzer",
+  "_scale": "large: 1,513 Rust files, 594,118 lines",
+  "_shape": "The pair the benchmark originally shipped with. Q1 is lexical (the words appear in the code); Q2 is semantic -- the question says idle, the code says quiescent.",
+  "Q1": "When rust-analyzer needs to restart a `cargo check` (flycheck) run -- e.g. after a file save -- how does it make sure the previous, now-stale check process doesn't keep running or send outdated diagnostics? Which function actually cancels/kills the old process?",
+  "Q2": "How does rust-analyzer's language server know when it has finished all its background indexing/analysis work and become idle, as opposed to still being busy? What state or signal does it check, and where is that reported?",
+  "truth": {
+    "Q1": {"must": ["cancel_check_process", "command.rs"], "any": ["CommandHandle", "kill"]},
+    "Q2": {"must": ["is_quiescent", "reload.rs"], "any": ["is_fully_ready", "current_status", "ServerStatus"]}
+  }
+}

@@ -14,7 +14,14 @@ from pasr.mcp.server import create_server
 WORKSPACE = Path(os.environ.get("PASR_BENCH_WORKSPACE", ".")).resolve()
 
 
-SKIP_DIRS = {".git", "target", "node_modules"}
+SKIP_DIRS = {".git", "target", "node_modules", ".venv", "venv", "__pycache__", "dist", "build"}
+# The baseline grep used to look at *.rs only, which silently handed the PASR arm every
+# question asked of a repository that is not Rust. Set PASR_BENCH_EXTS to narrow it.
+SOURCE_EXTS = tuple(
+    ext if ext.startswith(".") else f".{ext}"
+    for ext in os.environ.get("PASR_BENCH_EXTS", ".rs,.py,.ts,.tsx,.js,.jsx,.go,.java,.rb,.c,.h,.cpp,.hpp").split(",")
+    if ext.strip()
+)
 
 
 # ----------------------------------------------------------------- baseline tools
@@ -27,7 +34,8 @@ def tool_grep(pattern: str, path: str = ".", max_results: int = 40, per_file_cap
     if WORKSPACE.resolve() not in root.parents and root != WORKSPACE.resolve():
         return "error: path escapes workspace"
     hits: list[str] = []
-    for fp in [root] if root.is_file() else root.rglob("*.rs"):
+    candidates = [root] if root.is_file() else (f for f in root.rglob("*") if f.suffix in SOURCE_EXTS and f.is_file())
+    for fp in candidates:
         if any(p in SKIP_DIRS for p in fp.parts):
             continue
         try:

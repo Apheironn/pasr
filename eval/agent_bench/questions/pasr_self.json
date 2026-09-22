@@ -1,0 +1,11 @@
+{
+  "corpus": "pasr",
+  "_scale": "small: 38 Python files, 6,903 lines",
+  "_shape": "Q1 names no identifier and must be bridged from behaviour to code (_CallGuard). Q2 asks for a branch whose two arms are named by a constant the question never uses (lossless vs selected).",
+  "Q1": "When a caller keeps asking this server for source it has already been given, how does the server notice that nothing new is coming back, and what does it do once that keeps happening?",
+  "Q2": "When a requested slice fits inside its token budget, how is the returned context assembled, and how does that differ from the case where it does not fit?",
+  "truth": {
+    "Q1": {"must": ["check_novelty", "server.py"], "any": ["NOVELTY_FLOOR", "LOW_NOVELTY_LIMIT", "_covered", "ToolError"]},
+    "Q2": {"must": ["select.py", "lossless"], "any": ["ROUTE_LOSSLESS", "provenance", "assemble", "pack.text"]}
+  }
+}
