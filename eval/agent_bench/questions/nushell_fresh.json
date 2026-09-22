@@ -1,0 +1,12 @@
+{
+  "corpus": "nushell",
+  "_revision": "76ba59d425c25b74ac5c9257ccfb36ddc0d352ed",
+  "_provenance": "The two reserved fresh questions, copied verbatim from the frozen fresh_holdouts.json (sha256 4126f4feee43f3fd6583704056fc2bb683cad5a3fd6a1d512ac220aa6d53af33, recorded in both cost_aware_locator_20260920.json and region_selection_20260920.json). Never used to select or tune anything.",
+  "_truth_derivation": "must/any are derived mechanically from that frozen record: `must` is the central function named by its criteria plus the file its reference_sources point at; `any` is the remaining identifiers its criteria name. No identifier was chosen by looking at a model answer, and every one was verified present in the corpus at this revision.",
+  "Q1": "How does Nushell turn typed environment values into strings for external commands? Explain custom conversion functions, the PATH-list fallback, and which failures omit a variable versus aborting conversion.",
+  "Q2": "When Nushell where filters a stream with a predicate closure, what happens to each input value when the predicate is true, false, or fails? Is the filtering eager, and what happens to the stream metadata and interrupt state?",
+  "truth": {
+    "Q1": {"must": ["env_to_strings", "env.rs"], "any": ["ENV_CONVERSIONS", "EnvVarNotAString", "join_paths", "run_external"]},
+    "Q2": {"must": ["where_.rs", "ClosureEval"], "any": ["into_iter_strict", "filter_map", "is_true", "Signals"]}
+  }
+}

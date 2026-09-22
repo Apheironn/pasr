@@ -150,7 +150,8 @@ def assess(query_class: str, result: dict[str, Any], *, has_line_ranges: bool = 
     advice: list[str] = []
     if query_class == "trace":
         advice.append(
-            "This reads like a dependency question - trace_dependencies(<symbol>) returns a tighter, complete closure."
+            "This reads like a dependency question - trace_dependencies(<symbol>, files=[...]) returns a tighter, "
+            "complete closure. It needs the files to look in; called with a symbol alone it errors."
         )
     elif query_class == "aggregation":
         advice.append(

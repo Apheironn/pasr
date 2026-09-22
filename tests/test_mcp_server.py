@@ -31,6 +31,133 @@ def test_lists_all_tools_with_schemas(mini_workspace: Path):
     assert {"query", "files", "include", "budget_tokens", "prefix_tokens", "tail_tokens"} <= props
 
 
+def test_find_evidence_spends_its_budget_on_files_not_on_repeat_lines(mini_workspace: Path):
+    """What a search budget buys should be breadth.
+
+    Trimming find_evidence to fewer hits while it still returned two lines per file halved
+    the distinct files it reached, and the questions whose answer is spread over several
+    files lost an anchor for it. One hit is enough to name a file -- the caller reads the
+    region through `read_lines` anyway -- so the budget goes to another file instead.
+    """
+    from pasr.mcp.server import EVIDENCE_PER_FILE, EVIDENCE_TOP_K
+
+    assert EVIDENCE_PER_FILE == 1, "a second line from a file the caller already has says nothing new"
+
+    server = create_server(mini_workspace)
+    hits = json.loads(_call(server, "find_evidence", {"query": "rate limit retry after"}).content[0].text)["hits"]
+    assert hits
+    assert len(hits) <= EVIDENCE_TOP_K
+    sources = [str(hit["provenance"]).rsplit(":", 1)[0] for hit in hits]
+    assert len(set(sources)) == len(sources), "the default must not spend two hits on one file"
+
+
+def test_merging_touching_spans_loses_no_line_and_invents_none(mini_workspace: Path):
+    """A file's chunk boundaries are scoring detail, not evidence.
+
+    A lossless slice hands a file back in scored pieces, each repeating the whole path.
+    Folding the touching ones together says the same thing for a fraction of the tokens --
+    but spans do not arrive in line order, and assuming they did swallowed an earlier span
+    and reported its range as the later one's. The invariant is the line set.
+    """
+    from pasr.mcp.server import _merge_adjacent
+
+    def lines(rows):
+        covered = set()
+        for row in rows:
+            source, _, span = str(row["provenance"]).rpartition(":")
+            start, _, end = span.partition("-")
+            covered.update((source, n) for n in range(int(start), int(end or start) + 1))
+        return covered
+
+    touching = [{"provenance": "a.rs:7-12"}, {"provenance": "a.rs:13-20"}, {"provenance": "a.rs:21-30"}]
+    assert _merge_adjacent(touching) == [{"provenance": "a.rs:7-30"}]
+
+    # out of order, and far apart: nothing may be folded away
+    scattered = [{"provenance": "a.rs:29"}, {"provenance": "a.rs:9"}]
+    assert lines(_merge_adjacent(scattered)) == lines(scattered)
+    assert len(_merge_adjacent(scattered)) == 2
+
+    # a span that merged with nothing keeps the exact string it was given
+    assert _merge_adjacent([{"provenance": "a.rs:25"}]) == [{"provenance": "a.rs:25"}]
+
+    # different files never merge, however adjacent the numbers look
+    two_files = [{"provenance": "a.rs:1-5"}, {"provenance": "b.rs:6-9"}]
+    assert _merge_adjacent(two_files) == two_files
+
+    # and on a real selection the wire still covers exactly what the receipt kept
+    server = create_server(mini_workspace)
+    payload = json.loads(
+        _call(server, "select_context", {"query": "rate limit", "include": ["."], "budget_tokens": 400}).content[0].text
+    )
+    receipt = json.loads(_call(server, "explain_selection", {"receipt_id": payload["receipt"]["id"]}).content[0].text)
+    assert lines(payload["spans"]) == lines(receipt["kept"])
+
+
+def test_a_question_gets_a_retrieval_budget_and_the_refusal_is_cheap(mini_workspace: Path):
+    """The budget is in calls, next to the one in tokens.
+
+    Over the recorded runs every question held its complete answer within six retrieval
+    calls and then kept retrieving to about twelve. The refusal does not have to make the
+    caller stop to pay off: it has to make continuing cost a few dozen tokens instead of a
+    few thousand. It names no other tool, because a named tool is an instruction.
+    """
+    from pasr.mcp.server import _CallGuard
+
+    server = create_server(mini_workspace)
+    budget = _CallGuard.RETRIEVAL_BUDGET
+
+    for i in range(budget - 1):
+        result = _call(server, "find_files", {"query": f"ratelimit {i}"})
+        assert result.is_error is False, f"call {i + 1} of {budget} should be within budget"
+
+    slice_size = len(
+        _call(server, "select_context", {"query": "rate limit", "include": ["api/ratelimit.py"]}).content[0].text
+    )
+
+    with pytest.raises(Exception, match="retrieval budget") as refusal:
+        _call(server, "find_files", {"query": "ratelimit once more"})
+    text = str(refusal.value)
+    assert len(text) < slice_size, "a refusal must cost less than the slice it replaces"
+    assert not any(t in text for t in ("find_symbols(", "find_files(", "select_context(", "find_evidence("))
+
+    # The budget covers the whole question, not one tool.
+    with pytest.raises(Exception, match="retrieval budget"):
+        _call(server, "select_context", {"query": "rate limit", "include": ["api/ratelimit.py"]})
+
+
+def test_the_wire_says_each_span_once_and_the_receipt_still_says_everything(mini_workspace: Path):
+    """A span row is a locator, not a second copy of the selection.
+
+    `provenance` already reads `source:line_start-line_end`, so shipping those three
+    beside it -- plus per-span accounting no caller acts on, and a claim's `support`
+    restating span ids the same response just listed -- costs the caller that much on
+    every remaining turn. None of it is lost: the receipt keeps the full record.
+    """
+    server = create_server(mini_workspace)
+    payload = json.loads(
+        _call(
+            server,
+            "select_context",
+            {"query": "emit rate limit headers", "include": ["api/ratelimit.py"], "budget_tokens": 2000},
+        )
+        .content[0]
+        .text
+    )
+
+    assert payload["spans"], "a selection still has to say where its source came from"
+    for span in payload["spans"]:
+        assert set(span) == {"provenance"}
+        assert span["provenance"]
+    # The lexical coverage audit is not on the wire: its own number tells "has the answer"
+    # from "still looking" at chance, and `advice` already says in a sentence whatever it
+    # had to say. The receipt still carries every bit of it.
+    assert "evidence_accounting" not in payload
+    assert payload["advice"]
+
+    receipt = json.loads(_call(server, "explain_selection", {"receipt_id": payload["receipt"]["id"]}).content[0].text)
+    assert {"source", "line_start", "line_end", "token_count", "selection_reasons"} <= set(receipt["kept"][0])
+
+
 def test_select_context_returns_a_parseable_pack_with_a_receipt(mini_workspace: Path):
     server = create_server(mini_workspace)
     result = _call(

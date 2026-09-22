@@ -28,6 +28,7 @@ from typing import Any
 
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
+from mcp.types import CallToolResult, TextContent
 
 from pasr import __version__
 from pasr.find_files import DEFAULT_TOP_K
@@ -41,16 +42,29 @@ from pasr.symbol_search import find_symbols as _find_symbols
 from pasr.symbol_search import find_usages as _find_usages
 from pasr.trace import trace_dependencies as _trace_dependencies
 
+# find_evidence is the only search that saturates the shared top_k, and what it should
+# spend that budget on is FILES, not lines. Cutting it to 15 hits at the stock two hits per
+# file halved the distinct files (15 -> 8) and cost the multi-file questions an anchor --
+# recursion, whose answer is spread over stack.rs, the config, eval.rs and eval_ir.rs, fell
+# from 12/12 to 7/12. Measured over the same recorded queries: 30 hits at 2 per file finds
+# 9 anchors for 5,560 tokens; 20 hits at 1 per file finds 11 for 4,120. One hit is enough to
+# name a file -- the caller reads the region through read_lines anyway, and a second line
+# from a file it already has says nothing new.
+EVIDENCE_TOP_K = 20
+EVIDENCE_PER_FILE = 1
+
 _FIND_FILES_DESCRIPTION = (
-    "Rank workspace files by how many query terms appear in their own path/filename -- "
-    "call this FIRST when you don't already know which real file paths to pass to "
-    "`select_context`/`trace_dependencies`. No `max_files` limit; safe to call with a "
-    "broad or empty `include`. Guessing plausible filenames instead of calling this "
-    'wastes calls on "file does not exist" errors. This is lexical path matching, not '
-    "semantic search: if your query's words don't literally appear in any path (common "
-    "for vague/conceptual questions), matches come back empty -- call again with "
-    'query="" and a directory in `include` to just list what\'s really there, then '
-    "pick candidates yourself from real names instead of guessing."
+    "Rank workspace files by how many query terms appear in their own path/filename. "
+    "This is lexical PATH matching, not search over content: use it when your query "
+    "already contains a name you expect to see in a path (a module, crate, file or "
+    "directory), to turn that name into real paths for `select_context`/"
+    "`trace_dependencies` instead of guessing and paying for "
+    '"file does not exist" errors. If the question is about how something BEHAVES and '
+    "names no file, start with `find_evidence` instead -- a question's own words "
+    "usually do not appear in any path, and this returns nothing useful. "
+    "No `max_files` limit; safe to call with a broad or empty `include`. When matches "
+    'come back empty, call again with query="" and a directory in `include` to list '
+    "what is really there, then pick candidates from real names."
 )
 _SELECT_CONTEXT_DESCRIPTION = (
     "Return a small, budgeted, provenance-tracked slice of the workspace for a query. "
@@ -73,7 +87,10 @@ _SELECT_CONTEXT_DESCRIPTION = (
 _TRACE_DEPENDENCIES_DESCRIPTION = (
     "Return the transitive definition closure for a symbol: every function / class / "
     "import it needs, in source order, with file:line provenance, at a fraction of the "
-    "tokens of the whole codebase. Deterministic. Python, JavaScript/TypeScript, Rust."
+    "tokens of the whole codebase. Deterministic. Python, JavaScript/TypeScript, Rust. "
+    "REQUIRES a scope: pass `files` (paths, e.g. what find_symbols just returned) and/or "
+    "`include` (globs/directories) alongside `symbol`. `symbol` on its own is an error, "
+    "not a workspace-wide search."
 )
 _EXPLAIN_SELECTION_DESCRIPTION = (
     "Return the stored receipt for a prior select_context run by its id: the kept "
@@ -86,12 +103,13 @@ _EXPAND_CONTEXT_DESCRIPTION = (
     "coverage was low. One pass, still a hard token cap."
 )
 _FIND_EVIDENCE_DESCRIPTION = (
-    "Search the CONTENT of every file for a question, and get back the lines that bear "
-    "on it, each with its enclosing function and the terms it matched. Ranked by how rare "
-    "each term is, so a word appearing in two files outranks one appearing in two hundred. "
-    "Use this when the question is conceptual and you do not yet know any file, path or "
-    "symbol name -- it is the only tool that can bridge a question worded differently from "
-    "the code, by following overlapping terms to discover its vocabulary. "
+    "START HERE for a question about how something works or behaves. Searches the "
+    "CONTENT of every file and returns the lines that bear on it, each with its enclosing "
+    "function and the terms it matched. Ranked by how rare each term is, so a word "
+    "appearing in two files outranks one appearing in two hundred. It is the only tool "
+    "that can bridge a question worded differently from the code, by following "
+    "overlapping terms to discover its vocabulary -- so it is the right first call "
+    "whenever you do not already know a file, path or symbol name to look under. "
     "No max_files limit, no bodies returned. The top hits carry `read_lines`, a bounded "
     "span within that hit's `source`: a complete enclosing function up to 40 lines, "
     "otherwise at most 8 lines on either side. Read one by joining them -- "
@@ -139,11 +157,28 @@ class _CallGuard:
     # never fires on it, so novelty is a ratio: below this, the call added nothing worth
     # the tokens it will now cost on every remaining turn.
     NOVELTY_FLOOR = 0.25
+    # A budget in calls, next to the one in tokens. Measured over 48 recorded runs on this
+    # benchmark, every run held the complete answer within six retrieval calls, and then
+    # kept retrieving to about ten: more than half of each conversation was spent after
+    # the evidence was already in hand. Nothing the server computes can tell "has the
+    # answer" from "still looking" -- keyword coverage and confidence both score at chance
+    # -- so this does not try to. It is a ceiling, and it degrades gently: a refusal costs
+    # a few dozen tokens where a slice costs a couple of thousand, so a caller that ignores
+    # it stops paying for the wandering either way. Native read/grep are not counted
+    # against it, so a caller that genuinely needs more source can still get it.
+    #
+    # Eight, not six. Six is where every recorded run had its answer, and tightening to it
+    # did bind twice as often -- but it then clipped the one question that legitimately
+    # needed the calls: exit-status precedence went from reaching its evidence on call 5.8
+    # to 7.3, and lost an answer with it. Eight leaves that question room and still refuses
+    # the runs that were going to spend eighteen calls.
+    RETRIEVAL_BUDGET = 8
 
     def __init__(self) -> None:
         self._seen: dict[str, tuple[str, int]] = {}
         self._covered: dict[str, set[int]] = {}
         self._zero_novelty = 0
+        self._retrievals = 0
 
     @staticmethod
     def _key(tool: str, arguments: dict[str, Any]) -> str:
@@ -151,6 +186,16 @@ class _CallGuard:
 
     def guarded(self, tool: str, arguments: dict[str, Any], run: Any) -> Any:
         """Run ``run()``, refusing once its output has repeated verbatim too often."""
+        self._retrievals += 1
+        if self._retrievals > self.RETRIEVAL_BUDGET:
+            # Deliberately names no other tool. A named tool is an instruction: across the
+            # recorded runs the caller followed one 46% of the time, which is the loop this
+            # is here to end.
+            raise ToolError(
+                f"Refused: this question has used its {self.RETRIEVAL_BUDGET}-call retrieval budget. "
+                f"{self.holdings()} Answer from what you hold, and say plainly which part you could "
+                "not determine rather than retrieving again."
+            )
         key = self._key(tool, arguments)
         result = run()
         fingerprint = json.dumps(result, sort_keys=True, default=str)
@@ -236,11 +281,90 @@ class _CallGuard:
         """
         lines = sum(len(seen) for seen in self._covered.values())
         sources = sorted(self._covered)
+        if not sources:
+            # Reachable from the budget refusal: searching finds paths, it does not
+            # deliver source, so a caller can spend the budget holding nothing.
+            return "You hold no source yet: every call so far located code without reading any."
         shown = ", ".join(sources[:6])
         return (
             f"You now hold {lines} line(s) of source across {len(sources)} file(s): "
             f"{shown}{' ...' if len(sources) > 6 else ''}."
         )
+
+
+def _merge_adjacent(spans: list[Any]) -> list[dict[str, Any]]:
+    """Fold a file's touching spans back into one range.
+
+    A lossless slice chunks a file to score it, then hands the pieces back one by one:
+    136 lines of source arrived as eighteen locators, each repeating the same path. The
+    chunk boundaries are an artefact of scoring, not of the evidence, and `7-12` beside
+    `13-20` describes exactly what `7-34` does, for a fifth of the tokens. A span that
+    merged with nothing is handed back exactly as it was written.
+    """
+    merged: list[dict[str, Any]] = []
+    for span in spans:
+        provenance = span.get("provenance") if isinstance(span, dict) else None
+        source, _, span_range = str(provenance or "").rpartition(":")
+        start, _, end = span_range.partition("-")
+        if not source or not start.isdigit():
+            merged.append({"provenance": provenance})
+            continue
+        low, high = int(start), int(end) if end.isdigit() else int(start)
+        last = merged[-1] if merged else None
+        # Spans do not arrive in line order, so "touching" has to be tested both ways --
+        # assuming ascending order silently swallowed an earlier span and reported its
+        # range as the later one's.
+        touching = last is not None and low <= last.get("_high", -1) + 1 and high + 1 >= last.get("_low", 0)
+        if last is not None and last.get("_source") == source and touching:
+            last["_low"] = min(last["_low"], low)
+            last["_high"] = max(last["_high"], high)
+            last["_merged"] = True
+        else:
+            merged.append({"_source": source, "_low": low, "_high": high, "_as_given": provenance})
+    return [
+        {"provenance": f"{m['_source']}:{m['_low']}-{m['_high']}" if m.get("_merged") else m["_as_given"]}
+        if "_source" in m
+        else m
+        for m in merged
+    ]
+
+
+def _wire(result: dict[str, Any]) -> CallToolResult:
+    """Send the JSON compact, and send it once.
+
+    The SDK renders a dict return with `indent=2`, and a fifth of every response was the
+    pretty-printer: 769 tokens where 596 said the same thing. It then repeats the whole
+    payload in `structuredContent`, so a client forwarding both pays for it twice.
+    Building the result here leaves the structured channel exactly as it was and makes the
+    text block the compact form of precisely that object.
+    """
+    return CallToolResult(
+        content=[TextContent(type="text", text=json.dumps(result, ensure_ascii=False, separators=(",", ":")))],
+        structured_content=result,
+    )
+
+
+def _trim_for_wire(result: dict[str, Any]) -> dict[str, Any]:
+    """Drop what the response says twice, on the way out to the model.
+
+    Everything a tool returns is re-sent on every later turn, so a field costs its own
+    size times the rest of the conversation. A span row carried `source`, `line_start`
+    and `line_end` beside the `provenance` that already concatenates all three, plus
+    per-span `token_count` and `selection_reasons` that no caller acts on; a claim's
+    `support` restated the span ids the same response had just listed. Measured over 35
+    recorded `select_context` calls that was 680 tokens a call, 27% of the response.
+
+    Only the wire is trimmed: `run_select_context` still returns the full record, so
+    packs, receipts, the CLI and `explain_selection` are unchanged.
+    """
+    spans = result.get("spans")
+    if isinstance(spans, list):
+        result = {**result, "spans": _merge_adjacent(spans)}
+    # `evidence_accounting` is a lexical coverage audit the caller cannot act on: measured
+    # over 422 recorded selections its coverage figure told "has the answer" from "still
+    # looking" at 0.55 balanced accuracy, which is chance, and whatever it does say `advice`
+    # already says in a sentence. It stays in the receipt, which is what an audit is for.
+    return {key: value for key, value in result.items() if key != "evidence_accounting"}
 
 
 def create_server(workspace_root: Path) -> MCPServer:
@@ -269,7 +393,7 @@ def create_server(workspace_root: Path) -> MCPServer:
                 ]
             return result
 
-        return guard.guarded("find_files", {"query": query, "include": include, "top_k": top_k}, run)
+        return _wire(guard.guarded("find_files", {"query": query, "include": include, "top_k": top_k}, run))
 
     @server.tool(name="find_symbols", description=_FIND_SYMBOLS_DESCRIPTION)
     def find_symbols(
@@ -314,11 +438,16 @@ def create_server(workspace_root: Path) -> MCPServer:
                     result["advice"].append(f"If caller behavior matters, use find_usages(symbol={first['name']!r}).")
             return result
 
-        return guard.guarded("find_symbols", {"query": query, "include": include, "kinds": kinds, "top_k": top_k}, run)
+        return _wire(
+            guard.guarded("find_symbols", {"query": query, "include": include, "kinds": kinds, "top_k": top_k}, run)
+        )
 
     @server.tool(name="find_evidence", description=_FIND_EVIDENCE_DESCRIPTION)
     def find_evidence(
-        query: str = "", include: list[str] | None = None, top_k: int = DEFAULT_TOP_K, per_file: int = 2
+        query: str = "",
+        include: list[str] | None = None,
+        top_k: int = EVIDENCE_TOP_K,
+        per_file: int = EVIDENCE_PER_FILE,
     ) -> dict[str, Any]:
         """Return the workspace lines matching ``query``, ranked by term rarity."""
 
@@ -355,8 +484,12 @@ def create_server(workspace_root: Path) -> MCPServer:
                 result["advice"] = notes
             return result
 
-        return guard.guarded(
-            "find_evidence", {"query": query, "include": include, "top_k": top_k, "per_file": per_file}, run
+        return _wire(
+            guard.guarded(
+                "find_evidence",
+                {"query": query, "include": include, "top_k": top_k, "per_file": per_file},
+                run,
+            )
         )
 
     @server.tool(name="find_usages", description=_FIND_USAGES_DESCRIPTION)
@@ -380,7 +513,7 @@ def create_server(workspace_root: Path) -> MCPServer:
                 ]
             return result
 
-        return guard.guarded("find_usages", {"symbol": symbol, "include": include, "top_k": top_k}, run)
+        return _wire(guard.guarded("find_usages", {"symbol": symbol, "include": include, "top_k": top_k}, run))
 
     @server.tool(name="select_context", description=_SELECT_CONTEXT_DESCRIPTION)
     def select_context(
@@ -456,7 +589,7 @@ def create_server(workspace_root: Path) -> MCPServer:
                 path, _ = save_pack(save_as, request, result=result)
                 result["saved_pack"] = str(path)
             append_ledger(root, ledger_entry(result, source="mcp"))
-            return result
+            return _wire(_trim_for_wire(result))
         except ValueError as exc:
             raise ToolError(str(exc)) from exc
 
@@ -510,7 +643,7 @@ def create_server(workspace_root: Path) -> MCPServer:
     def explain_selection(receipt_id: str) -> dict[str, Any]:
         """Return the stored receipt ``<workspace>/.pasr/receipts/<receipt_id>.json``."""
         try:
-            return read_receipt(root, receipt_id)
+            return _wire(read_receipt(root, receipt_id))
         except FileNotFoundError as exc:
             raise ToolError(f"no receipt with id {receipt_id!r}") from exc
         except ValueError as exc:
@@ -523,7 +656,7 @@ def create_server(workspace_root: Path) -> MCPServer:
             result = run_expand_context(root, receipt_id, extra_budget)
             guard.check_novelty(result)
             guard.note_holdings(result)
-            return result
+            return _wire(_trim_for_wire(result))
         except FileNotFoundError as exc:
             raise ToolError(f"no receipt with id {receipt_id!r}") from exc
         except ValueError as exc:
