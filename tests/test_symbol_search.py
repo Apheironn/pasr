@@ -167,3 +167,25 @@ def test_single_name_query_stays_decisive(namesake_workspace: Path):
     matches = find_symbols(namesake_workspace, "Context")["matches"]
 
     assert {m["name"] for m in matches} == {"Context"}
+
+
+def test_a_path_that_cannot_hold_an_implementation_is_ranked_below_one_that_can():
+    """A parser fixture matches a question's words as readily as the code does.
+
+    Pointed at a whole checkout rather than a clean src tree, rust-analyzer spent 7 of its
+    top 20 hits on docs and test_data for the one question PASR lost worst -- a third of
+    the retrieval budget on files that cannot contain the mechanism. Across four corpora
+    and eight questions the demotion removed 13 of 15 such hits and cost no anchor.
+    Prose is demoted gently: a design note can be the answer, a snapshot never is.
+    """
+    from pasr.symbol_search import _path_prior
+
+    assert _path_prior("crates/rust-analyzer/src/main_loop.rs") == 1.0
+    assert _path_prior("src/pasr/select.py") == 1.0
+    # fixture data, wherever it sits in the tree
+    assert _path_prior("crates/parser/test_data/parser/ok/0035_weird_exprs.rs") < 1.0
+    assert _path_prior("a/__snapshots__/b.rs") < 1.0
+    # prose is demoted, but by less than fixture data
+    assert _path_prior("crates/parser/test_data/x.rs") < _path_prior("docs/book/src/troubleshooting.md") < 1.0
+    # a file merely called "test_something.rs" is still code
+    assert _path_prior("crates/x/src/test_runner.rs") == 1.0

@@ -343,6 +343,27 @@ _RERANK_DEPTH = 250
 # 0.25 and 0.5 were identical on the first (13 of 14, against 11 without it) and 0.5
 # better on the second. Past 0.75 both degrade.
 _LENGTH_NORM = 0.5
+# A question about how code works cannot be answered by a parser fixture or a snapshot:
+# those are data, and they match a query's words as readily as the implementation does.
+# Measured on the four corpora: with the workspace pointed at a clean src tree the top 20
+# carried no such file, but pointed at a whole checkout rust-analyzer spent 7 of 20 on
+# docs and test_data for the one question PASR lost worst. Prose is demoted more gently
+# than fixture data -- a design note can be the answer, `0035_weird_exprs.rs` never is.
+_FIXTURE_DIRS = ("test_data", "testdata", "fixtures", "fixture", "__snapshots__", "snapshots")
+_PROSE_SUFFIXES = (".md", ".rst", ".txt", ".adoc")
+_FIXTURE_PRIOR = 0.35
+_PROSE_PRIOR = 0.7
+
+
+def _path_prior(source: str) -> float:
+    """How much a path's own shape says it can hold an implementation."""
+    parts = source.replace("\\", "/").lower().split("/")
+    if any(part in _FIXTURE_DIRS for part in parts[:-1]):
+        return _FIXTURE_PRIOR
+    if parts[-1].endswith(_PROSE_SUFFIXES):
+        return _PROSE_PRIOR
+    return 1.0
+
 _RERANK_BLOCK = 60
 # How far similarity may move a file against its rarity score. Both signals are scaled by
 # their own maximum, which keeps the lexical margin a rare term earns; at 1.0 similarity
@@ -611,7 +632,8 @@ def find_evidence(
     lengths = {source: max(len(text.splitlines()), 1) for source, text in texts.items()}
     mean_length = (sum(lengths.values()) / len(lengths)) if lengths else 1.0
     file_scores = {
-        source: (sum(idf[term] for term in terms) + len(terms) / (len(query_terms) + 1))
+        source: _path_prior(source)
+        * (sum(idf[term] for term in terms) + len(terms) / (len(query_terms) + 1))
         / (1 - _LENGTH_NORM + _LENGTH_NORM * lengths[source] / mean_length)
         for source, terms in matched_terms.items()
     }
