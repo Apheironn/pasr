@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from pasr.symbol_search import find_symbols
+from pasr.symbol_search import find_symbols, find_usages
 
 _RUST = """\
 //! A tiny module.
@@ -189,3 +189,60 @@ def test_a_path_that_cannot_hold_an_implementation_is_ranked_below_one_that_can(
     assert _path_prior("crates/parser/test_data/x.rs") < _path_prior("docs/book/src/troubleshooting.md") < 1.0
     # a file merely called "test_something.rs" is still code
     assert _path_prior("crates/x/src/test_runner.rs") == 1.0
+
+
+_RUST_QUALIFIED = """//! Interruption.
+
+pub struct Signals {
+    flag: bool,
+}
+
+impl Signals {
+    pub fn check(&self) -> bool {
+        self.flag
+    }
+}
+
+pub fn run_pipeline(signals: &Signals) {
+    if signals.check() {
+        return;
+    }
+}
+"""
+
+
+def test_a_qualified_name_is_retried_bare_rather_than_returning_nothing(tmp_path: Path):
+    """`Signals::check` is spelled that way nowhere: call sites read `signals.check()`.
+
+    The literal search returned usage_count 0 and definition_count 0, which a caller
+    cannot tell from "no such symbol" -- and the old advice said to check the spelling,
+    so it did: across 48 recorded runs, 12 of 18 qualified queries came back empty and
+    the model spent its remaining turns on Signals::interrupted, Signals::interrupt_flag,
+    signals.check. Every one of them reaches the answer's own file from the final
+    segment alone.
+    """
+    root = tmp_path / "ws"
+    root.mkdir()
+    (root / "signals.rs").write_text(_RUST_QUALIFIED, encoding="utf-8")
+
+    result = find_usages(root, "Signals::check")
+
+    assert result["searched"] == "check"
+    assert result["symbol"] == "Signals::check", "the reply still says what was asked for"
+    assert result["definition_count"] == 1
+    assert any("signals.check()" in hit["text"] for hit in result["hits"])
+
+
+def test_a_name_that_matches_as_written_is_not_rewritten(tmp_path: Path):
+    """The retry fires only on silence. `Signals::new` is exactly how Rust calls an
+    associated function, and rewriting it to `new` would bury the caller in matches.
+    """
+    root = tmp_path / "ws"
+    root.mkdir()
+    (root / "signals.rs").write_text(_RUST_QUALIFIED, encoding="utf-8")
+
+    assert "searched" not in find_usages(root, "check")
+    assert "searched" not in find_usages(root, "signals.check")
+    # a name with no qualifier and no match stays empty rather than inventing a retry
+    missing = find_usages(root, "Nonexistent")
+    assert missing["hits"] == [] and "searched" not in missing

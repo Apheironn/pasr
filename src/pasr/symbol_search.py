@@ -76,6 +76,10 @@ _READ_NEIGHBOR_LINES = 8
 # onto the bluntest read tool it had. Evidence: results/also_defines_*_20260922.json.
 # A caller acts on one or two hits, not thirty. Repeating a read hint on every hit cost
 # more than the hints saved: the search result is re-sent on every later turn.
+# A qualified name is matched literally, so `Signals::check` finds only the places that
+# spell it that way -- in Rust, its definition and nothing else. Split on the last
+# qualifier to retry it bare.
+_QUALIFIER = re.compile(r"::|->|\.")
 _READ_LINES_TOP_N = 5
 # A caller guessing "func" or "fn" for `kinds` used to get a silent empty result and no
 # way to tell that from "no such symbol"; a weaker model then loops on the wrong filter.
@@ -222,35 +226,11 @@ def find_symbols(
     return result
 
 
-def find_usages(
-    workspace_root: Path,
-    symbol: str,
-    include: list[str] | None = None,
-    top_k: int = DEFAULT_TOP_K,
-    config: FileDiscoveryConfig | None = None,
-) -> dict[str, Any]:
-    """Every place ``symbol`` is written, cross-file, with the line and its owner.
-
-    The third rung of the ladder, and the one that decides distributed questions --
-    where the answer is not one definition but a chain (defined here, checked there,
-    reported somewhere else). :func:`find_symbols` answers "where is this defined";
-    this answers "where does it get used", which a definition index cannot.
-
-    Two things measured on real runs shape the output. Locations alone are not
-    enough: reference tools that return positions without the code miss call sites
-    an agent then has to re-fetch, so every hit carries its line text. And the
-    closure must be one hop: ``trace_dependencies(direction="callers")`` at depth 4
-    answers this same question on rust-analyzer with 662 spans and 280k tokens of
-    bodies, which is not an answer an agent can afford.
-    """
-    if top_k <= 0:
-        raise ValueError("top_k must be positive.")
-    name = symbol.strip()
-    if not name:
-        raise ValueError("symbol is required.")
+def _scan_usages(
+    records: Any, name: str
+) -> tuple[list[dict[str, Any]], dict[str, tuple[int, tuple[Any, ...]]], int, int]:
+    """Every line matching ``name`` as a whole word, with its owner."""
     pattern = re.compile(rf"\b{re.escape(name)}\b")
-
-    records = discover_workspace_files(Path(workspace_root), include or ["."], config=config)
     hits: list[dict[str, Any]] = []
     read_sources: dict[str, tuple[int, tuple[Any, ...]]] = {}
     files_scanned = 0
@@ -291,6 +271,53 @@ def find_usages(
                     "role": "definition" if is_definition else "usage",
                 }
             )
+    return hits, read_sources, files_scanned, definition_count
+
+
+def find_usages(
+    workspace_root: Path,
+    symbol: str,
+    include: list[str] | None = None,
+    top_k: int = DEFAULT_TOP_K,
+    config: FileDiscoveryConfig | None = None,
+) -> dict[str, Any]:
+    """Every place ``symbol`` is written, cross-file, with the line and its owner.
+
+    The third rung of the ladder, and the one that decides distributed questions --
+    where the answer is not one definition but a chain (defined here, checked there,
+    reported somewhere else). :func:`find_symbols` answers "where is this defined";
+    this answers "where does it get used", which a definition index cannot.
+
+    Two things measured on real runs shape the output. Locations alone are not
+    enough: reference tools that return positions without the code miss call sites
+    an agent then has to re-fetch, so every hit carries its line text. And the
+    closure must be one hop: ``trace_dependencies(direction="callers")`` at depth 4
+    answers this same question on rust-analyzer with 662 spans and 280k tokens of
+    bodies, which is not an answer an agent can afford.
+
+    A qualified name is retried bare, once. The search is literal, and in Rust a method
+    is written ``Signals::check`` only where it is defined -- every call site reads
+    ``x.check(...)``. So the qualified form returned ``usage_count`` 0 and
+    ``definition_count`` 0, which a caller cannot tell from "no such symbol": across 48
+    recorded runs 12 of 18 qualified queries came back empty, and the model spent its
+    remaining turns guessing spellings. Every one of those would have reached the
+    answer's own file from its final segment alone. ``searched`` reports what was
+    actually matched whenever that is not what was asked for.
+    """
+    if top_k <= 0:
+        raise ValueError("top_k must be positive.")
+    name = symbol.strip()
+    if not name:
+        raise ValueError("symbol is required.")
+
+    records = discover_workspace_files(Path(workspace_root), include or ["."], config=config)
+    hits, read_sources, files_scanned, definition_count = _scan_usages(records, name)
+    searched = name
+    if not hits:
+        bare = _QUALIFIER.split(name)[-1].strip()
+        if bare and bare != name:
+            hits, read_sources, files_scanned, definition_count = _scan_usages(records, bare)
+            searched = bare
 
     # Definitions first (that is the anchor), then file order: deterministic, and the
     # caller reads the chain in the order it exists on disk.
@@ -298,7 +325,7 @@ def find_usages(
     returned_hits = hits[:top_k]
     for hit in returned_hits[:_READ_LINES_TOP_N]:
         hit["read_lines"] = _read_lines(hit["line"], *read_sources[hit["source"]])
-    return {
+    result = {
         "symbol": name,
         "files_scanned": files_scanned,
         "usage_count": len(hits) - definition_count,
@@ -306,6 +333,9 @@ def find_usages(
         "truncated": len(hits) > top_k,
         "hits": _drop_redundant_location(returned_hits),
     }
+    if searched != name:
+        result["searched"] = searched
+    return result
 
 
 def _innermost_owner(definitions: tuple[Any, ...], line_no: int) -> Any | None:

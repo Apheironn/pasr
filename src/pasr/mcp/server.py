@@ -501,7 +501,17 @@ def create_server(workspace_root: Path) -> MCPServer:
                 result = _find_usages(root, symbol, include=include, top_k=top_k)
             except ValueError as exc:
                 raise ToolError(str(exc)) from exc
-            if not result["hits"]:
+            if searched := result.get("searched"):
+                # The old empty reply said "check the spelling", and the caller obliged:
+                # twelve qualified queries came back empty across 48 runs and the model
+                # spent its remaining turns on Signals::interrupted, Signals::interrupt_flag,
+                # signals.check. The spelling was never wrong; the form was.
+                result["advice"] = [
+                    f"No line spells '{symbol}' that way, so this is '{searched}'. A method is written "
+                    f"'{symbol}' only where it is defined - call sites name it bare. Do not retry other "
+                    "spellings of the qualified form; they will all be empty."
+                ]
+            elif not result["hits"]:
                 result["advice"] = [
                     f"'{symbol}' appears in none of the {result['files_scanned']} scanned file(s). Check "
                     "the spelling with find_symbols, or widen `include`."
