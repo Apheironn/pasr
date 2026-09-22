@@ -97,6 +97,20 @@ def run_baseline(name: str, inp: dict) -> str:
 
 def run_pasr(name: str, inp: dict) -> str:
     if name in {"grep", "read_file"}:
+        # The PASR arm keeps the host's own file tools, and they used to be free: the
+        # ceiling counted only calls that went through the server, so a refused run
+        # carried on reading and grepping for as many turns as it had left. Charging them
+        # to the same session budget is the client-side half of the rule -- PASR never
+        # sees these calls and cannot count them on its own.
+        provenance = None
+        if name == "read_file" and inp.get("path"):
+            start = int(inp.get("start_line", 1) or 1)
+            end = inp.get("end_line")
+            provenance = f"{inp['path']}:{start}-{int(end)}" if end else None
+        try:
+            _session().retrieval_guard.charge_external(name, provenance)
+        except Exception as exc:  # the server's own refusal text, verbatim
+            return str(exc)
         return run_baseline(name, inp)
     try:
         result = anyio.run(lambda: _session().call_tool(name, inp))

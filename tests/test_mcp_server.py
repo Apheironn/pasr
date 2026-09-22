@@ -553,3 +553,41 @@ def test_a_session_is_told_what_it_holds_before_it_is_refused(mini_workspace: Pa
 
     second = server_call("session compromise", ["."])
     assert any("line(s) of source across" in note for note in second.get("advice", []))
+
+
+def test_a_host_can_charge_its_own_reads_to_the_session_ceiling(mini_workspace):
+    """The ceiling only ever saw PASR's own calls, so a refused run kept reading.
+
+    Across four corpora a tighter ceiling moved work to the host's tools rather than
+    ending it -- native calls went from 30% of all calls to 39% -- and one run answered
+    from call 1, was refused at 6, and spent its last twelve turns grepping three files
+    in a circle. PASR cannot see those calls; a host that wants them counted says so.
+    """
+    from pasr.mcp.server import create_server
+
+    server = create_server(mini_workspace)
+    guard = server.retrieval_guard
+
+    for _ in range(guard.RETRIEVAL_BUDGET):
+        guard.charge_external("read_file", None)
+    with pytest.raises(Exception) as refused:
+        guard.charge_external("read_file", None)
+    assert "read_file counts against it" in str(refused.value)
+
+    # and the server's own tools are refused too: it is one budget, not two
+    with pytest.raises(Exception) as also_refused:
+        anyio.run(lambda: server.call_tool("find_evidence", {"query": "alpha"}))
+    assert "retrieval budget" in str(also_refused.value)
+
+
+def test_a_charged_read_is_not_novel_evidence_when_it_comes_back(mini_workspace):
+    """A host read is source the caller holds, so a later selection of the same lines is
+    a re-read. Counting it only against the ceiling would leave check_novelty blind to it.
+    """
+    from pasr.mcp.server import create_server
+
+    guard = create_server(mini_workspace).retrieval_guard
+    guard.charge_external("read_file", "pkg/alpha.py:1-40")
+
+    assert "pkg/alpha.py" in guard.holdings()
+    assert guard._covered["pkg/alpha.py"] == set(range(1, 41))

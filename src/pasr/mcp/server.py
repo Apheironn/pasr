@@ -166,30 +166,36 @@ class _CallGuard:
     # chance -- so this does not try to. It is a ceiling, and it degrades gently: a refusal
     # costs a few dozen tokens where a slice costs a couple of thousand.
     #
-    # Five, measured in paired sweeps over 96 runs, four question sets, including the
-    # holdout that rejected six before (exit-status precedence, nushell_holdout Q2):
+    # Ten, and it counts the host's own reads too (`charge_external`). Those were exempt
+    # so a caller that genuinely needed source could still get it, and that exemption was
+    # the whole leak: a refused run does not stop, it reaches for read_file and grep, which
+    # nothing governs. One nushell run held its complete answer from call 1, was refused at
+    # 6, and spent its last twelve turns grepping three files in a circle.
     #
-    #   nushell_holdout  10/12 -> 10/12   -25% tokens
-    #   nushell          11/12 -> 10/12   -17%
-    #   rust-analyzer     7/12 ->  7/12    -1%   (never binds on Q1; identical bytes)
-    #   airguard         12/12 -> 11/12    +1%
-    #   pooled           40/48 -> 38/48   -12% mean, -25% median
+    # Five was right while only PASR's own calls counted. Counting the host's as well and
+    # leaving the ceiling at five was fatal: on a 38-file tree, where reading four files is
+    # the work rather than a symptom, it exhausted mid-run and the model -- with nothing
+    # left to call -- spent fifteen turns re-issuing refused calls. 6/12 became 0/12. Widen
+    # what is counted and the ceiling has to widen with it.
     #
-    # The holdout that cost six its promotion passes here, run for run, and its two
-    # failures fail in both arms. The two answers this does cost have different causes and
-    # only one of them is this constant's fault. airguard Q1/3 is a real clip: the run
-    # reached its evidence on call 8, and refusing at 6 ended it. nushell Q1/5 is not --
-    # that run had the whole answer at call 1, and being refused at 6 sent it into twelve
-    # consecutive greps over the same three files until it ran out of turns.
+    # At ten, measured across five question sets, 12 runs an arm, each arm from the same
+    # sweep (grep+read baseline / PASR / PASR with host reads charged):
     #
-    # Which is the standing caveat on all of this. Native read/grep are not counted here,
-    # deliberately, so a caller that genuinely needs more source can still get it -- and
-    # that is also the hole the tokens escape through: across these sweeps PASR calls fell
-    # 291 to 232 while native calls rose 123 to 146, from 30% of all calls to 39%. Making
-    # PASR less available moves work to the one tool nothing governs, which is the same
-    # thing that happened when find_evidence was made to carry more (see symbol_search's
-    # note on `also_defines`). A tighter ceiling cannot fix that; only the client can.
-    RETRIEVAL_BUDGET = 5
+    #   pasr/src         6/12 @  27,723    4/12 @  70,668    5/12 @  79,872
+    #   airguard/src    11/12 @  42,674    9/12 @  67,142   11/12 @  54,891
+    #   nushell         10/12 @  54,980   10/12 @  66,560   12/12 @  75,182
+    #   nushell holdout  9/12 @  72,781    7/12 @ 107,859   12/12 @ 109,900
+    #   rust-analyzer    5/12 @  84,420    6/12 @ 102,775    8/12 @  98,470
+    #   pooled          41/60 (68%)       36/60 (60%)       48/60 (80%)
+    #
+    # Against PASR without it that is twelve more answers at the same cost, +1% on the
+    # mean. Against no PASR at all it is seven more answers for 48% more tokens. The
+    # clearest number is the failure count: runs that ended in a turn limit or an empty
+    # answer go 10 and 13 to **2**. The ceiling does not make the model stop -- nothing
+    # the server computes can tell "has the answer" from "still looking", and keyword
+    # coverage and confidence both score at chance -- it stops the run from dissolving
+    # into a tool nothing was counting.
+    RETRIEVAL_BUDGET = 10
 
     def __init__(self) -> None:
         self._seen: dict[str, tuple[str, int]] = {}
@@ -227,6 +233,32 @@ class _CallGuard:
                 "find_symbols(<name>) for where a symbol is defined, find_files(<terms>) for paths."
             )
         return result
+
+    def charge_external(self, tool: str, provenance: str | None = None) -> None:
+        """Count a read the host performed with its own tools, not through PASR.
+
+        The ceiling only ever saw its own calls, and a refused run does not stop -- it
+        reaches for the host's `read_file` and `grep`, which nothing governs. Measured
+        across four corpora: tightening the ceiling moved 30% of all calls to native
+        tools and then 39%, and one nushell run answered from call 1, was refused at 6,
+        and spent its last twelve turns grepping three files in a circle.
+
+        PASR cannot see those calls, so it cannot count them by itself. A host that
+        wants them counted charges them here, and they then bind exactly as its own do.
+        Passing ``provenance`` also records the lines as delivered, so `check_novelty`
+        stops treating source the caller already read as new.
+        """
+        if provenance:
+            source, lines = self._lines_of(provenance)
+            seen = self._covered.setdefault(source, set())
+            seen.update(lines)
+        self._retrievals += 1
+        if self._retrievals > self.RETRIEVAL_BUDGET:
+            raise ToolError(
+                f"Refused: this question has used its {self.RETRIEVAL_BUDGET}-call retrieval budget "
+                f"({tool} counts against it). {self.holdings()} Answer from what you hold, and say "
+                "plainly which part you could not determine rather than retrieving again."
+            )
 
     @staticmethod
     def _lines_of(provenance: str) -> tuple[str, range]:
@@ -389,6 +421,11 @@ def create_server(workspace_root: Path) -> MCPServer:
     root = Path(workspace_root).resolve()
     server = MCPServer("pasr", version=__version__)
     guard = _CallGuard()
+    # The session's ceiling, published rather than closed over: a host that serves its own
+    # file reads has to charge them here or they are invisible to it. Deliberately not an
+    # MCP tool -- the catalogue is re-sent every request and is read by the model, and this
+    # is the host's bookkeeping, not a move the model should be choosing to make.
+    server.retrieval_guard = guard
 
     @server.tool(name="find_files", description=_FIND_FILES_DESCRIPTION)
     def find_files(query: str = "", include: list[str] | None = None, top_k: int = DEFAULT_TOP_K) -> dict[str, Any]:
