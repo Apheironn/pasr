@@ -591,3 +591,4 @@ def test_a_charged_read_is_not_novel_evidence_when_it_comes_back(mini_workspace)
 
     assert "pkg/alpha.py" in guard.holdings()
     assert guard._covered["pkg/alpha.py"] == set(range(1, 41))
+

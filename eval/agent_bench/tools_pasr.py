@@ -14,6 +14,9 @@ from pasr.mcp.server import create_server
 WORKSPACE = Path(os.environ.get("PASR_BENCH_WORKSPACE", ".")).resolve()
 
 
+# How much a read_file with no end_line hands back. Named so the PASR arm can report the
+# range it really delivered to the session's novelty rule instead of guessing at it.
+READ_FILE_SPAN = 300
 SKIP_DIRS = {".git", "target", "node_modules", ".venv", "venv", "__pycache__", "dist", "build"}
 # The baseline grep used to look at *.rs only, which silently handed the PASR arm every
 # question asked of a repository that is not Rust. Set PASR_BENCH_EXTS to narrow it.
@@ -60,7 +63,7 @@ def tool_read_file(path: str, start_line: int = 1, end_line: int | None = None) 
         lines = (WORKSPACE / path).read_text(encoding="utf-8", errors="replace").splitlines()
     except Exception as exc:  # noqa: BLE001
         return f"error: {exc}"
-    end = min(end_line or (start_line + 300), len(lines))
+    end = min(end_line or (start_line + READ_FILE_SPAN - 1), len(lines))
     return "\n".join(f"{i + start_line}: {t}" for i, t in enumerate(lines[start_line - 1 : end]))
 
 
@@ -104,9 +107,13 @@ def run_pasr(name: str, inp: dict) -> str:
         # sees these calls and cannot count them on its own.
         provenance = None
         if name == "read_file" and inp.get("path"):
-            start = int(inp.get("start_line", 1) or 1)
-            end = inp.get("end_line")
-            provenance = f"{inp['path']}:{start}-{int(end)}" if end else None
+            # The range this call will actually return, not the one it asked for: a
+            # read_file with no end_line still hands back 300 lines, and reporting None
+            # for it left the novelty rule blind to exactly the re-reads it exists to
+            # catch -- on a small tree the model reads the same file three or four times.
+            start = max(1, int(inp.get("start_line", 1) or 1))
+            end = int(inp["end_line"]) if inp.get("end_line") else start + READ_FILE_SPAN - 1
+            provenance = f"{inp['path']}:{start}-{end}"
         try:
             _session().retrieval_guard.charge_external(name, provenance)
         except Exception as exc:  # the server's own refusal text, verbatim

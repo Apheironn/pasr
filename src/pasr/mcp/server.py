@@ -238,20 +238,25 @@ class _CallGuard:
         """Count a read the host performed with its own tools, not through PASR.
 
         The ceiling only ever saw its own calls, and a refused run does not stop -- it
-        reaches for the host's `read_file` and `grep`, which nothing governs. Measured
-        across four corpora: tightening the ceiling moved 30% of all calls to native
-        tools and then 39%, and one nushell run answered from call 1, was refused at 6,
-        and spent its last twelve turns grepping three files in a circle.
+        reaches for the host's `read_file` and `grep`, which nothing governs. Counting
+        them here took 36/60 answers to 48/60 across five question sets.
 
-        PASR cannot see those calls, so it cannot count them by itself. A host that
-        wants them counted charges them here, and they then bind exactly as its own do.
-        Passing ``provenance`` also records the lines as delivered, so `check_novelty`
-        stops treating source the caller already read as new.
+        ``provenance`` also records the lines as delivered, so `holdings()` reports what
+        the caller actually has and `check_novelty` stops treating source it already read
+        as new.
+
+        Refusing a host read on novelty as well -- the same 25% floor `check_novelty`
+        applies to a selection -- was built and measured and is not here, because it never
+        fired. Counting the reads had already removed the behaviour it was meant to catch:
+        airguard went from 33-37 native calls across twelve runs to 19, barely one a run,
+        so no run re-read anything often enough to trip it. Both arms came back
+        byte-identical on airguard and on the holdout. If a host ever reads far more than
+        this one does, that rule is worth rebuilding; on this evidence it is dead weight.
         """
         if provenance:
-            source, lines = self._lines_of(provenance)
-            seen = self._covered.setdefault(source, set())
-            seen.update(lines)
+            source, lines = self._lines_of(str(provenance))
+            if lines:
+                self._covered.setdefault(source, set()).update(lines)
         self._retrievals += 1
         if self._retrievals > self.RETRIEVAL_BUDGET:
             raise ToolError(
