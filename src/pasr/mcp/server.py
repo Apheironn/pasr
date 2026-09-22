@@ -157,22 +157,39 @@ class _CallGuard:
     # never fires on it, so novelty is a ratio: below this, the call added nothing worth
     # the tokens it will now cost on every remaining turn.
     NOVELTY_FLOOR = 0.25
-    # A budget in calls, next to the one in tokens. Measured over 48 recorded runs on this
-    # benchmark, every run held the complete answer within six retrieval calls, and then
-    # kept retrieving to about ten: more than half of each conversation was spent after
-    # the evidence was already in hand. Nothing the server computes can tell "has the
-    # answer" from "still looking" -- keyword coverage and confidence both score at chance
-    # -- so this does not try to. It is a ceiling, and it degrades gently: a refusal costs
-    # a few dozen tokens where a slice costs a couple of thousand, so a caller that ignores
-    # it stops paying for the wandering either way. Native read/grep are not counted
-    # against it, so a caller that genuinely needs more source can still get it.
+    # A budget in calls, next to the one in tokens. Re-measured by marking the call after
+    # which every ground-truth anchor is in the transcript: the answer is complete at call
+    # 2 (median), the run goes to 5.5, and 86% of all tokens are spent after that -- under
+    # append-only history each later turn re-sends the whole conversation, so the token
+    # share is far worse than the call share. Nothing the server computes can tell "has
+    # the answer" from "still looking" -- keyword coverage and confidence both score at
+    # chance -- so this does not try to. It is a ceiling, and it degrades gently: a refusal
+    # costs a few dozen tokens where a slice costs a couple of thousand.
     #
-    # Eight, not six. Six is where every recorded run had its answer, and tightening to it
-    # did bind twice as often -- but it then clipped the one question that legitimately
-    # needed the calls: exit-status precedence went from reaching its evidence on call 5.8
-    # to 7.3, and lost an answer with it. Eight leaves that question room and still refuses
-    # the runs that were going to spend eighteen calls.
-    RETRIEVAL_BUDGET = 8
+    # Five, measured in paired sweeps over 96 runs, four question sets, including the
+    # holdout that rejected six before (exit-status precedence, nushell_holdout Q2):
+    #
+    #   nushell_holdout  10/12 -> 10/12   -25% tokens
+    #   nushell          11/12 -> 10/12   -17%
+    #   rust-analyzer     7/12 ->  7/12    -1%   (never binds on Q1; identical bytes)
+    #   airguard         12/12 -> 11/12    +1%
+    #   pooled           40/48 -> 38/48   -12% mean, -25% median
+    #
+    # The holdout that cost six its promotion passes here, run for run, and its two
+    # failures fail in both arms. The two answers this does cost have different causes and
+    # only one of them is this constant's fault. airguard Q1/3 is a real clip: the run
+    # reached its evidence on call 8, and refusing at 6 ended it. nushell Q1/5 is not --
+    # that run had the whole answer at call 1, and being refused at 6 sent it into twelve
+    # consecutive greps over the same three files until it ran out of turns.
+    #
+    # Which is the standing caveat on all of this. Native read/grep are not counted here,
+    # deliberately, so a caller that genuinely needs more source can still get it -- and
+    # that is also the hole the tokens escape through: across these sweeps PASR calls fell
+    # 291 to 232 while native calls rose 123 to 146, from 30% of all calls to 39%. Making
+    # PASR less available moves work to the one tool nothing governs, which is the same
+    # thing that happened when find_evidence was made to carry more (see symbol_search's
+    # note on `also_defines`). A tighter ceiling cannot fix that; only the client can.
+    RETRIEVAL_BUDGET = 5
 
     def __init__(self) -> None:
         self._seen: dict[str, tuple[str, int]] = {}

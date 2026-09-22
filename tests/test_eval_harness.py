@@ -218,7 +218,7 @@ def agent_bench(monkeypatch, tmp_path):
 
 
 def test_agent_benchmark_uses_production_schemas_and_session(agent_bench, tmp_path):
-    from pasr.mcp.server import create_server
+    from pasr.mcp.server import _CallGuard, create_server
 
     source = "def calculate(value):\n    return value * 2\n"
     (tmp_path / "worker.py").write_text(source, encoding="utf-8")
@@ -242,9 +242,18 @@ def test_agent_benchmark_uses_production_schemas_and_session(agent_bench, tmp_pa
         ("trace_dependencies", {"symbol": "calculate", "include": ["worker.py"]}),
         ("select_context", {"query": "calculate", "files": ["worker.py"], "budget_tokens": 2000}),
     ]
+    # Checking every tool takes more retrievals than one session is allowed to spend, so
+    # both sides are restarted together and stay in lockstep. Read from the constant: this
+    # test is about adapter parity, and should not have to move when the ceiling does.
+    spent = 0
     for name, arguments in cases:
+        if spent >= _CallGuard.RETRIEVAL_BUDGET - 1:
+            server = create_server(tmp_path)
+            agent_bench.tools.reset_session()
+            spent = 0
         expected = production_text(name, arguments)
         assert agent_bench.tools.run_pasr(name, arguments) == expected
+        spent += 1
 
     selected = expected
     receipt_id = json.loads(selected)["receipt"]["id"]
@@ -254,10 +263,15 @@ def test_agent_benchmark_uses_production_schemas_and_session(agent_bench, tmp_pa
     ]:
         assert agent_bench.tools.run_pasr(name, arguments) == production_text(name, arguments)
 
-    # Both clients have made one identical search already; the next succeeds,
-    # then the production repeat guard must reject both without adapter drift.
+    # A fresh session on both sides, then the same search until the production repeat
+    # guard rejects it: twice is allowed, the third identical reply is refused, and the
+    # adapter must report that refusal verbatim rather than drifting from the server.
+    server = create_server(tmp_path)
+    agent_bench.tools.reset_session()
     arguments = {"query": "worker"}
     first = production_text("find_files", arguments)
+    assert agent_bench.tools.run_pasr("find_files", arguments) == first
+    assert production_text("find_files", arguments) == first
     assert agent_bench.tools.run_pasr("find_files", arguments) == first
     with pytest.raises(Exception) as refused:
         production_text("find_files", arguments)
