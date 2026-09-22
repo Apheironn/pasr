@@ -217,9 +217,12 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# PASR local artifacts — receipts are ignored, Context Packs are committable
+# PASR local artifacts — receipts are ignored, Context Packs are committable.
+# The index follows the workspace it was built for, so it lands wherever a benchmark
+# pointed: `src/.pasr/` after a run against this repo's own source tree.
 .pasr/*
 !.pasr/packs/
+**/.pasr/
 eval/runs/
 eval/pasr_eval/runs/
 pasr-bench-runs/
