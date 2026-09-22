@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
+import anyio
+import pytest
 from pasr_eval import (
     ARMS,
     load_plan,
@@ -197,3 +200,198 @@ def test_packaged_plan_is_importable_and_registered():
 
     plan = load_plan(_PLANS_DIR / "pilot.json")
     assert len(plan.repos) == 10 and len(plan.tasks) == 50
+
+
+@pytest.fixture
+def agent_bench(monkeypatch, tmp_path):
+    import importlib
+
+    monkeypatch.syspath_prepend(str(Path(__file__).parents[1] / "eval" / "agent_bench"))
+    tools = importlib.import_module("tools_pasr")
+    schemas = importlib.import_module("schemas")
+    runner = importlib.import_module("runner")
+    efficiency = importlib.import_module("efficiency")
+    monkeypatch.setattr(tools, "WORKSPACE", tmp_path)
+    monkeypatch.setattr(tools, "_server", None)
+    tools.reset_session()
+    return SimpleNamespace(tools=tools, schemas=schemas, runner=runner, efficiency=efficiency)
+
+
+def test_agent_benchmark_uses_production_schemas_and_session(agent_bench, tmp_path):
+    from pasr.mcp.server import create_server
+
+    source = "def calculate(value):\n    return value * 2\n"
+    (tmp_path / "worker.py").write_text(source, encoding="utf-8")
+    server = create_server(tmp_path)
+    exposed = anyio.run(server.list_tools)
+    production = [
+        {"name": tool.name, "description": tool.description, "parameters": tool.input_schema} for tool in exposed
+    ]
+    assert agent_bench.schemas.PASR == [*agent_bench.schemas.BASELINE, *production]
+
+    def production_text(name, arguments):
+        response = anyio.run(lambda: server.call_tool(name, arguments))
+        assert not response.is_error
+        return "".join(block.text for block in response.content)
+
+    cases = [
+        ("find_files", {"query": "worker"}),
+        ("find_evidence", {"query": "calculate"}),
+        ("find_symbols", {"query": "calculate"}),
+        ("find_usages", {"symbol": "calculate"}),
+        ("trace_dependencies", {"symbol": "calculate", "include": ["worker.py"]}),
+        ("select_context", {"query": "calculate", "files": ["worker.py"], "budget_tokens": 2000}),
+    ]
+    for name, arguments in cases:
+        expected = production_text(name, arguments)
+        assert agent_bench.tools.run_pasr(name, arguments) == expected
+
+    selected = expected
+    receipt_id = json.loads(selected)["receipt"]["id"]
+    for name, arguments in [
+        ("explain_selection", {"receipt_id": receipt_id}),
+        ("expand_context", {"receipt_id": receipt_id, "extra_budget": 1000}),
+    ]:
+        assert agent_bench.tools.run_pasr(name, arguments) == production_text(name, arguments)
+
+    # Both clients have made one identical search already; the next succeeds,
+    # then the production repeat guard must reject both without adapter drift.
+    arguments = {"query": "worker"}
+    first = production_text("find_files", arguments)
+    assert agent_bench.tools.run_pasr("find_files", arguments) == first
+    with pytest.raises(Exception) as refused:
+        production_text("find_files", arguments)
+    assert agent_bench.tools.run_pasr("find_files", arguments) == str(refused.value)
+    agent_bench.tools.reset_session()
+    assert agent_bench.tools.run_pasr("find_files", arguments) == first
+
+    for name, arguments in [
+        ("select_context", {"files": ["../outside.py"]}),
+        ("explain_selection", {"receipt_id": "missing"}),
+        ("unknown_tool", {}),
+    ]:
+        with pytest.raises(Exception) as invalid:
+            production_text(name, arguments)
+        assert agent_bench.tools.run_pasr(name, arguments) == str(invalid.value)
+
+    assert agent_bench.tools.run_pasr("read_file", {"path": "worker.py"}) == agent_bench.tools.run_baseline(
+        "read_file", {"path": "worker.py"}
+    )
+
+
+def _scripted_agent_client(backend, steps):
+    """Replace only inference; production tools still execute normally."""
+    requests = []
+    remaining = iter(steps)
+
+    def create(**kwargs):
+        # Snapshot history because the runner appends to the same list afterward.
+        requests.append([dict(message) for message in kwargs["messages"]])
+        step = next(remaining)
+        usage = (
+            {"input_tokens": 10, "output_tokens": 2}
+            if backend == "anthropic"
+            else {"prompt_tokens": step.get("prompt_tokens", 10), "completion_tokens": 2}
+        )
+        metered_usage = SimpleNamespace(**usage, model_dump=lambda: usage)
+        if backend == "anthropic":
+            block = (
+                {"type": "tool_use", "id": "call", "name": "select_context", "input": step["arguments"]}
+                if "arguments" in step
+                else {"type": "text", "text": step["text"]}
+            )
+            return SimpleNamespace(
+                usage=metered_usage,
+                stop_reason=step.get("stop", "tool_use" if "arguments" in step else "end_turn"),
+                content=[SimpleNamespace(**block, model_dump=lambda: block)],
+            )
+        call = {
+            "id": "call",
+            "type": "function",
+            "function": {"name": "select_context", "arguments": json.dumps(step.get("arguments", {}))},
+        }
+        message = {"content": step.get("text"), "tool_calls": [call] if "arguments" in step else None}
+        tool_calls = (
+            [SimpleNamespace(id="call", function=SimpleNamespace(**call["function"]), model_dump=lambda: call)]
+            if "arguments" in step
+            else None
+        )
+        return SimpleNamespace(
+            usage=metered_usage,
+            choices=[
+                SimpleNamespace(
+                    finish_reason=step.get("stop", "tool_calls" if tool_calls else "stop"),
+                    message=SimpleNamespace(
+                        content=message["content"], tool_calls=tool_calls, model_dump=lambda: message
+                    ),
+                )
+            ],
+        )
+
+    endpoint = SimpleNamespace(create=create)
+    return SimpleNamespace(messages=endpoint, chat=SimpleNamespace(completions=endpoint)), requests
+
+
+@pytest.mark.parametrize("backend", ["anthropic", "local"])
+def test_agent_benchmark_delivers_and_accounts_full_production_text(agent_bench, tmp_path, backend):
+    source = (
+        "def calculate(value):\n"
+        + "".join(f"    value += {index}  # preserve this source line without clipping\n" for index in range(350))
+        + "    return value\n"
+    )
+    (tmp_path / "worker.py").write_text(source, encoding="utf-8")
+    client, requests = _scripted_agent_client(
+        backend,
+        [
+            {"arguments": {"query": "calculate", "files": ["worker.py"], "budget_tokens": 20000}},
+            {"text": "The source is in worker.py."},
+        ],
+    )
+    result = agent_bench.efficiency.run_one(client, "offline", "Q1", "pasr", backend)
+    output = result["tool_outputs"][0]
+    assert len(output["raw"]) > 12000
+    assert json.loads(output["raw"])["context"] == source
+    delivered = requests[1][-1]["content"]
+    if backend == "anthropic":
+        delivered = delivered[0]["content"]
+    assert delivered == output["raw"] == output["delivered"]
+    assert result["log"][0]["out_len"] == len(delivered)
+    assert result["turns"] == 2 and result["tool_calls"] == 1
+    summary = agent_bench.efficiency.summarize([result])["Q1_pasr"]
+    assert summary["median_model_turns"] == 2
+    assert summary["median_tool_calls"] == 1
+    assert summary["semantic_accuracy"] is None
+
+
+@pytest.mark.parametrize("backend", ["anthropic", "local"])
+@pytest.mark.parametrize("failure", ["empty_answer", "length_truncated"])
+def test_agent_benchmark_rejects_unfinished_final_generation(agent_bench, backend, failure):
+    step = {"text": ""}
+    if failure == "length_truncated":
+        step = {
+            "text": "cancel_check_process command.rs CommandHandle kill",
+            "stop": "max_tokens" if backend == "anthropic" else "length",
+        }
+    client, _ = _scripted_agent_client(backend, [step])
+    result = agent_bench.efficiency.run_one(client, "offline", "Q1", "pasr", backend)
+    assert result["failure"] == failure
+    assert result["answered"] is False
+    assert result["score"]["correct"] is False
+    assert result["turns"] == 1 and result["tool_calls"] == 0
+
+
+def test_local_benchmark_rejects_shrinking_backend_prompt(agent_bench, tmp_path):
+    (tmp_path / "worker.py").write_text("VALUE = 1\n", encoding="utf-8")
+    client, requests = _scripted_agent_client(
+        "local",
+        [
+            {"arguments": {"query": "value", "files": ["worker.py"]}, "prompt_tokens": 100},
+            {"text": "cancel_check_process command.rs CommandHandle kill", "prompt_tokens": 50},
+        ],
+    )
+    result = agent_bench.efficiency.run_one(client, "offline", "Q1", "pasr", "local")
+    assert len(requests[1]) > len(requests[0])
+    assert result["failure"] == "nonmonotonic_prompt_usage"
+    assert result["answered"] is False
+    assert result["score"]["correct"] is False
+    assert result["input_tokens"] == 150

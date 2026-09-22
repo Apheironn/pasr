@@ -1,4 +1,4 @@
-"""Controlled token-efficiency ablations; retrieval and history stay unchanged.
+"""Production MCP parity and explicitly experimental token-efficiency ablations.
 
 Run from this directory: python efficiency.py --reps 6 --out efficiency.json
 Credentials are read by the Anthropic SDK from ANTHROPIC_API_KEY, never serialized.
@@ -95,7 +95,7 @@ def arm_tools(arm: str) -> list[dict]:
     tools = copy.deepcopy(schemas.BASELINE if arm == "baseline" else schemas.PASR)
     if arm == "pasr_terse":
         for tool in tools:
-            tool["description"] = DESCRIPTIONS[tool["name"]]
+            tool["description"] = DESCRIPTIONS.get(tool["name"], tool["description"])
     return tools
 
 
@@ -128,6 +128,12 @@ class _MeteredCompletions:
                 "usage": response.usage.model_dump(),
                 "stop_reason": response.choices[0].finish_reason,
                 "content": response.choices[0].message.model_dump(),
+                "generation": {
+                    "temperature": kwargs["temperature"],
+                    "sampling_seed": kwargs["seed"],
+                    "reasoning_effort": kwargs["extra_body"]["reasoning_effort"],
+                    "max_output": kwargs["max_tokens"],
+                },
             }
         )
         return response
@@ -142,7 +148,16 @@ class _MeteredClient:
             self.messages = _MeteredMessages(client, turns)
 
 
-def run_one(client, model: str, question: str, arm: str, backend_name: str = "anthropic") -> dict:
+def run_one(
+    client,
+    model: str,
+    question: str,
+    arm: str,
+    backend_name: str = "anthropic",
+    *,
+    temperature: float = 0.2,
+    sampling_seed: int = 0,
+) -> dict:
     """Reuse the existing agent loop, instrumenting actual delivered tool results."""
     turns: list[dict] = []
     outputs: list[dict] = []
@@ -160,20 +175,28 @@ def run_one(client, model: str, question: str, arm: str, backend_name: str = "an
                 "name": name,
                 "input": arguments,
                 "raw": raw,
-                "delivered": delivered[: runner.TOOL_RESULT_CAP],
-                "clipped_chars": max(0, len(delivered) - runner.TOOL_RESULT_CAP),
+                "delivered": delivered,
             }
         )
         return delivered
 
-    result = backend.run(getattr(runner, question), arm_tools(arm), execute)
+    if backend_name == "local":
+        result = backend.run(
+            getattr(runner, question),
+            arm_tools(arm),
+            execute,
+            temperature=temperature,
+            sampling_seed=sampling_seed,
+        )
+    else:
+        result = backend.run(getattr(runner, question), arm_tools(arm), execute)
     result.update(
         {
             "question": question,
             "arm": arm,
             "model": model,
             "backend": backend_name,
-            "score": runner.score(question, result["answer"]),
+            "score": runner.score(question, result["answer"], answered=result["answered"]),
             "api_turns": turns,
             "tool_outputs": outputs,
             "total_tokens": result["input_tokens"] + result["output_tokens"],
@@ -197,19 +220,22 @@ def summarize(rows: list[dict]) -> dict:
     summary = {}
     for question in ("Q1", "Q2"):
         for arm in ARMS:
-            group = [r for r in rows if r["question"] == question and r["arm"] == arm and "error" not in r]
+            group = [r for r in rows if r["question"] == question and r["arm"] == arm]
             if not group:
                 continue
             correct = sum(r["score"]["correct"] for r in group)
             summary[f"{question}_{arm}"] = {
                 "n": len(group),
-                "correct": correct,
+                "localized": correct,
+                "semantic_accuracy": None,
+                "failed_generations": sum(not r["answered"] for r in group),
                 "median_input": statistics.median(r["logical_input_tokens"] for r in group),
                 "median_output": statistics.median(r["output_tokens"] for r in group),
                 "median_total": statistics.median(r["total_tokens"] for r in group),
-                "median_calls": statistics.median(r["tool_calls"] for r in group),
+                "median_tool_calls": statistics.median(r["tool_calls"] for r in group),
+                "median_model_turns": statistics.median(r["turns"] for r in group),
                 "median_seconds": statistics.median(r["elapsed_s"] for r in group),
-                "total_tokens_per_correct": sum(r["total_tokens"] for r in group) / correct if correct else None,
+                "total_tokens_per_localized": sum(r["total_tokens"] for r in group) / correct if correct else None,
             }
     return summary
 
@@ -223,6 +249,8 @@ def run(
     seed: int = 20260913,
     arms: tuple[str, ...] = ARMS,
     backend_name: str = "anthropic",
+    temperature: float = 0.2,
+    sampling_seed: int = 0,
 ) -> dict:
     if reps < 1 or not arms or len(set(arms)) != len(arms) or any(arm not in ARMS for arm in arms):
         raise ValueError("positive reps and unique known arms are required")
@@ -248,7 +276,10 @@ def run(
         "config": {
             "model": model,
             "reps": reps,
-            "seed": seed,
+            "schedule_seed": seed,
+            "temperature": temperature if backend_name == "local" else None,
+            "sampling_seed": sampling_seed if backend_name == "local" else None,
+            "sampling_seed_rule": "sampling_seed + rep - 1" if backend_name == "local" else None,
             "arms": arms,
             "backend": backend_name,
             "workspace": str(root),
@@ -268,28 +299,38 @@ def run(
             },
             "max_turns": runner.MAX_TURNS,
             "max_output": runner.MAX_OUT,
-            "tool_result_char_cap": runner.TOOL_RESULT_CAP,
+            "tool_result_char_cap": None,
             "system_prompt": runner.SYSTEM_PROMPT,
             "questions": {q: getattr(runner, q) for q in ("Q1", "Q2")},
             "truth": runner.TRUTH,
             "schemas": {arm: arm_tools(arm) for arm in arms},
             "schedule": schedule,
             "prompt_caching": False,
-            "controls": "Answer-specific schema examples removed; selection provenance restored in every PASR arm.",
+            "controls": "PASR uses production MCP schemas and text plus the unchanged baseline tools; no output cap.",
+            "experimental_arms": [arm for arm in arms if arm in {"pasr_compact", "pasr_terse"}],
+            "scoring": "Keyword localization proxy only; semantic accuracy requires independent review.",
         },
         "rows": [],
     }
     out.parent.mkdir(parents=True, exist_ok=True)
     for rep, question, arm in schedule:
-        result = run_one(client, model, question, arm, backend_name)
+        result = run_one(
+            client,
+            model,
+            question,
+            arm,
+            backend_name,
+            temperature=temperature,
+            sampling_seed=sampling_seed + rep - 1,
+        )
         result["rep"] = rep
         report["rows"].append(result)
         report["summary"] = summarize(report["rows"])
         out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
         print(
-            f"rep={rep} {question} {arm} correct={result['score']['correct']} "
+            f"rep={rep} {question} {arm} localized={result['score']['correct']} "
             f"input={result['logical_input_tokens']} output={result['output_tokens']} "
-            f"calls={result['tool_calls']}",
+            f"calls={result['tool_calls']} model_turns={result['turns']} failure={result['failure']}",
             flush=True,
         )
     return report
@@ -302,7 +343,14 @@ def main() -> None:
     parser.add_argument("--model")
     parser.add_argument("--base-url", default="http://localhost:1234/v1")
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--seed", type=int, default=20260913)
+    parser.add_argument("--seed", type=int, default=20260913, help="Schedule shuffle seed; not a decoding seed")
+    parser.add_argument("--temperature", type=float, default=0.2, help="Local decoding temperature (default: 0.2)")
+    parser.add_argument(
+        "--sampling-seed",
+        type=int,
+        default=0,
+        help="Local base decoding seed; repetition r uses this + r - 1 for every question/arm (default: 0)",
+    )
     parser.add_argument("--arms", nargs="+", choices=ARMS, default=list(ARMS))
     args = parser.parse_args()
     if args.backend == "local":
@@ -323,6 +371,8 @@ def main() -> None:
         seed=args.seed,
         arms=tuple(args.arms),
         backend_name=args.backend,
+        temperature=args.temperature,
+        sampling_seed=args.sampling_seed,
     )
     print(json.dumps(report["summary"], indent=2))
 

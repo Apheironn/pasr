@@ -1,8 +1,8 @@
 """Compare grep/read, frozen PASR, and optimized PASR in isolated workers.
 
-Every row imports the selected source snapshot in a fresh process. Tool schemas,
-responses and usage are recorded by the existing efficiency harness. Repetitions
-are shuffled in blocks; neither version can leak module/session state to another.
+Every row imports the selected production source snapshot in a fresh process but
+uses the same driver-adjacent harness. MCP schemas, responses and usage come from
+that production server. Neither version can leak session state to another.
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ def source_hashes(root: Path) -> dict[str, str]:
 
 def worker(args) -> None:
     root = args.source_root.resolve()
-    sys.path[:0] = [str(root / "eval" / "agent_bench"), str(root / "src")]
+    sys.path[:0] = [str(Path(__file__).resolve().parent), str(root / "src")]
     os.environ["PASR_BENCH_WORKSPACE"] = str(args.workspace.resolve())
     import efficiency
     import runner
@@ -53,7 +53,15 @@ def worker(args) -> None:
         client = anthropic.Anthropic(max_retries=1, timeout=120)
     with client:
         arm = "baseline" if args.variant == "baseline" else "pasr"
-        result = efficiency.run_one(client, args.model, args.question, arm, args.backend)
+        result = efficiency.run_one(
+            client,
+            args.model,
+            args.question,
+            arm,
+            args.backend,
+            temperature=args.temperature,
+            sampling_seed=args.sampling_seed,
+        )
     result.update(
         {
             "variant": args.variant,
@@ -63,7 +71,7 @@ def worker(args) -> None:
                 "tools": efficiency.arm_tools(arm),
                 "max_turns": runner.MAX_TURNS,
                 "max_output": runner.MAX_OUT,
-                "tool_result_char_cap": runner.TOOL_RESULT_CAP,
+                "tool_result_char_cap": None,
                 "truth": runner.TRUTH[args.question],
             },
         }
@@ -81,15 +89,20 @@ def summarize(rows: list[dict]) -> dict:
             correct = sum(row["score"]["correct"] for row in group)
             summary[f"{question}_{variant}"] = {
                 "n": len(group),
-                "correct": correct,
+                "localized": correct,
+                "semantic_accuracy": None,
+                "failed_generations": sum(not row["answered"] for row in group),
                 "median_input": statistics.median(row["logical_input_tokens"] for row in group),
                 "median_output": statistics.median(row["output_tokens"] for row in group),
                 "median_total": statistics.median(row["total_tokens"] for row in group),
-                "median_calls": statistics.median(row["tool_calls"] for row in group),
-                "total_tokens_per_correct": sum(row["total_tokens"] for row in group) / correct if correct else None,
-                "backend_errors": sum(row["answer"].startswith("(backend error:") for row in group),
-                "turn_limit_failures": sum(row["answer"].startswith("(hit MAX_TURNS") for row in group),
-                "clipped_results": sum(output["clipped_chars"] > 0 for row in group for output in row["tool_outputs"]),
+                "median_tool_calls": statistics.median(row["tool_calls"] for row in group),
+                "median_model_turns": statistics.median(row["turns"] for row in group),
+                "total_tokens_per_localized": sum(row["total_tokens"] for row in group) / correct if correct else None,
+                "backend_errors": sum(row["failure"] == "backend_error" for row in group),
+                "turn_limit_failures": sum(row["failure"] == "turn_limit" for row in group),
+                "empty_answer_failures": sum(row["failure"] == "empty_answer" for row in group),
+                "length_truncated_failures": sum(row["failure"] == "length_truncated" for row in group),
+                "nonmonotonic_prompt_failures": sum(row["failure"] == "nonmonotonic_prompt_usage" for row in group),
             }
     return summary
 
@@ -106,8 +119,8 @@ def compare(args) -> None:
     }
     roots = {variant: roots[variant] for variant in args.variants}
     for root in set(roots.values()):
-        if not (root / "eval" / "agent_bench" / "efficiency.py").is_file():
-            raise ValueError(f"Missing benchmark harness in source snapshot: {root}")
+        if not (root / "src" / "pasr" / "mcp" / "server.py").is_file():
+            raise ValueError(f"Missing production MCP server in source snapshot: {root}")
     hashes = {variant: source_hashes(root) for variant, root in roots.items()}
     rng = random.Random(args.seed)
     schedule = []
@@ -127,11 +140,18 @@ def compare(args) -> None:
                 text=True,
             ).strip(),
             "reps": args.reps,
-            "seed": args.seed,
+            "schedule_seed": args.seed,
+            "temperature": args.temperature if args.backend == "local" else None,
+            "sampling_seed": args.sampling_seed if args.backend == "local" else None,
+            "sampling_seed_rule": "sampling_seed + rep - 1" if args.backend == "local" else None,
             "schedule": schedule,
             "source_roots": {variant: str(root) for variant, root in roots.items()},
             "source_sha256": hashes,
             "driver_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            "harness_sha256": {
+                path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in Path(__file__).parent.glob("*.py")
+            },
+            "scoring": "Keyword localization proxy only; semantic accuracy requires independent review.",
             "python": sys.version,
             "dependencies": {
                 name: importlib.metadata.version(name)
@@ -142,7 +162,7 @@ def compare(args) -> None:
                     "tiktoken",
                 )
             },
-            "isolation": "Fresh worker process for every run; full history retained; no temperature overrides.",
+            "isolation": "Fresh worker per run; shared harness, selected production MCP; full history, no output cap.",
         },
         "rows": [],
     }
@@ -171,6 +191,10 @@ def compare(args) -> None:
                 args.base_url,
                 "--backend",
                 args.backend,
+                "--temperature",
+                str(args.temperature),
+                "--sampling-seed",
+                str(args.sampling_seed + rep - 1),
                 "--worker-out",
                 str(output),
             ]
@@ -181,9 +205,9 @@ def compare(args) -> None:
             report["summary"] = summarize(report["rows"])
             args.out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
             print(
-                f"rep={rep} {question} {variant} correct={result['score']['correct']} "
+                f"rep={rep} {question} {variant} localized={result['score']['correct']} "
                 f"input={result['logical_input_tokens']} output={result['output_tokens']} "
-                f"calls={result['tool_calls']}",
+                f"calls={result['tool_calls']} model_turns={result['turns']} failure={result['failure']}",
                 flush=True,
             )
     print(json.dumps(report["summary"], indent=2))
@@ -199,7 +223,14 @@ def main() -> None:
     parser.add_argument("--optimized-root", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument("--out", type=Path)
     parser.add_argument("--reps", type=int, default=8)
-    parser.add_argument("--seed", type=int, default=20260914)
+    parser.add_argument("--seed", type=int, default=20260914, help="Schedule shuffle seed; not a decoding seed")
+    parser.add_argument("--temperature", type=float, default=0.2, help="Local decoding temperature (default: 0.2)")
+    parser.add_argument(
+        "--sampling-seed",
+        type=int,
+        default=0,
+        help="Local base decoding seed; repetition r uses this + r - 1 for every question/variant (default: 0)",
+    )
     parser.add_argument("--variants", nargs="+", choices=VARIANTS, default=VARIANTS)
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--source-root", type=Path, help=argparse.SUPPRESS)

@@ -5,6 +5,29 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **Agent benchmarks now execute the production MCP server.** Schemas and text
+  responses come from `list_tools` / `call_tool`, including stateful guards and
+  errors, rather than a second implementation. The hidden 12,000-character
+  observation cap is removed. Frozen-source comparisons share one harness.
+- **Localization is no longer presented as semantic accuracy.** Reports distinguish
+  model turns from tool calls, count incomplete generations as failures, and
+  reject decreasing provider prompt usage under append-only history. Semantic
+  quality requires a separate source-grounded review.
+- **Local optimization candidates were rejected, not released.** Seven payload or
+  toolkit variants failed to establish a cost/quality improvement with local Qwen.
+  The existing production response contract and retrieval behavior remain unchanged.
+  Evidence and limitations: `eval/agent_bench/local_efficiency_20260920.json`.
+- **Local comparisons now control sampling explicitly.** `efficiency.py` and
+  `compare_sources.py` accept temperature and a decoding seed, separate from the
+  schedule seed. Paired arms share a seed within each repetition; row and request
+  records retain the actual generation settings. Hosted sampling is unchanged.
+- **Budgeted definition retrieval was tested and rejected.** In a 36-run local
+  Qwen3.5-9B comparison, the candidate completed 0/12 answers versus current PASR's
+  7/12 and native grep/read's 11/12, using 13.2% more total tokens than current PASR.
+  Production retrieval is unchanged. The changed tool was used in only two candidate
+  runs, limiting conclusions about its retrieval quality in isolation.
+  Evidence: `eval/agent_bench/definition_retrieval_20260920.json`.
+
 - **The response stopped repeating itself.** A `select_context` reply was 5,362 tokens
   where the selected code was 1,688. Every span repeated the code already in `context`;
   `score_components` carried scoring detail no caller can act on; each claim restated the

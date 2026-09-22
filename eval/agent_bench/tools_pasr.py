@@ -1,26 +1,14 @@
-"""PASR + baseline tool implementations, shared by every backend.
-
-The select_context and expand_context tools hand back exactly the dict the MCP server
-hands back. They used to project it down to six fields, so every measurement taken
-through this adapter charged PASR about a thousand tokens a call less than a real
-client pays -- while the baseline's grep and read_file return plain text with no
-envelope to strip, and were always charged in full.
-"""
+"""Baseline tools and a text-only client of the production PASR MCP server."""
 
 from __future__ import annotations
 
-import json
 import os
 import re
 from pathlib import Path
 
-from pasr.find_files import find_files as _find_files
-from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
-from pasr.select import run_expand_context, run_select_context
-from pasr.symbol_search import find_evidence as _find_evidence
-from pasr.symbol_search import find_symbols as _find_symbols
-from pasr.symbol_search import find_usages as _find_usages
-from pasr.trace import trace_dependencies as _trace
+import anyio
+
+from pasr.mcp.server import create_server
 
 # The repository under test is configuration -- see README.md.
 WORKSPACE = Path(os.environ.get("PASR_BENCH_WORKSPACE", ".")).resolve()
@@ -68,225 +56,27 @@ def tool_read_file(path: str, start_line: int = 1, end_line: int | None = None) 
     return "\n".join(f"{i + start_line}: {t}" for i, t in enumerate(lines[start_line - 1 : end]))
 
 
-# --------------------------------------------------------------------- pasr tools
-_receipts: dict[str, dict] = {}
-_seen: dict[str, tuple[str, int]] = {}
-_covered: dict[str, set[int]] = {}
-_low_novelty = [0]
+# Each benchmark run owns one production server and therefore one retrieval session.
+_server = None
 
 
 def reset_session() -> None:
-    _receipts.clear()
-    _seen.clear()
-    _covered.clear()
-    _low_novelty[0] = 0
+    global _server
+    _server = create_server(WORKSPACE)
 
 
-def _guard(name: str, inp: dict, output: str) -> str:
-    """Mirror of the server's byte-identical repeat rule."""
-    key = f"{name}:{json.dumps(inp, sort_keys=True, default=str)}"
-    prev, count = _seen.get(key, ("", 0))
-    count = count + 1 if output == prev else 1
-    _seen[key] = (output, count)
-    if count > 2:
-        return json.dumps(
-            {
-                "error": f"Refused: this exact {name} call already returned these same results "
-                f"{count - 1} times and nothing changed. Answer from what you have, or change approach."
-            }
-        )
-    return output
+def _session():
+    if _server is None:
+        reset_session()
+    return _server
 
 
-def _lines_of(provenance: str) -> tuple[str, range]:
-    source, _, span = provenance.rpartition(":")
-    start, _, end = span.partition("-")
-    try:
-        low = int(start)
-        high = int(end) if end else low
-    except ValueError:
-        return provenance, range(0)
-    return source, range(low, high + 1)
-
-
-def _holdings() -> str:
-    """Mirror of the server's holdings note."""
-    lines = sum(len(seen) for seen in _covered.values())
-    srcs = sorted(_covered)
-    return (
-        f"You now hold {lines} line(s) of source across {len(srcs)} file(s): "
-        f"{', '.join(srcs[:6])}{' ...' if len(srcs) > 6 else ''}."
-    )
-
-
-def _novelty_refusal(result: dict) -> str | None:
-    """Mirror of the server's line-coverage novelty rule (paraphrased loops)."""
-    delivered = fresh = 0
-    for span in result.get("spans", []):
-        provenance = span.get("provenance")
-        if not provenance:
-            continue
-        source, lines = _lines_of(str(provenance))
-        seen = _covered.setdefault(source, set())
-        delivered += len(lines)
-        fresh += sum(1 for line in lines if line not in seen)
-        seen.update(lines)
-    if not delivered:
-        return None
-    if fresh / delivered >= 0.25:
-        _low_novelty[0] = 0
-        return None
-    _low_novelty[0] += 1
-    if _low_novelty[0] < 2:
-        return None
-    return json.dumps(
-        {
-            "error": f"Refused: the last {_low_novelty[0]} selections returned source you already hold. "
-            f"{_holdings()} More retrieval will not add evidence - answer from what you have, "
-            "naming what you could not determine."
-        }
-    )
-
-
-def tool_find_files(query: str = "", include: list | None = None, top_k: int = 30) -> str:
-    try:
-        r = _find_files(WORKSPACE, query=query, include=include, top_k=top_k)
-    except ValueError as exc:
-        return json.dumps({"error": str(exc)})
-    if not r["matches"]:
-        r["advice"] = [
-            f"No path matched among {r['total_candidates']} files. Paths rarely spell out concepts - "
-            "try find_symbols for an identifier, or query='' with a directory to list real names."
-        ]
-    return json.dumps(r, ensure_ascii=False)
-
-
-def tool_find_evidence(query: str = "", include: list | None = None, top_k: int = 30, per_file: int = 2) -> str:
-    try:
-        r = _find_evidence(WORKSPACE, query=query, include=include, top_k=top_k, per_file=per_file)
-    except ValueError as exc:
-        return json.dumps({"error": str(exc)})
-    absent = sorted(term for term, n in r["term_file_counts"].items() if not n)
-    notes = []
-    if absent:
-        notes.append(
-            f"These words appear in no file here: {', '.join(absent)}. Stop searching for them - this "
-            "codebase words the concept differently; follow the hits below instead."
-        )
-    if not r["hits"]:
-        notes.append(f"No line in {r['files_scanned']} file(s) matched any term. Try words the code itself would use.")
-    elif "read_lines" in r["hits"][0]:
-        top = r["hits"][0]
-        path = top["provenance"].rsplit(":", 1)[0]
-        notes.append(
-            "To read a hit's code, join its provenance path with read_lines: "
-            f'select_context(query={query!r}, files=["{path}:{top["read_lines"]}"]). '
-            "A bounded span holds a small function whole, but only part of a large one."
-        )
-    if notes:
-        r["advice"] = notes
-    return json.dumps(r, ensure_ascii=False)
-
-
-def tool_find_symbols(query: str = "", include: list | None = None, kinds: list | None = None, top_k: int = 30) -> str:
-    try:
-        r = _find_symbols(WORKSPACE, query=query, include=include, kinds=kinds, top_k=top_k)
-    except ValueError as exc:
-        return json.dumps({"error": str(exc)})
-    if not r["matches"] and r.get("kinds_filtered_out"):
-        r["advice"] = [
-            f"{r['kinds_filtered_out']} definition(s) matched the name but your kinds filter dropped them. "
-            f"Kinds present here: {', '.join(r['kinds_available'])}. Retry without kinds, or with one of those."
-        ]
-    elif not r["matches"]:
-        r["advice"] = [
-            f"No definition matched in {r['files_indexed']} indexed file(s). Try one distinctive part of "
-            "the name, or find_files on the concept."
-        ]
-    elif r["exact_match"]:
-        f = r["matches"][0]
-        r["advice"] = [
-            f"Exact definition: {f['provenance']}. Read it with "
-            f"select_context(query={query!r}, files={[f['provenance']]!r})."
-        ]
-        if f["kind"] == "function":
-            r["advice"].append(f"If caller behavior matters, use find_usages(symbol={f['name']!r}).")
-    return json.dumps(r, ensure_ascii=False)
-
-
-def tool_find_usages(symbol: str, include: list | None = None, top_k: int = 30) -> str:
-    try:
-        r = _find_usages(WORKSPACE, symbol, include=include, top_k=top_k)
-    except ValueError as exc:
-        return json.dumps({"error": str(exc)})
-    if not r["hits"]:
-        r["advice"] = [
-            f"{symbol} appears in none of {r['files_scanned']} scanned file(s). Check the spelling with "
-            "find_symbols, or widen include."
-        ]
-    elif r["truncated"]:
-        r["advice"] = [
-            f"Showing {len(r['hits'])} of {r['usage_count'] + r['definition_count']} hits; raise top_k or "
-            "scope include if you need the rest."
-        ]
-    return json.dumps(r, ensure_ascii=False)
-
-
-def tool_select_context(**kw) -> str:
-    try:
-        request = validate_select_context_request(
-            {
-                "query": kw.get("query", ""),
-                "include": kw.get("include"),
-                "files": kw.get("files"),
-                "budget_tokens": kw.get("budget_tokens", 3000),
-                "max_files": kw.get("max_files", 100),
-                "prefix_tokens": kw.get("prefix_tokens", 128),
-                "tail_tokens": kw.get("tail_tokens", 128),
-                "map_tokens": kw.get("map_tokens", 0),
-                "trace": kw.get("trace", ""),
-                "outline": kw.get("outline", False),
-            },
-            workspace_root=WORKSPACE,
-        )
-        result = run_select_context(request, write_receipt_file=True)
-    except ValueError as exc:
-        return json.dumps({"error": str(exc)})
-    _receipts[result["receipt"]["id"]] = result
-    refusal = _novelty_refusal(result)
-    if refusal is not None:
-        return refusal
-    if len(_covered) >= 2:
-        result.setdefault("advice", []).append(_holdings())
-    return json.dumps(result, ensure_ascii=False)
-
-
-def tool_expand_context(receipt_id: str, extra_budget: int = 2000) -> str:
-    try:
-        result = run_expand_context(WORKSPACE, receipt_id, extra_budget, redactor=None)
-    except (FileNotFoundError, ValueError) as exc:
-        return json.dumps({"error": str(exc)})
-    refusal = _novelty_refusal(result)
-    if refusal is not None:
-        return refusal
-    if len(_covered) >= 2:
-        result.setdefault("advice", []).append(_holdings())
-    return json.dumps(result, ensure_ascii=False)
-
-
-def tool_trace_dependencies(symbol: str, include: list | None = None, direction: str = "dependencies") -> str:
-    try:
-        request = validate_trace_dependencies_request(
-            {"symbol": symbol, "include": include or ["."], "direction": direction}, workspace_root=WORKSPACE
-        )
-        texts = {
-            m["relative_path"]: p.read_text(encoding="utf-8", errors="replace")
-            for p, m in zip(request.files, request.file_metadata, strict=True)
-        }
-        r = _trace(symbol, texts, max_depth=request.max_depth, direction=request.direction)
-    except ValueError as exc:
-        return json.dumps({"error": str(exc)})
-    return json.dumps(r.to_dict(), ensure_ascii=False)[:8000]
+def list_pasr_tools() -> list[dict]:
+    """Expose every production tool without rewriting its description or schema."""
+    return [
+        {"name": tool.name, "description": tool.description, "parameters": tool.input_schema}
+        for tool in anyio.run(_session().list_tools)
+    ]
 
 
 def run_baseline(name: str, inp: dict) -> str:
@@ -298,30 +88,12 @@ def run_baseline(name: str, inp: dict) -> str:
 
 
 def run_pasr(name: str, inp: dict) -> str:
-    if name == "find_evidence":
-        return _guard(
-            name,
-            inp,
-            tool_find_evidence(inp.get("query", ""), inp.get("include"), inp.get("top_k", 30), inp.get("per_file", 2)),
-        )
-    if name == "find_files":
-        return _guard(name, inp, tool_find_files(inp.get("query", ""), inp.get("include"), inp.get("top_k", 30)))
-    if name == "find_symbols":
-        return _guard(
-            name,
-            inp,
-            tool_find_symbols(inp.get("query", ""), inp.get("include"), inp.get("kinds"), inp.get("top_k", 30)),
-        )
-    if name == "find_usages":
-        return _guard(name, inp, tool_find_usages(inp["symbol"], inp.get("include"), inp.get("top_k", 30)))
-    if name == "select_context":
-        return _guard(name, inp, tool_select_context(**inp))
-    if name == "expand_context":
-        return _guard(name, inp, tool_expand_context(inp["receipt_id"], inp.get("extra_budget", 2000)))
-    if name == "trace_dependencies":
-        return _guard(
-            name,
-            inp,
-            tool_trace_dependencies(inp["symbol"], inp.get("include"), inp.get("direction", "dependencies")),
-        )
-    return f"unknown tool {name}"
+    if name in {"grep", "read_file"}:
+        return run_baseline(name, inp)
+    try:
+        result = anyio.run(lambda: _session().call_tool(name, inp))
+    except Exception as exc:  # Match the production MCP request handler's error text.
+        return str(exc)
+    if any(block.type != "text" for block in result.content):
+        raise TypeError(f"{name} returned non-text MCP content")
+    return "".join(block.text for block in result.content)

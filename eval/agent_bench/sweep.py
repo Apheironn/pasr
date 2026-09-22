@@ -30,10 +30,10 @@ def main() -> None:
                 key = f"{qkey}_{arm}"
                 rows.setdefault(key, []).append(result)
                 print(
-                    f"[{started}] rep{rep + 1} {key:14} {result['input_tokens']:>8,} tok "
+                    f"[{started}] rep{rep + 1} {key:14} {result['input_tokens']:>8,} input tok "
                     f"{result['tool_calls']:>3} calls {result['turns']:>3} turns "
                     f"{result['elapsed_s']:>6}s answered={result['answered']} "
-                    f"correct={result['score']['correct']} (must {result['score']['must_hit']})",
+                    f"localized={result['score']['correct']} (must {result['score']['must_hit']})",
                     flush=True,
                 )
                 Path(f"sweep_{tag}.json").write_text(json.dumps(rows, indent=2, default=str), encoding="utf-8")
@@ -42,12 +42,12 @@ def main() -> None:
     for key, runs in rows.items():
         correct = sum(r["score"]["correct"] for r in runs)
         total_tokens = sum(r["input_tokens"] for r in runs)
-        per_answer = f"{total_tokens // correct:,}" if correct else "never correct"
+        per_answer = f"{total_tokens // correct:,}" if correct else "no localization passes"
         print(
-            f"  {key:14} {statistics.median(r['input_tokens'] for r in runs):>8,.0f} tok  "
+            f"  {key:14} {statistics.median(r['input_tokens'] for r in runs):>8,.0f} input tok  "
             f"{statistics.median(r['tool_calls'] for r in runs):>4.0f} calls  "
-            f"answered {sum(r['answered'] for r in runs)}/{reps}  CORRECT {correct}/{reps}  "
-            f"| {per_answer} tokens per correct answer"
+            f"answered {sum(r['answered'] for r in runs)}/{reps}  LOCALIZED {correct}/{reps}  "
+            f"| {per_answer} input tokens per localization pass; semantic accuracy unmeasured"
         )
 
 

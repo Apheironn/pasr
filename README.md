@@ -6,8 +6,8 @@
 </p>
 
 <p align="center">
-  <b>Provenance-Aware Span Recall</b> — PASR gives your coding agent only the context it needs,
-  keeping it focused on the code that matters. Far fewer tokens, same or better answers.
+  <b>Provenance-Aware Span Recall</b> — budgeted source context for coding agents,
+  with provenance and recoverable receipts. The goal: fewer tokens without weaker answers.
 </p>
 
 [![PyPI](https://img.shields.io/pypi/v/pasr-mcp)](https://pypi.org/project/pasr-mcp/)
@@ -28,16 +28,17 @@ numbers, no reason.
 
 ### Budgeted
 
-You set a token ceiling; PASR never returns more, and it packs whole spans — never a
-truncated function. If the full file set already fits, you get it back unchanged.
+`select_context` budgets selected source, not the serialized MCP reply or cumulative
+conversation. It packs complete computed spans, which are not necessarily complete
+functions. If the requested file/range set fits, the lossless route returns its source unchanged.
 
 <p align="center"><img src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/concept-budgeted.svg" width="760" alt="a budget bar: 2,718 tokens kept under a 3,000-token ceiling, 282 free"></p>
 
 ### Traceable
 
-Every span carries `file:line`, a token count, its retrieval score, and *why* it was
-kept (`bm25`, `symbol`, `active_window`, …). A byte-stable receipt — of what was kept
-*and* what was dropped — lands on disk for every call.
+Selection receipts record each span's `file:line`, token count, retrieval signals,
+and why it was kept or dropped. Receipts are saved under `.pasr/receipts`; persistence
+is best-effort, and the response reports whether a receipt was written.
 
 <p align="center"><img src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/concept-traceable.svg" width="760" alt="anatomy of one returned span: where it is (file:line), what it costs (tokens), why it was kept (retrieval signals + score)"></p>
 
@@ -51,7 +52,7 @@ when it is the wrong tool.
 
 ### Zero setup
 
-No daemon, no vector database, no index to build, offline by default.
+No daemon, vector database, or manual index setup; offline by default.
 
 ## Install
 
@@ -69,10 +70,9 @@ Or paste this into your client's MCP config (Claude Desktop, Windsurf, Cline, Ze
 { "mcpServers": { "pasr": { "command": "uvx", "args": ["pasr-mcp", "--workspace", "."] } } }
 ```
 
-After that you **never type `pasr`**. Ask your agent a question the normal way — *"how
-does redirect handling work here?"*, *"what breaks if I change `HTTPAdapter`?"* — and the
-model calls `find_evidence` / `find_symbols` / `select_context` itself instead of opening
-whole files.
+After installation, PASR's tools are available alongside the agent's native tools.
+The model decides when to search, select context, or read files directly. Smaller
+selected context does not by itself establish cheaper or more accurate answers.
 
 <p align="center"><img src="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/concept-mcp.svg" width="760" alt="Add PASR once: one block in the MCP config, then the agent calls select_context on its own — 2,718 tokens with a receipt instead of 42,768 across 12 files"></p>
 
@@ -88,10 +88,9 @@ same receipt the MCP tool returns. Five verbatim runs against pinned public repo
 One localized question — *"how are redirects resolved and followed"* — against
 `psf/requests` ([verbatim transcript](https://github.com/Apheironn/pasr/blob/main/examples/01-requests-redirects.md)):
 
-| | **PASR `select_context`** | agent reads the repo |
+| | **PASR `select_context`** | full supplied source |
 |---|:--|--:|
-| input tokens | **2 718** — 94% less | 42 768 |
-| tool round trips | **1** | 1 large read |
+| source tokens | **2 718** — 94% less | 42 768 |
 | provenance | **`file:line` + reason for all 10 spans** | none |
 | wrong-tool signal | **`localized`, confidence 0.68, "looks complete"** | — |
 
@@ -101,15 +100,17 @@ receipt, which stays wall-clock-free and byte-stable.)
 
 ## Why PASR, not the usual options
 
-| | **PASR** | repo-map<br>(aider) | embedding search<br>(claude-context, Cody) | grep / ripgrep MCP |
-|---|:--:|:--:|:--:|:--:|
-| Setup | **none** | none | embedder + vector DB + index build | none |
-| Returns | **bodies + `file:line` + reason + score** | signatures, no bodies | chunks, no reason | keyword hits |
-| Hard token budget | **never exceeded** | truncates | top-k, no cap | dumps everything |
-| Deterministic | **yes — byte-identical** | ~ | no (ANN + model drift) | yes |
-| Says "wrong tool for this" | **yes — routing + confidence** | no | no | no |
-| Audit trail | **a receipt per call** | no | no | no |
-| Dependency-closure trace | **forward + reverse (impact)** | no | no | no |
+PASR combines source selection, provenance, and recoverable receipts. Other tools
+solve overlapping problems, and their costs depend on the actual workflow:
+
+- [Aider's repo map](https://aider.chat/docs/repomap.html) ranks relevant identifiers
+  and signatures within a configurable map budget, then supports fetching fuller source.
+- [Sourcegraph's Cody architecture](https://sourcegraph.com/blog/how-cody-understands-your-codebase)
+  describes lexical search with adapted BM25 and globally ranked snippets. It is
+  not accurate to classify Cody as necessarily requiring an embedding database.
+- Native grep and file reads can already be bounded by result counts and line ranges.
+  PASR must beat those tools on cumulative tokens and answer quality, not only beat
+  an unbounded whole-repository dump.
 
 On the offline bake-off (50 tasks, 10 repos, 6k-token budget, no API, no GPU),
 `select_context` **ties a full repo-map on "how does this work" questions (0.84) using
@@ -139,6 +140,19 @@ For live tool-use measurements, including targeted-read optimizations and a sepa
 mechanism/grounding audit, see [`eval/agent_bench/README.md`](eval/agent_bench/README.md).
 Those runs count cumulative conversation tokens; smaller retrieved context alone
 does not establish a cheaper or more accurate agent trajectory.
+
+The earlier local investigation rejected seven proposed runtime optimizations:
+smaller payloads and a smaller tool catalog did not produce a reliable end-to-end win.
+Production behavior was retained; benchmark parity and failure accounting were fixed.
+See the [measurement record](eval/agent_bench/local_efficiency_20260920.json).
+
+A subsequent **36-run Qwen3.5-9B comparison** tested budgeted definition retrieval
+against current PASR and native grep/read. The candidate completed **0/12** answers
+(current PASR **7/12**, native **11/12**) and consumed **13.2% more total tokens**
+than current PASR. It was rejected without changing production retrieval.
+Only two candidate runs invoked the changed tool, so this does not isolate the
+quality of definition packing from tool routing. See the
+[definition-retrieval record](eval/agent_bench/definition_retrieval_20260920.json).
 
 ## How it works
 

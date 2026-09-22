@@ -10,12 +10,13 @@ Two arms answer the same question about the same repository, same model, same sy
 prompt, same turn cap:
 
 - **baseline** — `grep` + `read_file`, the tools a coding agent already has.
-- **pasr** — the PASR tool surface only (`find_evidence`, `find_files`, `find_symbols`,
-  `find_usages`, `select_context`, `expand_context`, `trace_dependencies`).
+- **pasr** — the same grep/read tools plus all eight tools exposed by the actual
+  production MCP server. Schemas come from `list_tools`; observations are the
+  server's `call_tool` text, with fresh session state for each run.
 
-Each run is scored against ground truth (the function and file that actually answer the
-question), not just on whether the model produced text — an agent that stops early with a
-confident wrong answer looks cheap otherwise.
+The automatic score is a **keyword-localization proxy**, not semantic accuracy.
+Mentioning expected files and functions does not prove a correct explanation.
+Empty, truncated, failed, and turn-limited generations cannot pass it.
 
 ## Running it
 
@@ -23,22 +24,366 @@ confident wrong answer looks cheap otherwise.
 export PASR_BENCH_WORKSPACE=/path/to/rust-analyzer     # the repo under test
 export ANTHROPIC_API_KEY=sk-ant-...                    # only for the hosted backend
 cd eval/agent_bench
-python sweep.py haiku 4                                # 4 repetitions, all arms
-python sweep.py local 6 qwen baseline,pasr             # a local OpenAI-compatible server
+python efficiency.py --backend local --model qwen/qwen3.5-9b \
+  --arms baseline pasr --reps 6 --temperature 0.2 --sampling-seed 20260921 \
+  --out results/local.json
 ```
 
 `local` talks to `http://localhost:1234/v1` (LM Studio, Ollama, vLLM — anything speaking
-the OpenAI chat API with tools). Repetitions matter: single runs swing by 5x on the same
-question and arm, so the sweep reports medians and a correct-answer count, and
-`tokens ÷ correct answers` is the number worth quoting.
+the OpenAI chat API with tools). Repetitions matter: single runs can swing widely.
+Report cumulative input plus output, model turns, tool calls, failures, and localization
+separately. `tokens / localization passes` is not tokens per semantically correct answer.
+The older `sweep.py` command reports input-only tokens and labels them accordingly.
+
+`efficiency.py` and `compare_sources.py` distinguish run-order and decoding controls:
+`--seed` shuffles the schedule, while `--sampling-seed` supplies the local decoding
+seed. Repetition `r` uses `sampling_seed + r - 1` for every question and arm;
+`--temperature` defaults to 0.2. Reports record `schedule_seed`, the base sampling
+seed, and each row/request's actual generation settings. Local requests disable
+thinking and allow 1,200 output tokens per turn. Seeds are sent to the backend;
+this is not a guarantee of deterministic GPU execution. Hosted sampling is unchanged.
 
 ## Where the raw runs live
 
-This repository carries the harness, not the evidence it produces. Every report named
-below -- full transcripts, per-request usage, audit packets, frozen source snapshots --
-is large and archived outside the public repo; `` is git-ignored, so your own
-runs write there without dirtying the tree. The numbers quoted here were computed from
-those archives, and every comparison below can be reproduced from this repository alone.
+This repository carries the harness and summary reports, not the full run evidence.
+Full transcripts, per-request usage, audit packets and frozen source snapshots are
+archived outside the public repo; `results/` is git-ignored, so your own
+runs write there without dirtying the tree. Replaying historical measurements requires
+their archived sources and transcripts; running current code does not recreate old protocols.
+
+## Cost-aware identifier-plus-dedup comparison — 2026-09-20
+
+**Decision: retain production retrieval; the cheaper candidate still fails the gate.**
+Identifier-plus-dedup was fixed in advance rather than selected from another search.
+The study reused its previously verified source contexts and unchanged source
+snapshots, then attempted 64 fresh paired Qwen calls with seeds 20260928/20260929.
+The preregistered recorded-scope gate required a higher equal-question causal score,
+no question regression, no extra materially false or failed answers, and at most
+10% additional provider tokens.
+
+Recorded-scope results (26 scheduled answers per method):
+
+| Measure | Locator baseline | Identifier + dedup |
+|---|---:|---:|
+| Equal-question causal score / 5 | 1.083 | 1.146 |
+| Plugin-lifetime score / 5 | 0.750 | 0.500 |
+| Ctrl-C score / 5 | 1.833 | 2.250 |
+| Recursion score / 5 | 1.750 | 1.750 |
+| Exit-status score / 5 | 0.000 | 0.083 |
+| Answers with material false claims | 4/26 | 3/26 |
+| Answers with unsupported claims | 9/26 | 11/26 |
+| Fully correct answers | 0/26 | 0/26 |
+| Failed requests | 0 | 1 |
+| Full provider token total | 32,046 | Unknown |
+
+The candidate's first request timed out after 120 seconds without returning usage.
+It was not retried, excluded from the primary cohort, or assigned zero token cost.
+The observed candidate subtotal is **33,078 tokens for 25 responses**, already
+greater than the baseline's complete total. The timeout's cause is not established.
+
+As a diagnostic sensitivity check—not a replacement gate—the 25 complete recorded
+pairs used 30,981 versus 33,078 tokens (**+6.8%**). Their plugin scores remain
+1.000 versus 0.667, so the quality regression is not explained by the failed pair.
+The full-cohort cost ceiling cannot be evaluated with missing usage. Separate
+scope ablations scored 0 versus 0.167, with false answers increasing from 1/6 to 3/6.
+
+All 64 answer/context packets passed byte/hash checks and all accepted review
+quotes matched their own answers. Four blinded source-grounded reviews were
+retained without score or flag adjustments. Request/context checks passed for
+all attempts; generation and usage reconciled for the 63 normal responses.
+Prior focused tests and source-replay proof were retained unchanged, **not rerun**.
+An initial shell launch error happened before Python started and made no model
+requests. No production source changed; holdouts, agent runs and the full suite
+were ineligible and **not run**.
+
+The small aggregate gain does not justify promotion or a savings claim.
+Next: diagnose real production-agent navigation/read waste on the reused
+development questions before adding more locator heuristics. Keep the two fresh
+questions reserved for a later promotion check.
+See [`cost_aware_locator_20260920.json`](cost_aware_locator_20260920.json)
+for the frozen protocol, complete-pair sensitivity, missing-usage accounting and
+verified evidence archive.
+
+## Distinct regions and bounded parent context — 2026-09-20
+
+**Decision: retain production retrieval; the selected candidate failed the answer-quality gate.**
+The protocol, semantic criteria, candidate selection rule and two fresh questions
+were frozen before candidate replay. Six variants replayed 13 recorded inputs
+from four reused questions, plus three separately reported scope ablations.
+Canonical line coverage was descriptive; selection used five source-evidence
+criteria per question, with equal question weighting.
+
+| Retrieval variant | Semantic evidence / 5 | Mean context tokens | Selection |
+|---|---:|---:|---|
+| Locator control | 1.250 | 651.2 | Reference |
+| Archived identifier control | 1.271 | 650.2 | Control only |
+| Locator + distinct regions | 1.250 | 686.7 | No strict gain |
+| Identifier + distinct regions | 1.271 | 696.2 | Eligible, not selected |
+| Archived combined definitions | 2.125 | 1708.7 | Control only |
+| Definitions + bounded parent | 2.125 | 1713.2 | Selected |
+
+Locator deduplication retains the strongest/earliest representative of each
+identical read range before applying the per-file quota. It restores the GC
+worker region displaced by duplicate `next_timeout` hits under identifier
+matching. Different overlapping windows remain selectable. Definition retrieval
+already deduplicates owner spans, so there was no redundant combined-dedup arm.
+The bounded-parent candidate restores the complete `Signals::check` condition
+instead of returning only its nested error helper, without expanding to large
+functions, classes or modules. That restoration does **not** improve the coarse
+semantic score over the archived definition control.
+
+The selected candidate and locator baseline received 64 fresh source-only Qwen
+calls: two seeds per context, thinking off, no tools or retries. All calls completed
+normally. Recorded-scope results (26 answers per method):
+
+| Measure | Locator control | Bounded-parent definitions |
+|---|---:|---:|
+| Equal-question causal score / 5 | 1.052 | 1.740 |
+| Answers with material false claims | 6/26 | 13/26 |
+| Answers with unsupported claims | 11/26 | 20/26 |
+| Fully correct answers | 0/26 | 0/26 |
+| Provider input tokens | 22,108 | 53,134 |
+| Provider output tokens | 9,074 | 14,279 |
+| Provider total tokens | 31,182 | 67,413 |
+
+Every question's mean causal score improved, but the false-answer gate failed
+and tokens rose **2.16×**. Scope ablations remained at zero causal score; false
+answers were 0/6 versus 2/6. The candidate inherits identifier matching and
+remaining-budget definition packing, so this comparison does not isolate the
+parent-context change's model effect. Fresh holdouts, free-agent runs and the
+full production suite were therefore ineligible and **not run**.
+
+Focused regression suites passed 15, 17 and 15 tests in three isolated roots
+(overlapping suites, not 47 unique tests), with targeted pre-fix failures retained.
+All 96 replay contexts passed source/range/overlap/budget checks; control contexts
+matched the prior archive. Ruff checks passed. Initial pytest-config contamination
+and a defective first source-review batch were excluded and preserved. Corrected
+review inputs were byte/hash verified; accepted source citations and answer quotes
+were checked against their own inputs. Two ambiguous/nonmaterial answer flags were
+removed before aggregation; raw flags (7/26 versus 14/26) also fail the gate.
+
+These are paired exploratory results on four reused questions, not a general
+savings or accuracy claim. Next: evaluate the cheaper identifier-plus-dedup
+candidate under a separate cost-aware protocol, rather than promote larger
+definition payloads from source coverage alone.
+See [`region_selection_20260920.json`](region_selection_20260920.json) for the
+protocol, per-question results, exclusions, archive hashes and verification.
+
+## Identifier matching and remaining-budget packing — 2026-09-20
+
+**Decision: retain production retrieval; archive both fixes as experiments.**
+Six frozen variants replayed the same 13 recorded inputs plus three separate scope
+ablations. Identifier-component matching and remaining-budget partial fallback were
+tested independently and together, without changing queries, ranking or quotas.
+All accepted contexts passed source-text, range, overlap and budget checks.
+
+| Retrieval variant | Canonical line coverage | Passed source gate |
+|---|---:|---|
+| Locator control | 12.2% | Reference |
+| Locator + identifier matching | 11.6% | No |
+| Definition control | 10.2% | No |
+| Definitions + identifier matching | 14.7% | No |
+| Definitions + remaining-budget packing | 14.1% | Yes |
+| Definitions + both fixes | 18.5% | No |
+
+Coverage is macro-averaged equally over four questions. The frozen gate required
+an improvement over the locator control without any question-level regression.
+Only the packing candidate qualified for the two-seed, one-shot Qwen comparison:
+
+| Recorded-scope metric | Locator control | Definitions + packing |
+|---|---:|---:|
+| Source-grounded causal score | 1.24/5 | 1.45/5 |
+| Answers with material false claims | 4/26 | 5/26 |
+| Fully correct answers | 0/26 | 0/26 |
+| Provider input + output tokens | 31,552 | 65,797 |
+
+The modest score gain costs 2.09 times as many tokens and fails the no-more-false-
+answers gate. All 64 calls completed, including 12 scope-ablation answers; completion
+is not correctness. Four label/cost-blinded source reviews and one conservative
+false-claim adjudication are retained. These are model judgments on reused questions,
+not independent human validation or an end-to-end agent-efficiency result.
+
+The identifier fix exposes a selection problem: two `next_timeout` hits consume
+both per-file slots and displace the GC worker, despite yielding the same read range.
+The combined variant's Ctrl-C canonical-anchor loss is less conclusive: an
+`interrupt_flag` getter supplies alternative evidence of the shared flag type.
+The gate does not recognize equivalent evidence, so this is not proof of a semantic
+regression; the combined variant was not model-tested. It also supplies a nested
+interrupt-error helper without its surrounding `Signals::check` condition.
+The next target is distinct useful regions and their controlling context, rather
+than simply fitting more snippets.
+
+Three regression tests fail before their respective fixes and pass afterward;
+the focused suites pass 14 search and 10 context tests. No production promotion
+or full production-suite run occurred. The locator adapter materializes leading
+read hints, not a full production agent; definition responses count metadata
+against their native budget before source-only rendering. Concurrent replay times
+are not isolated latency measurements. Thirty-two wrong-import retrieval calls
+and four failed launches are excluded and preserved; the corrected launcher verifies
+the imported module path and frozen source hash for all 96 accepted retrieval calls.
+
+Protocol, per-question results, costs, limitations and archive hashes:
+[`retrieval_fixes_20260920.json`](retrieval_fixes_20260920.json).
+Full local evidence: `results/retrieval_fixes_20260920/`.
+
+## Fixed-query retrieval isolation — 2026-09-20
+
+**Decision: reject the archived definition candidate; leave production unchanged.**
+All 13 distinct recorded retrieval inputs were replayed through both methods.
+Three additional workspace-wide scope ablations were kept separate. The resulting
+32 source contexts produced 64 one-shot local Qwen3.5-9B answers using two paired
+requested seeds, temperature 0.2, thinking disabled and no tools or retries.
+
+The main comparison below covers the 52 answers from recorded query scopes.
+Coverage and causal scores are macro-averaged equally over the four reused questions.
+
+| Metric | Locator read hints | Definition candidate |
+|---|---:|---:|
+| Canonical reference-line coverage | 12.2% | 10.2% |
+| Source-grounded causal rubric | 1.24/5 | 0.86/5 |
+| Answers with a material false claim | 2/26 | 7/26 |
+| Provider input + output tokens | 31,629 | 66,905 |
+
+Both methods had a 1,800-token ceiling, **not equal delivered context**: their
+recorded-query contexts averaged 651 versus 1,731 `cl100k_base` tokens.
+The locator adapter reads only the first five supplied hints; it is not the full
+production agent, `select_context`, or a native-tool baseline. All 64 generations
+completed, but none satisfied all five causal criteria. Grades are model-assisted
+source judgments, not accuracy probabilities. Raw reviews and two contradiction-rule
+score adjudications are retained; the four frozen component gates all failed.
+
+Two concrete obstacles remain. Whole-word line matching misses identifier components
+such as `exit` inside `LAST_EXIT_CODE`. Greedy definition packing spends 1,250 source
+tokens on MessagePack before the 1,232-token `eval_call` can fit; relevant small
+neighborhoods survive in the locator context instead. Widening exit-status scopes
+can find `stack.rs` but still misses `set_last_error` and its precedence branches.
+These diagnostics did not modify either retriever. This experiment isolates a
+retrieval regression; it does not measure free-agent routing or end-to-end savings.
+
+Protocol, per-question scores, scope effects and archive hashes:
+[`fixed_retrieval_20260920.json`](fixed_retrieval_20260920.json).
+Full local evidence: `results/fixed_queries_20260920/`.
+
+## Budgeted definition retrieval — 2026-09-20
+
+**Decision: reject the candidate; retain production retrieval.** This changed the
+retrieval unit, not just the JSON presentation: `find_evidence` returned deduplicated
+enclosing definitions under one full-response budget, with explicit partial excerpts
+for oversized/unparsed regions. The other tools and native grep/read stayed available.
+A real Rust smoke check exposed comment neighborhoods displacing definitions; a
+failing-then-passing regression fixed that before any benchmark inference.
+
+The fixed comparison used local `qwen/qwen3.5-9b` Q4_K_M, a 32,768-token context,
+temperature 0.2, repetition seeds starting at 20260921, thinking disabled, 18 model
+turns and 1,200 output tokens per turn. Two primary questions had four repetitions;
+two holdout questions had two. All three arms shared the same harness and generation
+settings; no observations were clipped or masked by the harness.
+The holdout pair was reused from the earlier investigation, not newly unseen tasks.
+
+| Arm | Primary: tokens / completed | Holdout: tokens / completed | Combined tokens |
+|---|---:|---:|---:|
+| Native grep/read | 740,614 / 8 of 8 | 364,000 / 3 of 4 | 1,104,614 |
+| Current PASR | 1,431,463 / 4 of 8 | 530,061 / 3 of 4 | 1,961,524 |
+| Definition candidate | 1,614,161 / 0 of 8 | 605,353 / 0 of 4 | 2,219,514 |
+
+These are cumulative provider-reported input plus output, including failed attempts.
+Completed does **not** mean causally correct. The candidate cost 13.2% more than
+current PASR and 100.9% more than native. It failed the predeclared cost and completion
+gates; missing answers score zero under the causal rubric.
+
+Source-grounded review gave mean causal-rubric scores of **2.50/5** for native,
+**1.50/5** for current PASR, and **0/5** for the candidate, including zeros for failed
+generations. No completed answer satisfied all five criteria. These are subjective
+task-specific coverage judgments, not accuracy probabilities. Reviewers did not see
+arm labels or token costs; their answer scores were fixed before inspecting tool
+observations. Original reviews and one conservative false-claim adjudication are
+preserved separately.
+
+Ten candidate runs hit the turn limit; two failed the prompt-usage integrity check.
+Current PASR had three turn limits and two such integrity failures; native had one
+turn limit. A decreasing provider prompt count under append-only history is treated
+as failure, not accepted as token savings.
+
+The changed tool was called only four times across two candidate runs (once on the
+primary questions). Across all candidate runs, `select_context` was called 48 times
+and `find_files` 43 times. This is an end-to-end rejection, **not an isolated test
+showing definition packing itself is worse**. Tool choice remained a major obstacle.
+The fixed-query follow-up above separates retrieval quality from free tool routing
+instead of treating another payload change as a complete fix.
+
+The source-grounded causal review, per-request reconciliation, acceptance gates,
+limitations and archive hashes are recorded in
+[`definition_retrieval_20260920.json`](definition_retrieval_20260920.json).
+Raw transcripts, label/cost-blinded review packets and frozen sources are retained
+locally under `results/definitions_20260920/`. This is a small, single-repository
+experiment—not a general accuracy or non-inferiority result.
+
+## Local production-path investigation — 2026-09-20
+
+**Decision: retain production behavior; reject the proposed runtime changes.**
+The measurement fixes are retained. The broader promise of equal/better answers for
+fewer cumulative tokens was **not established**.
+
+The local endpoint exposed `qwen/qwen3.5-9b` Q4_K_M, not a 7B model. Runs used a
+32,768-token loaded context; no hosted benchmark inference was invoked. Initial
+generation at a 233,728-token loaded context timed out and is excluded. Sixty-four subsequent trajectories cover
+the original questions, two frozen holdout questions, seven candidates, reasoning
+ablations, and verification through the corrected harness. They are not one pooled
+randomized experiment.
+
+Fresh interleaved production-path verification, two repetitions per question/arm:
+
+| Question | Arm | Median input + output | Median model turns | Keyword passes |
+|---|---|---:|---:|---:|
+| Plugin lifecycle | grep/read | 46,871.5 | 7.5 | 2/2 |
+| Plugin lifecycle | PASR | 81,034.5 | 8.5 | 2/2 |
+| Interrupt handling | grep/read | 85,927 | 15.5 | 2/2 |
+| Interrupt handling | PASR | 189,202.5 | 16.5 | 1/2 |
+
+PASR used 540,474 total tokens versus 265,597 for grep/read across these eight runs.
+One PASR run reached the turn limit. Label-blinded, source-grounded model review
+found no answer covering every item of the five-part causal rubric in either arm;
+many answers were partly correct. Both arms also produced a material false claim
+in the plugin question. This is not independent human validation.
+
+The earlier controlled pilots used temperature 0.2, seeds 20260920/20260921,
+18 model turns, and 1,600 maximum output tokens. Each row below pools four runs:
+
+| Surface | Total input + output | Completed / keyword passes |
+|---|---:|---:|
+| Native grep/read | 268,164 | 4/4 |
+| Original production MCP | 448,413 | 4/4 |
+| Source-first text, terse descriptions | 454,852 | 1/4 |
+| Source-first text, guided descriptions | 568,430 | 1/4 |
+| Source-first text, original descriptions | 606,726 | 1/4 |
+| Compact selection JSON, original discovery | 682,763 | 3/4 |
+| Search plus bounded source bodies | 558,611 | 2/4 |
+| Compact JSON retaining confidence/budget fields | 487,692 | 4/4 |
+| Four-tool companion surface plus native search | 726,184 | 1/4 |
+
+The smaller catalog was not sufficient: Qwen used only the native tools in that
+companion pilot. Plaintext payload savings likewise did not establish a cheaper
+trajectory. Returning the first two search regions is not a general causal-context
+policy: duplicate hits can identify the same writer while omitting its consumers.
+
+One reasoning-enabled candidate run reported falling prompt usage despite an
+append-only request history. That run cannot support a full-history claim; backend
+context shifting is a possible explanation, not a verified diagnosis. The harness
+now marks this condition as a failure rather than scoring a potentially truncated
+conversation as successful.
+
+The source-token budget does not include MCP metadata, tool schemas, repeated
+history, or model output. Metadata size and extra turns are distinct costs, and
+changing presentation can change the trajectory. Neither heuristic retrieval
+confidence nor keyword overlap certifies that the answer has been established.
+
+Machine-readable results, caveats, review findings, and source links:
+[`local_efficiency_20260920.json`](local_efficiency_20260920.json).
+Raw transcripts and frozen candidate sources are retained locally under
+`results/local_20260920/`; the summary records their hashes.
+
+Historical tables below use earlier harness revisions. Do not treat them as
+measurements of the corrected production-path adapter.
 
 ## Historical measurements
 
@@ -64,8 +409,9 @@ cannot, which is where the tools earn their keep.
 
 ## Adding questions
 
-`runner.py` holds `Q1`, `Q2` and `TRUTH`. A question needs a ground truth that is checkable
-by substring — the symbol and the file that answer it — or the score means nothing.
+`runner.py` holds the default `Q1`, `Q2` and localization targets. Set
+`PASR_BENCH_QUESTIONS` to a corpus-specific JSON question set. Freeze a separate
+source-grounded causal rubric before testing; substrings alone cannot grade explanations.
 
 ## Controlled token-efficiency experiment
 
@@ -91,20 +437,20 @@ Four arms, randomized within each repetition:
 | `pasr_compact` | Columnar search records, deduplicated locations, raw code instead of JSON-escaped code |
 | `pasr_terse` | Compact responses plus shorter tool descriptions |
 
-Both PASR controls and candidates remove answer-specific examples from the schemas
-and restore selection provenance that the older benchmark adapter omitted. Search
-ranking, snippets, owners, ordering, scores, counts, recovery advice, limits, budgets,
-history retention, questions, and the existing substring scorer remain unchanged.
-The compact renderer removes location components only when the full values are
-already encoded in provenance; it does not summarize or shorten source text.
-These are benchmark presentation experiments, **not a production MCP default change**.
+The `pasr` arm now uses the production descriptions, schemas, session guards, and
+unmodified text observations. `pasr_compact` and `pasr_terse` are explicitly
+experimental presentation arms, not production defaults. They do not change the
+baseline toolkit or truncate observations.
 
 The report records the repository revision, dependency versions, code hashes, exact
-prompts/schemas, full delivered observations, clipping, answers and per-request usage.
-The limit is 18 **model turns**, not 18 tool calls; a turn can contain multiple calls.
-Logical Anthropic input includes uncached input, cache writes and cache reads.
-OpenAI-compatible prompt tokens already include cached input. Output tokens and
-tokens per correct answer are reported separately; cheap wrong answers are not wins.
+prompts/schemas, full delivered observations, answers and per-request usage.
+There is no harness observation cap. The limit is 18 **model turns**, not tool calls;
+a turn can contain multiple calls. Logical Anthropic input includes uncached input,
+cache writes and cache reads. OpenAI-compatible prompt tokens already include cached
+input. Output tokens are counted separately and included in total tokens.
+Current reports separate `schedule_seed` (run order) from `sampling_seed` (local
+decoding). Older reports' `seed` only shuffled the schedule; omitted generation
+parameters used backend defaults. Semantic accuracy remains unmeasured until reviewed.
 
 `replay_efficiency.py` uses Anthropic's token-count endpoint with fixed recorded
 actions and exactly the already-delivered evidence. This isolates presentation
@@ -255,9 +601,10 @@ when expanding a receipt.
 optimized PASR in randomized blocks: eight repetitions of each of the two questions
 per variant, 48 runs. Every conversation imports its selected source snapshot in a
 fresh subprocess. Source hashes are checked before each run, and the report retains
-the exact protocol, provider usage, raw/delivered observations, clipping and answers.
-Both PASR variants use the same named-JSON benchmark adapter format; `variant`
-distinguishes them even though both retain `arm="pasr"`.
+the exact protocol, provider usage, complete raw/delivered observations and answers.
+The current driver uses one driver-adjacent harness for both source trees and gets
+schemas and text from each tree's actual MCP server. `variant` distinguishes the
+trees even though both retain `arm="pasr"`; it does not imply the candidate is better.
 
 Both snapshots for this historical run are archived with its raw transcripts. The
 driver itself takes any two source trees; run it from the repository root with the
