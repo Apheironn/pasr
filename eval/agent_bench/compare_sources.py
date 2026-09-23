@@ -123,6 +123,39 @@ def summarize(rows: list[dict]) -> dict:
     return summary
 
 
+def _prove_backend_answers(args) -> None:
+    """One round trip before spending an hour, because a dead backend looks like a result.
+
+    A stopped LM Studio returns `backend_error` on every row with zero tokens, and the
+    summary then reads as a clean 0/12 against 0/12 -- a plausible table meaning nothing.
+    It has happened twice. The same check catches the other silent killer: a model loaded
+    at the wrong context length answers /v1/models perfectly well and then runs ~30x slower.
+    """
+    if args.backend != "local":
+        return
+    import openai
+
+    client = openai.OpenAI(base_url=args.base_url, api_key="local")
+    try:
+        reply = client.chat.completions.create(
+            model=args.model,
+            messages=[{"role": "user", "content": "Reply with the single word: ready"}],
+            max_tokens=16,
+            temperature=0,
+            # The same switch the runs use. Without it Qwen3.5 thinks first and spends the
+            # whole budget doing it, so the reply comes back empty and this check fails a
+            # backend that is working perfectly.
+            extra_body={"reasoning_effort": "none"},
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            f"Backend at {args.base_url} did not answer ({exc}). Start it and load {args.model} "
+            "before running a sweep; every row would otherwise come back as backend_error."
+        ) from exc
+    if not (reply.choices and (reply.choices[0].message.content or "").strip()):
+        raise RuntimeError(f"Backend at {args.base_url} answered with nothing; refusing to start.")
+
+
 def compare(args) -> None:
     if args.reps < 1:
         raise ValueError("reps must be positive")
@@ -138,6 +171,7 @@ def compare(args) -> None:
         if not (root / "src" / "pasr" / "mcp" / "server.py").is_file():
             raise ValueError(f"Missing production MCP server in source snapshot: {root}")
     hashes = {variant: source_hashes(root) for variant, root in roots.items()}
+    _prove_backend_answers(args)
     rng = random.Random(args.seed)
     schedule = []
     for rep in range(1, args.reps + 1):
