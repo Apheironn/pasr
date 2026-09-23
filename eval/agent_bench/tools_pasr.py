@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import os
 import re
 from pathlib import Path
@@ -71,9 +72,20 @@ def tool_read_file(path: str, start_line: int = 1, end_line: int | None = None) 
 _server = None
 
 
+# Which tools the PASR arm publishes. A catalogue entry is re-sent with every request, so
+# an unused one is paid for on every turn: across 60 runs trace_dependencies,
+# expand_context and explain_selection drew one call between them and cost about 4,100
+# tokens a run. Unset means the whole surface, as a host gets by default.
+EXPOSED = tuple(t.strip() for t in os.environ.get("PASR_BENCH_TOOLS", "").split(",") if t.strip()) or None
+
+
 def reset_session() -> None:
     global _server
-    _server = create_server(WORKSPACE)
+    # The harness is shared across arms while only src/pasr is swapped, so a control
+    # snapshot can predate `expose`. Narrowing is then simply not available for that arm,
+    # which is the honest comparison anyway: full catalogue against trimmed one.
+    supported = "expose" in inspect.signature(create_server).parameters
+    _server = create_server(WORKSPACE, expose=EXPOSED) if (EXPOSED and supported) else create_server(WORKSPACE)
 
 
 def _session():

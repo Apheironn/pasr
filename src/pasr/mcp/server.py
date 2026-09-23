@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -421,10 +422,53 @@ def _trim_for_wire(result: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in result.items() if key != "evidence_accounting"}
 
 
-def create_server(workspace_root: Path) -> MCPServer:
-    """Build an MCP server whose tools resolve paths under ``workspace_root``."""
+ALL_TOOLS = (
+    "find_files",
+    "find_symbols",
+    "find_evidence",
+    "find_usages",
+    "select_context",
+    "trace_dependencies",
+    "explain_selection",
+    "expand_context",
+)
+
+
+def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> MCPServer:
+    """Build an MCP server whose tools resolve paths under ``workspace_root``.
+
+    ``expose`` narrows the catalogue to the named tools; the default is all of them, so
+    an existing host sees no change. It exists because a catalogue entry is not a
+    one-time cost -- it is re-sent with every request of the conversation, so an unused
+    one is paid for on every turn and returns nothing. Measured over 60 benchmark runs
+    and 558 model turns: the catalogue is 1,971 tokens and 22% of every prompt token
+    spent, and `trace_dependencies`, `expand_context` and `explain_selection` drew 1 call
+    between them while costing 247,752 token-turns, about 4,100 tokens a run.
+
+    Use it only where the host really will not call those tools, and do not assume it is
+    free because they were never called. Narrowing to the five a weak model actually uses
+    took the opening prompt from 3,000 tokens to 2,423, exactly as the arithmetic says --
+    and cost two answers of twelve on airguard, where neither arm had ever touched a
+    removed tool. Both runs that flipped abandoned `select_context` after one call and
+    read natively five times instead. The same thing happens when the reply is made to
+    carry more and when the ceiling is tightened: this model's tool choice is fragile, and
+    any change to the surface tips it toward the bluntest tool it has.
+    """
     root = Path(workspace_root).resolve()
+    exposed = frozenset(ALL_TOOLS if expose is None else expose)
+    unknown = exposed - set(ALL_TOOLS)
+    if unknown:
+        raise ValueError(f"Unknown tool(s) for expose: {', '.join(sorted(unknown))}")
     server = MCPServer("pasr", version=__version__)
+
+    def tool(name: str, description: str):
+        """Register ``name`` only when the host asked for it."""
+
+        def register(fn):
+            return server.tool(name=name, description=description)(fn) if name in exposed else fn
+
+        return register
+
     guard = _CallGuard()
     # The session's ceiling, published rather than closed over: a host that serves its own
     # file reads has to charge them here or they are invisible to it. Deliberately not an
@@ -432,7 +476,7 @@ def create_server(workspace_root: Path) -> MCPServer:
     # is the host's bookkeeping, not a move the model should be choosing to make.
     server.retrieval_guard = guard
 
-    @server.tool(name="find_files", description=_FIND_FILES_DESCRIPTION)
+    @tool(name="find_files", description=_FIND_FILES_DESCRIPTION)
     def find_files(query: str = "", include: list[str] | None = None, top_k: int = DEFAULT_TOP_K) -> dict[str, Any]:
         """Rank workspace files under ``include`` (default: the whole workspace) by
         how many ``query`` terms appear in their own path. Returns up to ``top_k``
@@ -454,7 +498,7 @@ def create_server(workspace_root: Path) -> MCPServer:
 
         return _wire(guard.guarded("find_files", {"query": query, "include": include, "top_k": top_k}, run))
 
-    @server.tool(name="find_symbols", description=_FIND_SYMBOLS_DESCRIPTION)
+    @tool(name="find_symbols", description=_FIND_SYMBOLS_DESCRIPTION)
     def find_symbols(
         query: str = "",
         include: list[str] | None = None,
@@ -501,7 +545,7 @@ def create_server(workspace_root: Path) -> MCPServer:
             guard.guarded("find_symbols", {"query": query, "include": include, "kinds": kinds, "top_k": top_k}, run)
         )
 
-    @server.tool(name="find_evidence", description=_FIND_EVIDENCE_DESCRIPTION)
+    @tool(name="find_evidence", description=_FIND_EVIDENCE_DESCRIPTION)
     def find_evidence(
         query: str = "",
         include: list[str] | None = None,
@@ -551,7 +595,7 @@ def create_server(workspace_root: Path) -> MCPServer:
             )
         )
 
-    @server.tool(name="find_usages", description=_FIND_USAGES_DESCRIPTION)
+    @tool(name="find_usages", description=_FIND_USAGES_DESCRIPTION)
     def find_usages(symbol: str, include: list[str] | None = None, top_k: int = DEFAULT_TOP_K) -> dict[str, Any]:
         """Return every line referencing ``symbol``, with its text and enclosing definition."""
 
@@ -584,7 +628,7 @@ def create_server(workspace_root: Path) -> MCPServer:
 
         return _wire(guard.guarded("find_usages", {"symbol": symbol, "include": include, "top_k": top_k}, run))
 
-    @server.tool(name="select_context", description=_SELECT_CONTEXT_DESCRIPTION)
+    @tool(name="select_context", description=_SELECT_CONTEXT_DESCRIPTION)
     def select_context(
         query: str = "",
         files: list[str] | None = None,
@@ -662,7 +706,7 @@ def create_server(workspace_root: Path) -> MCPServer:
         except ValueError as exc:
             raise ToolError(str(exc)) from exc
 
-    @server.tool(name="trace_dependencies", description=_TRACE_DEPENDENCIES_DESCRIPTION)
+    @tool(name="trace_dependencies", description=_TRACE_DEPENDENCIES_DESCRIPTION)
     def trace_dependencies(
         symbol: str,
         files: list[str] | None = None,
@@ -708,7 +752,7 @@ def create_server(workspace_root: Path) -> MCPServer:
             direction=request.direction,
         ).to_dict()
 
-    @server.tool(name="explain_selection", description=_EXPLAIN_SELECTION_DESCRIPTION)
+    @tool(name="explain_selection", description=_EXPLAIN_SELECTION_DESCRIPTION)
     def explain_selection(receipt_id: str) -> dict[str, Any]:
         """Return the stored receipt ``<workspace>/.pasr/receipts/<receipt_id>.json``."""
         try:
@@ -718,7 +762,7 @@ def create_server(workspace_root: Path) -> MCPServer:
         except ValueError as exc:
             raise ToolError(str(exc)) from exc
 
-    @server.tool(name="expand_context", description=_EXPAND_CONTEXT_DESCRIPTION)
+    @tool(name="expand_context", description=_EXPAND_CONTEXT_DESCRIPTION)
     def expand_context(receipt_id: str, extra_budget: int = 2000) -> dict[str, Any]:
         """Re-run the selection behind ``receipt_id`` with ``+extra_budget`` tokens."""
         try:

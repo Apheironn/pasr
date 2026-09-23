@@ -5,6 +5,7 @@ from pathlib import Path
 
 import anyio
 import pytest
+from mcp.server.mcpserver.exceptions import ToolError
 
 from pasr.mcp.server import create_server
 
@@ -592,3 +593,29 @@ def test_a_charged_read_is_not_novel_evidence_when_it_comes_back(mini_workspace)
     assert "pkg/alpha.py" in guard.holdings()
     assert guard._covered["pkg/alpha.py"] == set(range(1, 41))
 
+
+
+def test_a_host_can_publish_only_the_tools_it_will_use(mini_workspace):
+    """A catalogue entry is re-sent with every request, so an unused one is never free.
+
+    Measured over 60 runs and 558 model turns: the catalogue is 1,971 tokens and 22% of
+    every prompt token spent, and trace_dependencies, expand_context and explain_selection
+    drew one call between them while costing 247,752 token-turns -- about 4,100 tokens a
+    run to describe tools the model never chose.
+    """
+    from pasr.mcp.server import ALL_TOOLS, create_server
+
+    everything = anyio.run(create_server(mini_workspace).list_tools)
+    assert {t.name for t in everything} == set(ALL_TOOLS)
+
+    core = ("find_files", "find_symbols", "find_evidence", "find_usages", "select_context")
+    narrowed = anyio.run(create_server(mini_workspace, expose=core).list_tools)
+    assert {t.name for t in narrowed} == set(core)
+
+    with pytest.raises(ValueError, match="nope"):
+        create_server(mini_workspace, expose=["find_evidence", "nope"])
+
+    # a tool that was not published cannot be called into through the back door
+    server = create_server(mini_workspace, expose=["find_evidence"])
+    with pytest.raises(ToolError, match="select_context"):
+        anyio.run(lambda: server.call_tool("select_context", {"query": "x", "files": ["pkg/alpha.py"]}))
