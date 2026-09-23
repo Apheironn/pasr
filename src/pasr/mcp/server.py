@@ -629,6 +629,18 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
         return _wire(guard.guarded("find_usages", {"symbol": symbol, "include": include, "top_k": top_k}, run))
 
     @tool(name="select_context", description=_SELECT_CONTEXT_DESCRIPTION)
+    # 3000, and lowering it was measured and rejected. 61% of the calls this benchmark
+    # records take the lossless route -- the slice fits, so nothing is compressed and the
+    # reply is the requested source plus about 250 tokens of envelope, which is strictly
+    # dearer than reading those lines. Compression only engages when the budget binds, and
+    # at 3000 it almost never does. Replaying 128 recorded calls at 2000 looked like the
+    # answer: -22% tokens for -3% of the ground-truth mentions carried.
+    #
+    # End to end it is an accuracy loss with no efficiency to show for it. airguard 11/12
+    # to 10/12 but 16% cheaper, which read as a win; the holdout 12/12 to 10/12, where the
+    # two lost answers cost more than the tokens saved and cost-per-answer went the wrong
+    # way, 115,509 to 120,420. Pooled: 23/24 to 20/24 for 1.3% off the cost per answer.
+    # The envelope on a lossless reply is the real target here, not the budget.
     def select_context(
         query: str = "",
         files: list[str] | None = None,
