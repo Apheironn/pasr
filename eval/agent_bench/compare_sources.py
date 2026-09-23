@@ -36,11 +36,18 @@ def worker(args) -> None:
     # cannot be A/B'd by pointing the arms at different trees. It is applied to the
     # optimized arm only: run both arms from one source root and the policy becomes the
     # single difference between them, measured inside one sweep like everything else.
-    # Applied to the optimized arm only, so one sweep can A/B the policy itself against a
-    # single source root. PASR_BENCH_STOP_ALL=1 instead gives it to every arm, which is how
-    # to ask the other question: with both arms stopping, does PASR still beat grep+read?
+    # The stopping policy is on by default for every arm, which is the honest setup: it is
+    # a property of the loop, not of a tool surface. Naming PASR_BENCH_STOP_AFTER turns one
+    # sweep into an A/B of the policy itself -- the optimized arm gets that value and the
+    # control arm none -- unless PASR_BENCH_STOP_ALL=1 gives it to both, or
+    # PASR_BENCH_STOP_CONTROL names what the control arm should use instead, which is how
+    # to compare two thresholds inside one sweep.
     if args.variant != "optimized" and not os.environ.get("PASR_BENCH_STOP_ALL"):
-        os.environ.pop("PASR_BENCH_STOP_AFTER", None)
+        control = os.environ.get("PASR_BENCH_STOP_CONTROL")
+        if control is not None:
+            os.environ["PASR_BENCH_STOP_AFTER"] = control
+        elif os.environ.get("PASR_BENCH_STOP_AFTER"):
+            os.environ["PASR_BENCH_STOP_AFTER"] = "0"
     import efficiency
     import runner
 

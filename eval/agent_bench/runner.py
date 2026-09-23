@@ -14,13 +14,19 @@ API_KEY_ENV = "ANTHROPIC_API_KEY"
 MAX_TURNS = 18
 MAX_OUT = 1200
 
-# A client-side stopping policy, off unless PASR_BENCH_STOP_AFTER is set, and applied to
-# both arms so it handicaps neither. The server can refuse a call but it cannot end a
-# turn: a refused run keeps going, re-issuing refused calls or falling back to the host's
-# own grep and read, and 86% of every token in this benchmark is spent after the answer
-# is already in the transcript. Once the caller has spent this many tool calls, the loop
-# simply stops offering tools, so the next reply has to be the answer.
-STOP_AFTER_CALLS = int(os.environ.get("PASR_BENCH_STOP_AFTER", "0") or 0)
+# A client-side stopping policy, on by default and applied to both arms so it handicaps
+# neither. The server can refuse a call but it cannot end a turn: a refused run keeps
+# going, re-issuing refused calls or falling back to the host's own grep and read, and 86%
+# of every token in this benchmark is spent after the answer is already in the transcript.
+# Once the caller has spent this many tool calls the loop stops offering them, so the next
+# reply has to be the answer.
+#
+# Six, read off the holdout against its own no-policy control. There is a cliff between
+# four and six, not a slope, which is what makes six safe to default: at six the run keeps
+# every answer it had (10/12) for 58% fewer tokens, at eight it keeps the same answers and
+# costs 53% more than six, and at four it loses three of them. Set PASR_BENCH_STOP_AFTER
+# to another value, or to 0 to turn the policy off.
+STOP_AFTER_CALLS = int(os.environ.get("PASR_BENCH_STOP_AFTER", "6") or 0)
 STOP_INSTRUCTION = (
     "You have used your tool budget for this question. Do not call any more tools. "
     "Answer now from what the tools have already returned, citing the file paths and "
