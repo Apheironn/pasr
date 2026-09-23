@@ -14,6 +14,19 @@ API_KEY_ENV = "ANTHROPIC_API_KEY"
 MAX_TURNS = 18
 MAX_OUT = 1200
 
+# A client-side stopping policy, off unless PASR_BENCH_STOP_AFTER is set, and applied to
+# both arms so it handicaps neither. The server can refuse a call but it cannot end a
+# turn: a refused run keeps going, re-issuing refused calls or falling back to the host's
+# own grep and read, and 86% of every token in this benchmark is spent after the answer
+# is already in the transcript. Once the caller has spent this many tool calls, the loop
+# simply stops offering tools, so the next reply has to be the answer.
+STOP_AFTER_CALLS = int(os.environ.get("PASR_BENCH_STOP_AFTER", "0") or 0)
+STOP_INSTRUCTION = (
+    "You have used your tool budget for this question. Do not call any more tools. "
+    "Answer now from what the tools have already returned, citing the file paths and "
+    "symbols you have, and say plainly which part you could not determine."
+)
+
 # A question set is corpus-specific: the prompt names the codebase, and scoring needs the
 # symbols that actually answer each question. Point PASR_BENCH_QUESTIONS at a JSON file
 # ({"corpus", "Q1", "Q2", "truth"}) to measure a different repository without editing this
@@ -156,12 +169,22 @@ class Local:
         messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": question}]
         tin = tout = calls = turns = 0
         final = ""
+        stopped = False
+        offered_tools_last_turn = False
         failure = None
         log: list[dict] = []
         previous_prompt_tokens = 0
         t0 = time.perf_counter()
         for _ in range(MAX_TURNS):
             turns += 1
+            stopping = bool(STOP_AFTER_CALLS) and calls >= STOP_AFTER_CALLS
+            if stopping and not stopped:
+                # Say it, do not just withdraw the tools. Dropping `tools` shrinks the
+                # prompt, which trips the append-only check, and this model answers a
+                # missing catalogue by writing `<tool_call>` into its content as text.
+                # The schemas stay; tool_choice forbids using them and the message says why.
+                stopped = True
+                messages.append({"role": "user", "content": STOP_INSTRUCTION})
             try:
                 resp = self.client.chat.completions.create(
                     model=self.model,
@@ -171,6 +194,7 @@ class Local:
                     temperature=temperature,
                     seed=sampling_seed,
                     extra_body={"reasoning_effort": "none"},
+                    **({"tool_choice": "none"} if stopping else {}),
                 )
             except Exception as exc:  # context overflow or backend hiccup
                 final = f"(backend error: {exc})"
@@ -179,11 +203,18 @@ class Local:
             usage = resp.usage
             tin += usage.prompt_tokens
             tout += usage.completion_tokens
-            if usage.prompt_tokens < previous_prompt_tokens:
+            # The check catches a provider quietly dropping history, and it assumes the
+            # request shape never changes. The stopping policy changes it exactly once:
+            # `tool_choice: "none"` makes the template omit the catalogue, so the prompt
+            # legitimately shrinks on that turn. Re-baseline there instead of failing --
+            # every other turn is still held to append-only growth.
+            shape_changed = stopping != offered_tools_last_turn
+            if usage.prompt_tokens < previous_prompt_tokens and not shape_changed:
                 final = "(backend prompt usage decreased despite append-only history)"
                 failure = "nonmonotonic_prompt_usage"
                 break
             previous_prompt_tokens = usage.prompt_tokens
+            offered_tools_last_turn = stopping
             msg = resp.choices[0].message
             messages.append(
                 {

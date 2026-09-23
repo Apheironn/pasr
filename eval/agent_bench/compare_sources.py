@@ -32,6 +32,15 @@ def worker(args) -> None:
     root = args.source_root.resolve()
     sys.path[:0] = [str(Path(__file__).resolve().parent), str(root / "src")]
     os.environ["PASR_BENCH_WORKSPACE"] = str(args.workspace.resolve())
+    # A client-side policy lives in the shared harness, not in the swapped source, so it
+    # cannot be A/B'd by pointing the arms at different trees. It is applied to the
+    # optimized arm only: run both arms from one source root and the policy becomes the
+    # single difference between them, measured inside one sweep like everything else.
+    # Applied to the optimized arm only, so one sweep can A/B the policy itself against a
+    # single source root. PASR_BENCH_STOP_ALL=1 instead gives it to every arm, which is how
+    # to ask the other question: with both arms stopping, does PASR still beat grep+read?
+    if args.variant != "optimized" and not os.environ.get("PASR_BENCH_STOP_ALL"):
+        os.environ.pop("PASR_BENCH_STOP_AFTER", None)
     import efficiency
     import runner
 
