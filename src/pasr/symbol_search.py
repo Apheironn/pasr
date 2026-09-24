@@ -15,14 +15,16 @@ Deterministic, offline, no model: definitions come from the same tree-sitter /
 from __future__ import annotations
 
 import math
+import os
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 from pasr.evidence import STOPWORDS, extract_keywords
 from pasr.file_discovery import FileDiscoveryConfig, discover_workspace_files
 from pasr.index import FORMAT, EvidenceIndex, SymbolSpan, to_spans
-from pasr.retrieval.semantic import HashingScorer
+from pasr.retrieval.semantic import HashingScorer, get_scorer
 from pasr.symbols import get_provider, parse_symbols
 from pasr.symbols.base import identifier_terms
 
@@ -387,6 +389,8 @@ def _read_lines(line_no: int, line_count: int, definitions: tuple[Any, ...]) -> 
 # queries two models actually issued was 12, 40, 49, 62 and 110 -- and shallow enough to
 # cost about a second. Rescoring the whole matched set measured identically.
 _RERANK_DEPTH = 250
+# How much of a file an embedding scorer reads. The hashing scorer blocks the whole file.
+_EMBED_CHARS = 2000
 # How much a file's length discounts its score, as BM25's b does. Measured on the
 # queries two models issued and on natural-language phrasings of the same questions:
 # 0.25 and 0.5 were identical on the first (13 of 14, against 11 without it) and 0.5
@@ -552,6 +556,52 @@ def _block_features(
     return features
 
 
+# Which scorer reranks the lexical head. The default is the zero-dependency hashing one,
+# which keeps the core torch-free; PASR_SEMANTIC_SCORER=minilm uses real sentence
+# embeddings from the `pasr-mcp[semantic]` extra. Hashing matches shared character n-grams,
+# so it survives morphology but not synonymy: asked what makes a server "idle" it cannot
+# reach a codebase that says "quiescent", and rust-analyzer's Q2 is 0 for 18 because of it.
+_SCORER_NAME = os.environ.get("PASR_SEMANTIC_SCORER", "hashing")
+
+
+@lru_cache(maxsize=1)
+def _semantic_scorer():
+    """The configured scorer, built once. Falls back to hashing if the extra is absent."""
+    if _SCORER_NAME == "hashing":
+        return HashingScorer()
+    try:
+        return get_scorer(_SCORER_NAME)
+    except Exception:  # noqa: BLE001 - a missing extra must not break retrieval
+        return HashingScorer()
+
+
+class _Span:
+    __slots__ = ("text",)
+
+    def __init__(self, text: str) -> None:
+        self.text = text
+
+
+def _similarity_of(query, head, texts, index, stats) -> dict[str, float]:
+    """Similarity of each head file to the query, by whichever scorer is configured."""
+    scorer = _semantic_scorer()
+    if isinstance(scorer, HashingScorer):
+        query_features = scorer._features(query)
+        similarity: dict[str, float] = {}
+        for source in head:
+            best = 0.0
+            for features in _block_features(scorer, source, texts[source], index, stats[source]):
+                small, large = (
+                    (query_features, features) if len(query_features) < len(features) else (features, query_features)
+                )
+                best = max(best, sum(weight * large.get(key, 0.0) for key, weight in small.items()))
+            similarity[source] = best
+        return similarity
+    # an embedding scorer reads whole blocks, not feature bags
+    spans = [_Span(texts[source][:_EMBED_CHARS]) for source in head]
+    return dict(zip(head, scorer.score(query, spans), strict=True))
+
+
 def _rerank_semantically(
     query: str,
     file_scores: dict[str, float],
@@ -576,17 +626,7 @@ def _rerank_semantically(
     if len(file_scores) < 2:
         return file_scores
     head = sorted(file_scores, key=lambda source: -file_scores[source])[:_RERANK_DEPTH]
-    scorer = HashingScorer()
-    query_features = scorer._features(query)
-    similarity: dict[str, float] = {}
-    for source in head:
-        best = 0.0
-        for features in _block_features(scorer, source, texts[source], index, stats[source]):
-            small, large = (
-                (query_features, features) if len(query_features) < len(features) else (features, query_features)
-            )
-            best = max(best, sum(weight * large.get(key, 0.0) for key, weight in small.items()))
-        similarity[source] = best
+    similarity = _similarity_of(query, head, texts, index, stats)
 
     lexical, similar = _scaled(file_scores), _scaled(similarity)
     referenced = _scaled(_reference_rank({source: lexical[source] for source in head}, texts, definitions_by_source))

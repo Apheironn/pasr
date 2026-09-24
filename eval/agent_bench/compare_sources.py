@@ -42,6 +42,10 @@ def worker(args) -> None:
     # control arm none -- unless PASR_BENCH_STOP_ALL=1 gives it to both, or
     # PASR_BENCH_STOP_CONTROL names what the control arm should use instead, which is how
     # to compare two thresholds inside one sweep.
+    # Same idea for the rerank scorer: naming PASR_SEMANTIC_SCORER gives it to the
+    # optimized arm only, so one sweep A/Bs hashing against embeddings on one source root.
+    if args.variant != "optimized" and os.environ.get("PASR_SEMANTIC_SCORER"):
+        os.environ["PASR_SEMANTIC_SCORER"] = "hashing"
     if args.variant != "optimized" and not os.environ.get("PASR_BENCH_STOP_ALL"):
         control = os.environ.get("PASR_BENCH_STOP_CONTROL")
         if control is not None:
