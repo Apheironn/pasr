@@ -605,7 +605,6 @@ def test_a_charged_read_is_not_novel_evidence_when_it_comes_back(mini_workspace)
     assert guard._covered["pkg/alpha.py"] == set(range(1, 41))
 
 
-
 def test_a_host_can_publish_only_the_tools_it_will_use(mini_workspace):
     """A catalogue entry is re-sent with every request, so an unused one is never free.
 

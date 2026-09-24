@@ -417,6 +417,7 @@ def _path_prior(source: str) -> float:
         return _PROSE_PRIOR
     return 1.0
 
+
 _RERANK_BLOCK = 60
 # How far similarity may move a file against its rarity score. Both signals are scaled by
 # their own maximum, which keeps the lexical margin a rare term earns; at 1.0 similarity
