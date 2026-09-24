@@ -136,10 +136,42 @@ A **bounded efficiency result, not a superiority claim.** Pre-registered, with t
 supporting runs: [`eval/RESULTS.md`](https://github.com/Apheironn/pasr/blob/main/eval/RESULTS.md) · narrative:
 [`docs/blog/what-worked.md`](https://github.com/Apheironn/pasr/blob/main/docs/blog/what-worked.md).
 
-For live tool-use measurements, including targeted-read optimizations and a separate
-mechanism/grounding audit, see [`eval/agent_bench/README.md`](eval/agent_bench/README.md).
-Those runs count cumulative conversation tokens; smaller retrieved context alone
-does not establish a cheaper or more accurate agent trajectory.
+### In an agent loop, against the agent's own tools
+
+Everything above is a *supply* comparison: what a selection puts in front of a model
+versus a whole-repo dump. It is not a claim about an agent loop, where the model picks
+its own tools and the whole conversation is re-sent on every turn.
+
+Measured that way — one local model, the same questions, 12 runs an arm, against an
+agent using only its own `grep` and `read_file` (two repositories, 21.8k and 430k lines):
+
+| | answers | tokens / answer |
+|---|--:|--:|
+| PASR tools | **22 / 24** | 47 204 |
+| the agent's own grep + read | 17 / 24 | **31 519** |
+
+**PASR answers more and costs more per answer.** Neither arm dominates, and the gap is
+not retrieval: PASR's retrieved content lands within ~13% of the baseline's. It is the
+tool catalogue — eight descriptions and schemas, ~1.8k tokens, re-sent with every
+request, against ~100 for two native tools. Over a six-turn run that is ~17k against
+~3.4k. Give the baseline enough calls to spend what PASR spends and the accuracy gap
+narrows sharply; PASR's advantage is clearest per *call*, not per token.
+
+Two things measurably move it, and neither is a ranking change:
+
+- **Stopping.** 86% of every token is spent after the answer is already in the
+  transcript. A client-side cap at six tool calls roughly halves cost per answer — for
+  either arm, since it is a property of the loop and not of the tools.
+- **Letting the selector choose.** `find_evidence` used to point its advice at a guessed
+  ±8-line span, which holds the answer 27% of the time; pointing it at the *file* instead
+  lets `select_context` pick, which keeps 86% of the evidence in a third of the tokens.
+  Worth +4 answers and −12% cost per answer, mostly because a better first read ends the
+  run in fewer turns.
+
+Raw transcripts and the per-run accounting are kept out of this repository; the
+methodology is in [`eval/agent_bench/README.md`](eval/agent_bench/README.md). Those runs
+count cumulative conversation tokens — smaller retrieved context alone does not establish
+a cheaper or more accurate agent trajectory.
 
 The earlier local investigation rejected seven proposed runtime optimizations:
 smaller payloads and a smaller tool catalog did not produce a reliable end-to-end win.
