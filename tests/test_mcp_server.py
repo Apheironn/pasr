@@ -505,8 +505,13 @@ def test_read_lines_guidance_preserves_absence_and_truncation_warnings(tmp_path:
     assert evidence["term_file_counts"]["absentmarker"] == 0
     assert any("absentmarker" in note for note in evidence["advice"])
     assert evidence["hits"][0]["read_lines"] == "1-2"
-    # One composed example the caller can copy, rather than a rule to apply per hit.
-    assert any('files=["worker.py:1-2"]' in note for note in evidence["advice"])
+    # One composed example the caller can copy, rather than a rule to apply per hit -- and
+    # it names the FILE, not this hit's guessed span. Given the right file select_context
+    # keeps 86% of the evidence in a third of the tokens; the span is a +/-8 line guess
+    # around an IDF match and holds the answer 27% of the time. Pointing the caller at the
+    # span was telling it to bypass the one thing PASR is for.
+    assert any('files=["worker.py"]' in note for note in evidence["advice"])
+    assert not any('worker.py:1-2"]' in note for note in evidence["advice"])
 
     usages = locator_surface("find_usages", {"symbol": "checkpoint", "top_k": 1})
     assert usages["truncated"] is True

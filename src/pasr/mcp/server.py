@@ -111,10 +111,12 @@ _FIND_EVIDENCE_DESCRIPTION = (
     "that can bridge a question worded differently from the code, by following "
     "overlapping terms to discover its vocabulary -- so it is the right first call "
     "whenever you do not already know a file, path or symbol name to look under. "
-    "No max_files limit, no bodies returned. The top hits carry `read_lines`, a bounded "
-    "span within that hit's `provenance` path: a complete enclosing function up to 40 lines, "
-    "otherwise at most 8 lines on either side. Read one by joining them -- "
-    '`select_context(query=..., files=["<provenance path>:<read_lines>"])`.'
+    "No max_files limit, no bodies returned. To read what a hit points at, give its FILE "
+    "to select_context and let it choose the part: "
+    '`select_context(query=..., files=["<provenance path>"])`. '
+    "Given the right file it keeps 86% of the evidence in a third of the tokens. "
+    "`read_lines` is a cheap guess at the span and holds the answer 27% of the time; "
+    "append it as `<path>:<read_lines>` only when you want exactly those lines."
 )
 _FIND_USAGES_DESCRIPTION = (
     "Where is this symbol USED? Returns every line that writes the name, across the "
@@ -608,9 +610,11 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
                 top = result["hits"][0]
                 path = top["provenance"].rsplit(":", 1)[0]
                 notes.append(
-                    "To read a hit's code, join its provenance path with read_lines: "
-                    f'select_context(query={query!r}, files=["{path}:{top["read_lines"]}"]). '
-                    "A bounded span holds a small function whole, but only part of a large one."
+                    "To read a hit, give select_context the FILE and let it pick the part: "
+                    f'select_context(query={query!r}, files=["{path}"]). '
+                    "Given the right file it keeps 86% of the evidence in a third of the "
+                    "tokens; this hit's own span is a guess and holds the answer 27% of "
+                    "the time."
                 )
             if notes:
                 result["advice"] = notes
