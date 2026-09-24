@@ -422,6 +422,21 @@ def _trim_for_wire(result: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in result.items() if key != "evidence_accounting"}
 
 
+# Folding find_files, find_symbols and find_usages into one `find(what=...)` was built,
+# tested and reverted. The catalogue saving was exactly as designed -- 509 tokens of three
+# descriptions and three schemas down to 335, about 2,600 a run -- and it cost two answers
+# on both corpora it was tried on: airguard 9/12 to 7/12 (Q1 4/6 to 1/6), holdout 9/12 to
+# 7/12 (Q2 3/6 to 1/6). On airguard the run total did not even fall, because find_evidence
+# grew to absorb what the catalogue gave back.
+#
+# That is the sixth change to this surface measured this week and the sixth with the same
+# shape: the deterministic saving is real, the model reallocates it, and the accuracy moves
+# against us. More payload sent it to native read_file (5/24 runs to 12/24); a tighter
+# ceiling sent it to native grep (30% of calls to 39%); removing three never-called tools
+# cost two answers; compressing the prose cost ten thousand tokens in native reads. What a
+# run costs is set by how long the model keeps working, not by what the tools cost to
+# describe -- the only change that ever moved the total was the client-side stopping policy.
+# Treat this catalogue as load-bearing and leave it alone.
 ALL_TOOLS = (
     "find_files",
     "find_symbols",
