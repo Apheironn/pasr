@@ -3,7 +3,7 @@
 PASR is honest about when it is the wrong tool. ``classify_query`` labels a query
 ``localized`` / ``trace`` / ``aggregation`` / ``unknown`` from fixed signal phrases;
 ``assess`` turns a completed selection into a ``confidence`` score and short ``advice``
-(e.g. "aggregation-style question — read the files directly").
+(e.g. "aggregation-style question -- read the files directly").
 """
 
 from __future__ import annotations
@@ -60,7 +60,7 @@ _AGGREGATION_SIGNALS = (
 
 
 def classify_query(query: str) -> tuple[str, list[str]]:
-    """Return ``(class, matched_signals)`` for ``query`` — deterministic, no model."""
+    """Return ``(class, matched_signals)`` for ``query`` -- deterministic, no model."""
     lowered = query.casefold()
     if len(extract_keywords(query)) < 2:
         return "unknown", []
@@ -73,7 +73,7 @@ def classify_query(query: str) -> tuple[str, list[str]]:
     return "localized", []
 
 
-def assess(query_class: str, result: dict[str, Any]) -> dict[str, Any]:
+def assess(query_class: str, result: dict[str, Any], *, has_line_ranges: bool = False) -> dict[str, Any]:
     """Score a completed selection and produce routing advice.
 
     ``result`` is the dict from :func:`pasr.select.run_select_context` (before the
@@ -108,6 +108,24 @@ def assess(query_class: str, result: dict[str, Any]) -> dict[str, Any]:
             ],
         }
 
+    if has_line_ranges and result["route"] == "lossless":
+        return {
+            "query_class": query_class,
+            "confidence": 0.95,
+            "advice": [
+                # Every other "you have it" message ends by telling the caller to answer. This one
+                # used to end by telling it to go follow callers, and a model that has just been
+                # handed the mechanism reads that as an instruction: in the runs that died at the
+                # turn cap, the answer was already in hand nine calls before the end, and the
+                # trajectory spent the rest chasing one more definition down the chain.
+                "The requested lines are fully included; re-reading or expanding this scope adds "
+                "nothing. If they answer the question, answer from them - further retrieval is "
+                "unlikely to add evidence. Range completeness is not whole-file or caller coverage, "
+                "so follow find_symbols/find_usages only if the mechanism genuinely continues "
+                "somewhere you have not read."
+            ],
+        }
+
     scored_spans = [span for span in spans if span["selection_reasons"] != ["active_window"]]
     multi_signal = (
         sum(len(span["selection_reasons"]) >= 2 for span in scored_spans) / len(scored_spans) if scored_spans else 0.0
@@ -132,7 +150,8 @@ def assess(query_class: str, result: dict[str, Any]) -> dict[str, Any]:
     advice: list[str] = []
     if query_class == "trace":
         advice.append(
-            "This reads like a dependency question - trace_dependencies(<symbol>) returns a tighter, complete closure."
+            "This reads like a dependency question - trace_dependencies(<symbol>, files=[...]) returns a tighter, "
+            "complete closure. It needs the files to look in; called with a symbol alone it errors."
         )
     elif query_class == "aggregation":
         advice.append(
@@ -170,6 +189,11 @@ def assess(query_class: str, result: dict[str, Any]) -> dict[str, Any]:
         advice.append(
             "Looks complete for a localized question: the slice covers the query's terms. "
             "Answer from it - further retrieval calls are unlikely to add evidence."
+        )
+    if has_line_ranges:
+        advice.append(
+            "Source scope is fixed by the request. expand_context adds budget within those same ranges; "
+            "widen the files ranges explicitly to read surrounding code."
         )
 
     return {"query_class": query_class, "confidence": confidence, "advice": advice}

@@ -146,13 +146,29 @@ def _resolve_files(
         for raw_entry in raw_files:
             raw_path, line_range = _split_provenance(raw_entry)
             path = _resolve_workspace_file(raw_path, workspace_root)
-            resolved.append(path)
-            metadata_by_path[path] = {
-                "source": "explicit",
-                "relative_path": path.relative_to(workspace_root).as_posix(),
-                "size_bytes": path.stat().st_size,
-                **({"line_range": list(line_range)} if line_range else {}),
-            }
+            if path not in metadata_by_path:
+                resolved.append(path)
+                metadata_by_path[path] = {
+                    "source": "explicit",
+                    "relative_path": path.relative_to(workspace_root).as_posix(),
+                    "size_bytes": path.stat().st_size,
+                    **({"line_ranges": [list(line_range)]} if line_range else {}),
+                }
+            elif line_range is None:
+                # An explicit whole-file read dominates every range, in either order.
+                metadata_by_path[path].pop("line_ranges", None)
+            elif "line_ranges" in metadata_by_path[path]:
+                metadata_by_path[path]["line_ranges"].append(list(line_range))
+        for meta in metadata_by_path.values():
+            if "line_ranges" not in meta:
+                continue
+            merged: list[list[int]] = []
+            for low, high in sorted(meta["line_ranges"]):
+                if merged and low <= merged[-1][1] + 1:
+                    merged[-1][1] = max(merged[-1][1], high)
+                else:
+                    merged.append([low, high])
+            meta["line_ranges"] = merged
 
     include = payload.get("include") if payload.get("include") is not None else payload.get("include_patterns")
     if include is not None:
@@ -176,6 +192,14 @@ def _resolve_files(
 
     files = _dedupe(resolved)
     if not files:
+        # A locator pasted into `include` matches nothing: it is a path plus a line range, not a
+        # glob. Without naming the right parameter the caller just retries the same dead call.
+        ranged = [entry for entry in include or [] if isinstance(entry, str) and _PROVENANCE_RE.match(entry.strip())]
+        if ranged:
+            raise ValueError(
+                f"include takes paths and globs, not line ranges: {ranged[0]}. Pass a locator in "
+                f'files instead: files=["{ranged[0]}"].'
+            )
         raise ValueError("provide at least one file or include pattern that resolves to files.")
 
     max_files = _positive_int(payload.get("max_files", 100), "max_files")

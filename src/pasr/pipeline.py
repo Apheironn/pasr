@@ -138,7 +138,7 @@ def assemble(
     :func:`pasr.packing.pack_with_active_window` still raises).
 
     With ``collect_candidates=True``, ``diagnostics["candidates"]`` holds every fused
-    candidate the packer considered, each tagged ``selected`` — the input to a receipt.
+    candidate the packer considered, each tagged ``selected`` -- the input to a receipt.
     """
     cfg = config or AssembleConfig()
     ordered = list(spans)
@@ -163,8 +163,18 @@ def assemble(
         )
 
     retrieval_cfg = replace(cfg.retrieval, top_k=max(cfg.retrieval.top_k, 64))
-    window_enabled = cfg.prefix_tokens > 0 or cfg.tail_tokens > 0
+    # The window keeps the head and tail of *a document*: imports and setup at one end, the
+    # most recent material at the other. Across several files there is no such thing -- the
+    # first and last spans are whichever files sort first and last. Scoped to a directory it
+    # spent 646 of an 800-token budget on the opening lines of two files the query never
+    # mentioned, and left no room for the file that answered it.
+    sources = {span.source for span in ordered}
+    window_enabled = (cfg.prefix_tokens > 0 or cfg.tail_tokens > 0) and len(sources) == 1
     window_diag: dict[str, Any] = {"active_window": False}
+    if (cfg.prefix_tokens > 0 or cfg.tail_tokens > 0) and len(sources) > 1:
+        # Its own key: `active_window_dropped` means "it did not fit", which routing answers
+        # with "raise budget_tokens". Raising the budget will not give a set of files a head.
+        window_diag["active_window_scope"] = f"{len(sources)} sources have no shared head or tail"
 
     if window_enabled:
         window = plan_active_window(ordered, cfg.prefix_tokens, cfg.tail_tokens)

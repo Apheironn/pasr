@@ -114,7 +114,7 @@ def account_query_evidence(
     This is a lexical diagnostic, not a semantic entailment judgment. A claim is
     ``supported`` only when every extracted keyword occurs in at least one span's
     body text *or* its source path (``net/stale_socket_gc.py`` counts as evidence
-    for "stale socket" even if the body never spells those words out) — otherwise
+    for "stale socket" even if the body never spells those words out) -- otherwise
     a span that already answers the query reads as 0% covered and the routing
     advice tells the caller to search elsewhere for content it is already holding.
     """
@@ -199,7 +199,7 @@ def path_keywords(source: str) -> list[str]:
     """Extract query-matchable terms from a source path's components.
 
     Splits on every non-alphanumeric character (``/``, ``_``, ``-``, ``.``), unlike
-    :func:`_keywords`/:func:`extract_keywords` which treat ``_`` as part of a token —
+    :func:`_keywords`/:func:`extract_keywords` which treat ``_`` as part of a token --
     a filename like ``stale_socket_gc.py`` must yield ``stale`` and ``socket``
     separately to count as evidence for those query terms.
     """

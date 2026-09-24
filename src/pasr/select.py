@@ -6,18 +6,19 @@ Every run writes a byte-stable receipt under ``<workspace>/.pasr/receipts/``.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from pasr.chunker import chunk_text
+from pasr.chunker import RawSpan, chunk_text
 from pasr.evidence import account_query_evidence, build_evidence_span
 from pasr.packs import build_pack, load_pack, pack_staleness, write_pack
-from pasr.pipeline import ROUTE_OUTLINE, AssembleConfig, ContextPack, RetrievalConfig, assemble
+from pasr.pipeline import ROUTE_LOSSLESS, ROUTE_OUTLINE, AssembleConfig, ContextPack, RetrievalConfig, assemble
 from pasr.receipt import build_receipt, read_receipt, write_receipt
 from pasr.redaction import Redactor, identity_redactor
 from pasr.routing import assess, classify_query
 from pasr.schema import SelectContextRequest, validate_select_context_request
-from pasr.symbols import FileSymbols, get_provider, parse_symbols, symbol_candidates
+from pasr.symbols import FileSymbols, SymbolDef, get_provider, parse_symbols, symbol_candidates
 from pasr.symbols.base import identifier_terms
 from pasr.tokenize import Tokenizer, get_tokenizer
 from pasr.trace import trace_dependencies
@@ -29,7 +30,15 @@ _RANGED_BLOCK = 64  # fine chunking for `path:start-end` reads
 def _canonical_request(request: SelectContextRequest) -> dict[str, Any]:
     return {
         "query": request.query,
-        "sources": [meta["relative_path"] for meta in request.file_metadata],
+        "sources": [
+            selector
+            for meta in request.file_metadata
+            for selector in (
+                [f"{meta['relative_path']}:{low}-{high}" for low, high in meta["line_ranges"]]
+                if "line_ranges" in meta
+                else [meta["relative_path"]]
+            )
+        ],
         "budget_tokens": request.budget_tokens,
         "prefix_tokens": request.prefix_tokens,
         "tail_tokens": request.tail_tokens,
@@ -40,6 +49,42 @@ def _canonical_request(request: SelectContextRequest) -> dict[str, Any]:
         "trace": request.trace,
         "outline": request.outline,
     }
+
+
+def _source_sections(text: str, line_ranges: list[list[int]]) -> list[tuple[int, int, str]]:
+    """Return requested slices with original line/character offsets, without tokenizing gaps."""
+    lines = text.splitlines(keepends=True)
+    sections = []
+    cursor = 0
+    char_offset = 0
+    for low, high in line_ranges:
+        start = min(low - 1, len(lines))
+        char_offset += sum(len(lines[index]) for index in range(cursor, start))
+        section = "".join(lines[start:high])
+        if section:
+            sections.append((low, char_offset, section))
+        char_offset += len(section)
+        cursor = min(high, len(lines))
+    return sections
+
+
+def _section_symbols(file_symbols: FileSymbols, low: int, high: int, char_offset: int) -> FileSymbols:
+    """Keep complete definitions only, rebased for the section's local token offsets."""
+
+    def scoped(definitions: tuple[SymbolDef, ...]) -> tuple[SymbolDef, ...]:
+        return tuple(
+            replace(
+                definition,
+                line_start=definition.line_start - low + 1,
+                line_end=definition.line_end - low + 1,
+                char_start=definition.char_start - char_offset,
+                char_end=definition.char_end - char_offset,
+            )
+            for definition in definitions
+            if low <= definition.line_start <= definition.line_end <= high
+        )
+
+    return replace(file_symbols, definitions=scoped(file_symbols.definitions), imports=scoped(file_symbols.imports))
 
 
 def _symbol_map_header(
@@ -118,6 +163,34 @@ def run_select_context(
     if write_receipt_file:
         written = write_receipt(request.workspace_root, receipt)
         result["receipt"]["written_to"] = str(written) if written is not None else None
+    return _trim_response(result)
+
+
+# What the response said twice, or said on every call, or said to nobody. A span's text
+# is in `context`, labelled with that same provenance -- 1,451 tokens of duplicate on a
+# 1,450-token slice -- and `score_components` is scoring detail no caller can act on. A
+# claim restates the query it was built from and the keywords `diagnostics` already lists.
+# `limitations` is the same sentence every time, so it belongs in the tool description.
+# And the per-file breakdown of everything in scope is what a receipt is for: the response
+# says what you got and what it cost, `explain_selection` says exactly what happened.
+#
+# The receipt is built before any of this, so none of it is lost.
+_DROPPED_SPAN_FIELDS = ("text", "score_components")
+_DROPPED_CLAIM_FIELDS = ("text", "keywords")
+
+
+def _trim_response(result: dict[str, Any]) -> dict[str, Any]:
+    result["spans"] = [
+        {field: value for field, value in span.items() if field not in _DROPPED_SPAN_FIELDS} for span in result["spans"]
+    ]
+    result["diagnostics"] = {key: value for key, value in result["diagnostics"].items() if key != "files"}
+    evidence = dict(result["evidence_accounting"])
+    evidence.pop("limitations", None)
+    evidence["claims"] = [
+        {field: value for field, value in claim.items() if field not in _DROPPED_CLAIM_FIELDS}
+        for claim in evidence.get("claims", [])
+    ]
+    result["evidence_accounting"] = evidence
     return result
 
 
@@ -148,16 +221,43 @@ def _run(
     for path, meta in zip(request.files, request.file_metadata, strict=True):
         source = meta["relative_path"]
         text = path.read_text(encoding="utf-8", errors="replace")
-        texts_by_source[source] = text
-        line_range = meta.get("line_range")
-        # `files=["path.rs:190-193"]`: chunk that file finely and keep only the blocks
-        # overlapping those lines, so the caller gets what the locator pointed at. At the
-        # normal block size a four-line function comes back inside a 400-token block of
-        # its neighbours, which defeats the point of having been given a line number.
-        file_spans = chunk_text(source, text, tok, _RANGED_BLOCK if line_range else request.block_size)
-        if line_range:
-            low, high = line_range
-            file_spans = [span for span in file_spans if span.line_start <= high and span.line_end >= low]
+        line_ranges = meta.get("line_ranges")
+        sections = _source_sections(text, line_ranges) if line_ranges else [(1, 0, text)]
+        file_spans: list[RawSpan] = []
+        section_offsets = []
+        token_offset = 0
+        for low, char_offset, section in sections:
+            section_offsets.append(token_offset)
+            chunks = chunk_text(source, section, tok, _RANGED_BLOCK if line_ranges else request.block_size)
+            if line_ranges:
+                file_spans.extend(
+                    replace(
+                        span,
+                        line_start=span.line_start + low - 1,
+                        line_end=span.line_end + low - 1,
+                        char_start=span.char_start + char_offset,
+                        char_end=span.char_end + char_offset,
+                        token_start=span.token_start + token_offset,
+                        token_end=span.token_end + token_offset,
+                    )
+                    for span in chunks
+                )
+            else:
+                file_spans.extend(chunks)
+            # Token coordinates cover only selected lines; source coordinates remain original.
+            token_offset += sum(span.token_count for span in chunks)
+        if request.trace:
+            # Blank excluded lines before tracing: no closure can reintroduce an excluded body.
+            # Providers remain best-effort when a range cuts through an incomplete construct.
+            if line_ranges:
+                trace_parts = []
+                previous = 0
+                for low, _, section in sections:
+                    trace_parts.extend(("\n" * (low - previous - 1), section))
+                    previous = low + len(section.splitlines()) - 1
+                texts_by_source[source] = "".join(trace_parts)
+            else:
+                texts_by_source[source] = text
         spans.extend(file_spans)
         per_file.append(
             {
@@ -173,8 +273,34 @@ def _run(
             except Exception:  # symbols are best-effort; never fail the request
                 continue
             languages.add(file_symbols.language)
-            parsed_symbols.append(file_symbols)
-            sym_candidates.extend(symbol_candidates(file_symbols, request.query, text, tok))
+            if not line_ranges:
+                parsed_symbols.append(file_symbols)
+                sym_candidates.extend(symbol_candidates(file_symbols, request.query, text, tok))
+                continue
+            definitions = []
+            imports = []
+            for (low, char_offset, section), token_offset in zip(sections, section_offsets, strict=True):
+                high = low + len(section.splitlines()) - 1
+                local_symbols = _section_symbols(file_symbols, low, high, char_offset)
+                definitions.extend(d for d in file_symbols.definitions if low <= d.line_start <= d.line_end <= high)
+                imports.extend(d for d in file_symbols.imports if low <= d.line_start <= d.line_end <= high)
+                for candidate in symbol_candidates(local_symbols, request.query, section, tok):
+                    start = candidate.metadata["line_start"] + low - 1
+                    end = candidate.metadata["line_end"] + low - 1
+                    sym_candidates.append(
+                        replace(
+                            candidate,
+                            start=candidate.start + token_offset,
+                            end=candidate.end + token_offset,
+                            metadata={
+                                **candidate.metadata,
+                                "line_start": start,
+                                "line_end": end,
+                                "provenance": f"{source}:{start}" if start == end else f"{source}:{start}-{end}",
+                            },
+                        )
+                    )
+            parsed_symbols.append(replace(file_symbols, definitions=tuple(definitions), imports=tuple(imports)))
 
     # Optional headers, each carved out of budget_tokens (never additive) and skipped
     # when the whole context already fits: a query-ranked symbol index (map_tokens) and
@@ -230,14 +356,29 @@ def _run(
 
     evidence = account_query_evidence(
         request.query,
-        [build_evidence_span(span.to_dict()) for span in pack.spans],
+        # Address a span the way every other field does. The accounting used to mint a
+        # second scheme from token offsets -- `file#tokens=789:1153` beside the
+        # `file:125-178` in `spans`, `context` and every locator -- so a caller could not
+        # join what it was told about the evidence to the evidence itself.
+        [build_evidence_span({**span.to_dict(), "span_id": span.metadata.get("provenance")}) for span in pack.spans],
         {"budget_tokens": request.budget_tokens},
     )
     total_input_tokens = sum(entry["token_count"] for entry in per_file)
     candidate_records = pack.diagnostics.get("candidates", [])
     combined_tokens = pack.token_count + map_tokens + trace_tokens
     header = "".join(part for part in (map_text and map_text + "\n\n", trace_text and trace_text + "\n\n") if part)
-    context_text = f"{header}# context\n{pack.text}" if header else pack.text
+    # One copy of the code, and it says where each piece came from. The spans used to
+    # repeat every line the context already held -- 1,451 tokens of duplicate on a
+    # 1,450-token slice -- so the caller paid for the selection twice. A lossless route
+    # hands back the sources whole and stays byte-exact; a selected one is already
+    # reordered, so labelling it costs a dozen tokens a span and replaces the copy.
+    body = (
+        pack.text
+        if pack.route == ROUTE_LOSSLESS
+        else "\n\n".join(f"[{span.metadata.get('provenance')}]\n{span.text.strip(chr(10))}" for span in pack.spans)
+        or pack.text
+    )
+    context_text = f"{header}# context\n{body}" if header else body
     diagnostics = {
         **{key: value for key, value in pack.diagnostics.items() if key != "candidates"},
         "files": per_file,
@@ -281,7 +422,9 @@ def _run(
         "evidence_accounting": evidence,
     }
     query_class, signals = classify_query(request.query)
-    assessment = assess(query_class, result)
+    assessment = assess(
+        query_class, result, has_line_ranges=any("line_ranges" in meta for meta in request.file_metadata)
+    )
     result["query_class"] = assessment["query_class"]
     result["query_signals"] = signals
     result["confidence"] = assessment["confidence"]
@@ -308,7 +451,7 @@ def run_pack(workspace_root: Path, name: str, redactor: Redactor | None = None) 
     """Warm-start: return a stored Context Pack as a ``select_context``-shaped result.
 
     No chunking or retrieval. ``pack_stale`` lists sources that changed since the pack
-    was built (advisory — the stored context is still returned).
+    was built (advisory -- the stored context is still returned).
     """
     redact = redactor or identity_redactor
     pack = load_pack(workspace_root, name)
@@ -339,7 +482,7 @@ def run_expand_context(
     """Re-run a prior selection once with a larger budget.
 
     Reads ``<workspace>/.pasr/receipts/<receipt_id>.json``, re-runs
-    ``select_context`` with ``budget_tokens += extra_budget`` (a single pass — no
+    ``select_context`` with ``budget_tokens += extra_budget`` (a single pass -- no
     internal iteration), and returns the new result tagged ``expanded_from``.
     """
     if extra_budget <= 0:
@@ -357,6 +500,7 @@ def run_expand_context(
             "semantic": prior.get("semantic", ""),
             "map_tokens": prior.get("map_tokens", 0),
             "trace": prior.get("trace", ""),
+            "outline": prior.get("outline", False),
         },
         workspace_root=workspace_root,
     )

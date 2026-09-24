@@ -1,4 +1,4 @@
-"""``pasr`` CLI — run PASR without an agent.
+"""``pasr`` CLI -- run PASR without an agent.
 
 pasr find "<query>" [globs...]           rank files by path/filename match
 pasr symbols "<query>" [globs...]        where matching symbols are defined (file:line)
@@ -80,8 +80,8 @@ def _symbols(args: argparse.Namespace) -> int:
         f"# {result['symbol_match_count']} definition(s) matched across "
         f"{result['files_indexed']} indexed file(s), top {len(result['matches'])}\n"
     )
-    for match in result["matches"]:
-        print(f"{match['match_score']:.2f}  {match['kind']:<9} {match['name']}  {match['provenance']}")
+    for rank, match in enumerate(result["matches"], start=1):
+        print(f"{rank:>3}.  {match['kind']:<9} {match['name']}  {match['provenance']}")
     if not result["matches"] and result["unparsed_extensions"]:
         print(f"\nno symbol provider for: {', '.join(result['unparsed_extensions'][:10])}", file=sys.stderr)
     return 0
@@ -119,8 +119,8 @@ def _evidence(args: argparse.Namespace) -> int:
     rare = ", ".join(f"{t}={n}" for t, n in sorted(result["term_file_counts"].items(), key=lambda kv: kv[1]) if n)
     print(f"# {result['hit_count']} line(s) in {result['files_with_a_match']} file(s); term file counts: {rare}")
     print()
-    for hit in result["hits"]:
-        print(f"{hit['score']:6.2f}  {hit['provenance']:<44} in {hit['in']:<24} {hit['text'][:66]}")
+    for rank, hit in enumerate(result["hits"], start=1):
+        print(f"{rank:>3}.  {hit['provenance']:<44} in {hit['in']:<24} {hit['text'][:66]}")
     return 0
 
 
@@ -222,7 +222,7 @@ def _trace(args: argparse.Namespace) -> int:
         pct = result["token_reduction"] * 100
         pct_str = ">99" if pct >= 99.5 else str(round(pct))
         noun = "callers" if direction == "callers" else "definitions"
-        print(f"# {args.symbol} — {len(result['spans'])} {noun}, {pct_str}% fewer tokens than the index\n")
+        print(f"# {args.symbol} -- {len(result['spans'])} {noun}, {pct_str}% fewer tokens than the index\n")
         for span in result["spans"]:
             print(f"- {span['provenance']}  ({span['kind']} {span['name']})")
     return 0
@@ -276,7 +276,7 @@ def _context(args: argparse.Namespace) -> int:
         },
         workspace_root=args.workspace,
     )
-    # CI mode: don't litter .pasr/ — the context / metrics files are the outputs.
+    # CI mode: don't litter .pasr/ -- the context / metrics files are the outputs.
     result = run_select_context(request, write_receipt_file=args.receipt)
     metrics = context_metrics(result)
 
@@ -295,7 +295,7 @@ def _context(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="pasr", description="PASR context broker — CLI")
+    parser = argparse.ArgumentParser(prog="pasr", description="PASR context broker -- CLI")
     parser.add_argument("--version", action="version", version=f"pasr {__version__}")
     parser.add_argument("--workspace", type=Path, default=Path.cwd(), help="Workspace root (default: cwd).")
     sub = parser.add_subparsers(dest="command", required=True)

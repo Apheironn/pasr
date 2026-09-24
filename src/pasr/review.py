@@ -168,14 +168,14 @@ def review_context(
 def render_review(result: dict[str, Any]) -> str:
     """Human-readable rendering of a :func:`review_context` result."""
     lines = [
-        f"# Review context — {len(result['changed_files'])} changed file(s), "
+        f"# Review context -- {len(result['changed_files'])} changed file(s), "
         f"{result['token_count']}/{result['budget_tokens']} tokens",
         "",
     ]
     if result["unresolved_files"]:
         lines.append(f"- not in the workspace (skipped): {', '.join(result['unresolved_files'])}")
     lines.append(f"- touched definitions ({len(result['touched_symbols'])}):")
-    lines += [f"  - {row}" for row in result["touched_symbols"]] or ["  - (none — change is outside any definition)"]
+    lines += [f"  - {row}" for row in result["touched_symbols"]] or ["  - (none -- change is outside any definition)"]
     lines.append(f"- callers that could be affected ({len(result['impacted_callers'])}):")
     lines += [f"  - {row}" for row in result["impacted_callers"]] or ["  - (none found)"]
     lines += ["", "```", result["context"], "```"]

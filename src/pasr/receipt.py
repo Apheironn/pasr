@@ -2,7 +2,7 @@
 
 Written to ``<workspace>/.pasr/receipts/<id>.json`` (+ a ``.md`` human diff). The id is
 a content hash of the request, so the same request always overwrites the same file.
-No wall-clock is stored — determinism over an audit timestamp (the file mtime carries
+No wall-clock is stored -- determinism over an audit timestamp (the file mtime carries
 that).
 """
 

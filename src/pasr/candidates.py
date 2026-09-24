@@ -66,7 +66,7 @@ def generate_lexical_candidates(
     """Generate exact-anchor candidates over fixed raw token blocks.
 
     A block also qualifies when no query term appears in its own text but the
-    *file's path* does (``net/stale_socket_gc.py`` for a "stale socket" query) —
+    *file's path* does (``net/stale_socket_gc.py`` for a "stale socket" query) --
     otherwise a file whose name alone answers a lexical query is invisible to
     this generator and can be dropped entirely under budget pressure, even
     though a plain filename grep would have found it immediately.

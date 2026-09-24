@@ -1,15 +1,15 @@
-"""Optional semantic scoring — an extra fusion signal, off by default.
+"""Optional semantic scoring -- an extra fusion signal, off by default.
 
 Two scorers:
 
-* ``hashing`` — zero-dependency, deterministic sub-word bag-of-features (word tokens
+* ``hashing`` -- zero-dependency, deterministic sub-word bag-of-features (word tokens
   plus character n-grams), cosine similarity. Robust to morphology / reordering that
   word-level BM25 misses. This is the default when semantic scoring is enabled.
-* ``minilm`` — real sentence embeddings via ``sentence-transformers`` (the
+* ``minilm`` -- real sentence embeddings via ``sentence-transformers`` (the
   ``pasr-mcp[semantic]`` extra; downloads a small model on first use).
 
 If a scorer cannot be constructed the pipeline degrades to BM25 + lexical with a
-``RuntimeWarning`` — the default stays fully offline.
+``RuntimeWarning`` -- the default stays fully offline.
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ import re
 import zlib
 from collections import Counter
 from collections.abc import Sequence
+from functools import lru_cache
 from typing import Protocol, runtime_checkable
 
 from pasr.candidates import CandidateSpan, rank_candidates
@@ -26,6 +27,14 @@ from pasr.chunker import RawSpan
 from pasr.retrieval import raw_span_to_candidate
 
 _WORD_RE = re.compile(r"[A-Za-z0-9]+")
+
+
+# Source code repeats itself: scoring a 250-file candidate set hashed 4.7 million tokens
+# and only a small fraction were distinct. Same values, computed once each.
+@lru_cache(maxsize=1 << 18)
+def _bucket_of(token: str, dims: int) -> int:
+    # stable across processes (unlike the salted builtin hash)
+    return zlib.crc32(token.encode("utf-8")) % dims
 
 
 @runtime_checkable
@@ -38,7 +47,7 @@ class SemanticScorer(Protocol):
 
 
 class HashingScorer:
-    """Deterministic sub-word cosine similarity — no model, no download."""
+    """Deterministic sub-word cosine similarity -- no model, no download."""
 
     name = "hashing"
 
@@ -47,8 +56,7 @@ class HashingScorer:
         self.char_ngrams = char_ngrams
 
     def _bucket(self, token: str) -> int:
-        # stable across processes (unlike the salted builtin hash)
-        return zlib.crc32(token.encode("utf-8")) % self.dims
+        return _bucket_of(token, self.dims)
 
     def _features(self, text: str) -> dict[int, float]:
         counts: Counter[int] = Counter()
@@ -62,12 +70,20 @@ class HashingScorer:
         return {k: v / norm for k, v in counts.items()}
 
     def score(self, query: str, spans: Sequence[RawSpan]) -> list[float]:
+        return self.score_texts(query, [span.text for span in spans])
+
+    def score_texts(self, query: str, texts: Sequence[str]) -> list[float]:
+        """Cosine similarity of each text against the query, in the order given.
+
+        Callers that rank plain strings -- a file's blocks, say -- need this without
+        first wrapping them in spans.
+        """
         q = self._features(query)
         if not q:
-            return [0.0] * len(spans)
+            return [0.0] * len(texts)
         out = []
-        for span in spans:
-            doc = self._features(span.text)
+        for text in texts:
+            doc = self._features(text)
             small, large = (q, doc) if len(q) < len(doc) else (doc, q)
             out.append(sum(weight * large.get(key, 0.0) for key, weight in small.items()))
         return out
