@@ -29,7 +29,11 @@ def test_lists_all_tools_with_schemas(mini_workspace: Path):
         "expand_context",
     }
     props = set(tools["select_context"].input_schema.get("properties", {}))
-    assert {"query", "files", "include", "budget_tokens", "prefix_tokens", "tail_tokens"} <= props
+    # The model-facing surface only. Every property here is re-sent in this tool's schema
+    # on every turn, and across 6,176 recorded calls the model never once passed
+    # prefix_tokens, tail_tokens, recall_strategy, semantic, map_tokens, trace, pack or
+    # save_as -- they live behind `advanced` now, one schema entry instead of ten.
+    assert {"query", "files", "include", "budget_tokens", "outline", "advanced"} == props
 
 
 def test_find_evidence_spends_its_budget_on_files_not_on_repeat_lines(mini_workspace: Path):
@@ -250,8 +254,10 @@ def test_select_context_map_tokens_and_trace_stay_within_budget(mini_workspace: 
                 "include": ["."],
                 "budget_tokens": 400,
                 "block_size": 30,
-                "map_tokens": 90,
-                "trace": "deduplicate_near_identical_documents_by_shingle_fingerprint",
+                "advanced": {
+                    "map_tokens": 90,
+                    "trace": "deduplicate_near_identical_documents_by_shingle_fingerprint",
+                },
             },
         )
         .content[0]
@@ -336,7 +342,7 @@ def test_select_context_saves_and_loads_a_pack(mini_workspace: Path):
                 "query": "emit rate limit headers on the response",
                 "include": ["api/ratelimit.py"],
                 "budget_tokens": 2000,
-                "save_as": "rl",
+                "advanced": {"save_as": "rl"},
             },
         )
         .content[0]
@@ -345,7 +351,7 @@ def test_select_context_saves_and_loads_a_pack(mini_workspace: Path):
     assert saved["saved_pack"].endswith("rl.json")
     assert (mini_workspace / ".pasr" / "packs" / "rl.json").is_file()
 
-    loaded = json.loads(_call(server, "select_context", {"query": "", "pack": "rl"}).content[0].text)
+    loaded = json.loads(_call(server, "select_context", {"query": "", "advanced": {"pack": "rl"}}).content[0].text)
     assert loaded["from_pack"] == "rl"
     assert loaded["context"] == saved["context"]
     assert loaded["pack_stale"] == []
@@ -354,7 +360,7 @@ def test_select_context_saves_and_loads_a_pack(mini_workspace: Path):
 def test_select_context_unknown_pack_is_a_clean_error(mini_workspace: Path):
     server = create_server(mini_workspace)
     with pytest.raises(Exception, match="no pack named"):
-        _call(server, "select_context", {"query": "", "pack": "ghost"})
+        _call(server, "select_context", {"query": "", "advanced": {"pack": "ghost"}})
 
 
 def test_identical_calls_stay_deterministic_then_stop(mini_workspace: Path):

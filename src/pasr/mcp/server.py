@@ -434,6 +434,20 @@ ALL_TOOLS = (
 )
 
 
+_SELECT_DEFAULTS: dict[str, Any] = {
+    "prefix_tokens": 128,
+    "tail_tokens": 128,
+    "recall_strategy": "coverage_aware",
+    "block_size": 400,
+    "max_files": 100,
+    "semantic": "",
+    "map_tokens": 0,
+    "trace": "",
+    "pack": "",
+    "save_as": "",
+}
+
+
 def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> MCPServer:
     """Build an MCP server whose tools resolve paths under ``workspace_root``.
 
@@ -646,17 +660,8 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
         files: list[str] | None = None,
         include: list[str] | None = None,
         budget_tokens: int = 3000,
-        prefix_tokens: int = 128,
-        tail_tokens: int = 128,
-        recall_strategy: str = "coverage_aware",
-        block_size: int = 400,
-        max_files: int = 100,
-        semantic: str = "",
-        map_tokens: int = 0,
-        trace: str = "",
         outline: bool = False,
-        pack: str = "",
-        save_as: str = "",
+        advanced: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Select relevant raw spans from workspace files for ``query``.
 
@@ -677,6 +682,23 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
         per-file breakdown of everything in scope, each span's text and score
         components, and what was dropped.
         """
+        # Every parameter is re-sent in this tool's JSON schema on every turn, so a knob
+        # nobody turns is a bill nobody stops paying. Across 6,176 recorded calls the model
+        # passed query 100% of the time, files 97%, budget_tokens 70% and include 3% -- and
+        # prefix_tokens, tail_tokens, recall_strategy, semantic, map_tokens, trace, pack and
+        # save_as exactly never, block_size once, max_files twice. All still available,
+        # behind one schema entry instead of ten, which is what a programmatic caller passes
+        # and a model never will.
+        #
+        # Compressing the prose was tried at the same time and is NOT here: it cut the
+        # catalogue by a further 1,772 tokens a run and cost 10,000, because select_context
+        # fell 6,562 to 1,354 and native read_file rose 4,319 to 14,414. The description is
+        # what persuades the model to use the tool; the schema is not.
+        options = dict(_SELECT_DEFAULTS, **(advanced or {}))
+        unknown = set(options) - set(_SELECT_DEFAULTS)
+        if unknown:
+            raise ToolError(f"unknown advanced option(s): {', '.join(sorted(unknown))}")
+        pack, save_as = options.pop("pack"), options.pop("save_as")
         if pack:
             try:
                 return run_pack(root, pack)
@@ -691,15 +713,8 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
                     "files": files,
                     "include": include,
                     "budget_tokens": budget_tokens,
-                    "prefix_tokens": prefix_tokens,
-                    "tail_tokens": tail_tokens,
-                    "recall_strategy": recall_strategy,
-                    "block_size": block_size,
-                    "max_files": max_files,
-                    "semantic": semantic,
-                    "map_tokens": map_tokens,
-                    "trace": trace,
                     "outline": outline,
+                    **options,
                 },
                 workspace_root=root,
             )
