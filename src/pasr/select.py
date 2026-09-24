@@ -25,6 +25,7 @@ from pasr.trace import trace_dependencies
 
 TOOL_NAME = "select_context"
 _RANGED_BLOCK = 64  # fine chunking for `path:start-end` reads
+_RANGED_FINE_LINES = 40  # ...of up to this many lines
 
 
 def _canonical_request(request: SelectContextRequest) -> dict[str, Any]:
@@ -228,7 +229,11 @@ def _run(
         token_offset = 0
         for low, char_offset, section in sections:
             section_offsets.append(token_offset)
-            chunks = chunk_text(source, section, tok, _RANGED_BLOCK if line_ranges else request.block_size)
+            # Fine blocks let a budget cut a short requested range precisely. A long range --
+            # the unread remainder of a file, typically -- chunked that finely comes back as
+            # dozens of five-line shards, so it is chunked like a whole file.
+            fine = line_ranges and section.count(chr(10)) < _RANGED_FINE_LINES
+            chunks = chunk_text(source, section, tok, _RANGED_BLOCK if fine else request.block_size)
             if line_ranges:
                 file_spans.extend(
                     replace(

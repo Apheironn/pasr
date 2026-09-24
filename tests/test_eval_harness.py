@@ -239,7 +239,6 @@ def test_agent_benchmark_uses_production_schemas_and_session(agent_bench, tmp_pa
         ("find_evidence", {"query": "calculate"}),
         ("find_symbols", {"query": "calculate"}),
         ("find_usages", {"symbol": "calculate"}),
-        ("trace_dependencies", {"symbol": "calculate", "include": ["worker.py"]}),
         ("select_context", {"query": "calculate", "files": ["worker.py"], "budget_tokens": 2000}),
     ]
     # Checking every tool takes more retrievals than one session is allowed to spend, so
@@ -254,14 +253,6 @@ def test_agent_benchmark_uses_production_schemas_and_session(agent_bench, tmp_pa
         expected = production_text(name, arguments)
         assert agent_bench.tools.run_pasr(name, arguments) == expected
         spent += 1
-
-    selected = expected
-    receipt_id = json.loads(selected)["receipt"]["id"]
-    for name, arguments in [
-        ("explain_selection", {"receipt_id": receipt_id}),
-        ("expand_context", {"receipt_id": receipt_id, "extra_budget": 1000}),
-    ]:
-        assert agent_bench.tools.run_pasr(name, arguments) == production_text(name, arguments)
 
     # A fresh session on both sides, then the same search until the production repeat
     # guard rejects it: twice is allowed, the third identical reply is refused, and the
@@ -281,7 +272,6 @@ def test_agent_benchmark_uses_production_schemas_and_session(agent_bench, tmp_pa
 
     for name, arguments in [
         ("select_context", {"files": ["../outside.py"]}),
-        ("explain_selection", {"receipt_id": "missing"}),
         ("unknown_tool", {}),
     ]:
         with pytest.raises(Exception) as invalid:
@@ -350,7 +340,7 @@ def _scripted_agent_client(backend, steps):
 def test_agent_benchmark_delivers_and_accounts_full_production_text(agent_bench, tmp_path, backend):
     source = (
         "def calculate(value):\n"
-        + "".join(f"    value += {index}  # preserve this source line without clipping\n" for index in range(350))
+        + "".join(f"    value += {index}  # preserve this source line without clipping\n" for index in range(90))
         + "    return value\n"
     )
     (tmp_path / "worker.py").write_text(source, encoding="utf-8")
@@ -363,8 +353,11 @@ def test_agent_benchmark_delivers_and_accounts_full_production_text(agent_bench,
     )
     result = agent_bench.efficiency.run_one(client, "offline", "Q1", "pasr", backend)
     output = result["tool_outputs"][0]
-    assert len(output["raw"]) > 12000
-    assert json.loads(output["raw"])["context"] == source
+    # One reply carries at most SELECT_BUDGET tokens by design; within that, nothing the
+    # server sends is clipped on the way to the model.
+    assert len(output["raw"]) > 5000
+    # Whole and unclipped, under the same `[path:start-end]` label a selected slice carries.
+    assert json.loads(output["raw"])["context"] == "[worker.py:1-92]\n" + source.rstrip("\n")
     delivered = requests[1][-1]["content"]
     if backend == "anthropic":
         delivered = delivered[0]["content"]

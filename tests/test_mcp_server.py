@@ -1,39 +1,56 @@
 import ast
 import importlib.util
 import json
+import re
 from pathlib import Path
 
 import anyio
 import pytest
 from mcp.server.mcpserver.exceptions import ToolError
 
-from pasr.mcp.server import create_server
+from pasr.mcp.server import ALL_TOOLS, create_server
 
 
 def _call(server, tool: str, arguments: dict):
     return anyio.run(lambda: server.call_tool(tool, arguments))
 
 
+def _labels(payload: dict) -> list[str]:
+    """The `[path:start-end]` label on every piece of a selection's context."""
+    return re.findall(r"(?m)^\[([^\]\n]+:\d+(?:-\d+)?)\]$", payload["context"])
+
+
 def test_lists_all_tools_with_schemas(mini_workspace: Path):
     server = create_server(mini_workspace)
     tools = {tool.name: tool for tool in anyio.run(server.list_tools)}
 
-    assert set(tools) == {
-        "find_files",
-        "find_evidence",
-        "find_symbols",
-        "find_usages",
-        "select_context",
-        "trace_dependencies",
-        "explain_selection",
-        "expand_context",
-    }
+    # The receipt and closure tools are opt-in: across 1,413 recorded runs they drew 24
+    # calls between them while costing ~400 catalogue tokens on every turn.
+    assert set(tools) == {"find_files", "find_evidence", "find_symbols", "find_usages", "select_context"}
+    everything = {tool.name for tool in anyio.run(create_server(mini_workspace, expose=ALL_TOOLS).list_tools)}
+    assert everything == set(tools) | {"trace_dependencies", "explain_selection", "expand_context"}
     props = set(tools["select_context"].input_schema.get("properties", {}))
     # The model-facing surface only. Every property here is re-sent in this tool's schema
     # on every turn, and across 6,176 recorded calls the model never once passed
     # prefix_tokens, tail_tokens, recall_strategy, semantic, map_tokens, trace, pack or
     # save_as -- they live behind `advanced` now, one schema entry instead of ten.
     assert {"query", "files", "include", "budget_tokens", "outline", "advanced"} == props
+
+
+def test_the_catalogue_carries_no_generated_schema_noise(mini_workspace: Path):
+    """A property `title` restates its name and an optional list's `null` branch restates
+    that it is optional; both are re-sent on every request. 419 of 985 schema tokens."""
+    server = create_server(mini_workspace)
+    for tool in anyio.run(server.list_tools):
+        schema = tool.input_schema
+        assert "title" not in schema, tool.name
+        for name, prop in schema["properties"].items():
+            assert "title" not in prop and "anyOf" not in prop, (tool.name, name)
+    select = next(t for t in anyio.run(server.list_tools) if t.name == "select_context").input_schema
+    assert select["properties"]["files"] == {"items": {"type": "string"}, "type": "array"}
+    # still validated against the signature: an explicit null is what it always was
+    result = _call(server, "select_context", {"query": "rate limit", "files": None, "include": ["api/ratelimit.py"]})
+    assert result.is_error is False
 
 
 def test_find_evidence_spends_its_budget_on_files_not_on_repeat_lines(mini_workspace: Path):
@@ -90,12 +107,12 @@ def test_merging_touching_spans_loses_no_line_and_invents_none(mini_workspace: P
     assert _merge_adjacent(two_files) == two_files
 
     # and on a real selection the wire still covers exactly what the receipt kept
-    server = create_server(mini_workspace)
+    server = create_server(mini_workspace, expose=ALL_TOOLS)
     payload = json.loads(
         _call(server, "select_context", {"query": "rate limit", "include": ["."], "budget_tokens": 400}).content[0].text
     )
     receipt = json.loads(_call(server, "explain_selection", {"receipt_id": payload["receipt"]["id"]}).content[0].text)
-    assert lines(payload["spans"]) == lines(receipt["kept"])
+    assert lines({"provenance": label} for label in _labels(payload)) == lines(receipt["kept"])
 
 
 def test_a_question_gets_a_retrieval_budget_and_the_refusal_is_cheap(mini_workspace: Path):
@@ -138,7 +155,7 @@ def test_the_wire_says_each_span_once_and_the_receipt_still_says_everything(mini
     restating span ids the same response just listed -- costs the caller that much on
     every remaining turn. None of it is lost: the receipt keeps the full record.
     """
-    server = create_server(mini_workspace)
+    server = create_server(mini_workspace, expose=ALL_TOOLS)
     payload = json.loads(
         _call(
             server,
@@ -149,14 +166,16 @@ def test_the_wire_says_each_span_once_and_the_receipt_still_says_everything(mini
         .text
     )
 
-    assert payload["spans"], "a selection still has to say where its source came from"
-    for span in payload["spans"]:
-        assert set(span) == {"provenance"}
-        assert span["provenance"]
+    # Every piece of the context says where it came from, once, in place -- a lossless slice
+    # included -- so a span list beside it would only say it again.
+    assert _labels(payload), "a selection still has to say where its source came from"
+    assert payload["context"].startswith("[api/ratelimit.py:")
+    assert "spans" not in payload
     # The lexical coverage audit is not on the wire: its own number tells "has the answer"
     # from "still looking" at chance, and `advice` already says in a sentence whatever it
-    # had to say. The receipt still carries every bit of it.
-    assert "evidence_accounting" not in payload
+    # had to say. Nor is the request echoed back, or the scorer's diagnostics. The receipt
+    # still carries every bit of it.
+    assert set(payload) <= {"route", "token_count", "total_input_tokens", "sources", "context", "advice", "receipt"}
     assert payload["advice"]
 
     receipt = json.loads(_call(server, "explain_selection", {"receipt_id": payload["receipt"]["id"]}).content[0].text)
@@ -173,11 +192,10 @@ def test_select_context_returns_a_parseable_pack_with_a_receipt(mini_workspace: 
 
     assert result.is_error is False
     payload = json.loads(result.content[0].text)
-    assert payload["tool"] == "select_context"
     assert payload["route"] in {"lossless", "selected"}
-    assert payload["token_count"] <= payload["budget_tokens"]
+    assert payload["token_count"] <= 2000
     assert payload["sources"] == ["api/ratelimit.py"]
-    assert all(span["provenance"] for span in payload["spans"])
+    assert all(label.startswith("api/ratelimit.py:") for label in _labels(payload))
     assert (mini_workspace / ".pasr" / "receipts" / f"{payload['receipt']['id']}.json").is_file()
 
 
@@ -192,14 +210,39 @@ def test_tiny_budget_does_not_crash_and_drops_the_window(mini_workspace: Path):
     result = _call(
         server,
         "select_context",
-        {"query": "throttling", "include": ["api/ratelimit.py"], "budget_tokens": 50, "block_size": 400},
+        {
+            "query": "throttling",
+            "include": ["api/ratelimit.py"],
+            "budget_tokens": 50,
+            "advanced": {"prefix_tokens": 128, "tail_tokens": 128},
+        },
     )
     assert result.is_error is False
     payload = json.loads(result.content[0].text)
     assert payload["route"] == "selected"
-    assert payload["diagnostics"]["active_window"] is False
-    assert "active_window_dropped" in payload["diagnostics"]
+    assert any("prefix/tail window" in note for note in payload["advice"])
     assert payload["token_count"] <= 50
+
+
+def test_a_source_file_gets_no_mandatory_head_or_tail(tmp_path: Path):
+    """The head of a source file is its imports, and the query should decide what is read.
+
+    On the benchmark 42 of 52 selections carried a file's opening lines whatever was asked,
+    a mean 381 tokens, re-sent on every later turn and paid again by every re-selection.
+    """
+    body = "".join(f"import module_{n}\n" for n in range(60))
+    body += "".join(f"def helper_{n}(x):\n    return x + {n}\n\n" for n in range(80))
+    body += "def retry_budget(attempts):\n    return attempts * 2\n"
+    (tmp_path / "service.py").write_text(body, encoding="utf-8")
+    server = create_server(tmp_path)
+    payload = json.loads(
+        _call(server, "select_context", {"query": "retry budget", "files": ["service.py"], "budget_tokens": 300})
+        .content[0]
+        .text
+    )
+    assert payload["route"] == "selected"
+    assert "def retry_budget" in payload["context"]
+    assert "import module_0" not in payload["context"]
 
 
 def test_select_context_is_deterministic(mini_workspace: Path):
@@ -211,7 +254,7 @@ def test_select_context_is_deterministic(mini_workspace: Path):
 
 
 def test_trace_dependencies_returns_a_closure(trace_workspace: Path):
-    server = create_server(trace_workspace)
+    server = create_server(trace_workspace, expose=ALL_TOOLS)
     result = _call(server, "trace_dependencies", {"symbol": "run_pipeline", "include": ["app"]})
 
     assert result.is_error is False
@@ -223,14 +266,14 @@ def test_trace_dependencies_returns_a_closure(trace_workspace: Path):
 
 
 def test_trace_dependencies_missing_symbol_is_not_an_error(trace_workspace: Path):
-    server = create_server(trace_workspace)
+    server = create_server(trace_workspace, expose=ALL_TOOLS)
     result = _call(server, "trace_dependencies", {"symbol": "nope", "include": ["app"]})
     assert result.is_error is False
     assert json.loads(result.content[0].text)["found"] is False
 
 
 def test_trace_dependencies_callers_direction(trace_workspace: Path):
-    server = create_server(trace_workspace)
+    server = create_server(trace_workspace, expose=ALL_TOOLS)
     result = _call(server, "trace_dependencies", {"symbol": "normalize", "include": ["app"], "direction": "callers"})
     payload = json.loads(result.content[0].text)
     assert payload["direction"] == "callers"
@@ -238,13 +281,13 @@ def test_trace_dependencies_callers_direction(trace_workspace: Path):
 
 
 def test_trace_dependencies_rejects_bad_direction(trace_workspace: Path):
-    server = create_server(trace_workspace)
+    server = create_server(trace_workspace, expose=ALL_TOOLS)
     with pytest.raises(Exception, match="direction"):
         _call(server, "trace_dependencies", {"symbol": "normalize", "direction": "sideways"})
 
 
 def test_select_context_map_tokens_and_trace_stay_within_budget(mini_workspace: Path):
-    server = create_server(mini_workspace)
+    server = create_server(mini_workspace, expose=ALL_TOOLS)
     payload = json.loads(
         _call(
             server,
@@ -267,8 +310,8 @@ def test_select_context_map_tokens_and_trace_stay_within_budget(mini_workspace: 
     assert payload["context"].startswith("# symbol map\n")
     assert "# dependency closure (" in payload["context"]
     assert payload["token_count"] <= 400
-    assert payload["diagnostics"]["symbol_map"]["header_tokens"] > 0
-    assert payload["diagnostics"]["trace"]["found"] is True
+    receipt = json.loads(_call(server, "explain_selection", {"receipt_id": payload["receipt"]["id"]}).content[0].text)
+    assert receipt["request"]["map_tokens"] == 90
 
 
 def test_select_context_appends_a_ledger_row(mini_workspace: Path):
@@ -281,7 +324,7 @@ def test_select_context_appends_a_ledger_row(mini_workspace: Path):
 
 
 def test_explain_selection_returns_the_stored_receipt(mini_workspace: Path):
-    server = create_server(mini_workspace)
+    server = create_server(mini_workspace, expose=ALL_TOOLS)
     select = json.loads(
         _call(
             server,
@@ -298,17 +341,17 @@ def test_explain_selection_returns_the_stored_receipt(mini_workspace: Path):
     receipt = json.loads(result.content[0].text)
     assert receipt["id"] == receipt_id
     assert "kept" in receipt and "dropped" in receipt
-    assert {span["provenance"] for span in receipt["kept"]} == {span["provenance"] for span in select["spans"]}
+    assert {span["provenance"] for span in receipt["kept"]} == set(_labels(select))
 
 
 def test_explain_selection_unknown_id_is_a_clean_error(mini_workspace: Path):
-    server = create_server(mini_workspace)
+    server = create_server(mini_workspace, expose=ALL_TOOLS)
     with pytest.raises(Exception, match="no receipt with id"):
         _call(server, "explain_selection", {"receipt_id": "deadbeef0000"})
 
 
 def test_expand_context_widens_a_prior_selection_once(mini_workspace: Path):
-    server = create_server(mini_workspace)
+    server = create_server(mini_workspace, expose=ALL_TOOLS)
     first = json.loads(
         _call(
             server,
@@ -321,13 +364,12 @@ def test_expand_context_widens_a_prior_selection_once(mini_workspace: Path):
     result = _call(server, "expand_context", {"receipt_id": first["receipt"]["id"], "extra_budget": 300})
     assert result.is_error is False
     payload = json.loads(result.content[0].text)
-    assert payload["budget_tokens"] == 400
     assert payload["token_count"] <= 400
     assert payload["expanded_from"] == first["receipt"]["id"]
 
 
 def test_expand_context_rejects_non_positive_budget(mini_workspace: Path):
-    server = create_server(mini_workspace)
+    server = create_server(mini_workspace, expose=ALL_TOOLS)
     with pytest.raises(Exception, match="extra_budget"):
         _call(server, "expand_context", {"receipt_id": "deadbeef0000", "extra_budget": 0})
 
@@ -392,7 +434,7 @@ def test_reworded_queries_over_the_same_spans_stop_too(mini_workspace: Path):
     base = {"include": ["api/ratelimit.py"], "budget_tokens": 3000}
 
     first = json.loads(_call(server, "select_context", {"query": "rate limit headers", **base}).content[0].text)
-    assert first["spans"], "fixture should return spans"
+    assert _labels(first), "fixture should return spans"
 
     # Different query strings, so the byte-identical guard never fires -- but the same
     # file fits the budget losslessly, so no call after the first adds any evidence.
@@ -543,13 +585,19 @@ def test_a_reread_inside_lines_already_held_is_caught(mini_workspace: Path):
         .content[0]
         .text
     )
-    held = [span["provenance"] for span in first["spans"]]
+    held = _labels(first)
     assert held, "fixture should return spans"
 
     # Ask again for lines strictly inside what was already delivered, under new wording and
-    # a new receipt id each time. Counting provenance strings called these wholly new.
+    # a new receipt id each time. Counting provenance strings called these wholly new; now
+    # the reply is a few dozen tokens saying so, and a second one is refused.
     inner = [p.rsplit(":", 1)[0] + ":" + str(int(p.rsplit(":", 1)[1].split("-")[0]) + 1) for p in held[:2]]
-    _call(server, "select_context", {"query": "throttle behaviour", "files": inner, "budget_tokens": 3000})
+    stub = json.loads(
+        _call(server, "select_context", {"query": "throttle behaviour", "files": inner, "budget_tokens": 3000})
+        .content[0]
+        .text
+    )
+    assert stub["route"] == "held" and stub["context"] == ""
     with pytest.raises(Exception, match="already hold"):
         _call(server, "select_context", {"query": "429 emission", "files": inner, "budget_tokens": 3000})
 
@@ -615,7 +663,7 @@ def test_a_host_can_publish_only_the_tools_it_will_use(mini_workspace):
     """
     from pasr.mcp.server import ALL_TOOLS, create_server
 
-    everything = anyio.run(create_server(mini_workspace).list_tools)
+    everything = anyio.run(create_server(mini_workspace, expose=ALL_TOOLS).list_tools)
     assert {t.name for t in everything} == set(ALL_TOOLS)
 
     core = ("find_files", "find_symbols", "find_evidence", "find_usages", "select_context")
@@ -629,3 +677,102 @@ def test_a_host_can_publish_only_the_tools_it_will_use(mini_workspace):
     server = create_server(mini_workspace, expose=["find_evidence"])
     with pytest.raises(ToolError, match="select_context"):
         anyio.run(lambda: server.call_tool("select_context", {"query": "x", "files": ["pkg/alpha.py"]}))
+
+
+def test_one_wrong_path_no_longer_sinks_the_right_ones(mini_workspace: Path):
+    """A guessed path used to fail the whole call, and the turn with it.
+
+    On the nushell holdout five runs of twelve spent a turn learning that one of the files
+    they asked for did not exist -- each turn re-sending the whole conversation. The real
+    files are read, the wrong one is named, and a same-named file is offered for it.
+    """
+    server = create_server(mini_workspace)
+    payload = json.loads(
+        _call(
+            server,
+            "select_context",
+            {"query": "rate limit", "files": ["api/ratelimit.py", "core/ratelimit.py"], "budget_tokens": 2000},
+        )
+        .content[0]
+        .text
+    )
+    assert payload["sources"] == ["api/ratelimit.py"]
+    assert "Not found, skipped: core/ratelimit.py (did you mean api/ratelimit.py?)" in payload["advice"][0]
+
+    with pytest.raises(Exception, match="did you mean api/ratelimit.py"):
+        _call(server, "select_context", {"query": "rate limit", "files": ["lib/ratelimit.py"]})
+    with pytest.raises(Exception, match="escapes workspace"):
+        _call(server, "select_context", {"query": "x", "files": ["api/ratelimit.py", "../secrets.py"]})
+
+
+def test_selecting_a_held_file_again_returns_only_what_was_not_shown(tmp_path: Path):
+    """A second selection of a file used to hand back mostly what the caller already had.
+
+    The ranking does not know what the conversation holds, so every re-selection opened with
+    the same top-scoring functions. The conversation keeps them -- nothing is withdrawn -- so
+    the unread remainder is the only thing another selection can add, and once there is none
+    the reply says so in a few dozen tokens.
+    """
+    body = "".join(f"def step_{n}(state):\n    state.retry_count += {n}\n    return state\n\n" for n in range(120))
+    (tmp_path / "engine.py").write_text(body, encoding="utf-8")
+    server = create_server(tmp_path)
+
+    def select(query: str) -> dict:
+        args = {"query": query, "files": ["engine.py"], "budget_tokens": 900}
+        return json.loads(_call(server, "select_context", args).content[0].text)
+
+    def lines(payload: dict) -> set[int]:
+        held = set()
+        for label in _labels(payload):
+            start, _, end = label.rsplit(":", 1)[1].partition("-")
+            held.update(range(int(start), int(end or start) + 1))
+        return held
+
+    first, second = select("retry count step"), select("state retry step")
+    assert lines(first) and lines(second)
+    assert not lines(first) & lines(second), "a re-selection must not repeat a delivered line"
+    assert "you have not been shown yet" in second["advice"][0]
+
+    reply = second
+    for n in range(6):
+        if reply["route"] in {"lossless", "held"}:
+            break
+        reply = select(f"retry pass {n}")
+    assert reply["route"] == "held" or any("every line of engine.py" in note for note in reply["advice"])
+    # Asking for it yet again is the loop this exists to end.
+    with pytest.raises(Exception, match="already hold"):
+        select("retry once more")
+        select("retry one last time")
+
+
+def test_a_scope_that_matches_nothing_searches_everything_and_says_so(mini_workspace: Path):
+    """An `include` naming directories the workspace does not have used to be searched
+    faithfully -- zero files -- and the reply said the query's words appear nowhere. The
+    caller believed it, hunted synonyms with find_files, and answered wrong."""
+    server = create_server(mini_workspace)
+    payload = json.loads(
+        _call(server, "find_evidence", {"query": "rate limit", "include": ["src", "tracker", "*.rs"]}).content[0].text
+    )
+    assert payload["hits"], "the unscoped search should find what the question is about"
+    assert "matched no file here" in payload["advice"][0]
+    assert not any("appear in no file" in note for note in payload["advice"])
+
+    scoped = json.loads(_call(server, "find_evidence", {"query": "rate limit", "include": ["api"]}).content[0].text)
+    assert not any("matched no file" in note for note in scoped.get("advice", []))
+
+
+def test_one_reply_carries_at_most_the_select_budget(tmp_path: Path):
+    """A bounded reply, whatever the caller asks for: the selector front-loads what matters,
+    and a second call on the same file returns only what the first left out."""
+    from pasr.mcp.server import SELECT_BUDGET
+
+    body = "".join(f"def step_{n}(state):\n    state.retry_count += {n}\n    return state\n\n" for n in range(400))
+    (tmp_path / "engine.py").write_text(body, encoding="utf-8")
+    server = create_server(tmp_path)
+    args = {"query": "retry count", "files": ["engine.py"], "budget_tokens": 20000}
+    first = json.loads(_call(server, "select_context", args).content[0].text)
+    assert first["route"] == "selected"
+    assert first["token_count"] <= SELECT_BUDGET
+    second = json.loads(_call(server, "select_context", {**args, "query": "state step"}).content[0].text)
+    assert second["token_count"] <= SELECT_BUDGET
+    assert not set(_labels(first)) & set(_labels(second))
