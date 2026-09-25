@@ -20,7 +20,7 @@ calls for every arm. Accuracy is the keyword-localization proxy, not graded answ
 Noise, for reading the tables: at 24 runs an arm, ±2 answers and ±10–15% tokens are within
 what a changed prompt alone produces.
 
-## Where it stands (2026-09-24, end of day)
+## Where it stands (2026-09-25)
 
 Accepted, in order: c1 select_context hygiene (−12%), c2 schema without generated noise
 (−7%), g1 reply capped at 1,500 tokens (−4%: large repos −9…−13%, airguard +20%), g2b
@@ -29,17 +29,16 @@ c3 compact evidence rows, g2 short select_context description, g3b deeper eviden
 g4b two-tool catalogue — every one a smaller payload or surface that the model spent back
 on extra calls or on native `read_file`.
 
-Chained estimate, each step from its own sweep: grep+read ~24.4k, PASR 43.6k → ~32.6k
-(−25%), accuracy at or above grep+read in every sweep (+4 to +12 points). Under prompt
-caching (re-sent input at 0.1x) the gap is 11.0k vs 9.1k. The confirmation sweep (c0 vs
-g2b vs grep+read, including the never-tuned `nushell_fresh` set) was stopped at the user's
-request after 44 of 48 fresh rows: grep+read 8/16 @ 20,769, PASR start 10/14 @ 49,517, PASR
-final 10/15 @ 36,840 (−26% against the start). To be completed.
+Confirmed in one sweep of 64 runs an arm over four corpora (below): PASR 43,435 → 32,826
+tokens a run, **−24% [−31%, −18%]**, accuracy 55 → 53/64 (n.s.); on the never-tuned
+`nushell_fresh` set −22%. Against grep+read (23,772, 48/64): +38% tokens, +8 points
+accuracy; below it on airguard (−3%), +13% on nushell, +80% on the multi-file holdout and
+fresh sets. Under prompt caching (re-sent input at 0.1x): 10,912 vs 8,754.
 
 **What is left between PASR and grep+read is the catalogue, and the catalogue cannot be cut
-further this way.** After g2b PASR's retrieved content per run (~20k) is at parity with
-grep+read's reads and greps (~19.5k); the gap is the ~1,900 extra fixed tokens re-sent
-on each of ~6 turns. Every attempt to make that smaller by hiding or shortening tools moved
+further this way.** In the confirmation PASR's retrieved content per run (~19.8k) is within
+~1.3k of grep+read's reads and greps (18.5k); the gap is `fixed` — 11,299 against 3,490,
+the ~1,470 extra catalogue tokens re-sent on each of ~6 turns. Every attempt to make that smaller by hiding or shortening tools moved
 this model onto `read_file`. Beating grep+read on raw tokens therefore needs fewer turns,
 not a smaller catalogue.
 
@@ -476,3 +475,71 @@ two corpora would have needed −17% each to break even, and g2b's run had alrea
 nushell drifting to native reads with only three tools removed. The ninth time in this
 project that a smaller surface bought a bigger bill: this model uses the PASR tools it is
 shown as the alternative to `read_file`, and takes one away and it reads.
+
+### Confirmation — grep+read vs PASR at session start (c0) vs PASR final (g2b), one sweep, four corpora
+
+2026-09-25 03:17–04:09, 8 reps × 2 questions × 4 corpora = 64 runs an arm. `nushell_fresh` is the held-out set: never used to choose or tune anything.
+
+**final_fresh_20260924.json**
+
+| arm | acc | Q1 | Q2 | turns | calls | open | fixed | f_evid | select | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 8/16 | 5/8 | 3/8 | 6.9 | 5.9 | 570 | 3,635 | 0 | 0 | 0 | 0 | 0 | 8,125 | 7,493 | 0 | 938 | 577 | 20,769 |  | 41,538 | 7,784 |
+| PASR previous | 11/16 | 8/8 | 3/8 | 6.5 | 5.5 | 2,840 | 16,459 | 6,478 | 22,554 | 11 | 0 | 284 | 0 | 133 | 0 | 1,172 | 761 | 47,851 | +130% | 69,602 | 15,485 |
+| PASR now | 10/16 | 8/8 | 2/8 | 6.6 | 5.6 | 2,039 | 12,255 | 6,527 | 15,263 | 38 | 0 | 54 | 1,236 | 2 | 0 | 1,204 | 740 | 37,318 | +80% | 59,708 | 11,861 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**final_airguard_20260924.json**
+
+| arm | acc | Q1 | Q2 | turns | calls | open | fixed | f_evid | select | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 15/16 | 8/8 | 7/8 | 6.6 | 5.6 | 553 | 3,344 | 0 | 0 | 0 | 0 | 0 | 18,130 | 3,590 | 0 | 1,205 | 752 | 27,020 |  | 28,822 | 10,127 |
+| PASR previous | 15/16 | 8/8 | 7/8 | 4.1 | 3.1 | 2,823 | 11,301 | 3,673 | 8,493 | 0 | 0 | 0 | 654 | 0 | 0 | 421 | 569 | 25,111 | -7% | 26,785 | 11,405 |
+| PASR now | 15/16 | 7/8 | 8/8 | 5.0 | 4.0 | 2,022 | 9,326 | 4,899 | 8,006 | 0 | 0 | 0 | 2,586 | 0 | 0 | 723 | 589 | 26,129 | -3% | 27,871 | 9,684 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**final_holdout_20260924.json**
+
+| arm | acc | Q1 | Q2 | turns | calls | open | fixed | f_evid | select | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 10/16 | 8/8 | 2/8 | 7.0 | 6.0 | 571 | 3,624 | 0 | 0 | 0 | 0 | 0 | 8,817 | 6,441 | 0 | 1,249 | 665 | 20,795 |  | 33,272 | 6,737 |
+| PASR previous | 13/16 | 8/8 | 5/8 | 6.9 | 5.9 | 2,841 | 17,230 | 10,193 | 26,433 | 632 | 77 | 175 | 149 | 33 | 0 | 1,187 | 664 | 56,774 | +173% | 69,875 | 18,365 |
+| PASR now | 13/16 | 7/8 | 6/8 | 6.9 | 5.9 | 2,040 | 12,279 | 9,053 | 12,123 | 721 | 0 | 0 | 1,718 | 86 | 0 | 1,207 | 641 | 37,829 | +82% | 46,558 | 11,843 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**final_nushell_20260924.json**
+
+| arm | acc | Q1 | Q2 | turns | calls | open | fixed | f_evid | select | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 15/16 | 8/8 | 7/8 | 6.4 | 5.7 | 569 | 3,358 | 0 | 0 | 0 | 0 | 0 | 15,068 | 6,496 | 0 | 952 | 631 | 26,505 |  | 28,272 | 10,366 |
+| PASR previous | 16/16 | 8/8 | 8/8 | 6.4 | 5.4 | 2,839 | 16,093 | 6,448 | 17,622 | 204 | 545 | 8 | 1,238 | 0 | 0 | 1,140 | 704 | 44,004 | +66% | 44,004 | 14,363 |
+| PASR now | 15/16 | 7/8 | 8/8 | 6.1 | 5.1 | 2,038 | 11,334 | 5,227 | 5,573 | 42 | 2,179 | 405 | 3,618 | 1 | 0 | 1,011 | 639 | 30,030 | +13% | 32,032 | 10,262 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**pooled**
+
+| arm | acc | Q1 | Q2 | turns | calls | open | fixed | f_evid | select | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 48/64 | 29/32 | 19/32 | 6.7 | 5.8 | 567 | 3,490 | 0 | 0 | 0 | 0 | 0 | 12,535 | 6,005 | 0 | 1,086 | 656 | 23,772 |  | 31,696 | 8,754 |
+| PASR previous | 55/64 | 32/32 | 23/32 | 6.0 | 5.0 | 2,837 | 15,271 | 6,698 | 18,776 | 212 | 156 | 117 | 510 | 41 | 0 | 980 | 674 | 43,435 | +83% | 50,542 | 14,905 |
+| PASR now | 53/64 | 29/32 | 24/32 | 6.2 | 5.2 | 2,036 | 11,299 | 6,427 | 10,241 | 200 | 545 | 115 | 2,289 | 22 | 0 | 1,036 | 652 | 32,826 | +38% | 39,639 | 10,912 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+  PASR now vs PASR previous: tokens -24% [-31%, -18%]   accuracy -3 pts [-12, +6]
+  PASR now vs grep+read: tokens +38% [+25%, +52%]   accuracy +8 pts [-3, +19]
+
+Verdict: **−24% tokens against the session's start [−31%, −18%]** — the one interval in
+this ledger that is clear of zero on a pooled confirmation — at accuracy 55 → 53/64
+[−12, +6]. On the held-out set −22% (47,851 → 37,318) at 11 → 10/16. `select` fell
+18,776 → 10,241 and `fixed` 15,271 → 11,299; part went back into native reads (510 → 2,289).
+
+Against grep+read: +38% tokens [+25%, +52%] at +8 points [−3, +19]. Per corpus it is
+not one number: airguard **−3%** (below grep+read, 15/16 each), nushell +13%, the holdout
+and the fresh set +80%. PASR loses on tokens exactly where the questions span several
+files in a 430k-line tree and grep's identifier regexes find the anchors on the first
+call. Under prompt caching the pooled gap is 10,912 vs 8,754 (+25%).
