@@ -35,9 +35,10 @@ tokens a run, **−24% [−31%, −18%]**, accuracy 55 → 53/64 (n.s.); on the 
 accuracy; below it on airguard (−3%), +13% on nushell, +80% on the multi-file holdout and
 fresh sets. Under prompt caching (re-sent input at 0.1x): 10,912 vs 8,754.
 
-**At the budget each arm needs, PASR wins (budget sweep, below):** PASR capped at 4 calls
-45/64 @ 21,176 tokens vs grep+read at 6 calls 46/64 @ 22,931 — −8%, equal accuracy, held-out
-set included. At a shared budget of 4, PASR is +25 points more accurate (exp10).
+**At four calls PASR is cheaper than grep+read at six, with accuracy a little below and
+not significantly different** (budget sweep + field comparison, 112 runs each: 20.9k vs
+23.1k tokens, 70.5% vs 75%). At six calls each PASR is the most accurate of six designs
+compared (41/48 vs grep+read 38, chunk-RAG 40/36, symbol navigation 32), at +38% tokens.
 
 **What is left between PASR and grep+read is the catalogue, and the catalogue cannot be cut
 further this way.** In the confirmation PASR's retrieved content per run (~19.8k) is within
@@ -712,3 +713,97 @@ each needs for the same accuracy. PASR's evidence arrives at call 1–3, so a ho
 it at four; grep+read needs six to reach the same answers and loses 17 points at four.
 The claim to make: **a PASR agent capped at four tool calls answers as well as a grep+read
 agent given six, for fewer tokens.**
+
+### Field comparison — six designs, one sweep per corpus (2026-09-25 15:10–16:22)
+
+All arms keep the host's grep + read_file. PASR = the published src (b886d05). RAG-BM25 /
+RAG-dense = one claude-context-style `search_code` tool returning the top five 40-line
+chunks (BM25, or all-MiniLM-L6-v2 embeddings). symbol-nav = Serena-style
+find_symbols + find_usages. 6 reps × 2 questions × 4 corpora = 48 runs an arm.
+
+**arms_fresh_20260925.json**
+
+| arm | acc | Q1 | Q2 | Q1 tok | Q2 tok | turns | calls | reply/call | open | fixed | f_evid | select | s_code | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 7/12 | 5/6 | 2/6 | 26,015 | 17,023 | 6.9 | 5.9 | 773 | 570 | 3,653 | 0 | 0 | 0 | 0 | 0 | 0 | 9,448 | 6,888 | 0 | 944 | 586 | 21,519 |  | 36,890 | 8,193 |
+| PASR | 7/12 | 6/6 | 1/6 | 36,690 | 42,958 | 6.8 | 5.8 | 1,161 | 2,039 | 12,264 | 6,049 | 18,536 | 0 | 0 | 0 | 6 | 881 | 0 | 0 | 1,308 | 780 | 39,824 | +85% | 68,269 | 12,574 |
+| PASR@4calls | 6/12 | 6/6 | 0/6 | 23,165 | 23,277 | 5.0 | 4.0 | 1,381 | 2,039 | 10,170 | 4,200 | 8,217 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 35 | 598 | 23,221 | +8% | 46,442 | 8,911 |
+| RAG-BM25 | 5/12 | 5/6 | 0/6 | 35,282 | 38,376 | 6.4 | 5.8 | 1,340 | 675 | 3,893 | 0 | 0 | 22,160 | 0 | 0 | 0 | 9,242 | 0 | 0 | 898 | 636 | 36,829 | +71% | 88,389 | 12,846 |
+| RAG-dense | 6/12 | 6/6 | 0/6 | 37,888 | 41,982 | 6.7 | 6.0 | 1,405 | 675 | 4,012 | 0 | 0 | 24,085 | 0 | 0 | 0 | 10,272 | 0 | 0 | 937 | 630 | 39,935 | +86% | 79,870 | 13,866 |
+| symbol-nav | 5/12 | 5/6 | 0/6 | 29,371 | 19,384 | 6.9 | 6.0 | 785 | 1,007 | 6,178 | 0 | 0 | 0 | 892 | 540 | 0 | 8,804 | 6,132 | 0 | 1,146 | 684 | 24,377 | +13% | 58,505 | 8,803 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**arms_airguard_20260925.json**
+
+| arm | acc | Q1 | Q2 | Q1 tok | Q2 tok | turns | calls | reply/call | open | fixed | f_evid | select | s_code | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 11/12 | 5/6 | 6/6 | 18,635 | 34,648 | 6.8 | 5.8 | 921 | 553 | 3,476 | 0 | 0 | 0 | 0 | 0 | 0 | 16,849 | 4,229 | 0 | 1,330 | 758 | 26,642 |  | 29,064 | 9,711 |
+| PASR | 11/12 | 5/6 | 6/6 | 14,756 | 28,840 | 4.5 | 3.5 | 1,369 | 2,022 | 8,796 | 4,110 | 7,582 | 0 | 63 | 0 | 0 | 113 | 0 | 0 | 544 | 591 | 21,798 | -18% | 23,780 | 9,134 |
+| PASR@4calls | 10/12 | 5/6 | 5/6 | 14,089 | 21,610 | 4.2 | 3.2 | 1,322 | 2,022 | 8,423 | 3,577 | 4,774 | 0 | 21 | 0 | 0 | 348 | 0 | 0 | 140 | 567 | 17,850 | -33% | 21,420 | 7,822 |
+| RAG-BM25 | 11/12 | 6/6 | 5/6 | 36,060 | 22,392 | 5.8 | 5.0 | 1,290 | 658 | 3,686 | 0 | 0 | 18,942 | 0 | 0 | 0 | 5,120 | 0 | 0 | 854 | 624 | 29,226 | +10% | 31,883 | 10,721 |
+| RAG-dense | 9/12 | 6/6 | 3/6 | 36,029 | 8,514 | 4.7 | 3.8 | 1,427 | 658 | 2,869 | 0 | 0 | 16,682 | 0 | 0 | 0 | 1,704 | 2 | 0 | 518 | 498 | 22,272 | -16% | 29,696 | 8,729 |
+| symbol-nav | 8/12 | 4/6 | 4/6 | 24,423 | 19,574 | 6.4 | 5.7 | 903 | 990 | 5,722 | 0 | 0 | 0 | 4,914 | 217 | 0 | 8,868 | 539 | 0 | 1,055 | 684 | 21,999 | -17% | 32,998 | 8,892 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**arms_holdout_20260925.json**
+
+| arm | acc | Q1 | Q2 | Q1 tok | Q2 tok | turns | calls | reply/call | open | fixed | f_evid | select | s_code | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 8/12 | 6/6 | 2/6 | 13,540 | 24,792 | 7.0 | 6.0 | 495 | 571 | 3,626 | 0 | 0 | 0 | 0 | 0 | 0 | 7,351 | 6,339 | 0 | 1,214 | 636 | 19,166 |  | 28,749 | 6,286 |
+| PASR | 11/12 | 6/6 | 5/6 | 35,783 | 39,584 | 6.9 | 5.9 | 1,094 | 2,040 | 12,421 | 9,014 | 11,258 | 0 | 515 | 100 | 0 | 2,332 | 97 | 0 | 1,289 | 659 | 37,684 | +97% | 41,110 | 11,824 |
+| PASR@4calls | 9/12 | 5/6 | 4/6 | 21,504 | 19,532 | 4.9 | 3.9 | 1,178 | 2,040 | 10,015 | 5,617 | 3,837 | 0 | 200 | 0 | 0 | 216 | 0 | 0 | 141 | 492 | 20,518 | +7% | 27,357 | 7,760 |
+| RAG-BM25 | 12/12 | 6/6 | 6/6 | 28,025 | 30,644 | 5.8 | 4.8 | 1,466 | 676 | 3,752 | 0 | 0 | 21,780 | 0 | 0 | 0 | 2,552 | 0 | 0 | 671 | 579 | 29,334 | +53% | 29,334 | 11,422 |
+| RAG-dense | 9/12 | 6/6 | 3/6 | 43,753 | 40,087 | 6.8 | 5.9 | 1,478 | 676 | 4,193 | 0 | 0 | 35,464 | 0 | 0 | 0 | 719 | 41 | 0 | 898 | 605 | 41,920 | +119% | 55,894 | 14,177 |
+| symbol-nav | 7/12 | 6/6 | 1/6 | 16,614 | 34,707 | 7.0 | 6.0 | 663 | 1,008 | 6,247 | 0 | 0 | 0 | 1,630 | 0 | 0 | 9,860 | 5,822 | 0 | 1,398 | 703 | 25,660 | +34% | 43,989 | 8,257 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**arms_nushell_20260925.json**
+
+| arm | acc | Q1 | Q2 | Q1 tok | Q2 tok | turns | calls | reply/call | open | fixed | f_evid | select | s_code | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 12/12 | 6/6 | 6/6 | 31,808 | 19,474 | 6.4 | 5.6 | 1,073 | 569 | 3,371 | 0 | 0 | 0 | 0 | 0 | 0 | 14,377 | 6,361 | 0 | 906 | 627 | 25,641 |  | 25,641 | 10,241 |
+| PASR | 12/12 | 6/6 | 6/6 | 27,558 | 30,379 | 6.0 | 5.0 | 1,007 | 2,038 | 11,171 | 5,022 | 6,791 | 0 | 462 | 1,648 | 0 | 2,203 | 83 | 0 | 957 | 630 | 28,969 | +13% | 28,969 | 10,050 |
+| PASR@4calls | 9/12 | 4/6 | 5/6 | 22,544 | 18,304 | 4.9 | 3.9 | 1,027 | 2,038 | 10,015 | 3,986 | 4,110 | 0 | 0 | 281 | 0 | 1,853 | 0 | 0 | -355 | 533 | 20,424 | -20% | 27,232 | 7,865 |
+| RAG-BM25 | 12/12 | 6/6 | 6/6 | 27,988 | 35,759 | 6.3 | 5.5 | 1,260 | 674 | 3,868 | 0 | 0 | 23,093 | 0 | 0 | 0 | 3,477 | 0 | 0 | 808 | 627 | 31,874 | +24% | 31,874 | 11,447 |
+| RAG-dense | 12/12 | 6/6 | 6/6 | 44,183 | 33,277 | 6.8 | 6.0 | 1,255 | 674 | 4,108 | 0 | 0 | 22,098 | 0 | 0 | 0 | 10,930 | 25 | 0 | 909 | 660 | 38,730 | +51% | 38,730 | 12,962 |
+| symbol-nav | 12/12 | 6/6 | 6/6 | 31,888 | 23,284 | 6.7 | 6.0 | 900 | 1,006 | 5,934 | 0 | 0 | 0 | 427 | 58 | 0 | 13,814 | 5,644 | 0 | 1,028 | 680 | 27,586 | +8% | 27,586 | 9,966 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**pooled**
+
+| arm | acc | Q1 | Q2 | Q1 tok | Q2 tok | turns | calls | reply/call | open | fixed | f_evid | select | s_code | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 38/48 | 22/24 | 16/24 | 22,500 | 23,984 | 6.8 | 5.8 | 810 | 567 | 3,531 | 0 | 0 | 0 | 0 | 0 | 0 | 12,006 | 5,954 | 0 | 1,098 | 652 | 23,242 |  | 29,358 | 8,607 |
+| PASR | 41/48 | 23/24 | 18/24 | 28,697 | 35,440 | 6.0 | 5.0 | 1,139 | 2,036 | 11,163 | 6,049 | 11,042 | 0 | 260 | 437 | 2 | 1,382 | 45 | 0 | 1,025 | 665 | 32,069 | +38% | 37,544 | 10,896 |
+| PASR@4calls | 34/48 | 20/24 | 14/24 | 20,326 | 20,681 | 4.8 | 3.8 | 1,223 | 2,036 | 9,656 | 4,345 | 5,235 | 0 | 55 | 70 | 0 | 604 | 0 | 0 | -10 | 548 | 20,503 | -12% | 28,946 | 8,090 |
+| RAG-BM25 | 40/48 | 23/24 | 17/24 | 31,839 | 31,792 | 6.1 | 5.3 | 1,336 | 672 | 3,800 | 0 | 0 | 21,493 | 0 | 0 | 0 | 5,098 | 0 | 0 | 808 | 617 | 31,816 | +37% | 38,179 | 11,609 |
+| RAG-dense | 36/48 | 24/24 | 12/24 | 40,463 | 30,965 | 6.2 | 5.4 | 1,387 | 672 | 3,796 | 0 | 0 | 24,582 | 0 | 0 | 0 | 5,906 | 17 | 0 | 815 | 598 | 35,714 | +54% | 47,619 | 12,434 |
+| symbol-nav | 32/48 | 21/24 | 11/24 | 25,574 | 24,237 | 6.8 | 5.9 | 811 | 1,004 | 6,020 | 0 | 0 | 0 | 1,966 | 204 | 0 | 10,336 | 4,534 | 0 | 1,157 | 688 | 24,906 | +7% | 37,358 | 8,979 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+Pooled, 48 runs an arm:
+
+| arm | correct | tokens/run | vs grep+read | tokens per correct answer |
+|---|---|---|---|---|
+| grep+read | 38 | 23,242 | | 29,358 |
+| **PASR** | **41** | 32,069 | +38% | 37,544 |
+| PASR@4calls | 34 | **20,503** | **−12%** | **28,946** |
+| RAG-BM25 | 40 | 31,816 | +37% | 38,179 |
+| RAG-dense | 36 | 35,714 | +54% | 47,619 |
+| symbol-nav | 32 | 24,906 | +7% | 37,358 |
+
+- PASR is the most accurate design here (41/48), at the same cost as lexical chunk-RAG
+  (40/48); it beats dense chunk-RAG on both axes (+5 answers, −10% tokens) and symbol
+  navigation on accuracy (+9). Dense embeddings lose the vocabulary-gap Q2s (12/24).
+- **Correction to the budget sweep's headline.** PASR@4calls scored 34/48 here against
+  grep+read's 38/48; in the budget sweep 45/64 against 46/64. Pooled over the two
+  independent sweeps: PASR@4 79/112 (70.5%) at ~20.9k, grep+read@6 84/112 (75%) at ~23.1k —
+  **−9% tokens at about 4.5 points lower accuracy**, the difference not significant either
+  time. So "fewer tokens at statistically indistinguishable accuracy" holds; "as accurate"
+  does not, the point estimate is below. The cheapest cost per correct answer of all six
+  designs is still PASR@4 (28,946), narrowly ahead of grep+read (29,358).

@@ -28,8 +28,17 @@ sys.path.insert(0, str(HERE.parents[1] / "src"))
 from pasr.tokenize import get_tokenizer  # noqa: E402
 
 LABELS = {"baseline": "grep+read", "control": "PASR previous", "optimized": "PASR now"}
-ORDER = ("baseline", "control", "optimized")
-TOOLS = ("find_evidence", "select_context", "find_symbols", "find_usages", "find_files", "read_file", "grep")
+ORDER = ("baseline", "grep+read", "control", "optimized", "PASR", "PASR@4calls", "RAG-BM25", "RAG-dense", "symbol-nav")
+TOOLS = (
+    "find_evidence",
+    "select_context",
+    "search_code",
+    "find_symbols",
+    "find_usages",
+    "find_files",
+    "read_file",
+    "grep",
+)
 _tok = get_tokenizer()
 
 
@@ -93,6 +102,7 @@ SHORT = {
     "fixed (sys+catalogue+q)": "fixed",
     "find_evidence": "f_evid",
     "select_context": "select",
+    "search_code": "s_code",
     "find_symbols": "f_sym",
     "find_usages": "f_use",
     "find_files": "f_files",
@@ -116,6 +126,8 @@ def summarize(rows: list[dict]) -> dict:
         for key, value in decompose(row).items():
             cost[key] += value
     total = sum(r["total_tokens"] for r in rows)
+    by_q = {q: [r["total_tokens"] for r in rows if r["question"] == q] for q in ("Q1", "Q2")}
+    replies = [_size(str(o.get("raw") or "")) for r in rows for o in r["tool_outputs"]]
     # What a host with prompt caching pays, in full-price input tokens: every prompt is the
     # previous one plus what was appended, so only the appended part is new; the rest is a
     # cache read, billed at a tenth by the hosted APIs that cache (Anthropic reads 0.1x,
@@ -127,6 +139,8 @@ def summarize(rows: list[dict]) -> dict:
         cached += fresh + 0.1 * (sum(prompts) - fresh) + sum(t["usage"]["completion_tokens"] for t in r["api_turns"])
     return {
         "cached": cached / n if n else 0,
+        "q_tok": {q: sum(v) / len(v) if v else 0 for q, v in by_q.items()},
+        "per_call": sum(replies) / len(replies) if replies else 0,
         "n": n,
         "ok": ok,
         "q": dict(per_q),
@@ -143,23 +157,28 @@ def summarize(rows: list[dict]) -> dict:
 
 
 def render(title: str, arms: dict[str, list[dict]], markdown: bool) -> str:
-    stats = {v: summarize(arms[v]) for v in ORDER if arms.get(v)}
-    cols = ["arm", "acc", *[f"Q{i}" for i in (1, 2)], "turns", "calls", "open", *[SHORT[c] for c in COLUMNS], "TOTAL"]
+    order = [v for v in ORDER if arms.get(v)] + [v for v in arms if v not in ORDER]
+    stats = {v: summarize(arms[v]) for v in order}
+    cols = ["arm", "acc", *[f"Q{i}" for i in (1, 2)], "Q1 tok", "Q2 tok", "turns", "calls", "reply/call", "open"]
+    cols += [*[SHORT[c] for c in COLUMNS], "TOTAL"]
     cols += ["vs grep", "tok/answer", "cached*"]
     lines = []
-    base = stats.get("baseline", {}).get("total")
+    base = (stats.get("baseline") or stats.get("grep+read") or {}).get("total")
     for v, s in stats.items():
         q = [s["q"].get(k, [0, 0]) for k in ("Q1", "Q2")]
         row = [
-            LABELS[v],
+            LABELS.get(v, v),
             f"{s['ok']}/{s['n']}",
             *[f"{a}/{b}" for a, b in q],
+            f"{s['q_tok']['Q1']:,.0f}",
+            f"{s['q_tok']['Q2']:,.0f}",
             f"{s['turns']:.1f}",
             f"{s['calls']:.1f}",
+            f"{s['per_call']:,.0f}",
             f"{s['open']:,}",
             *[f"{s['cost'].get(c, 0):,.0f}" for c in COLUMNS],
             f"{s['total']:,.0f}",
-            f"{(s['total'] / base - 1) * 100:+.0f}%" if base and v != "baseline" else "",
+            f"{(s['total'] / base - 1) * 100:+.0f}%" if base and v not in ("baseline", "grep+read") else "",
             f"{s['total'] * s['n'] / s['ok']:,.0f}" if s["ok"] else "-",
             f"{s['cached']:,.0f}",
         ]

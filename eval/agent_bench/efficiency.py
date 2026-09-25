@@ -23,7 +23,8 @@ import tools_pasr
 
 from pasr.symbols import get_provider, parse_symbols
 
-ARMS = ("baseline", "pasr", "pasr_compact", "pasr_terse")
+ARMS = ("baseline", "pasr", "pasr_compact", "pasr_terse", "rag_bm25", "rag_dense")
+RAG_ARMS = ("rag_bm25", "rag_dense")
 DESCRIPTIONS = {
     "find_evidence": "Search repository content lexically, ranked by term rarity. Start here for concepts; "
     "follow discovered vocabulary. Returns matching lines, owners and locations. include scopes paths; "
@@ -92,6 +93,10 @@ def _json(value) -> str:
 def arm_tools(arm: str) -> list[dict]:
     if arm not in ARMS:
         raise ValueError(f"unknown arm: {arm}")
+    if arm in RAG_ARMS:
+        import rag_tools
+
+        return copy.deepcopy(schemas.BASELINE) + rag_tools.schema()
     tools = copy.deepcopy(schemas.BASELINE if arm == "baseline" else schemas.PASR)
     if arm == "pasr_terse":
         for tool in tools:
@@ -168,7 +173,12 @@ def run_one(
     tools_pasr.reset_session()
 
     def execute(name: str, arguments: dict) -> str:
-        raw = (tools_pasr.run_baseline if arm == "baseline" else tools_pasr.run_pasr)(name, arguments)
+        if arm in RAG_ARMS:
+            import rag_tools
+
+            raw = rag_tools.run(arm, name, arguments)
+        else:
+            raw = (tools_pasr.run_baseline if arm == "baseline" else tools_pasr.run_pasr)(name, arguments)
         delivered = compact_response(raw) if arm in {"pasr_compact", "pasr_terse"} else raw
         outputs.append(
             {
