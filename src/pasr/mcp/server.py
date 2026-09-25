@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
@@ -32,11 +33,17 @@ from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import CallToolResult, TextContent
 
 from pasr import __version__
+from pasr.file_discovery import discover_workspace_files, relative_file_paths
 from pasr.find_files import DEFAULT_TOP_K
 from pasr.find_files import find_files as _find_files
 from pasr.ledger import append_ledger, ledger_entry
 from pasr.receipt import read_receipt
-from pasr.schema import validate_select_context_request, validate_trace_dependencies_request
+from pasr.schema import (
+    split_missing_files,
+    split_provenance,
+    validate_select_context_request,
+    validate_trace_dependencies_request,
+)
 from pasr.select import run_expand_context, run_pack, run_select_context, save_pack
 from pasr.symbol_search import find_evidence as _find_evidence
 from pasr.symbol_search import find_symbols as _find_symbols
@@ -51,6 +58,16 @@ from pasr.trace import trace_dependencies as _trace_dependencies
 # 9 anchors for 5,560 tokens; 20 hits at 1 per file finds 11 for 4,120. One hit is enough to
 # name a file -- the caller reads the region through read_lines anyway, and a second line
 # from a file it already has says nothing new.
+# One reply's worth of source, and the most one reply may carry whatever the caller asks.
+# Both arms of the benchmark spend all six of their calls on the multi-file questions, so
+# there the size of each reply is the whole lever: grep+read pays 400-1,100 tokens a read,
+# a 3,000-token selection four times that. The selector front-loads what matters: replaying
+# 112 recorded requests at half their budget kept 97% of the ground-truth mentions and
+# every reply that held both required anchors, for 56% of the tokens. The model asked for
+# 2,000-3,000 in 41 of 43 calls, so a default alone would not have moved it. Now that a
+# second selection of a file returns only what the first left out, reading in bounded
+# steps costs no repetition -- the same reason a bounded viewer beats a whole-file dump.
+SELECT_BUDGET = 1500
 EVIDENCE_TOP_K = 20
 EVIDENCE_PER_FILE = 1
 
@@ -69,8 +86,8 @@ _FIND_FILES_DESCRIPTION = (
 )
 _SELECT_CONTEXT_DESCRIPTION = (
     "Return a small, budgeted, provenance-tracked slice of the workspace for a query. "
-    "Prefer this over reading whole files: it caps total tokens, keeps a mandatory "
-    "prefix/tail active window, and reports where every span came from (file:line). "
+    "Prefer this over reading whole files: it caps total tokens, never re-sends a line it "
+    "already gave you this session, and labels every piece with where it came from (file:line). "
     "Good for locating evidence in a large codebase or long document; not a code writer. "
     "This tool does NOT search the whole repo by filename on its own -- pass `include` "
     "(globs/directories) or `files` (explicit paths) scoped to where the answer likely "
@@ -83,7 +100,8 @@ _SELECT_CONTEXT_DESCRIPTION = (
     "hundred tokens), then call again for bodies at the places that matter. `files` also "
     "accepts the `path:start-end` provenance every other tool reports, e.g. "
     '`files=["src/parser.py:20-23"]` -- reading exactly the lines you were just '
-    "pointed at costs a few dozen tokens instead of a slice of the whole file."
+    "pointed at costs a few dozen tokens instead of a slice of the whole file. One reply "
+    "carries at most 1,500 tokens, the most relevant first; asking again adds the next part."
 )
 _TRACE_DEPENDENCIES_DESCRIPTION = (
     "Return the transitive definition closure for a symbol: every function / class / "
@@ -317,6 +335,26 @@ class _CallGuard:
             "you have, naming what you could not determine."
         )
 
+    @property
+    def covered(self) -> dict[str, set[int]]:
+        """Every line this session has delivered, by workspace-relative path."""
+        return self._covered
+
+    def note_no_progress(self) -> None:
+        """Count a selection that could only answer "you already hold that".
+
+        It delivers nothing, so the novelty ratio never sees it; left uncounted, a caller
+        could ask for held files forever at a few dozen tokens a turn -- cheap per call
+        and still the whole conversation re-sent each time.
+        """
+        self._zero_novelty += 1
+        if self._zero_novelty >= self.LOW_NOVELTY_LIMIT:
+            raise ToolError(
+                f"Refused: the last {self._zero_novelty} selections asked for source you already hold. "
+                f"{self.holdings()} More retrieval will not add evidence - answer the question from what "
+                "you have, naming what you could not determine."
+            )
+
     def note_holdings(self, result: dict[str, Any]) -> None:
         """Tell the caller what it is holding, before it has to be refused.
 
@@ -347,6 +385,159 @@ class _CallGuard:
             f"You now hold {lines} line(s) of source across {len(sources)} file(s): "
             f"{shown}{' ...' if len(sources) > 6 else ''}."
         )
+
+
+def _noted(result: dict[str, Any], note: str | None) -> dict[str, Any]:
+    if note:
+        result["advice"] = [note, *result.get("advice", [])]
+    return result
+
+
+def _usable_include(root: Path, include: list[str] | None) -> tuple[list[str] | None, str | None]:
+    """Drop an `include` that matches no file, and say so, instead of searching nothing.
+
+    A scope the workspace does not have (`["src", "tracker", "*.py"]` on a tree whose root
+    already is `src`) used to be searched faithfully: zero files, and a reply that said the
+    query's words appear in no file here. The caller believed it and went looking for the
+    concept under other names -- four find_files calls and a wrong answer on a question
+    whose file the unscoped search ranks first.
+    """
+    if not include:
+        return include, None
+    try:
+        if discover_workspace_files(root, include):
+            return include, None
+    except ValueError:
+        return include, None  # the tool itself reports a malformed or escaping scope
+    return None, (
+        f"include {include} matched no file here (paths are relative to the workspace root), "
+        "so this searched the whole workspace instead."
+    )
+
+
+def _missing_note(root: Path, missing: list[str]) -> str:
+    """Name the paths that do not exist, and the real ones they were probably meant to be.
+
+    One wrong path used to fail the whole call, taking the right files in it down too: on
+    the nushell holdout five runs of twelve lost a turn to it, each turn re-sending the
+    whole conversation to learn one fact. The model's guess is usually the right file
+    name in the wrong directory, so a same-named file is the suggestion worth making.
+    """
+    by_name: dict[str, list[str]] = {}
+    for rel in relative_file_paths(discover_workspace_files(root, ["."])):
+        by_name.setdefault(rel.rsplit("/", 1)[-1], []).append(rel)
+    parts = []
+    for entry in missing:
+        raw = str(entry).rsplit(":", 1)[0] if re.search(r":\d+(-\d+)?$", str(entry)) else str(entry)
+        asked = set(raw.replace("\\", "/").split("/"))
+        same_name = by_name.get(raw.replace("\\", "/").rsplit("/", 1)[-1], [])
+        near = sorted(same_name, key=lambda p: -len(asked & set(p.split("/"))))
+        parts.append(f"{raw} (did you mean {', '.join(near[:3])}?)" if near else raw)
+    return f"Not found, skipped: {'; '.join(parts)}."
+
+
+def _unheld(entries: list[str], root: Path, covered: dict[str, set[int]]) -> tuple[list[str], list[str], list[str]]:
+    """Rewrite each requested file as the ranges of it this session has not delivered.
+
+    A second selection of a file the caller already has used to hand back mostly what it
+    had: on airguard the model selected one 522-line file three and four times, and every
+    reply opened with the same import block and the same top-scoring functions, because
+    the ranking does not know what the conversation already holds. The conversation still
+    has those lines -- nothing is ever withdrawn from it -- so the rest of the file is the
+    only thing a re-selection can usefully add. Returns ``(entries, held, partly_held)``:
+    the rewritten request, the paths already held whole, and the ones narrowed to a rest.
+    """
+    kept: list[str] = []
+    held: list[str] = []
+    partly: list[str] = []
+    for entry in entries:
+        raw, span = split_provenance(entry)
+        path = (root / str(raw).replace("\\", "/")).resolve()
+        rel = path.relative_to(root).as_posix()
+        seen = covered.get(rel) or covered.get(str(raw)) or set()
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines() if seen else []
+        low, high = span or (1, max(len(lines), 1))
+        if not any(low <= line <= high for line in seen):
+            kept.append(entry)
+            continue
+        gaps: list[list[int]] = []
+        for line in range(low, min(high, len(lines)) + 1):
+            if line in seen:
+                continue
+            if gaps and gaps[-1][1] == line - 1:
+                gaps[-1][1] = line
+            else:
+                gaps.append([line, line])
+        # A run of blank lines between two delivered pieces is not something left to read.
+        gaps = [gap for gap in gaps if any(lines[n - 1].strip() for n in range(gap[0], gap[1] + 1))]
+        if not gaps:
+            held.append(rel)
+            continue
+        kept.extend(f"{rel}:{a}-{b}" for a, b in gaps)
+        partly.append(rel)
+    return kept, held, partly
+
+
+def _held_notes(held: list[str], partly: list[str]) -> list[str]:
+    notes = []
+    if held:
+        notes.append(f"Skipped, already earlier in this conversation: {', '.join(held)}.")
+    if partly:
+        notes.append(
+            f"Only the part of {', '.join(partly)} you have not been shown yet; the rest is earlier "
+            "in this conversation."
+        )
+    return notes
+
+
+# Routing advice written for a caller who asked for exact line ranges. After a held file
+# is narrowed to its unread remainder the request carries ranges the caller never wrote,
+# and advice about widening them is advice to re-read what it already has.
+_RANGED_ADVICE = ("Source scope is fixed by the request", "The requested lines are fully included")
+
+
+def _advice_for_remainder(result: dict[str, Any], partly: list[str]) -> list[str]:
+    advice = [note for note in result.get("advice", []) if not str(note).startswith(_RANGED_ADVICE)]
+    if result.get("route") == "lossless":
+        advice.append(
+            f"You now hold every line of {', '.join(partly)}. Answer from what you hold; reading it "
+            "again cannot add evidence."
+        )
+    return advice
+
+
+def _continue_not_detour(result: dict[str, Any]) -> list[str]:
+    """Point a low-coverage selection at the rest of its own files, not at other tools.
+
+    The routing advice was written when selecting a file again returned the same slice, so
+    it said "do not re-run this query" and sent the caller to find_symbols/find_files. A
+    second selection now returns only what the first left out, and a reply is capped, so
+    part of the files is usually still unread -- the next part of them is the cheap move.
+    """
+    advice = []
+    for note in result.get("advice", []):
+        text = str(note)
+        if text.startswith("Low keyword coverage") and result.get("route") == "selected":
+            head = text.split(". Do NOT", 1)[0]
+            text = (
+                f"{head}. The rest of these files is unread: select_context on them again returns the "
+                "next most relevant part, never lines you already hold."
+            )
+        advice.append(text)
+    return advice
+
+
+def _held_stub(held: list[str]) -> dict[str, Any]:
+    return {
+        "route": "held",
+        "token_count": 0,
+        "sources": held,
+        "context": "",
+        "advice": [
+            f"You already hold every line you asked for ({', '.join(held)}): it is earlier in this "
+            "conversation. Answer from it, or name a file you have not read."
+        ],
+    }
 
 
 def _merge_adjacent(spans: list[Any]) -> list[dict[str, Any]]:
@@ -416,12 +607,75 @@ def _trim_for_wire(result: dict[str, Any]) -> dict[str, Any]:
     """
     spans = result.get("spans")
     if isinstance(spans, list):
-        result = {**result, "spans": _merge_adjacent(spans)}
-    # `evidence_accounting` is a lexical coverage audit the caller cannot act on: measured
-    # over 422 recorded selections its coverage figure told "has the answer" from "still
-    # looking" at 0.55 balanced accuracy, which is chance, and whatever it does say `advice`
-    # already says in a sentence. It stays in the receipt, which is what an audit is for.
-    return {key: value for key, value in result.items() if key != "evidence_accounting"}
+        result = {**result, "context": _labelled_context(result), "spans": _merge_adjacent(spans)}
+    # Only what the caller reads or acts on. `evidence_accounting` is a lexical coverage
+    # audit that told "has the answer" from "still looking" at 0.55 balanced accuracy over
+    # 422 recorded selections -- chance -- and `advice` says in a sentence whatever it had to
+    # say. The span list restated the `[path:start-end]` label every piece of `context`
+    # already carries; the query, the budget and the scoring diagnostics restated the
+    # request or described the scorer. Together about a tenth of every selection, re-sent
+    # on every later turn. The receipt keeps all of it, which is what an audit is for.
+    wire = {key: value for key, value in result.items() if key in _WIRE_FIELDS}
+    if isinstance(wire.get("receipt"), dict):
+        wire["receipt"] = {"id": wire["receipt"].get("id")}
+    if "context" in wire and _is_labelled(str(wire["context"])):
+        wire.pop("spans", None)
+    return wire
+
+
+_WIRE_FIELDS = (
+    "route",
+    "token_count",
+    "total_input_tokens",
+    "sources",
+    "context",
+    "spans",
+    "advice",
+    "receipt",
+    "saved_pack",
+    "expanded_from",
+    "from_pack",
+    "pack_stale",
+)
+
+
+_LABEL = re.compile(r"^(?:\[[^\]\n]+:\d+(?:-\d+)?\]\n|# (?:symbol map|dependency closure|context)\b)")
+
+
+def _is_labelled(context: str) -> bool:
+    return bool(_LABEL.match(context))
+
+
+def _labelled_context(result: dict[str, Any]) -> str:
+    """Give a lossless slice the same `[path:start-end]` labels a selected one has.
+
+    A slice that fits the budget came back as the raw text of every file run together, so
+    a two-file answer did not say where one file ended and the next began except through a
+    separate span list the caller had to line up against it. Labelled the way a selected
+    slice already is, the context says it once, in place. Rebuilt from the spans' own line
+    counts; if they do not add up to the text, the text goes out untouched.
+    """
+    context = str(result.get("context", ""))
+    if result.get("route") != "lossless" or not context:
+        return context
+    groups: list[list[Any]] = []
+    for span in result.get("spans", []):
+        source, low, high = span.get("source"), span.get("line_start"), span.get("line_end")
+        if not isinstance(low, int) or not isinstance(high, int):
+            return context
+        if groups and groups[-1][0] == source and low == groups[-1][2] + 1:
+            groups[-1][2] = high
+        else:
+            groups.append([source, low, high])
+    lines = context.splitlines(keepends=True)
+    if sum(high - low + 1 for _, low, high in groups) != len(lines):
+        return context
+    parts, cursor = [], 0
+    for source, low, high in groups:
+        count = high - low + 1
+        parts.append(f"[{source}:{low}-{high}]\n" + "".join(lines[cursor : cursor + count]).strip("\n"))
+        cursor += count
+    return "\n\n".join(parts)
 
 
 # Folding find_files, find_symbols and find_usages into one `find(what=...)` was built,
@@ -449,11 +703,22 @@ ALL_TOOLS = (
     "explain_selection",
     "expand_context",
 )
+# What a host gets unless it asks for more. Across 1,413 recorded PASR runs the model
+# called expand_context never, trace_dependencies 10 times and explain_selection 14 times,
+# while the three cost ~400 catalogue tokens on every turn of every run. They are one
+# `expose=ALL_TOOLS` (or `pasr-mcp --tools all`) away for a host that wants them.
+DEFAULT_TOOLS = ("find_files", "find_symbols", "find_evidence", "find_usages", "select_context")
 
 
 _SELECT_DEFAULTS: dict[str, Any] = {
-    "prefix_tokens": 128,
-    "tail_tokens": 128,
+    # No mandatory head or tail. The window comes from compressing a document, where the
+    # opening states the subject and the end holds the latest turn. The head of a source
+    # file is its imports: on the benchmark 42 of 52 selections spent a mean 381 tokens on
+    # them, re-sent on every later turn, and a second selection of the same file paid for
+    # them again. The query decides what of a file is worth reading, the file's layout
+    # does not. Still available through `advanced`.
+    "prefix_tokens": 0,
+    "tail_tokens": 0,
     "recall_strategy": "coverage_aware",
     "block_size": 400,
     "max_files": 100,
@@ -486,7 +751,7 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
     any change to the surface tips it toward the bluntest tool it has.
     """
     root = Path(workspace_root).resolve()
-    exposed = frozenset(ALL_TOOLS if expose is None else expose)
+    exposed = frozenset(DEFAULT_TOOLS if expose is None else expose)
     unknown = exposed - set(ALL_TOOLS)
     if unknown:
         raise ValueError(f"Unknown tool(s) for expose: {', '.join(sorted(unknown))}")
@@ -516,7 +781,8 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
 
         def run() -> dict[str, Any]:
             try:
-                result = _find_files(root, query=query, include=include, top_k=top_k)
+                scope, scope_note = _usable_include(root, include)
+                result = _find_files(root, query=query, include=scope, top_k=top_k)
             except ValueError as exc:
                 raise ToolError(str(exc)) from exc
             if not result["matches"]:
@@ -525,7 +791,7 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
                     "spell out conceptual words - try find_symbols for the identifier, or call again with "
                     'query="" and a directory in `include` to see the real names.'
                 ]
-            return result
+            return _noted(result, scope_note)
 
         return _wire(guard.guarded("find_files", {"query": query, "include": include, "top_k": top_k}, run))
 
@@ -545,7 +811,8 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
 
         def run() -> dict[str, Any]:
             try:
-                result = _find_symbols(root, query=query, include=include, kinds=kinds, top_k=top_k)
+                scope, scope_note = _usable_include(root, include)
+                result = _find_symbols(root, query=query, include=scope, kinds=kinds, top_k=top_k)
             except ValueError as exc:
                 raise ToolError(str(exc)) from exc
             if not result["matches"] and result.get("kinds_filtered_out"):
@@ -570,7 +837,7 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
                 ]
                 if first["kind"] == "function":
                     result["advice"].append(f"If caller behavior matters, use find_usages(symbol={first['name']!r}).")
-            return result
+            return _noted(result, scope_note)
 
         return _wire(
             guard.guarded("find_symbols", {"query": query, "include": include, "kinds": kinds, "top_k": top_k}, run)
@@ -587,7 +854,8 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
 
         def run() -> dict[str, Any]:
             try:
-                result = _find_evidence(root, query=query, include=include, top_k=top_k, per_file=per_file)
+                scope, scope_note = _usable_include(root, include)
+                result = _find_evidence(root, query=query, include=scope, top_k=top_k, per_file=per_file)
             except ValueError as exc:
                 raise ToolError(str(exc)) from exc
             absent = sorted(t for t, n in result["term_file_counts"].items() if not n)
@@ -618,7 +886,7 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
                 )
             if notes:
                 result["advice"] = notes
-            return result
+            return _noted(result, scope_note)
 
         return _wire(
             guard.guarded(
@@ -634,7 +902,8 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
 
         def run() -> dict[str, Any]:
             try:
-                result = _find_usages(root, symbol, include=include, top_k=top_k)
+                scope, scope_note = _usable_include(root, include)
+                result = _find_usages(root, symbol, include=scope, top_k=top_k)
             except ValueError as exc:
                 raise ToolError(str(exc)) from exc
             if searched := result.get("searched"):
@@ -657,7 +926,7 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
                     f"Showing {len(result['hits'])} of {result['usage_count'] + result['definition_count']} "
                     "hits. Raise top_k or scope `include` to one directory if you need the rest."
                 ]
-            return result
+            return _noted(result, scope_note)
 
         return _wire(guard.guarded("find_usages", {"symbol": symbol, "include": include, "top_k": top_k}, run))
 
@@ -678,7 +947,7 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
         query: str = "",
         files: list[str] | None = None,
         include: list[str] | None = None,
-        budget_tokens: int = 3000,
+        budget_tokens: int = SELECT_BUDGET,
         outline: bool = False,
         advanced: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
@@ -720,16 +989,34 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
         pack, save_as = options.pop("pack"), options.pop("save_as")
         if pack:
             try:
-                return run_pack(root, pack)
+                return _wire(_trim_for_wire(run_pack(root, pack)))
             except FileNotFoundError as exc:
                 raise ToolError(f"no pack named {pack!r}") from exc
             except ValueError as exc:
                 raise ToolError(str(exc)) from exc
+        arguments = {"query": query, "files": files, "include": include, "budget_tokens": budget_tokens}
+        budget_tokens = min(budget_tokens, SELECT_BUDGET)
+        notes: list[str] = []
+        partly: list[str] = []
         try:
+            wanted = files
+            if files:
+                wanted, missing = split_missing_files(files, root)
+                if missing:
+                    notes.append(_missing_note(root, missing))
+                    if not wanted and not include:
+                        raise ToolError(notes[-1])
+            if wanted and not outline:
+                wanted, held, partly = _unheld(wanted, root, guard.covered)
+                notes.extend(_held_notes(held, partly))
+                if not wanted and not include:
+                    stub = guard.guarded("select_context", arguments, lambda: _held_stub(held))
+                    guard.note_no_progress()
+                    return _wire(stub)
             request = validate_select_context_request(
                 {
                     "query": query,
-                    "files": files,
+                    "files": wanted or None,
                     "include": include,
                     "budget_tokens": budget_tokens,
                     "outline": outline,
@@ -737,13 +1024,14 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
                 },
                 workspace_root=root,
             )
-            result = guard.guarded(
-                "select_context",
-                {"query": query, "files": files, "include": include, "budget_tokens": budget_tokens},
-                lambda: run_select_context(request),
-            )
+            result = guard.guarded("select_context", arguments, lambda: run_select_context(request))
             guard.check_novelty(result)
             guard.note_holdings(result)
+            if partly:
+                result["advice"] = _advice_for_remainder(result, partly)
+            result["advice"] = _continue_not_detour(result)
+            if notes:
+                result["advice"] = [*notes, *result.get("advice", [])]
             if save_as:
                 path, _ = save_pack(save_as, request, result=result)
                 result["saved_pack"] = str(path)
@@ -821,7 +1109,31 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
         except ValueError as exc:
             raise ToolError(str(exc)) from exc
 
+    for registered in server._tool_manager.list_tools():
+        registered.parameters = _slim_schema(registered.parameters)
     return server
+
+
+def _slim_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    """The input schema without what the generator adds and no reader needs.
+
+    The SDK derives each schema from the function signature and gives every property a
+    `title` that restates its name, and every optional list an `anyOf` with `null` beside
+    the one type it really takes. The catalogue is re-sent on every request, so that was
+    985 tokens of 2,255 a turn, 419 of them saying nothing -- the names, types, defaults
+    and every description are untouched. Arguments are still validated against the
+    signature, so a caller that sends `null` is handled exactly as before.
+    """
+    properties = {}
+    for name, prop in schema.get("properties", {}).items():
+        slim = {key: value for key, value in prop.items() if key != "title"}
+        concrete = [option for option in slim.get("anyOf", []) if option.get("type") != "null"]
+        if "anyOf" in slim and len(concrete) == 1:
+            slim = {**{key: value for key, value in slim.items() if key != "anyOf"}, **concrete[0]}
+        if "default" in slim and slim["default"] is None:
+            del slim["default"]
+        properties[name] = slim
+    return {**{key: value for key, value in schema.items() if key != "title"}, "properties": properties}
 
 
 def main() -> None:
@@ -833,8 +1145,16 @@ def main() -> None:
         default=Path.cwd(),
         help="Workspace root that all file paths must stay inside (default: current directory).",
     )
+    parser.add_argument(
+        "--tools",
+        default="default",
+        help="'default', 'all', or a comma-separated list of tool names to publish.",
+    )
     args = parser.parse_args()
-    create_server(args.workspace).run(transport="stdio")
+    expose = {"default": None, "all": ALL_TOOLS}.get(args.tools)
+    if expose is None and args.tools != "default":
+        expose = tuple(name.strip() for name in args.tools.split(",") if name.strip())
+    create_server(args.workspace, expose=expose).run(transport="stdio")
 
 
 if __name__ == "__main__":

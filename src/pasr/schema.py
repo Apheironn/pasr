@@ -113,7 +113,7 @@ def validate_trace_dependencies_request(payload: dict[str, Any], workspace_root:
 _PROVENANCE_RE = re.compile(r"^(?P<path>.+?):(?P<start>\d+)(?:-(?P<end>\d+))?$")
 
 
-def _split_provenance(raw: Any) -> tuple[Any, tuple[int, int] | None]:
+def split_provenance(raw: Any) -> tuple[Any, tuple[int, int] | None]:
     """Accept ``path/to/file.rs:190-193`` wherever a file path is accepted.
 
     Every locator in PASR -- find_symbols, find_usages, find_evidence, a receipt's
@@ -133,6 +133,28 @@ def _split_provenance(raw: Any) -> tuple[Any, tuple[int, int] | None]:
     return match.group("path"), (start, end)
 
 
+def split_missing_files(files: list[Any], workspace_root: Path) -> tuple[list[Any], list[Any]]:
+    """Partition ``files`` entries into those that exist and those that do not.
+
+    Only a missing file is set aside; an entry that escapes the workspace or is malformed
+    still raises, because that is a mistake to report, not a guess to route around.
+    """
+    root = workspace_root.resolve()
+    present: list[Any] = []
+    missing: list[Any] = []
+    for entry in files:
+        raw_path, _ = split_provenance(entry)
+        try:
+            _resolve_workspace_file(raw_path, root)
+        except ValueError as exc:
+            if not str(exc).startswith("file does not exist"):
+                raise
+            missing.append(entry)
+            continue
+        present.append(entry)
+    return present, missing
+
+
 def _resolve_files(
     payload: dict[str, Any], workspace_root: Path
 ) -> tuple[tuple[Path, ...], tuple[dict[str, Any], ...]]:
@@ -144,7 +166,7 @@ def _resolve_files(
         if not isinstance(raw_files, list) or not raw_files:
             raise ValueError("files must be a non-empty list when provided.")
         for raw_entry in raw_files:
-            raw_path, line_range = _split_provenance(raw_entry)
+            raw_path, line_range = split_provenance(raw_entry)
             path = _resolve_workspace_file(raw_path, workspace_root)
             if path not in metadata_by_path:
                 resolved.append(path)
