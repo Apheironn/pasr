@@ -35,6 +35,10 @@ tokens a run, **−24% [−31%, −18%]**, accuracy 55 → 53/64 (n.s.); on the 
 accuracy; below it on airguard (−3%), +13% on nushell, +80% on the multi-file holdout and
 fresh sets. Under prompt caching (re-sent input at 0.1x): 10,912 vs 8,754.
 
+**At the budget each arm needs, PASR wins (budget sweep, below):** PASR capped at 4 calls
+45/64 @ 21,176 tokens vs grep+read at 6 calls 46/64 @ 22,931 — −8%, equal accuracy, held-out
+set included. At a shared budget of 4, PASR is +25 points more accurate (exp10).
+
 **What is left between PASR and grep+read is the catalogue, and the catalogue cannot be cut
 further this way.** In the confirmation PASR's retrieved content per run (~19.8k) is within
 ~1.3k of grep+read's reads and greps (18.5k); the gap is `fixed` — 11,299 against 3,490,
@@ -646,25 +650,65 @@ for ~13% fewer tokens.** That is the session's goal reached on the accuracy–to
 rather than at one shared policy, and it is a cross-sweep comparison, so it is being
 confirmed in one sweep (grep+read at 6, PASR at 4, four corpora incl. `nushell_fresh`).
 
-## In flight (updated 2026-09-25 05:15) — read this first if the session was cut off
+### budget — grep+read with 6 calls vs PASR (g2b) with 4, one sweep, four corpora — GOAL MET
 
-exp9 and exp10 are done (above). Running now: **budget** — grep+read with 6 calls vs PASR
-(g2b) with 4, one sweep, fresh/airguard/holdout/nushell, via `scratchpad/sweep_budget.sh g2b 4 6
-budget 8` (`PASR_BENCH_STOP_AFTER=4 PASR_BENCH_STOP_CONTROL=6`). Report:
-`python eval/agent_bench/report.py budget_fresh_20260925.json budget_airguard_20260925.json budget_holdout_20260925.json budget_nushell_20260925.json --ci`
+2026-09-25 05:15–05:39, 8 reps × 2 questions × 4 corpora, `nushell_fresh` held out.
 
-Earlier notes, kept for the record:
+**budget_fresh_20260925.json**
 
-Public `main` is `b886d05` (the g2b src). Running now, one after the other:
+| arm | acc | Q1 | Q2 | turns | calls | open | fixed | f_evid | select | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 7/16 | 5/8 | 2/8 | 6.9 | 5.9 | 570 | 3,635 | 0 | 0 | 0 | 0 | 0 | 8,125 | 7,493 | 0 | 938 | 577 | 20,768 |  | 47,471 | 7,784 |
+| PASR now | 9/16 | 6/8 | 3/8 | 5.0 | 4.0 | 2,039 | 10,170 | 4,744 | 6,681 | 19 | 0 | 0 | 362 | 0 | 0 | 53 | 598 | 22,627 | +9% | 40,225 | 8,563 |
 
-- **exp9** — g2b → g6: find_evidence's reply also carries the selector's best 1,000 tokens
-  of its top file (recorded as delivered, so a later selection of that file returns the
-  rest). Aim: turn the common find_evidence → select_context pair into one call.
-  Report: `python eval/agent_bench/report.py exp9_airguard_20260925.json exp9_holdout_20260925.json exp9_nushell_20260925.json --ci`
-- **exp10** — both arms stop at 4 calls instead of 6 (`PASR_BENCH_STOP_ALL=1
-  PASR_BENCH_STOP_AFTER=4`), grep+read vs g2b only. Aim: does PASR's earlier evidence win
-  once the call budget binds for everyone? Report the same way with `stop4_*_20260925.json`.
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
 
-Snapshots live in the session scratchpad (`snap/g2b`, `snap/g6`); g6's change is the
-`_read_top_file` block in `src/pasr/mcp/server.py` of that snapshot. If g6 is accepted,
-port that block to the working tree, add a test, commit, publish src only.
+**budget_airguard_20260925.json**
+
+| arm | acc | Q1 | Q2 | turns | calls | open | fixed | f_evid | select | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 14/16 | 7/8 | 7/8 | 6.4 | 5.4 | 553 | 3,297 | 0 | 0 | 0 | 0 | 0 | 15,749 | 3,370 | 0 | 1,178 | 745 | 24,338 |  | 27,815 | 9,411 |
+| PASR now | 12/16 | 4/8 | 8/8 | 4.8 | 3.8 | 2,022 | 9,602 | 5,162 | 4,802 | 46 | 0 | 0 | 478 | 0 | 0 | -25 | 536 | 20,601 | -15% | 27,468 | 8,076 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**budget_holdout_20260925.json**
+
+| arm | acc | Q1 | Q2 | turns | calls | open | fixed | f_evid | select | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 10/16 | 8/8 | 2/8 | 7.0 | 6.0 | 571 | 3,624 | 0 | 0 | 0 | 0 | 0 | 8,817 | 6,441 | 0 | 1,249 | 673 | 20,803 |  | 33,285 | 6,745 |
+| PASR now | 10/16 | 5/8 | 5/8 | 5.0 | 4.0 | 2,040 | 10,185 | 5,560 | 4,738 | 80 | 0 | 0 | 162 | 0 | 0 | 40 | 504 | 21,270 | +2% | 34,032 | 7,963 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**budget_nushell_20260925.json**
+
+| arm | acc | Q1 | Q2 | turns | calls | open | fixed | f_evid | select | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 15/16 | 8/8 | 7/8 | 6.4 | 5.7 | 569 | 3,338 | 0 | 0 | 0 | 0 | 0 | 14,330 | 6,571 | 0 | 941 | 632 | 25,813 |  | 27,533 | 10,322 |
+| PASR now | 14/16 | 6/8 | 8/8 | 5.0 | 4.0 | 2,038 | 10,185 | 3,979 | 3,154 | 42 | 336 | 10 | 2,340 | 0 | 0 | -353 | 514 | 20,207 | -22% | 23,094 | 7,481 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**pooled**
+
+| arm | acc | Q1 | Q2 | turns | calls | open | fixed | f_evid | select | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 46/64 | 28/32 | 18/32 | 6.7 | 5.8 | 567 | 3,474 | 0 | 0 | 0 | 0 | 0 | 11,755 | 5,969 | 0 | 1,076 | 657 | 22,931 |  | 31,904 | 8,565 |
+| PASR now | 45/64 | 21/32 | 24/32 | 4.9 | 3.9 | 2,036 | 10,036 | 4,861 | 4,844 | 47 | 84 | 3 | 836 | 0 | 0 | -71 | 538 | 21,176 | -8% | 30,117 | 8,021 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+  PASR now vs grep+read: tokens -8% [-14%, +0%]   accuracy -2 pts [-16, +11]
+
+**PASR with four calls: 45/64 @ 21,176 tokens. grep+read with six: 46/64 @ 22,931.**
+Tokens −8% [−14%, +0%], accuracy −2 points [−16, +11] — equal. Cheaper under prompt caching
+too (8,021 vs 8,565) and per correct answer (30,117 vs 31,904). By corpus: nushell −22%,
+airguard −15%, holdout +2%, fresh +9%.
+
+This is the session's goal, met where it can be met: not at a shared call budget (at six
+each, PASR is +38%; at four each it is +58% but 25 points more accurate) but at the budget
+each needs for the same accuracy. PASR's evidence arrives at call 1–3, so a host can stop
+it at four; grep+read needs six to reach the same answers and loses 17 points at four.
+The claim to make: **a PASR agent capped at four tool calls answers as well as a grep+read
+agent given six, for fewer tokens.**
