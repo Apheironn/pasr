@@ -807,3 +807,33 @@ Pooled, 48 runs an arm:
   time. So "fewer tokens at statistically indistinguishable accuracy" holds; "as accurate"
   does not, the point estimate is below. The cheapest cost per correct answer of all six
   designs is still PASR@4 (28,946), narrowly ahead of grep+read (29,358).
+
+## Plan to beat grep+read and the other designs (2026-09-26)
+
+Cost model, which every result in this ledger fits: **tokens ≈ T·F + r·T(T−1)/2 + output**,
+T = turns, F = fixed prompt re-sent each turn (system + catalogue + question), r = reply
+tokens per call. grep+read: F≈570, r≈810, T≈6.8 → ~23k. PASR: F≈2,040, r≈1,140, T≈6.0 →
+~32k. T enters twice and squared: one turn fewer is worth more than any payload cut, and a
+catalogue that stays small is worth F on every turn.
+
+What has been ruled out, with numbers above: shrinking or hiding PASR's five-tool catalogue
+(the model reads natively instead), compacting or deepening search replies, pre-reading
+the top file inside a search reply, a lexical vocabulary hop inside search (offline: replies
+with every must anchor 9/27 → 7/27 — the model's own reformulation beats a heuristic one).
+
+In order:
+
+1. **PASR-lite** (running): one 85-token `search_code` tool = PASR's ranking + selection +
+   no-repeat, against grep+read, PASR, RAG-BM25 and an Aider-style 8k repository map, with
+   and without a 4-call budget. If it keeps PASR's accuracy, F drops from ~2,040 to ~700 —
+   near grep+read's — while r stays ~1.5–1.9k and should buy the lower T.
+2. **Call-budget curve for the winner** (3 / 4 / 5 / 6): the cheapest budget whose accuracy
+   is not below grep+read@6. T is the lever; this finds how far it can be pulled.
+3. **Several queries in one call** (`queries: [...]`): the model reformulates once in most
+   runs (find_evidence ×1.5–1.9 a run); letting it send both phrasings together fuses the
+   rankings and saves exactly that turn, without a heuristic choosing the second phrasing.
+4. **Host guidance, measured for both arms**: parallel tool calls in one turn, and masking
+   tool results older than k turns (JetBrains, "The Complexity Trap": ~−50% cost). PASR's
+   delivered-lines ledger makes masking safe — a masked file can be re-read in full.
+5. **A hosted model** (Claude Haiku 4.5 / Sonnet 5, with prompt caching) — needs an API key
+   and a spend decision; the only way to know how much of this is Qwen-3.5-9B-specific.

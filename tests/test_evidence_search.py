@@ -168,3 +168,16 @@ def test_a_long_file_does_not_win_by_mentioning_everything_somewhere(tmp_path: P
     hits = find_evidence(root, "what stops an idle plugin")["hits"]
 
     assert hits[0]["provenance"].startswith("src/gc.rs:")
+
+
+def test_a_plain_word_reaches_the_identifier_that_contains_it(tmp_path):
+    """`exit` used to match only as a whole word, and `_` is a word character, so the line
+    that stores LAST_EXIT_CODE was the one line a plain-words question could not surface."""
+    from pasr.symbol_search import find_evidence
+
+    (tmp_path / "stack.py").write_text(
+        "def note(stack, code):\n    stack.set_last_exit_code(LAST_EXIT_CODE, code)\n", encoding="utf-8"
+    )
+    (tmp_path / "other.py").write_text("# nothing about the last status here\n", encoding="utf-8")
+    hits = find_evidence(tmp_path, query="last exit status", top_k=5, per_file=2)["hits"]
+    assert any("LAST_EXIT_CODE" in hit["text"] for hit in hits)

@@ -642,6 +642,29 @@ def _rerank_semantically(
 _RRF_K = 60
 
 
+_WORD = re.compile(r"[A-Za-z0-9]+(?:_[A-Za-z0-9]+)*")
+_CAMEL = re.compile(r"([a-z0-9])([A-Z])")
+
+
+def _line_words(line: str) -> set[str]:
+    """Every word of a line, and every part of its identifiers, lower-cased.
+
+    A query term used to count only as a whole word, and `_` is a word character, so
+    `exit` never matched `LAST_EXIT_CODE` and `recursion` never matched
+    `recursion_count` -- the identifiers that answer the question were the one kind of
+    line a question in plain words could not reach. Replaying 67 recorded queries,
+    splitting identifiers took the replies that carry every required anchor from 0 to 13.
+    """
+    words: set[str] = set()
+    for word in _WORD.findall(line):
+        words.add(word.lower())
+        for part in word.split("_"):
+            if part:
+                words.add(part.lower())
+                words.update(sub.lower() for sub in _CAMEL.sub(r"\1 \2", part).split())
+    return words
+
+
 def find_evidence(
     workspace_root: Path,
     query: str = "",
@@ -743,13 +766,14 @@ def find_evidence(
     hits: list[tuple[float, dict[str, Any]]] = []
     read_sources: dict[str, tuple[int, tuple[Any, ...]]] = {}
     for source, text in texts.items():
-        patterns = [(term, re.compile(rf"\b{re.escape(term)}\b", re.IGNORECASE)) for term in matched_terms[source]]
+        terms_here = matched_terms[source]
         definitions = definitions_by_source[source]
         per_file_hits: list[tuple[float, dict[str, Any]]] = []
         lines = text.splitlines()
         read_sources[source] = (len(lines), definitions)
         for line_no, line in enumerate(lines, start=1):
-            found = [term for term, pattern in patterns if pattern.search(line)]
+            words = _line_words(line)
+            found = [term for term in terms_here if term in words]
             if not found:
                 continue
             owner = _innermost_owner(definitions, line_no)
