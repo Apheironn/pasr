@@ -837,3 +837,98 @@ In order:
    delivered-lines ledger makes masking safe — a masked file can be re-read in full.
 5. **A hosted model** (Claude Haiku 4.5 / Sonnet 5, with prompt caching) — needs an API key
    and a spend decision; the only way to know how much of this is Qwen-3.5-9B-specific.
+
+### Field comparison 2 — seven designs incl. Aider and PASR-lite (2026-09-26 05:05–06:38)
+
+Same protocol, 48 runs an arm. New arms: **Aider-map** (grep+read plus an Aider-style 8,192-token
+repository map in the prompt, aider/repomap.py's defaults), **PASR-lite** (host tools plus
+the single 85-token `search_code` = PASR ranking + selection + no-repeat).
+
+**field_fresh_20260926.json**
+
+| arm | acc | Q1 | Q2 | Q1 tok | Q2 tok | turns | calls | reply/call | open | fixed | f_evid | select | s_code | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 7/12 | 5/6 | 2/6 | 26,015 | 17,023 | 6.9 | 5.9 | 773 | 570 | 3,653 | 0 | 0 | 0 | 0 | 0 | 0 | 9,448 | 6,888 | 0 | 944 | 586 | 21,519 |  | 36,890 | 8,193 |
+| PASR | 7/12 | 5/6 | 2/6 | 34,332 | 42,358 | 6.6 | 5.6 | 1,120 | 2,039 | 12,220 | 5,846 | 17,582 | 0 | 0 | 0 | 38 | 677 | 0 | 0 | 1,226 | 757 | 38,345 | +78% | 65,734 | 12,280 |
+| PASR@4calls | 7/12 | 5/6 | 2/6 | 23,190 | 23,266 | 5.0 | 4.0 | 1,381 | 2,039 | 10,170 | 4,200 | 8,216 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 33 | 608 | 23,228 | +8% | 39,820 | 8,919 |
+| PASR-lite | 6/12 | 6/6 | 0/6 | 39,325 | 43,923 | 6.8 | 5.8 | 1,635 | 680 | 4,156 | 0 | 0 | 25,072 | 0 | 0 | 0 | 11,012 | 0 | 0 | 755 | 628 | 41,624 | +93% | 83,247 | 14,492 |
+| PASR-lite@4calls | 7/12 | 6/6 | 1/6 | 21,591 | 21,823 | 5.0 | 4.0 | 1,612 | 680 | 3,375 | 0 | 0 | 13,067 | 0 | 0 | 0 | 4,379 | 0 | 0 | 359 | 527 | 21,707 | +1% | 37,212 | 9,215 |
+| RAG-BM25 | 5/12 | 5/6 | 0/6 | 35,282 | 39,750 | 6.5 | 5.8 | 1,340 | 675 | 3,949 | 0 | 0 | 22,465 | 0 | 0 | 0 | 9,549 | 0 | 0 | 912 | 642 | 37,516 | +74% | 90,039 | 13,041 |
+| Aider-map | 2/12 | 1/6 | 1/6 | 79,463 | 97,004 | 7.0 | 6.0 | 699 | 9,847 | 68,549 | 0 | 0 | 0 | 0 | 0 | 0 | 15,491 | 2,591 | 0 | 976 | 626 | 88,233 | +310% | 529,400 | 22,963 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**field_airguard_20260926.json**
+
+| arm | acc | Q1 | Q2 | Q1 tok | Q2 tok | turns | calls | reply/call | open | fixed | f_evid | select | s_code | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 11/12 | 6/6 | 5/6 | 18,560 | 32,096 | 6.7 | 5.7 | 932 | 553 | 3,402 | 0 | 0 | 0 | 0 | 0 | 0 | 16,601 | 3,508 | 0 | 1,149 | 669 | 25,328 |  | 27,630 | 9,411 |
+| PASR | 10/12 | 5/6 | 5/6 | 16,015 | 28,951 | 4.6 | 3.6 | 1,282 | 2,022 | 9,114 | 4,185 | 6,961 | 0 | 0 | 0 | 0 | 1,055 | 0 | 0 | 569 | 599 | 22,483 | -11% | 26,980 | 9,141 |
+| PASR@4calls | 10/12 | 4/6 | 6/6 | 14,004 | 23,305 | 4.2 | 3.2 | 1,405 | 2,022 | 8,592 | 4,100 | 5,002 | 0 | 0 | 0 | 0 | 252 | 0 | 0 | 162 | 546 | 18,655 | -26% | 22,386 | 7,894 |
+| PASR-lite | 10/12 | 5/6 | 5/6 | 25,209 | 20,840 | 5.6 | 4.6 | 1,047 | 663 | 3,529 | 0 | 0 | 11,331 | 0 | 0 | 0 | 6,894 | 0 | 0 | 668 | 602 | 23,024 | -9% | 27,629 | 8,308 |
+| PASR-lite@4calls | 9/12 | 6/6 | 3/6 | 16,788 | 17,876 | 4.8 | 3.8 | 1,187 | 663 | 3,147 | 0 | 0 | 8,901 | 0 | 0 | 0 | 4,407 | 0 | 0 | 365 | 511 | 17,332 | -32% | 23,109 | 7,073 |
+| RAG-BM25 | 11/12 | 6/6 | 5/6 | 36,479 | 19,728 | 5.8 | 4.8 | 1,294 | 658 | 3,662 | 0 | 0 | 18,346 | 0 | 0 | 0 | 4,708 | 0 | 0 | 794 | 594 | 28,104 | +11% | 30,658 | 10,388 |
+| Aider-map | 11/12 | 6/6 | 5/6 | 79,565 | 75,372 | 5.6 | 4.9 | 1,058 | 10,152 | 56,460 | 0 | 0 | 0 | 0 | 0 | 0 | 18,496 | 967 | 0 | 839 | 706 | 77,468 | +206% | 84,511 | 23,262 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**field_holdout_20260926.json**
+
+| arm | acc | Q1 | Q2 | Q1 tok | Q2 tok | turns | calls | reply/call | open | fixed | f_evid | select | s_code | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 8/12 | 6/6 | 2/6 | 13,022 | 24,471 | 7.0 | 6.0 | 465 | 571 | 3,615 | 0 | 0 | 0 | 0 | 0 | 0 | 6,702 | 6,519 | 0 | 1,258 | 653 | 18,747 |  | 28,120 | 6,022 |
+| PASR | 9/12 | 6/6 | 3/6 | 41,734 | 42,450 | 6.9 | 5.9 | 1,374 | 2,040 | 12,403 | 10,176 | 16,758 | 0 | 0 | 0 | 0 | 818 | 55 | 0 | 1,227 | 654 | 42,092 | +125% | 56,122 | 13,417 |
+| PASR@4calls | 9/12 | 5/6 | 4/6 | 21,092 | 20,852 | 5.0 | 4.0 | 1,196 | 2,040 | 10,185 | 6,010 | 3,977 | 0 | 0 | 0 | 0 | 216 | 0 | 0 | 93 | 491 | 20,972 | +12% | 27,962 | 7,806 |
+| PASR-lite | 6/12 | 6/6 | 0/6 | 39,607 | 47,176 | 6.9 | 5.9 | 1,781 | 681 | 4,237 | 0 | 0 | 34,946 | 0 | 0 | 0 | 2,896 | 0 | 0 | 767 | 546 | 43,392 | +131% | 86,783 | 15,038 |
+| PASR-lite@4calls | 6/12 | 6/6 | 0/6 | 20,896 | 23,587 | 5.0 | 4.0 | 1,796 | 681 | 3,390 | 0 | 0 | 16,887 | 0 | 0 | 0 | 1,145 | 0 | 0 | 369 | 451 | 22,241 | +19% | 44,483 | 9,612 |
+| RAG-BM25 | 12/12 | 6/6 | 6/6 | 28,025 | 29,441 | 5.7 | 4.8 | 1,502 | 676 | 3,696 | 0 | 0 | 21,340 | 0 | 0 | 0 | 2,466 | 0 | 0 | 650 | 581 | 28,733 | +53% | 28,733 | 11,402 |
+| Aider-map | 3/12 | 3/6 | 0/6 | 62,255 | 66,749 | 5.6 | 6.3 | 444 | 9,840 | 54,537 | 0 | 0 | 0 | 0 | 0 | 0 | 6,231 | 2,152 | 0 | 956 | 626 | 64,502 | +244% | 258,008 | 19,050 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**field_nushell_20260926.json**
+
+| arm | acc | Q1 | Q2 | Q1 tok | Q2 tok | turns | calls | reply/call | open | fixed | f_evid | select | s_code | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 12/12 | 6/6 | 6/6 | 35,727 | 19,644 | 6.6 | 5.8 | 1,118 | 569 | 3,463 | 0 | 0 | 0 | 0 | 0 | 0 | 15,812 | 6,786 | 0 | 975 | 649 | 27,685 |  | 27,685 | 10,964 |
+| PASR | 11/12 | 5/6 | 6/6 | 35,325 | 28,104 | 6.0 | 5.0 | 1,060 | 2,038 | 11,164 | 5,391 | 6,383 | 0 | 0 | 641 | 0 | 6,434 | 37 | 0 | 997 | 669 | 31,714 | +15% | 34,598 | 10,923 |
+| PASR@4calls | 10/12 | 4/6 | 6/6 | 23,541 | 19,518 | 4.8 | 3.8 | 1,131 | 2,038 | 9,846 | 4,141 | 3,586 | 0 | 0 | 448 | 0 | 3,189 | 0 | 0 | -213 | 533 | 21,530 | -22% | 25,836 | 8,322 |
+| PASR-lite | 12/12 | 6/6 | 6/6 | 44,434 | 43,353 | 6.7 | 5.7 | 1,811 | 679 | 4,309 | 0 | 0 | 25,120 | 0 | 0 | 0 | 13,205 | 0 | 0 | 675 | 585 | 43,893 | +59% | 43,893 | 15,792 |
+| PASR-lite@4calls | 12/12 | 6/6 | 6/6 | 26,233 | 21,642 | 5.0 | 4.0 | 1,765 | 679 | 3,390 | 0 | 0 | 14,003 | 0 | 0 | 0 | 5,759 | 0 | 0 | 298 | 488 | 23,937 | -14% | 23,937 | 10,142 |
+| RAG-BM25 | 12/12 | 6/6 | 6/6 | 27,988 | 35,759 | 6.3 | 5.5 | 1,260 | 674 | 3,868 | 0 | 0 | 23,093 | 0 | 0 | 0 | 3,477 | 0 | 0 | 808 | 627 | 31,874 | +15% | 31,874 | 11,447 |
+| Aider-map | 12/12 | 6/6 | 6/6 | 60,862 | 82,027 | 5.8 | 4.8 | 927 | 9,844 | 56,263 | 0 | 0 | 0 | 0 | 0 | 0 | 11,811 | 2,055 | 0 | 711 | 604 | 71,444 | +158% | 71,444 | 21,633 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+**pooled**
+
+| arm | acc | Q1 | Q2 | Q1 tok | Q2 tok | turns | calls | reply/call | open | fixed | f_evid | select | s_code | f_sym | f_use | f_files | read | grep | other | asst | output | TOTAL | vs grep | tok/answer | cached* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| grep+read | 38/48 | 23/24 | 15/24 | 23,331 | 23,308 | 6.8 | 5.8 | 818 | 567 | 3,533 | 0 | 0 | 0 | 0 | 0 | 0 | 12,141 | 5,925 | 0 | 1,082 | 639 | 23,320 |  | 29,456 | 8,647 |
+| PASR | 37/48 | 21/24 | 16/24 | 31,852 | 35,465 | 6.0 | 5.0 | 1,209 | 2,036 | 11,225 | 6,399 | 11,921 | 0 | 0 | 160 | 9 | 2,246 | 23 | 0 | 1,005 | 670 | 33,658 | +44% | 43,665 | 11,440 |
+| PASR@4calls | 36/48 | 18/24 | 18/24 | 20,457 | 21,735 | 4.8 | 3.8 | 1,274 | 2,036 | 9,698 | 4,613 | 5,195 | 0 | 0 | 112 | 0 | 914 | 0 | 0 | 19 | 544 | 21,096 | -10% | 28,128 | 8,236 |
+| PASR-lite | 34/48 | 23/24 | 11/24 | 37,144 | 38,823 | 6.5 | 5.5 | 1,597 | 677 | 4,058 | 0 | 0 | 24,117 | 0 | 0 | 0 | 8,502 | 0 | 0 | 716 | 590 | 37,983 | +63% | 53,623 | 13,407 |
+| PASR-lite@4calls | 34/48 | 24/24 | 10/24 | 21,377 | 21,232 | 4.9 | 3.9 | 1,597 | 677 | 3,325 | 0 | 0 | 13,215 | 0 | 0 | 0 | 3,922 | 0 | 0 | 348 | 494 | 21,304 | -9% | 30,077 | 9,011 |
+| RAG-BM25 | 40/48 | 23/24 | 17/24 | 31,944 | 31,170 | 6.1 | 5.2 | 1,345 | 672 | 3,794 | 0 | 0 | 21,311 | 0 | 0 | 0 | 5,050 | 0 | 0 | 791 | 611 | 31,557 | +35% | 37,868 | 11,570 |
+| Aider-map | 28/48 | 16/24 | 12/24 | 70,536 | 80,288 | 6.0 | 5.5 | 755 | 9,844 | 58,952 | 0 | 0 | 0 | 0 | 0 | 0 | 13,007 | 1,941 | 0 | 871 | 641 | 75,412 | +223% | 129,278 | 21,727 |
+
+*cached: input re-sent from an earlier turn billed at 0.1x, as hosted prompt caching does
+
+- **PASR-lite is rejected**: 34/48 at +63% tokens (Q2 11/24). The catalogue fell 2,036 →
+  677, and the reply grew to 1,597 tokens a call while native reads rose to 8.5k a run.
+  Without find_evidence's twenty one-line hits the model loses the vocabulary it finds the
+  Q2 answers with. The line list is where PASR's value is, not the code it attaches.
+- **Aider-map**: 28/48 at +223% (75,412 tokens a run). The map is 8k tokens re-sent every
+  turn (`fixed` 58,952) and, ranked by reference PageRank, mostly lists central files, not
+  the question's.
+- **RAG-BM25 is the most accurate design in both field sweeps**: 80/96 against PASR 78/96,
+  grep+read 76/96, PASR@4 70/96. Its chunk tokenizer splits identifiers (`last_exit_code` →
+  last/exit/code); find_evidence did not — see the fix below.
+- Across both sweeps: grep+read 76/96 @ ~23.3k, PASR 78/96 @ ~32.9k, RAG-BM25 80/96 @
+  ~31.7k, PASR@4 70/96 @ ~20.8k (cheapest per correct answer both times).
+
+**Found from this, fixed in `d94e859`, not yet measured end to end:** find_evidence matched
+query terms against lines as whole words, and `_` is a word character, so `exit` never
+matched `LAST_EXIT_CODE`. Offline over 67 recorded queries, matching words and their
+snake/camel parts took replies carrying every required anchor 0 → 13, anchor mentions
+42 → 58. Next sweep: grep+read vs PASR (b886d05) vs PASR + this fix, at 6 and at 4 calls.
