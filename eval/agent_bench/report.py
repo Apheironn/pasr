@@ -28,7 +28,20 @@ sys.path.insert(0, str(HERE.parents[1] / "src"))
 from pasr.tokenize import get_tokenizer  # noqa: E402
 
 LABELS = {"baseline": "grep+read", "control": "PASR previous", "optimized": "PASR now"}
-ORDER = ("baseline", "grep+read", "control", "optimized", "PASR", "PASR@4calls", "RAG-BM25", "RAG-dense", "symbol-nav")
+ORDER = (
+    "baseline",
+    "grep+read",
+    "control",
+    "optimized",
+    "PASR",
+    "PASR@4calls",
+    "PASR-lite",
+    "PASR-lite@4calls",
+    "RAG-BM25",
+    "RAG-dense",
+    "Aider-map",
+    "symbol-nav",
+)
 TOOLS = (
     "find_evidence",
     "select_context",

@@ -23,7 +23,7 @@ import tools_pasr
 
 from pasr.symbols import get_provider, parse_symbols
 
-ARMS = ("baseline", "pasr", "pasr_compact", "pasr_terse", "rag_bm25", "rag_dense")
+ARMS = ("baseline", "pasr", "pasr_compact", "pasr_terse", "rag_bm25", "rag_dense", "aider_map")
 RAG_ARMS = ("rag_bm25", "rag_dense")
 DESCRIPTIONS = {
     "find_evidence": "Search repository content lexically, ranked by term rarity. Start here for concepts; "
@@ -97,7 +97,7 @@ def arm_tools(arm: str) -> list[dict]:
         import rag_tools
 
         return copy.deepcopy(schemas.BASELINE) + rag_tools.schema()
-    tools = copy.deepcopy(schemas.BASELINE if arm == "baseline" else schemas.PASR)
+    tools = copy.deepcopy(schemas.BASELINE if arm in ("baseline", "aider_map") else schemas.PASR)
     if arm == "pasr_terse":
         for tool in tools:
             tool["description"] = DESCRIPTIONS.get(tool["name"], tool["description"])
@@ -153,6 +153,16 @@ class _MeteredClient:
             self.messages = _MeteredMessages(client, turns)
 
 
+def _question_text(question: str, arm: str) -> str:
+    """The question as the arm's client would send it: Aider puts its repository map first."""
+    text = getattr(runner, question)
+    if arm == "aider_map":
+        import aider_map
+
+        return aider_map.with_map(text)
+    return text
+
+
 def run_one(
     client,
     model: str,
@@ -178,7 +188,8 @@ def run_one(
 
             raw = rag_tools.run(arm, name, arguments)
         else:
-            raw = (tools_pasr.run_baseline if arm == "baseline" else tools_pasr.run_pasr)(name, arguments)
+            host_only = arm in ("baseline", "aider_map")
+            raw = (tools_pasr.run_baseline if host_only else tools_pasr.run_pasr)(name, arguments)
         delivered = compact_response(raw) if arm in {"pasr_compact", "pasr_terse"} else raw
         outputs.append(
             {
@@ -192,14 +203,14 @@ def run_one(
 
     if backend_name == "local":
         result = backend.run(
-            getattr(runner, question),
+            _question_text(question, arm),
             arm_tools(arm),
             execute,
             temperature=temperature,
             sampling_seed=sampling_seed,
         )
     else:
-        result = backend.run(getattr(runner, question), arm_tools(arm), execute)
+        result = backend.run(_question_text(question, arm), arm_tools(arm), execute)
     result.update(
         {
             "question": question,

@@ -28,7 +28,7 @@ def test_lists_all_tools_with_schemas(mini_workspace: Path):
     # calls between them while costing ~400 catalogue tokens on every turn.
     assert set(tools) == {"find_files", "find_evidence", "find_symbols", "find_usages", "select_context"}
     everything = {tool.name for tool in anyio.run(create_server(mini_workspace, expose=ALL_TOOLS).list_tools)}
-    assert everything == set(tools) | {"trace_dependencies", "explain_selection", "expand_context"}
+    assert everything == set(tools) | {"trace_dependencies", "explain_selection", "expand_context", "search_code"}
     props = set(tools["select_context"].input_schema.get("properties", {}))
     # The model-facing surface only. Every property here is re-sent in this tool's schema
     # on every turn, and across 6,176 recorded calls the model never once passed
@@ -776,3 +776,25 @@ def test_one_reply_carries_at_most_the_select_budget(tmp_path: Path):
     second = json.loads(_call(server, "select_context", {**args, "query": "state step"}).content[0].text)
     assert second["token_count"] <= SELECT_BUDGET
     assert not set(_labels(first)) & set(_labels(second))
+
+
+def test_search_code_reads_the_best_files_and_never_repeats(tmp_path: Path):
+    """One tool, one call: the evidence ranking picks the files, the selector their parts,
+    and a second search does not hand back what the first already delivered."""
+    for n in range(6):
+        (tmp_path / f"stage_{n}.py").write_text(
+            "".join(f"def retry_budget_{n}_{k}(attempts):\n    return attempts * {k}\n\n" for k in range(40)),
+            encoding="utf-8",
+        )
+    server = create_server(tmp_path, expose=["search_code"])
+    assert [t.name for t in anyio.run(server.list_tools)] == ["search_code"]
+
+    def search(query: str) -> dict:
+        return json.loads(_call(server, "search_code", {"query": query}).content[0].text)
+
+    first = search("retry budget attempts")
+    labels = _labels(first)
+    assert labels and len({label.rsplit(":", 1)[0] for label in labels}) <= 3
+    assert any(note.startswith("Also matched:") for note in first["advice"])
+    second = search("retry budget attempts again")
+    assert not set(_labels(second)) & set(labels)

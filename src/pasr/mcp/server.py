@@ -68,6 +68,8 @@ from pasr.trace import trace_dependencies as _trace_dependencies
 # second selection of a file returns only what the first left out, reading in bounded
 # steps costs no repetition -- the same reason a bounded viewer beats a whole-file dump.
 SELECT_BUDGET = 1500
+# How many of the search's top files one search_code reply reads from.
+SEARCH_FILES = 3
 EVIDENCE_TOP_K = 20
 EVIDENCE_PER_FILE = 1
 
@@ -145,6 +147,12 @@ _FIND_USAGES_DESCRIPTION = (
     "The top hits carry `read_lines`, a bounded span within that hit's `provenance` path: a "
     "complete enclosing function up to 40 lines, otherwise at most 8 lines on either "
     'side. Read one with `select_context(query=..., files=["<provenance path>:<read_lines>"])`.'
+)
+_SEARCH_CODE_DESCRIPTION = (
+    "Search the codebase with a natural-language or keyword query. Returns the most relevant "
+    "code from the best-matching files, each piece labelled file:line, and names the next files "
+    "that matched. Asking again never repeats code you already have. Use it to find where "
+    "something is implemented before reading files."
 )
 _FIND_SYMBOLS_DESCRIPTION = (
     "Where is this symbol DEFINED? Returns file:line definitions for functions, "
@@ -702,6 +710,7 @@ ALL_TOOLS = (
     "trace_dependencies",
     "explain_selection",
     "expand_context",
+    "search_code",
 )
 # What a host gets unless it asks for more. Across 1,413 recorded PASR runs the model
 # called expand_context never, trace_dependencies 10 times and explain_selection 14 times,
@@ -895,6 +904,43 @@ def create_server(workspace_root: Path, expose: Iterable[str] | None = None) -> 
                 run,
             )
         )
+
+    @tool(name="search_code", description=_SEARCH_CODE_DESCRIPTION)
+    def search_code(query: str) -> dict[str, Any]:
+        """Search and read in one call: the evidence ranking picks the files, the selector
+        picks their parts, and nothing already delivered this session is sent again."""
+
+        def run() -> dict[str, Any]:
+            try:
+                found = _find_evidence(root, query=query, top_k=EVIDENCE_TOP_K, per_file=EVIDENCE_PER_FILE)
+            except ValueError as exc:
+                raise ToolError(str(exc)) from exc
+            ranked = list(dict.fromkeys(hit["provenance"].rsplit(":", 1)[0] for hit in found["hits"]))
+            absent = sorted(t for t, n in found["term_file_counts"].items() if not n)
+            notes = [f"No file here contains: {', '.join(absent)}."] if absent else []
+            wanted: list[str] = []
+            used = 0
+            for position, path in enumerate(ranked):
+                kept, _, _ = _unheld([path], root, guard.covered)
+                used = position + 1
+                if kept:
+                    wanted.extend(kept)
+                    if len({entry.rsplit(":", 1)[0] for entry in wanted}) == SEARCH_FILES:
+                        break
+            if not wanted:
+                return {"context": "", "advice": [*notes, "Nothing here matches that you have not already read."]}
+            options = {key: value for key, value in _SELECT_DEFAULTS.items() if key not in ("pack", "save_as")}
+            request = validate_select_context_request(
+                {"query": query, "files": wanted, "budget_tokens": SELECT_BUDGET, **options}, workspace_root=root
+            )
+            picked = run_select_context(request, write_receipt_file=False)
+            guard.check_novelty(picked)
+            rest = [path for path in ranked[used:] if path not in guard.covered][:5]
+            if rest:
+                notes.append(f"Also matched: {', '.join(rest)}.")
+            return {"context": _labelled_context(picked), "advice": notes}
+
+        return _wire(guard.guarded("search_code", {"query": query}, run))
 
     @tool(name="find_usages", description=_FIND_USAGES_DESCRIPTION)
     def find_usages(symbol: str, include: list[str] | None = None, top_k: int = DEFAULT_TOP_K) -> dict[str, Any]:
