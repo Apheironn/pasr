@@ -54,6 +54,27 @@ registration or JSON `args`, replace `pasr-mcp==0.3.0` after `--from` with that 
 Do not add a second same-name registration. The checkout can differ from the
 published release; the tool descriptions below describe 0.3.0.
 
+### Optional diagnostic for the unreleased source iteration
+
+**Published 0.3.0 has no `doctor` command.** You can report installation trouble
+without it; do not change your client registration or upgrade just to file feedback.
+If you are already trying the current PASR source checkout, run:
+
+```bash
+uvx --from /absolute/path/to/pasr pasr --workspace /absolute/path/to/project doctor --json
+```
+
+Replace both paths and quote paths with spaces. This probes that source-installed
+runtime, not any separately configured published server. It checks that the
+workspace exists and is a directory, then exercises MCP, the default tool catalog,
+and selection in a disposable fixture. It does not read or write your project's
+sources or `.pasr/`. No paid model/API request is made; dependency setup and a
+first-use tokenizer encoding download may need network access.
+
+A passing diagnostic is **not** proof of Claude registration, GUI permissions or
+approval, model tool choice, or answer quality. Check those in the client using
+the deliberate first task below. Review any diagnostic JSON before posting it.
+
 ## Use it deliberately
 
 The default catalog has **five tools**:
@@ -110,3 +131,22 @@ Receipt persistence is best effort and records PASR-delivered content only, not
 everything the agent saw. Lexical evidence diagnostics are not calibrated answer
 correctness. See the [evaluation evidence](../competitors-benchmark.md) before
 assuming savings or quality improvements over native search/read.
+
+## Share first-use or repeat-use feedback
+
+Use [installation trouble](https://github.com/Apheironn/pasr/issues/new?template=installation-trouble.yml)
+for setup/connection problems, or [real-task feedback](https://github.com/Apheironn/pasr/issues/new?template=real-task-feedback.yml)
+for a first task, repeat use, or why you disabled PASR. Feedback is optional;
+0.3.0 users can submit without doctor output. Include known versions, OS and
+installation method, approximate time to a useful result (or giving up), expected
+versus observed behavior, your assessment of the outcome, and extra reads or
+interventions. Say unknown rather than inventing usage or cost numbers.
+
+**These forms create public issues.** Before submitting, remove secrets, private
+source, private repository URLs and identifying paths. No private code or
+transcript is required; do not attach raw logs or `.pasr/` files. Only share
+information you are allowed to publish, including in diagnostic output.
+Suspected security bugs belong in
+[private vulnerability reporting](https://github.com/Apheironn/pasr/security/advisories/new),
+not a public issue. See [contributor reporting guidance](../../CONTRIBUTING.md#report-first-use-trouble-or-task-feedback)
+for review expectations.

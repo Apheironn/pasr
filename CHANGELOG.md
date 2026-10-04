@@ -5,6 +5,20 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **Source-only runtime doctor.** `pasr doctor [--json] [--timeout SECONDS]`
+  checks workspace directory existence, launches a real MCP subprocess against
+  a disposable fixture, checks the default catalog and selects known source
+  within a reported token budget. Reports omit project paths, source, environment
+  values and raw exception messages; the inspected project and its PASR state
+  are untouched. Protocol work has a finite deadline with SDK subprocess cleanup.
+  This is not in published 0.3.0 and does not check GUI registration, approvals
+  or model behavior. No paid model calls or automatic uploads are made.
+- **Opt-in first-use feedback.** Installation-trouble and real-task issue forms
+  collect sanitized setup/outcome information with required public-posting
+  confirmations. Security reports use private advisories. The roadmap now sets
+  concrete diagnostic acceptance and fresh-evaluation gates without inventing
+  independent users or changing frozen results.
+
 - **Published-package onboarding.** The primary README, website and client setup
   examples now pin the verified PyPI release `pasr-mcp==0.3.0`; cloning PASR is
   optional for contributors, not a prerequisite for using the server.

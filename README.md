@@ -118,6 +118,31 @@ from the project to inspect to print a selection receipt.
 Five historical CLI examples against pinned public repos are in
 [`examples/`](https://github.com/Apheironn/pasr/blob/main/examples/README.md).
 
+### Diagnose startup — unreleased source feature
+
+The current source adds `pasr doctor`; **published 0.3.0 does not include it**.
+To diagnose the source installation, use your PASR checkout explicitly:
+
+```bash
+uvx --from /absolute/path/to/pasr pasr --workspace /absolute/path/to/project doctor --json --timeout 30
+```
+
+Omit `--json` for a readable report. Exit codes are `0` for success, `1` for a
+failed diagnostic, and `2` for invalid options. The protocol deadline must be a
+finite positive number; subprocess shutdown can take a few additional seconds.
+The command checks that the workspace is a directory, then starts a real MCP
+server in a disposable fixture to inspect its catalog and select known source.
+It never scans or writes the project or its `.pasr/` state. Reports contain runtime
+versions and check outcomes, not source, absolute paths, environment values or raw
+exception messages. It makes no paid model call or automatic report upload;
+initial setup/tokenizer encoding downloads can require network access.
+A pass does not verify your client's registration, approval settings or answers.
+
+Optional public reports: [installation trouble](https://github.com/Apheironn/pasr/issues/new?template=installation-trouble.yml)
+or [real-task feedback](https://github.com/Apheironn/pasr/issues/new?template=real-task-feedback.yml).
+Review before posting; do not include secrets, private source or raw transcripts.
+Published-version users can report without running doctor.
+
 ### Verified Codex onboarding, with explicit limits
 
 On 2026-10-04, **Codex CLI 0.160.0 + GPT-6 Luna** used an installed 0.3.0 wheel
@@ -401,9 +426,9 @@ pasr context --issue "$(cat issue.txt)" src/ \        # headless slice for CI / 
 pasr report --price-per-mtok 3                        # source-context estimates, not API bills
 ```
 
-The path is optional everywhere — with none, PASR scans the whole workspace
-(`.gitignore`-aware). Pass a directory or globs (`src/`, `lib/ "**/*.py"`) only to scope
-it tighter or run faster.
+The source-reading commands above accept optional paths — with none, they scan
+the whole workspace (`.gitignore`-aware). Pass directories or globs (`src/`,
+`lib/ "**/*.py"`) to scope them. `doctor` instead uses only its disposable fixture.
 
 Receipt persistence to `.pasr/receipts/<id>.{json,md}` is best-effort (gitignored).
 These records describe PASR selections, not a complete global agent audit. The

@@ -1,0 +1,108 @@
+name: Real-task feedback (first use, repeat use, or disabling)
+description: Share an optional, self-assessed task outcome and friction without private code or transcripts.
+title: "[Task feedback] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Feedback is **opt-in and public**. A high-level description is enough: no private source, repository URL, transcript, `.pasr/` file, or paid model call is needed. Remove secrets, identifying paths, and confidential details from every field and attachment. Do not invent token or cost numbers; unknown is useful information.
+
+        Suspected security bug? Use [private vulnerability reporting](https://github.com/Apheironn/pasr/security/advisories/new), not this form. For setup blockers, use [installation trouble](https://github.com/Apheironn/pasr/issues/new?template=installation-trouble.yml).
+
+        Outcomes here are your assessment, not independently verified benchmarks. Published 0.3.0 users can report without the source-only `doctor` command.
+  - type: dropdown
+    id: usage-stage
+    attributes:
+      label: Which experience are you reporting?
+      options:
+        - First use on my own task
+        - Repeat use on my own task
+        - Disabled or stopped using PASR
+        - Maintainer-operated or guided demonstration
+    validations:
+      required: true
+  - type: input
+    id: pasr-version
+    attributes:
+      label: PASR version and source revision
+      description: Installed version and source commit if applicable; unknown is acceptable.
+      placeholder: "0.3.0 from PyPI"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Client, OS, Python, and model versions
+      description: Include what you know; CLI only, unknown, or not applicable are acceptable. No machine names or environment values.
+      placeholder: "Claude Code <version>; macOS <version>; Python unknown; model <name/version or unknown>"
+    validations:
+      required: true
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Installation method
+      options:
+        - uvx from PyPI
+        - pip from PyPI
+        - GitHub release wheel or sdist
+        - Source checkout (uvx or editable install)
+        - Other or unknown (describe below)
+    validations:
+      required: true
+  - type: textarea
+    id: task-expected-observed
+    attributes:
+      label: Task, expected result, and observed result
+      description: Describe the task without private details. Say whether PASR was actually called, whether you explicitly requested it, and what helped or failed. A private repository link or source sample is not required.
+      placeholder: "Task: locate an input-validation boundary\nExpected: ...\nObserved: ...\nPASR calls: observed / not observed / unknown; explicitly requested: yes / no"
+    validations:
+      required: true
+  - type: input
+    id: time-to-result
+    attributes:
+      label: Time to first useful result, or time spent before stopping
+      description: Approximate duration is fine; distinguish setup from task time if known. No result or unknown are valid.
+      placeholder: "About 10 minutes setup, 5 minutes task; or no useful result after 20 minutes"
+    validations:
+      required: true
+  - type: dropdown
+    id: self-assessed-outcome
+    attributes:
+      label: Your assessment of task outcome
+      options:
+        - Completed and checked by me
+        - Partly completed
+        - Result appeared useful but I did not verify it
+        - Incorrect or materially misleading result
+        - No useful result or task abandoned
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: manual-reads
+    attributes:
+      label: Extra reads and human intervention
+      description: Did you or the agent need native search, manual file reads, corrections, or permission interventions beyond PASR? Approximate counts or a short description are enough; none or unknown are valid. Do not paste the source read.
+    validations:
+      required: true
+  - type: textarea
+    id: repeat-or-disable
+    attributes:
+      label: Would you use it again, or why did you disable it?
+      description: Describe repeat use, abandonment, or the main friction. Not decided is a valid answer; interest alone is not repeat use.
+    validations:
+      required: true
+  - type: textarea
+    id: sanitized-error
+    attributes:
+      label: Sanitized errors or other measurement notes (optional)
+      description: Safe summaries only, not raw logs. If you already measured time, tokens, or cost, distinguish totals from partial or unknown usage and explain the scope. No cost numbers are required; smaller selected context alone does not establish savings or quality.
+  - type: checkboxes
+    id: privacy-confirmation
+    attributes:
+      label: Public posting confirmation
+      options:
+        - label: I reviewed this report and any attachments; they contain no secrets or private source, and I am allowed to share the remaining information publicly.
+          required: true
+        - label: This is not a suspected security vulnerability; I will use private vulnerability reporting for security bugs.
+          required: true

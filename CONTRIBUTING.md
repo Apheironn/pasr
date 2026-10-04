@@ -31,6 +31,47 @@ The source checkout and inspected workspace can be different directories. Client
 configuration belongs in the [install guides](docs/install/claude-code.md).
 Initial environment/dependency setup may require network access.
 
+## Report first-use trouble or task feedback
+
+Reports are opt-in. Use [installation trouble](https://github.com/Apheironn/pasr/issues/new?template=installation-trouble.yml)
+for setup/connection blockers, or [real-task feedback](https://github.com/Apheironn/pasr/issues/new?template=real-task-feedback.yml)
+for first use, repeat use, or disabling PASR. Blank issues remain available for
+other legitimate reports. Include the version, client/OS, installation method,
+approximate time to a useful result (or stopping), and expected versus observed
+behavior. For task feedback, give your own outcome assessment and any extra
+manual reads or interventions; unknown measurements are better than invented ones.
+
+**Issues are public.** Review every field and attachment. Remove secrets, private
+source, identifying paths and private repository URLs; do not attach raw
+transcripts, environment dumps, or `.pasr/` data. No private code, repository link,
+transcript, or cost number is required. Report suspected security bugs through
+[private vulnerability reporting](https://github.com/Apheironn/pasr/security/advisories/new),
+not either public form.
+
+The current source iteration adds an optional installed-runtime diagnostic;
+**published 0.3.0 does not include `doctor`**. To try it from a source checkout:
+
+```bash
+uvx --from /absolute/path/to/pasr pasr --workspace /absolute/path/to/project doctor --json
+```
+
+Replace and, where needed, quote both paths. The diagnostic checks workspace
+existence/type and probes MCP, the default tool catalog, and selection using a
+disposable fixture, not your project sources or `.pasr/`. It makes no paid
+model/API request. Initial dependency setup and the tokenizer's first-use encoding
+download may need network access. It does not check client registration, GUI
+approvals, model tool choice, or task quality. Review the JSON before sharing it;
+it describes that source runtime, not a separately registered 0.3.0 server.
+Doctor output is optional: published-version users can file directly without
+upgrading or running a diagnostic.
+
+Maintainer review should distinguish setup failures, self-assessed task outcomes,
+guided demonstrations, and independent repeat use. Keep failures and abandonment
+visible, ask only for sanitized missing details, and do not treat reports as a
+quality benchmark or count interest as adoption. Follow the
+[roadmap's fresh-evaluation gates](docs/roadmap.md#4-validate-that-workflow-on-fresh-tasks)
+before making new quality/cost claims.
+
 ## Before you open a PR
 
 All three must be green:
@@ -49,8 +90,8 @@ with Python 3.10 and 3.12. For packaging changes, also run from the checkout roo
 
 ```bash
 python -m pip install build
-python -m build --outdir dist/0.3.0
-python scripts/smoke_dist.py dist/0.3.0
+python -m build --outdir dist/first-use-source
+python scripts/smoke_dist.py dist/first-use-source
 ```
 
 Use a version-specific, otherwise empty output directory. The smoke rejects

@@ -10,6 +10,7 @@ pasr pack <name> "<query>" [globs...]    save a Context Pack
 pasr review [--staged|--range|--diff]    diff-aware context: touched defs + their callers
 pasr context --issue <text> [globs...]   headless context slice for CI / agents
 pasr report [--since] [--price-per-mtok] summarise .pasr/ledger.jsonl
+pasr doctor [--json] [--timeout SEC]    diagnose local MCP startup using a temporary fixture
 """
 
 from __future__ import annotations
@@ -304,11 +305,39 @@ def _context(args: argparse.Namespace) -> int:
     return 0
 
 
+def _doctor(args: argparse.Namespace) -> int:
+    from pasr.doctor import run_doctor
+
+    report = run_doctor(args.workspace, timeout=args.timeout)
+    if args.json:
+        print(json.dumps(report, indent=2, sort_keys=True))
+    else:
+        runtime = report["runtime"]
+        print(f"PASR doctor: {'PASS' if report['ok'] else 'FAIL'}")
+        print(f"PASR {runtime['pasr']} | Python {runtime['python']} | MCP {runtime['mcp'] or 'not installed'}")
+        for check in report["checks"]:
+            print(f"{check['status'].upper()} {check['id']}: {check['detail']}")
+        print("\nLimits:")
+        for limit in report["limits"]:
+            print(f"- {limit}")
+    return 0 if report["ok"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="pasr", description="PASR context broker -- CLI")
     parser.add_argument("--version", action="version", version=f"pasr {__version__}")
     parser.add_argument("--workspace", type=Path, default=Path.cwd(), help="Workspace root (default: cwd).")
     sub = parser.add_subparsers(dest="command", required=True)
+
+    doctor = sub.add_parser("doctor", help="Diagnose MCP startup with an isolated fixture, not project source.")
+    doctor.add_argument("--json", action="store_true", help="Emit a source/path-free diagnostic report.")
+    doctor.add_argument(
+        "--timeout",
+        type=float,
+        default=30,
+        help="Protocol deadline in seconds; subprocess cleanup may take extra time.",
+    )
+    doctor.set_defaults(func=_doctor)
 
     find = sub.add_parser("find", help="Rank workspace files by path/filename match for a query.")
     find.add_argument("query")

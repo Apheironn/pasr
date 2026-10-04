@@ -1,0 +1,88 @@
+name: Installation or first-use trouble
+description: Report setup, connection, or first-result trouble without sharing private source.
+title: "[First use] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This report is optional and will be **public**. Do not paste secrets, private source, private repository URLs, raw transcripts, environment dumps, or `.pasr/` files. Replace identifying paths and names with placeholders; review any diagnostic output before posting.
+
+        Suspected security bug? Do not submit this form. Use [private vulnerability reporting](https://github.com/Apheironn/pasr/security/advisories/new).
+
+        Published PASR 0.3.0 has no `doctor` command. You can report without it; no source checkout or paid model call is required.
+  - type: input
+    id: pasr-version
+    attributes:
+      label: PASR version and source revision
+      description: Use the installed package version; include a commit for a source checkout if known. Unknown is acceptable.
+      placeholder: "0.3.0 from PyPI; or source checkout at <commit>"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Client, OS, and Python versions
+      description: Client name/version (or CLI only), OS/version, and Python version if known. No machine names or environment values.
+      placeholder: "Claude Code <version>; Windows 11; Python 3.12; model unknown"
+    validations:
+      required: true
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Installation method
+      options:
+        - uvx from PyPI
+        - pip from PyPI
+        - GitHub release wheel or sdist
+        - Source checkout (uvx or editable install)
+        - Other or unknown (describe below)
+    validations:
+      required: true
+  - type: dropdown
+    id: failure-stage
+    attributes:
+      label: Where did you get stuck?
+      options:
+        - Installing dependencies or starting PASR
+        - Registering or connecting the MCP server
+        - Client permission or approval
+        - Tools visible but not called
+        - Tool call or first useful result
+        - Other or unsure
+    validations:
+      required: true
+  - type: input
+    id: time-to-result
+    attributes:
+      label: Time to first useful result, or time spent before stopping
+      description: An approximate duration is enough. Say whether you reached a useful result; unknown is acceptable.
+      placeholder: "No result; stopped after about 15 minutes"
+    validations:
+      required: true
+  - type: textarea
+    id: expected-observed
+    attributes:
+      label: What did you try, expect, and observe?
+      description: Describe the steps and result in your own words. Sanitized commands may use <workspace> placeholders. No private project or transcript is required.
+      placeholder: "Tried: ...\nExpected: ...\nObserved: ..."
+    validations:
+      required: true
+  - type: textarea
+    id: sanitized-error
+    attributes:
+      label: Sanitized error or diagnostic summary (optional)
+      description: Include an error category or redacted excerpt only if safe. Remove tokens, usernames, absolute paths, private URLs, and source text. Do not attach raw logs.
+  - type: textarea
+    id: doctor-result
+    attributes:
+      label: Source-checkout doctor result (optional)
+      description: Only the unreleased source iteration includes doctor. If already run, review its JSON before sharing. Say not run if unavailable; do not upgrade just to file this report. Doctor does not check client registration, GUI approvals, or model behavior.
+  - type: checkboxes
+    id: privacy-confirmation
+    attributes:
+      label: Public posting confirmation
+      options:
+        - label: I reviewed this report and any attachments; they contain no secrets or private source, and I am allowed to share the remaining information publicly.
+          required: true
+        - label: This is not a suspected security vulnerability; I will use private vulnerability reporting for security bugs.
+          required: true

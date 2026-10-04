@@ -121,6 +121,25 @@ def installed_smoke(expected_version: str) -> None:
                         assert "OUTSIDE_SECRET" not in rejected.model_dump_json()
 
         anyio.run(exercise_mcp)
+        before_doctor = {
+            path.relative_to(workspace): path.read_bytes() for path in workspace.rglob("*") if path.is_file()
+        }
+        doctor_output = subprocess.check_output(
+            [cli, "--workspace", str(workspace), "doctor", "--json", "--timeout", "30"],
+            cwd=parent,
+            text=True,
+            encoding="utf-8",
+            timeout=45,
+        )
+        diagnostic = json.loads(doctor_output)
+        assert diagnostic["ok"], diagnostic
+        assert all(check["status"] == "pass" for check in diagnostic["checks"]), diagnostic
+        assert str(workspace) not in doctor_output and source not in doctor_output
+        after_doctor = {
+            path.relative_to(workspace): path.read_bytes() for path in workspace.rglob("*") if path.is_file()
+        }
+        assert before_doctor == after_doctor, "doctor changed the inspected workspace"
+        print("Installed doctor passed without changing project source or PASR state.", flush=True)
     print(f"Installed CLI and MCP smoke passed: pasr-mcp {expected_version}", flush=True)
 
 
