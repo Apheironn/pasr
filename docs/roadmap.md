@@ -2,12 +2,12 @@
 
 ## Release status
 
-The current source version is **0.3.0**. Its versioned distribution channel is the
-[GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.3.0); PyPI upload
-is separate and still requires project publishing authorization. PyPI provides
-**0.2.1** at release preparation. Source availability, release artifacts and
-verified client behavior are distinct milestones. The
-[install guides](install/claude-code.md) explicitly select the source checkout.
+Version **0.3.0** is published on both
+[GitHub Releases](https://github.com/Apheironn/pasr/releases/tag/v0.3.0) and
+[PyPI](https://pypi.org/project/pasr-mcp/0.3.0/). Their wheel and sdist SHA-256
+values match. A clean Windows/Python 3.12 installation from PyPI passed the CLI
+and real MCP stdio smoke. The [install guides](install/claude-code.md) pin that
+published version; a PASR source checkout is optional for development.
 
 ### Verified locally on 2026-10-04
 
@@ -42,14 +42,22 @@ GUI-client behavior and independent adoption remain unverified.
 
 ### Remote gates and publication
 
-[PR #1](https://github.com/Apheironn/pasr/pull/1) passed all six jobs in
-[CI 37190827980](https://github.com/Apheironn/pasr/actions/runs/37190827980), including
-Linux source tests and the Linux/Windows Python 3.10/3.12 artifact matrix.
-Final artifact identities and promotion status belong to the GitHub release.
+[PR #1](https://github.com/Apheironn/pasr/pull/1) was merged, and the final
+[main CI 37191283736](https://github.com/Apheironn/pasr/actions/runs/37191283736)
+passed all six jobs: Linux source tests and the Linux/Windows Python 3.10/3.12
+artifact matrix. Its wheel and sdist were promoted unchanged to GitHub Releases.
+[PyPI publication 37191531085](https://github.com/Apheironn/pasr/actions/runs/37191531085/attempts/3)
+succeeded on attempt 3 after the project's Trusted Publisher was configured.
+The first two attempts failed at authorization, not artifact verification.
 The [manual PyPI workflow](ci.md#publishing-the-exact-github-release-artifacts)
-rechecks those exact release files before OIDC publication. Its external
-prerequisite is the PyPI project's Trusted Publisher binding; GitHub administration
-does not confer that permission. MCP registry publication follows PyPI, not before.
+rechecks the release files before OIDC publication without rebuilding them.
+The published PyPI installation also passed default/split MCP calls, rendered
+budgets, receipt recovery and workspace escape rejection outside the checkout.
+The [official MCP Registry entry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.Apheironn%2Fpasr/versions/0.3.0)
+is also active: `io.github.Apheironn/pasr` version `0.3.0`, PyPI package
+`pasr-mcp==0.3.0`, stdio transport, and a required `--workspace` path.
+The unchanged manifest passed the official publisher's validation before
+publication. This is discoverability metadata, not evidence of client adoption.
 
 ## Available in the current checkout
 
@@ -105,17 +113,18 @@ results rather than declaring a milestone complete because configuration exists.
 |---|---|---|
 | Local release candidate | Verified locally | Install both artifacts outside the checkout; exercise CLI, default/split MCP, budgets, receipt recovery and workspace confinement |
 | First real client recipe | Verified in a narrow controlled task | Model-selected PASR calls and source-supported relative citations; retain setup failures and the exact client/model/configuration |
-| Public 0.3.0 release | Remote CI passed; GitHub promotion tracked in the release; PyPI authorization pending | Promote exact green-CI artifacts; verify GitHub and PyPI publication separately |
+| Public 0.3.0 release | Verified on GitHub and PyPI, with matching artifacts and a fresh PyPI install | Promote exact green-CI artifacts; verify GitHub and PyPI publication separately |
+| MCP Registry listing | Published and verified active | Exact server/package version, stdio transport and required workspace argument in the public registry response |
 | Independent usage | Pending | Target five outside installations and three users returning to their own tasks within two weeks; record failures and abandonment |
 | Fresh task-level validation | Pending | Freeze new tasks, baselines and decision rules before running; report success, material errors, time, intervention and total provider cost together |
 | First paid pilot | Pending | One team pays for a bounded assessment/integration on its own workflow; payment and useful delivery, not interest or stars, establish the milestone |
 
-### 1. Finish the public release and reproducible demonstration
+### 1. Maintain the public release and reproducible demonstration
 
-Remote CI and the reproducible model-driven demo are now verified. Promote only
-artifacts from the final green revision and keep source, GitHub, PyPI and registry
-identities aligned. Finish PyPI publishing authorization without treating it as
-already granted; then verify installation from that channel before registry submission.
+Remote CI, GitHub/PyPI publication and the reproducible model-driven demo are
+verified. Keep source, GitHub, PyPI and registry identities aligned for future
+releases. Promote only artifacts from the final green revision, verify installation
+from the published channel, and then submit the matching registry metadata.
 
 The website presents observed tool calls and citations, not a hand-written mock
 session. `scripts/demo_client.py` repeats the paid, isolated workflow and preserves

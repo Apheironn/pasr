@@ -7,50 +7,51 @@ is available (or allow uv to provision one). The GUI must be able to launch `uvx
 if it cannot find your shell's PATH, use the absolute path to the `uvx` executable
 in `command`.
 
-These instructions describe the **0.3.0** source interface. The previous PyPI
-release **0.2.1** may expose an older interface. Versioned wheels are distributed
-through [GitHub releases](https://github.com/Apheironn/pasr/releases/tag/v0.3.0);
-PyPI availability is separate. Use the source configuration below to select this
-checkout. Dependency installation may require network access; selection runs locally.
+These instructions pin **0.3.0**, now available on
+[PyPI](https://pypi.org/project/pasr-mcp/0.3.0/); no PASR checkout is required.
+Versioned wheels are also distributed through the separate
+[GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.3.0).
+Dependency installation may require network access; selection runs locally.
 
-## Add the current checkout
+## Add the published package
 
 Merge this into `.cursor/mcp.json` in your project, or `~/.cursor/mcp.json` for a
-global configuration:
+global configuration. Update an existing `pasr` entry rather than adding a duplicate:
 
 ```json
 {
   "mcpServers": {
     "pasr": {
       "command": "uvx",
-      "args": ["--from", "/absolute/path/to/pasr", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
+      "args": ["--from", "pasr-mcp==0.3.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
     }
   }
 }
 ```
 
-Replace both paths: the first is your **current PASR checkout**, the second is the
-**project to inspect**. Use absolute paths even for project-level configuration:
+Replace `/absolute/path/to/project` with the **project to inspect**.
+Use an absolute path even for project-level configuration:
 Cursor's server working directory is not a reliable workspace setting.
-On Windows, JSON can use `D:/code/pasr` and `D:/code/my-project`.
+On Windows, JSON can use `D:/code/my-project`.
 A global configuration remains pinned to that project; update `--workspace` before
 using it for a different one.
 
-Reload/reconnect the server and approve it in Cursor's MCP settings. The current
-checkout exposes five tools by default: `find_files`, `find_symbols`,
+Reload/reconnect the server and approve it in Cursor's MCP settings. Version 0.3.0
+exposes five tools by default: `find_files`, `find_symbols`,
 `find_evidence`, `find_usages`, and `select_context`. If a tool is absent, check the
-configured source path and tool list rather than assuming you are running 0.3.0.
+configured package version and tool list rather than assuming you are running 0.3.0.
 
-### Released package instead (0.2.1)
+### Developers only: source checkout
 
-To intentionally run the published release, replace `args` with:
+To work on PASR itself, replace `args` in the existing registration with:
 
 ```json
-["--from", "pasr-mcp==0.2.1", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
+["--from", "/absolute/path/to/pasr", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
 ```
 
-Do not expect current-checkout behavior from that older release.
-Bare `uvx pasr-mcp` also selects a published package, not your local source.
+Replace `/absolute/path/to/pasr` with your PASR checkout's absolute path.
+Use this instead of the published-package configuration, not a second `pasr` entry.
+That checkout can differ from the published 0.3.0 release.
 
 ## First task
 

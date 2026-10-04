@@ -5,9 +5,9 @@ invariants and pay for its own complexity".
 
 ## Setup
 
-Use Python **3.10+** from the **0.3.0** source checkout. GitHub release artifacts
-and PyPI publication are separate; PyPI provides **0.2.1** at release preparation.
-An editable install below selects your local source, not a globally installed CLI.
+Use Python **3.10+** from the **0.3.0** source checkout. The same release is
+available on PyPI and GitHub; contributor work still needs the editable install
+below, which selects your local source rather than the published package.
 
 ```bash
 python -m venv .venv

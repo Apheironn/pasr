@@ -5,6 +5,20 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- **Published-package onboarding.** The primary README, website and client setup
+  examples now pin the verified PyPI release `pasr-mcp==0.3.0`; cloning PASR is
+  optional for contributors, not a prerequisite for using the server.
+  PyPI publication succeeded on attempt 3 of workflow `37191531085`. Its wheel
+  and sdist SHA-256 values match the GitHub release artifacts from green CI
+  `37191283736`. A fresh Windows/Python 3.12 PyPI installation passed the installed
+  CLI and default/split MCP smoke, including budgets, receipt recovery and rejected
+  workspace escapes. No runtime behavior or frozen evaluation record changed.
+- **MCP Registry publication completed.** The unchanged `server.json` passed
+  official publisher validation and was published as `io.github.Apheironn/pasr`
+  version `0.3.0`. The public registry returns an active PyPI `pasr-mcp==0.3.0`
+  entry with stdio transport and the required workspace path. This is metadata
+  publication, not evidence that a GUI client or an independent user invoked it.
+
 ## [0.3.0] — 2026-10-04
 
 Distribution channels are separate: versioned wheel/sdist artifacts are promoted
