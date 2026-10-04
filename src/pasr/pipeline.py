@@ -9,7 +9,7 @@ lossless-under-budget short-circuit, mandatory active window, whole-span packing
 from __future__ import annotations
 
 import warnings
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import Any
 
@@ -119,6 +119,8 @@ def retrieve(
         return []
 
     fused = fuse_candidates(groups, rrf_k=cfg.rrf_k)
+    # Two chunk rankings must not crowd a requested definition out before packing.
+    fused.sort(key=lambda candidate: not candidate.score_components.get("symbol_name_match"))
     return fused[: cfg.top_k]
 
 
@@ -128,6 +130,7 @@ def assemble(
     config: AssembleConfig | None = None,
     extra_candidate_groups: Mapping[str, Sequence[CandidateSpan]] | None = None,
     collect_candidates: bool = False,
+    measure: Callable[[Sequence[CandidateSpan], str], int] | None = None,
 ) -> ContextPack:
     """Build a :class:`ContextPack` for ``query`` within ``config.budget_tokens``.
 
@@ -139,12 +142,17 @@ def assemble(
 
     With ``collect_candidates=True``, ``diagnostics["candidates"]`` holds every fused
     candidate the packer considered, each tagged ``selected`` -- the input to a receipt.
+
+    ``measure`` optionally prices the final rendered context, including labels and
+    headers. It must be deterministic and side-effect-free. Without it the budget
+    counts raw-span tokens. Lossless candidates retain input order; selected
+    proposals are measured in their final dependency order.
     """
     cfg = config or AssembleConfig()
     ordered = list(spans)
     total = sum(span.token_count for span in ordered)
 
-    if total <= cfg.budget_tokens:
+    if measure is not None or total <= cfg.budget_tokens:
         lossless = tuple(
             candidate
             for candidate in (
@@ -153,14 +161,22 @@ def assemble(
             )
             if candidate is not None
         )
-        return ContextPack(
-            route=ROUTE_LOSSLESS,
-            spans=lossless,
-            text="".join(span.text for span in ordered),
-            token_count=total,
-            budget_tokens=cfg.budget_tokens,
-            diagnostics={"reason": "full context fits budget", "span_count": len(lossless)},
-        )
+        lossless_tokens = measure(lossless, ROUTE_LOSSLESS) if measure is not None else total
+        if lossless_tokens <= cfg.budget_tokens:
+            return ContextPack(
+                route=ROUTE_LOSSLESS,
+                spans=lossless,
+                text="".join(span.text for span in ordered),
+                token_count=lossless_tokens,
+                budget_tokens=cfg.budget_tokens,
+                diagnostics={"reason": "full context fits budget", "span_count": len(lossless)},
+            )
+
+    selected_measure = None
+    if measure is not None:
+
+        def selected_measure(selected: Sequence[CandidateSpan]) -> int:
+            return measure(selected, ROUTE_SELECTED)
 
     retrieval_cfg = replace(cfg.retrieval, top_k=max(cfg.retrieval.top_k, 64))
     # The window keeps the head and tail of *a document*: imports and setup at one end, the
@@ -183,7 +199,13 @@ def assemble(
         candidates = retrieve(query, window.middle, retrieval_cfg, extra_candidate_groups)
         try:
             result = pack_with_active_window(
-                prefix_spans, tail_spans, candidates, query, cfg.budget_tokens, cfg.recall_strategy
+                prefix_spans,
+                tail_spans,
+                candidates,
+                query,
+                cfg.budget_tokens,
+                cfg.recall_strategy,
+                measure=selected_measure,
             )
             window_diag = {
                 "active_window": True,
@@ -199,13 +221,12 @@ def assemble(
     if not window_enabled:
         candidates = retrieve(query, ordered, retrieval_cfg, extra_candidate_groups)
         packer = pack_score_only if cfg.recall_strategy == "score_only" else pack_coverage_aware
-        result = packer(candidates, query, cfg.budget_tokens)
+        result = packer(candidates, query, cfg.budget_tokens, measure=selected_measure)
 
     if result.used_tokens > cfg.budget_tokens:  # defensive; packing already guarantees this
         raise AssertionError("packing exceeded the hard token budget")
 
     final_spans = tuple(result.selected)
-    selected_keys = {span.key for span in final_spans}
     diagnostics: dict[str, Any] = {
         **window_diag,
         "strategy": result.strategy,
@@ -227,7 +248,10 @@ def assemble(
                 "selection_reasons": list(candidate.selection_reasons),
                 "score_components": candidate.score_components,
                 "rank_score": candidate.rank_score,
-                "selected": candidate.key in selected_keys,
+                "selected": any(
+                    span.source == candidate.source and span.start <= candidate.start and candidate.end <= span.end
+                    for span in final_spans
+                ),
             }
             for candidate in candidates
         ]

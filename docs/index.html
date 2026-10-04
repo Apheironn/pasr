@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PASR — a context broker for coding agents</title>
-<meta name="description" content="Provenance-Aware Span Recall: a zero-setup MCP tool that hands your agent the few lines that answer the question — each with a file:line and the reason it was picked, under a hard token budget.">
+<meta name="description" content="Local, token-budgeted source context for coding agents. Select code with file:line provenance and inspectable receipts through CLI and MCP.">
 <meta property="og:title" content="PASR — Provenance-Aware Span Recall">
-<meta property="og:description" content="Zero-setup context broker for coding agents. Budgeted, traceable, deterministic. One MCP call: 42,768 → 2,718 tokens, a receipt for every line.">
+<meta property="og:description" content="Local, token-budgeted source context for coding agents, with file:line provenance and inspectable selection receipts.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://raw.githubusercontent.com/Apheironn/pasr/main/docs/assets/social-preview.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -75,28 +75,110 @@
 <header>
   <div class="wrap">
     <h1>PASR
-      <span class="sub"><b>Provenance-Aware Span Recall</b> — PASR gives your coding agent only
-      the context it needs, keeping it focused on the code that matters. Far fewer tokens, same
-      or better answers.</span>
+      <span class="sub"><b>Provenance-Aware Span Recall</b> — local, token-budgeted,
+      source-traceable context for coding agents.</span>
     </h1>
     <div class="demo">
-      <img src="assets/demo.svg" alt="pasr explain — a whole-repo question answered from only the lines that matter, each with its file:line">
+      <img src="assets/demo.svg" alt="Historical CLI source-selection example with file:line provenance; not an answer-quality comparison">
+      <p class="flow">Historical CLI source-selection graphic, not a live agent run or an answer-quality comparison.</p>
     </div>
     <div class="cta">
       <a class="btn primary" href="https://github.com/Apheironn/pasr">GitHub&nbsp;↗</a>
       <a class="btn" href="https://pypi.org/project/pasr-mcp/"><code>pip install pasr-mcp</code></a>
-      <a class="btn" href="https://github.com/Apheironn/pasr/blob/main/eval/RESULTS.md">The evaluation&nbsp;↗</a>
+      <a class="btn" href="#live-demo">Observed Codex demo&nbsp;↗</a>
+      <a class="btn" href="#evidence">Evidence and limits&nbsp;↗</a>
     </div>
   </div>
 </header>
 
+<section id="live-demo">
+  <div class="wrap">
+    <h2>Observed demo: Codex chooses PASR tools</h2>
+    <p class="lede">A real, maintainer-operated run on 2026-10-04 — not simulated
+    terminal playback. Codex CLI <b>0.160.0</b> with <b>GPT-6 Luna</b> answered one
+    source-loading question using an installed PASR <b>0.3.0</b> wheel.</p>
+    <p>The isolated workspace contained one byte-for-byte copy of
+    <a href="https://github.com/Apheironn/pasr/blob/main/src/pasr/source_text.py"><code>src/pasr/source_text.py</code></a>,
+    named <code>source_text.py</code>. The prompt asked about BOM handling, newlines,
+    invalid UTF-8, NUL bytes, fingerprinting, and multi-file atomicity.</p>
+    <h3>The final observed three-call flow</h3>
+    <ol>
+      <li><code>find_evidence</code> — searched for source-loading behavior
+      (<code>top_k: 12</code>, <code>per_file: 6</code>).</li>
+      <li><code>select_context</code> — requested <code>source_text.py</code> with a
+      <b>1,400-token budget</b>; PASR returned <b>364 selected-context tokens</b>.</li>
+      <li><code>find_evidence</code> — searched
+      <code>SourceSnapshot multi-file snapshot read source files consistency transaction</code>
+      (<code>top_k: 10</code>, <code>per_file: 4</code>).</li>
+    </ol>
+    <p>These calls were chosen by the model, not replayed by the demo script.
+    The final turn reported <b>66,214 host input tokens</b> (50,750 cached) and
+    <b>417 output tokens</b>. The 364 selected tokens are <em>not</em> the host's
+    total input or API bill. Across all three completed historical turns,
+    input usage was 184,984 tokens; the first two setup attempts reported no usage.</p>
+    <h3>Exact final-answer excerpts and relative citations</h3>
+    <p>The following text is from the retained final answer, with its original
+    workspace-relative citations:</p>
+    <blockquote>
+      <p><b>BOM and decoding:</b> Each file is read once and decoded as UTF-8 with an
+      optional BOM; invalid UTF-8 raises <code>ValueError</code>. NUL bytes also raise
+      <code>ValueError</code>. (source_text.py:35-42)</p>
+      <p><b>Newlines:</b> CRLF and bare CR are both normalized to LF. Physical line
+      splitting recognizes CR, LF, and CRLF. (source_text.py:11-18, 42-43)</p>
+      <p><b>Fingerprint:</b> SHA-256 of the normalized decoded text encoded as UTF-8.
+      (source_text.py:22-24, 42-44)</p>
+      <p><b>Atomicity:</b> No. A <code>SourceSnapshot</code> represents one file read
+      and is explicitly “not a transaction across multiple files.”
+      (source_text.py:27-29, 35-44)</p>
+    </blockquote>
+    <p>The coding assistant checked these claims against the exact fixture;
+    this was not an independent or blinded review. Earlier attempts included an
+    unsupported config field, an inherited-stdin timeout, an MCP approval failure,
+    and unsupported absolute citation prefixes. Those failures remain visible in the
+    <a href="https://github.com/Apheironn/pasr/blob/main/eval/agent_bench/client_smoke_20261004.json">summary and all five attempts</a>.
+    Full stdout/stderr is retained in the maintainer's local ignored archive,
+    not offered as a public download.</p>
+    <h3>Repeat a live run, not a playback</h3>
+    <p>From a source checkout, use Python <b>3.10+</b>, an existing Codex executable,
+    and a built PASR wheel. <code>OPENAI_API_KEY</code> must already be in your
+    environment, with access to <code>gpt-6-luna</code>. Dependency installation and
+    model access require network connectivity. <b>This sends the public fixture
+    and prompt to OpenAI and incurs API costs.</b> It is not an offline demo.</p>
+    <pre>python scripts/demo_client.py --codex "/absolute/path/to/codex" --wheel "dist/0.3.0/pasr_mcp-0.3.0-py3-none-any.whl" --output "eval/agent_bench/results/client-demo" --timeout 90</pre>
+    <p>Replace the executable and wheel paths; on Windows select the actual
+    <code>codex.exe</code>, not a <code>.cmd</code> wrapper. The output directory must
+    not exist. <code>--model</code> is optional (default <code>gpt-6-luna</code>);
+    compatibility with other models or CLI versions is not established.
+    <a href="https://github.com/Apheironn/pasr/blob/main/scripts/demo_client.py">Read the script</a>.</p>
+    <p>The script installs the supplied wheel in a temporary venv, uses a temporary
+    <code>CODEX_HOME</code> and fixture workspace, explicitly closes stdin, and
+    preserves <code>run.json</code>, <code>stdout.jsonl</code>, and <code>stderr.txt</code>
+    even when the client attempt fails or times out. Setup failures are recorded in
+    <code>run.json</code>. Exact API-key matches are redacted before persistence;
+    inspect evidence before sharing it. Normal Codex settings are not changed.
+    Temporary files are removed after the attempt.</p>
+    <p>The checked-in driver was also run live: that repeat used two PASR calls and
+    returned matching relative citations. Its
+    <a href="https://github.com/Apheironn/pasr/blob/main/eval/agent_bench/client_demo_20261004.json">separate repeat record</a>
+    preserves the result and host usage; the model need not repeat the same call sequence.</p>
+    <p><b>Scope and limits:</b> only the isolated PASR server is preapproved.
+    The native read-only sandbox does not sandbox MCP; PASR may write receipts/cache
+    within its temporary workspace. Four calls is a prompt request, not an enforced
+    server limit. The script fails on client/tool errors, missing completed answers,
+    or absent PASR calls; it does not automatically judge source correctness.
+    A new run can choose different calls or fail. This single prompted integration
+    task establishes neither unprompted adoption, GUI compatibility, independent
+    user retention, general answer quality, nor cost superiority.</p>
+  </div>
+</section>
+
 <section>
   <div class="wrap">
     <h2>The problem</h2>
-    <p class="lede">An agent working in a real repo has two bad options: read whole files and
-    burn its context window on code that never mattered, or grep-and-guess and miss the file
-    that held the answer. Either way, <b>you cannot see what it looked at</b> — no record, no
-    line numbers, no reason.</p>
+    <p class="lede">Coding agents must locate relevant code without filling their
+    context with unrelated source. Native grep and bounded reads already provide
+    useful locations and can be logged. PASR adds selection and receipts; whether
+    that helps the final answer must be measured, not assumed.</p>
   </div>
 </section>
 
@@ -106,31 +188,34 @@
 
     <div class="feat">
       <h3>Budgeted</h3>
-      <p>You set a token ceiling; PASR never returns more — and it packs whole spans, never a
-      truncated function. If the full file set already fits, you get it back unchanged.</p>
+      <p>Live selection budgets its returned context, including labels and headings.
+      JSON envelopes and conversation history cost extra. Computed spans are not
+      necessarily complete functions; source that fits the final representation is preserved.</p>
       <img src="assets/concept-budgeted.svg" alt="a budget bar: 2,718 tokens kept under a 3,000-token ceiling, 282 free">
     </div>
 
     <div class="feat">
       <h3>Traceable</h3>
-      <p>Every span carries <code>file:line</code>, a token count, its retrieval score, and
-      <i>why</i> it was kept. A byte-stable receipt — of what was kept <i>and</i> what was
-      dropped — lands on disk for every call.</p>
+      <p>Source carries <code>file:line</code> provenance. Receipts record selection
+      reasons and scoring details; persistence is best-effort. They cover PASR-delivered
+      context, not a complete global agent audit or immutable source history.</p>
       <img src="assets/concept-traceable.svg" alt="anatomy of one returned span: where it is (file:line), what it costs (tokens), why it was kept (retrieval signals plus score)">
     </div>
 
     <div class="feat">
       <h3>Honest</h3>
-      <p>Each result is classified — <code>localized</code> / <code>trace</code> /
-      <code>aggregation</code> — with a confidence and advice. PASR tells the agent when it is
-      the wrong tool for the question.</p>
-      <img src="assets/concept-honest.svg" alt="two queries classified: an aggregation query routed to 'read the files directly', a localized query passed with confidence 0.68">
+      <p>Query classifications and keyword coverage are heuristics, not calibrated
+      correctness probabilities. They cannot prove that the agent has every
+      necessary branch, helper, or state transition.</p>
+      <img src="assets/concept-honest.svg" alt="Heuristic routing and coverage scores, not correctness or completeness guarantees">
     </div>
 
     <div class="feat">
-      <h3>Zero setup</h3>
-      <p>No daemon, no vector database, no index to build, offline by default.
-      <code>uvx pasr-mcp</code> and it runs.</p>
+      <h3>Local by default</h3>
+      <p>No daemon or vector database is required. Offline use needs installed
+      dependencies and cached tokenizer data; optional model weights are separate.
+      The client can forward returned source to a cloud model. Default redaction is
+      a no-op, not automatic secret detection.</p>
     </div>
   </div>
 </section>
@@ -138,18 +223,23 @@
 <section>
   <div class="wrap">
     <h2>Install</h2>
-    <p>One command in Claude Code:</p>
-    <pre>claude mcp add pasr -- uvx pasr-mcp --workspace .</pre>
-    <p>Or paste this into your client's MCP config (Claude Desktop, Cursor, Windsurf, Cline, Zed, …):</p>
-    <pre>{ <span class="c">"mcpServers"</span>: { <span class="c">"pasr"</span>: { <span class="c">"command"</span>: <span class="c">"uvx"</span>, <span class="c">"args"</span>: [<span class="c">"pasr-mcp"</span>, <span class="c">"--workspace"</span>, <span class="c">"."</span>] } } }</pre>
-    <p>After that you <b>never type <code>pasr</code></b>. Ask your agent a question the normal
-    way — <i>"how does redirect handling work here?"</i>, <i>"what breaks if I change
-    <code>HTTPAdapter</code>?"</i> — and the model calls <code>select_context</code> /
-    <code>trace_dependencies</code> itself instead of opening whole files.</p>
-    <img src="assets/concept-mcp.svg" style="display:block;width:100%;max-width:760px;margin:16px 0 0;border:1px solid var(--line);border-radius:10px" alt="Add PASR once: one block in the MCP config, then the agent calls select_context on its own">
+    <p><b>Source version: 0.3.0.</b> Versioned wheel/sdist artifacts use the
+    <a href="https://github.com/Apheironn/pasr/releases/tag/v0.3.0">GitHub release channel</a>.
+    PyPI publication is separate; at release preparation it provides 0.2.1.
+    To explicitly use this source checkout, replace both absolute paths:</p>
+    <pre>claude mcp add pasr -- uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project</pre>
+    <p>Or paste this into your client's MCP config:</p>
+    <pre>{ "mcpServers": { "pasr": { "command": "uvx", "args": ["--from", "/absolute/path/to/pasr", "pasr-mcp", "--workspace", "/absolute/path/to/project"] } } }</pre>
+    <p>For the PyPI channel instead, use
+    <code>uvx pasr-mcp --workspace /absolute/path/to/project</code>.
+    It resolves the latest package published there, which can lag GitHub releases.</p>
+    <p>These tools sit alongside the agent's native tools. The model chooses which
+    to call; smaller selected context does not establish cheaper or more accurate
+    answers. Dependency tracing and other optional tools require explicit exposure.</p>
+    <img src="assets/concept-mcp.svg" style="display:block;width:100%;max-width:760px;margin:16px 0 0;border:1px solid var(--line);border-radius:10px" alt="PASR sits alongside native tools; the host chooses tools and stopping policy">
     <p style="color:var(--dim);font-size:.95rem;margin-top:14px"><b>Without an agent:</b>
-    <code>pip install pasr-mcp</code>, then <code>pasr explain "&lt;question&gt;"</code> prints
-    the same receipt.</p>
+    run <code>uv run pasr explain "&lt;question&gt;"</code> from the current checkout.
+    <code>pip install pasr-mcp</code> installs the published release.</p>
   </div>
 </section>
 
@@ -159,61 +249,56 @@
     <p>One localized question — <i>"how are redirects resolved and followed"</i> — against
     <code>psf/requests</code>:</p>
     <div class="tablewrap"><table class="num">
-      <thead><tr><th></th><th>PASR <code>select_context</code></th><th>agent reads the repo</th></tr></thead>
+      <thead><tr><th></th><th>PASR historical selection</th><th>full supplied source</th></tr></thead>
       <tbody>
-        <tr><td>input tokens</td><td>2,718 — 94% less</td><td>42,768</td></tr>
+        <tr><td>source-context tokens</td><td>2,718 — 94% less</td><td>42,768</td></tr>
         <tr><td>tool round trips</td><td>1</td><td>1 large read</td></tr>
-        <tr><td>provenance</td><td>file:line + reason, all 10 spans</td><td>none</td></tr>
-        <tr><td>wrong-tool signal</td><td>localized · conf 0.68 · "looks complete"</td><td>—</td></tr>
+        <tr><td>provenance</td><td>file:line + reason, all 10 spans</td><td>depends on reader</td></tr>
+        <tr><td>heuristic diagnostic</td><td>localized · conf 0.68, not correctness probability</td><td>—</td></tr>
         <tr><td>wall time</td><td>~0.3 s, offline (no API, no index)</td><td>—</td></tr>
       </tbody>
     </table></div>
+    <p>This is a historical source-selection example, not the current MCP default
+    cap or an agent-accuracy comparison. The
+    <a href="https://github.com/Apheironn/pasr/blob/main/docs/pipeline-audit-20260929.md">pipeline audit</a>
+    found both missing evidence and wrong answers despite delivered evidence.
+    No end-to-end win over native grep/read is established.</p>
   </div>
 </section>
 
-<section>
+<section id="evidence">
   <div class="wrap">
-    <h2>Why PASR, not the usual options</h2>
-    <div class="tablewrap"><table class="cmp">
-      <thead><tr>
-        <th></th><th>PASR</th><th>repo-map<br>(aider)</th>
-        <th>embedding search<br>(claude-context, Cody)</th><th>grep / ripgrep<br>MCP</th>
-      </tr></thead>
-      <tbody>
-        <tr><td>Setup</td><td>none</td><td>none</td><td>embedder + vector DB + index</td><td>none</td></tr>
-        <tr><td>Returns</td><td>bodies + file:line + reason + score</td><td>signatures, no bodies</td><td>chunks, no reason</td><td>keyword hits</td></tr>
-        <tr><td>Hard token budget</td><td>never exceeded</td><td>truncates</td><td>top-k, no cap</td><td>dumps everything</td></tr>
-        <tr><td>Deterministic</td><td>yes — byte-identical</td><td>~</td><td>no (ANN + drift)</td><td>yes</td></tr>
-        <tr><td>Says "wrong tool for this"</td><td>yes</td><td>no</td><td>no</td><td>no</td></tr>
-        <tr><td>Audit trail</td><td>a receipt per call</td><td>no</td><td>no</td><td>no</td></tr>
-        <tr><td>Dependency-closure trace</td><td>forward + reverse (impact)</td><td>no</td><td>no</td><td>no</td></tr>
-      </tbody>
-    </table></div>
-    <p style="margin-top:14px; color:var(--dim); font-size:.95rem">On the offline bake-off (50
-    tasks, 10 repos, 6k-token budget, no API, no GPU), <code>select_context</code> <b>ties a
-    full repo-map on "how does this work" questions (0.84) using 10× less text</b>; with
-    <code>map_tokens=1200</code> it matches repo-map overall (0.90) at 100% critical-file
-    coverage while still carrying real code.
-    <a href="https://github.com/Apheironn/pasr/blob/main/docs/competitors-benchmark.md">Full table&nbsp;↗</a></p>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <h2>Does the model actually answer better?</h2>
-    <p>A 50-task, 10-repo evaluation — a real model answering from only what each arm supplies,
-    a second model judging:</p>
+    <h2>Evidence and alternatives</h2>
+    <p>Native grep and bounded reads are useful defaults. PASR adds rendered-context
+    budgets and selection receipts, not guaranteed better answers or lower API bills.
+    Aider RepoMap provides structural navigation; Repomix packages source.
+    These are overlapping workflows, not interchangeable products.</p>
+    <p><b>Latest source-reviewed studies (2026-10-03): the combined quality/cost
+    gates failed.</b> The experimental split reader used a host-enforced four-call
+    limit and conservative stopping instructions, not the default installed workflow.</p>
     <ul class="tight">
-      <li><b>select_context 0.48</b> task success at <b>5.8k</b> context tokens, vs a
-        <b>59k-token whole-repo dump's 0.38</b> — <b>+0.10</b> on paired success.</li>
-      <li>Both clear the −0.05 non-inferiority margin on the point estimate; the 95% CI still
-        crosses it at n = 50.</li>
-      <li>PASR gets the answer's file into context <b>46 / 50</b>, vs the dump's <b>33 / 50</b>.</li>
-      <li>An agent's own grep + read-six-files scores 0.52 — at <b>4× the tokens, 6 round trips,
-        30% critical-file miss</b>.</li>
+      <li><b>Previously untouched 40-question confirmation:</b> native and split each
+      supported 28/40 answers; material errors were 3 versus 7. Split used 25.3% fewer
+      cumulative provider tokens, but the primary gate failed.</li>
+      <li><b>Exploratory reuse of those 40 questions, GPT-6 Luna:</b> native supported
+      26/40 and split 32/40, with two material errors each. Mean tokens were
+      12,430.875 (native known subtotal) versus 10,698.075 (split).
+      One interrupted native request has unknown usage; the combined gate failed.</li>
     </ul>
-    <p style="margin-top:14px; color:var(--faint); font-size:.9rem">A bounded efficiency result,
-    not a superiority claim. Pre-registered, with the supporting runs.</p>
+    <p style="margin-top:14px">The exploratory matrix ran actual upstream Aider RepoMap
+    and Repomix context generation under a shared answering harness, <b>not the full
+    Aider coding agent</b>. Model-dependent results and wide uncertainty do not
+    establish equivalent accuracy or universal superiority over native tools or competitors.</p>
+    <p>Default tools remain <code>find_files</code>, <code>find_symbols</code>,
+    <code>find_evidence</code>, <code>find_usages</code>, and <code>select_context</code>.
+    Opting into <code>--tools search_code,read_code</code> does not enforce the
+    experiments' four-call limit or stopping policy.</p>
+    <p><a href="https://github.com/Apheironn/pasr/blob/main/eval/agent_bench/reserved_confirm_20261003.json">Confirmation record</a> ·
+    <a href="https://github.com/Apheironn/pasr/blob/main/eval/agent_bench/cheap_market_20261003.json">Exploratory matrix</a> ·
+    <a href="https://github.com/Apheironn/pasr/blob/main/docs/competitors-benchmark.md#real-upstream-components-with-low-cost-openai-models--2026-10-03">Methods and competitor caveats</a> ·
+    <a href="https://github.com/Apheironn/pasr/blob/main/docs/pipeline-audit-20260929.md">Audit, sections 23–24</a></p>
+    <p>Earlier selector studies and offline localization proxies used different
+    protocols; they are not current end-to-end product wins.</p>
   </div>
 </section>
 
@@ -223,16 +308,16 @@
 <pre class="flow">query + file globs
   <span class="c">→</span> discover safe workspace files, tokenize, line-aligned chunks
   <span class="c">→</span> lossless-under-budget check: does the whole thing already fit? return it
-  <span class="c">→</span> candidates:  BM25 (Okapi) + lexical-anchor coverage + tree-sitter symbols
-                 + optional sub-word / MiniLM semantic scorer
-  <span class="c">→</span> fuse by reciprocal-rank fusion
-  <span class="c">→</span> reserve an active window (prefix + tail of the likely answer region)
-  <span class="c">→</span> hard-budget pack (knapsack), whole spans only, dependency-ordered
+  <span class="c">→</span> candidates: BM25 + lexical coverage + Python AST / JS/TS/Rust symbols
+                 + optional hashing / MiniLM scorer
+  <span class="c">→</span> fuse unique span ranks per signal
+  <span class="c">→</span> optional single-source prefix/tail (off in default MCP selection)
+  <span class="c">→</span> greedy whole-span packing, exact rendered-context cost, dependency order
   <span class="c">→</span> classify the query, score confidence, write the receipt
   <span class="c">→</span> return spans + provenance + token accounting + advice</pre>
     <div class="formula">
       score(s) = Σ<sub>r</sub> 1 / (k + rank<sub>r</sub>(s)),&nbsp; k = 60&nbsp;&nbsp;·&nbsp;&nbsp;
-      pack: maximise Σ score(s) &nbsp;s.t.&nbsp; Σ tokens(s) ≤ budget
+      pack: greedy admission with rendered context tokens ≤ budget; not an exact knapsack optimizer
     </div>
     <p style="color:var(--dim); font-size:.95rem">RRF needs no score calibration across the
     rankers — only their rank orders — so BM25, symbol hits, and the semantic scorer combine

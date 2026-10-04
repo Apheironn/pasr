@@ -144,24 +144,30 @@ def fuse_candidates(
     candidate_groups: Mapping[str, Sequence[CandidateSpan]],
     rrf_k: int = 60,
 ) -> list[CandidateSpan]:
-    """Fuse candidate rankings with deterministic reciprocal-rank fusion."""
+    """Fuse unique span rankings, retaining each signal's reasons and metadata."""
     if rrf_k < 0:
         raise ValueError("rrf_k must be non-negative.")
     fused: dict[tuple[str, int, int], CandidateSpan] = {}
     rrf_scores: dict[tuple[str, int, int], float] = {}
     for group_name in sorted(candidate_groups):
         ranked = rank_candidates(candidate_groups[group_name])
-        for rank, candidate in enumerate(ranked, start=1):
-            contribution = 1.0 / (rrf_k + rank)
+        seen: set[tuple[str, int, int]] = set()
+        for candidate in ranked:
             key = candidate.key
-            rrf_scores[key] = rrf_scores.get(key, 0.0) + contribution
+            if key not in seen:
+                seen.add(key)
+                contribution = 1.0 / (rrf_k + len(seen))
+                rrf_scores[key] = rrf_scores.get(key, 0.0) + contribution
             if key not in fused:
                 fused[key] = candidate
                 continue
             existing = fused[key]
             reasons = tuple(dict.fromkeys((*existing.selection_reasons, *candidate.selection_reasons)))
             scores = {**existing.score_components, **candidate.score_components}
-            fused[key] = replace(existing, selection_reasons=reasons, score_components=scores)
+            # Keep the first raw span's provenance, adding structural metadata from
+            # other signals so dependency ordering survives an exact-span match.
+            metadata = {**candidate.metadata, **existing.metadata}
+            fused[key] = replace(existing, selection_reasons=reasons, score_components=scores, metadata=metadata)
 
     combined = []
     for key, candidate in fused.items():

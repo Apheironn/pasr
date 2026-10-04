@@ -1,0 +1,772 @@
+{
+  "study": "retrieval_precision_20260930",
+  "type": "offline fixed-query development replay; not answer accuracy",
+  "status": "local gate passed; subsequent controlled API development gate failed",
+  "subsequent_api_report": "precision_reader_20260930.json",
+  "inputs": {
+    "cases": 10,
+    "recorded_search_calls": 16,
+    "reserved_validation_questions_used": 0,
+    "model_api_calls": 0
+  },
+  "mechanisms": [
+    "Case-sensitive literal declaration names are distinct from argument names, references, imports and keyword components.",
+    "Complete definitions are admitted by exact redacted/labeled rendered cost, not a 160-token raw cutoff.",
+    "Requested definitions survive the fused-candidate cutoff; coverage-aware packing credits whole definitions inside enclosing spans.",
+    "Compatible overlapping physical source is unioned once, preserving both sides and exact provenance; inconsistent or unpositioned spans are not merged.",
+    "Query-only search_code prices JSON string escaping under the existing context cap; explicit follow-up pricing and sequential semantics are unchanged."
+  ],
+  "rule": {
+    "metric": "Fixed rubric evidence physical-source-line coverage proxy; NOT answer accuracy.",
+    "initial_relevant_lines": "strictly increase summed per-case initial-call relevant-line count",
+    "initial_complete_blocks": "strictly increase summed per-case initial-call complete evidence-block count",
+    "initial_no_case_loss": "no case loses any previously delivered relevant physical line on its initial call",
+    "all_union_no_case_loss": "no case loses any previously delivered relevant physical line in its all-call union",
+    "initial_wire_tokens": "total initial-call o200k_base wire tokens must not increase",
+    "all_wire_tokens": "total all-call o200k_base wire tokens must not increase",
+    "decision": "all six conditions must hold; report every loss, not only aggregate wins"
+  },
+  "gate_passed": true,
+  "checks": {
+    "initial_relevant_lines": true,
+    "initial_complete_blocks": true,
+    "initial_no_case_loss": true,
+    "all_union_no_case_loss": true,
+    "initial_wire_tokens": true,
+    "all_wire_tokens": true
+  },
+  "before": {
+    "initial": {
+      "calls": 10,
+      "context_tokens": 14778,
+      "wire_tokens": 17433,
+      "delivered_lines": 1816,
+      "relevant_lines": 343,
+      "evidence_lines": 491,
+      "complete_blocks": 27,
+      "evidence_blocks": 44,
+      "line_coverage": 0.6985743380855397,
+      "line_precision": 0.18887665198237885,
+      "block_coverage": 0.6136363636363636
+    },
+    "all_calls": {
+      "calls": 16,
+      "context_tokens": 23599,
+      "wire_tokens": 27958,
+      "delivered_lines": 3014,
+      "relevant_lines": 443,
+      "evidence_lines": 834,
+      "complete_blocks": 32,
+      "evidence_blocks": 68,
+      "line_coverage": 0.5311750599520384,
+      "line_precision": 0.14698075646980757,
+      "block_coverage": 0.47058823529411764
+    },
+    "all_call_union": {
+      "calls": 16,
+      "context_tokens": 23599,
+      "wire_tokens": 27958,
+      "delivered_lines": 2773,
+      "relevant_lines": 398,
+      "evidence_lines": 491,
+      "complete_blocks": 31,
+      "evidence_blocks": 44,
+      "line_coverage": 0.8105906313645621,
+      "line_precision": 0.143526866209881,
+      "block_coverage": 0.7045454545454546
+    }
+  },
+  "after": {
+    "initial": {
+      "calls": 10,
+      "context_tokens": 13031,
+      "wire_tokens": 15393,
+      "delivered_lines": 1645,
+      "relevant_lines": 456,
+      "evidence_lines": 491,
+      "complete_blocks": 41,
+      "evidence_blocks": 44,
+      "line_coverage": 0.9287169042769857,
+      "line_precision": 0.2772036474164134,
+      "block_coverage": 0.9318181818181818
+    },
+    "all_calls": {
+      "calls": 16,
+      "context_tokens": 20659,
+      "wire_tokens": 24520,
+      "delivered_lines": 2692,
+      "relevant_lines": 584,
+      "evidence_lines": 834,
+      "complete_blocks": 49,
+      "evidence_blocks": 68,
+      "line_coverage": 0.7002398081534772,
+      "line_precision": 0.21693907875185736,
+      "block_coverage": 0.7205882352941176
+    },
+    "all_call_union": {
+      "calls": 16,
+      "context_tokens": 20659,
+      "wire_tokens": 24520,
+      "delivered_lines": 2453,
+      "relevant_lines": 491,
+      "evidence_lines": 491,
+      "complete_blocks": 44,
+      "evidence_blocks": 44,
+      "line_coverage": 1.0,
+      "line_precision": 0.20016306563391764,
+      "block_coverage": 1.0
+    }
+  },
+  "cases": [
+    {
+      "id": "fresh-jinja-bytecode-file-cleanup",
+      "initial": {
+        "wire_tokens_delta": -249,
+        "context_tokens_delta": -176,
+        "relevant_lines_delta": 0,
+        "complete_blocks_delta": 0,
+        "line_coverage_delta": 0.0,
+        "block_coverage_delta": 0.0,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": []
+      },
+      "all_calls": {
+        "wire_tokens_delta": -249,
+        "context_tokens_delta": -176,
+        "relevant_lines_delta": 0,
+        "complete_blocks_delta": 0,
+        "line_coverage_delta": 0.0,
+        "block_coverage_delta": 0.0
+      },
+      "all_call_union": {
+        "wire_tokens_delta": -249,
+        "context_tokens_delta": -176,
+        "relevant_lines_delta": 0,
+        "complete_blocks_delta": 0,
+        "line_coverage_delta": 0.0,
+        "block_coverage_delta": 0.0,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": []
+      }
+    },
+    {
+      "id": "fresh-requests-adapter-certificate-paths",
+      "initial": {
+        "wire_tokens_delta": -53,
+        "context_tokens_delta": -57,
+        "relevant_lines_delta": 0,
+        "complete_blocks_delta": 0,
+        "line_coverage_delta": 0.0,
+        "block_coverage_delta": 0.0,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": []
+      },
+      "all_calls": {
+        "wire_tokens_delta": -53,
+        "context_tokens_delta": -57,
+        "relevant_lines_delta": 0,
+        "complete_blocks_delta": 0,
+        "line_coverage_delta": 0.0,
+        "block_coverage_delta": 0.0
+      },
+      "all_call_union": {
+        "wire_tokens_delta": -53,
+        "context_tokens_delta": -57,
+        "relevant_lines_delta": 0,
+        "complete_blocks_delta": 0,
+        "line_coverage_delta": 0.0,
+        "block_coverage_delta": 0.0,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": []
+      }
+    },
+    {
+      "id": "fresh-pluggy-blocked-plugin-lifecycle",
+      "initial": {
+        "wire_tokens_delta": -210,
+        "context_tokens_delta": -177,
+        "relevant_lines_delta": 4,
+        "complete_blocks_delta": 1,
+        "line_coverage_delta": 0.09523809523809523,
+        "block_coverage_delta": 0.25,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [
+          {
+            "source": "src/pluggy/_manager.py",
+            "start": 244,
+            "end": 247
+          }
+        ],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": [
+          "c4:1"
+        ]
+      },
+      "all_calls": {
+        "wire_tokens_delta": -210,
+        "context_tokens_delta": -177,
+        "relevant_lines_delta": 4,
+        "complete_blocks_delta": 1,
+        "line_coverage_delta": 0.09523809523809523,
+        "block_coverage_delta": 0.25
+      },
+      "all_call_union": {
+        "wire_tokens_delta": -210,
+        "context_tokens_delta": -177,
+        "relevant_lines_delta": 4,
+        "complete_blocks_delta": 1,
+        "line_coverage_delta": 0.09523809523809523,
+        "block_coverage_delta": 0.25,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [
+          {
+            "source": "src/pluggy/_manager.py",
+            "start": 244,
+            "end": 247
+          }
+        ],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": [
+          "c4:1"
+        ]
+      }
+    },
+    {
+      "id": "fresh-click-atomic-write-close",
+      "initial": {
+        "wire_tokens_delta": -172,
+        "context_tokens_delta": -136,
+        "relevant_lines_delta": 38,
+        "complete_blocks_delta": 3,
+        "line_coverage_delta": 0.4810126582278481,
+        "block_coverage_delta": 0.6,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [
+          {
+            "source": "src/click/_compat.py",
+            "start": 383,
+            "end": 409
+          },
+          {
+            "source": "src/click/_compat.py",
+            "start": 418,
+            "end": 422
+          },
+          {
+            "source": "src/click/_compat.py",
+            "start": 474,
+            "end": 479
+          }
+        ],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": [
+          "c1:1",
+          "c2:1",
+          "c4:1"
+        ]
+      },
+      "all_calls": {
+        "wire_tokens_delta": -498,
+        "context_tokens_delta": -392,
+        "relevant_lines_delta": 110,
+        "complete_blocks_delta": 7,
+        "line_coverage_delta": 0.4641350210970464,
+        "block_coverage_delta": 0.4666666666666667
+      },
+      "all_call_union": {
+        "wire_tokens_delta": -498,
+        "context_tokens_delta": -392,
+        "relevant_lines_delta": 33,
+        "complete_blocks_delta": 3,
+        "line_coverage_delta": 0.4177215189873418,
+        "block_coverage_delta": 0.6,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [
+          {
+            "source": "src/click/_compat.py",
+            "start": 383,
+            "end": 409
+          },
+          {
+            "source": "src/click/_compat.py",
+            "start": 418,
+            "end": 422
+          },
+          {
+            "source": "src/click/_compat.py",
+            "start": 474,
+            "end": 474
+          }
+        ],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": [
+          "c1:1",
+          "c2:1",
+          "c4:1"
+        ]
+      }
+    },
+    {
+      "id": "fresh-anyio-buffered-boundary-reads",
+      "initial": {
+        "wire_tokens_delta": -201,
+        "context_tokens_delta": -155,
+        "relevant_lines_delta": 38,
+        "complete_blocks_delta": 5,
+        "line_coverage_delta": 1.0,
+        "block_coverage_delta": 1.0,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [
+          {
+            "source": "src/anyio/streams/buffered.py",
+            "start": 101,
+            "end": 116
+          },
+          {
+            "source": "src/anyio/streams/buffered.py",
+            "start": 132,
+            "end": 140
+          },
+          {
+            "source": "src/anyio/streams/buffered.py",
+            "start": 142,
+            "end": 154
+          }
+        ],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": [
+          "c1:1",
+          "c2:1",
+          "c2:2",
+          "c3:1",
+          "c4:1"
+        ]
+      },
+      "all_calls": {
+        "wire_tokens_delta": -201,
+        "context_tokens_delta": -155,
+        "relevant_lines_delta": 38,
+        "complete_blocks_delta": 5,
+        "line_coverage_delta": 1.0,
+        "block_coverage_delta": 1.0
+      },
+      "all_call_union": {
+        "wire_tokens_delta": -201,
+        "context_tokens_delta": -155,
+        "relevant_lines_delta": 38,
+        "complete_blocks_delta": 5,
+        "line_coverage_delta": 1.0,
+        "block_coverage_delta": 1.0,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [
+          {
+            "source": "src/anyio/streams/buffered.py",
+            "start": 101,
+            "end": 116
+          },
+          {
+            "source": "src/anyio/streams/buffered.py",
+            "start": 132,
+            "end": 140
+          },
+          {
+            "source": "src/anyio/streams/buffered.py",
+            "start": 142,
+            "end": 154
+          }
+        ],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": [
+          "c1:1",
+          "c2:1",
+          "c2:2",
+          "c3:1",
+          "c4:1"
+        ]
+      }
+    },
+    {
+      "id": "fresh-packaging-collected-errors",
+      "initial": {
+        "wire_tokens_delta": -268,
+        "context_tokens_delta": -223,
+        "relevant_lines_delta": 7,
+        "complete_blocks_delta": 2,
+        "line_coverage_delta": 0.19999999999999996,
+        "block_coverage_delta": 0.5,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [
+          {
+            "source": "src/packaging/errors.py",
+            "start": 57,
+            "end": 62
+          },
+          {
+            "source": "src/packaging/errors.py",
+            "start": 64,
+            "end": 64
+          }
+        ],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": [
+          "c3:1",
+          "c4:1"
+        ]
+      },
+      "all_calls": {
+        "wire_tokens_delta": -268,
+        "context_tokens_delta": -223,
+        "relevant_lines_delta": 7,
+        "complete_blocks_delta": 2,
+        "line_coverage_delta": 0.19999999999999996,
+        "block_coverage_delta": 0.5
+      },
+      "all_call_union": {
+        "wire_tokens_delta": -268,
+        "context_tokens_delta": -223,
+        "relevant_lines_delta": 7,
+        "complete_blocks_delta": 2,
+        "line_coverage_delta": 0.19999999999999996,
+        "block_coverage_delta": 0.5,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [
+          {
+            "source": "src/packaging/errors.py",
+            "start": 57,
+            "end": 62
+          },
+          {
+            "source": "src/packaging/errors.py",
+            "start": 64,
+            "end": 64
+          }
+        ],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": [
+          "c3:1",
+          "c4:1"
+        ]
+      }
+    },
+    {
+      "id": "fresh-attrs-disabled-restoration",
+      "initial": {
+        "wire_tokens_delta": -210,
+        "context_tokens_delta": -229,
+        "relevant_lines_delta": 16,
+        "complete_blocks_delta": 2,
+        "line_coverage_delta": 0.5,
+        "block_coverage_delta": 0.6666666666666666,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [
+          {
+            "source": "src/attr/validators.py",
+            "start": 73,
+            "end": 88
+          }
+        ],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": [
+          "c1:1",
+          "c2:1"
+        ]
+      },
+      "all_calls": {
+        "wire_tokens_delta": -854,
+        "context_tokens_delta": -789,
+        "relevant_lines_delta": 17,
+        "complete_blocks_delta": 3,
+        "line_coverage_delta": 0.17708333333333331,
+        "block_coverage_delta": 0.33333333333333337
+      },
+      "all_call_union": {
+        "wire_tokens_delta": -854,
+        "context_tokens_delta": -789,
+        "relevant_lines_delta": 1,
+        "complete_blocks_delta": 1,
+        "line_coverage_delta": 0.03125,
+        "block_coverage_delta": 0.33333333333333337,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [
+          {
+            "source": "src/attr/validators.py",
+            "start": 73,
+            "end": 73
+          }
+        ],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": [
+          "c1:1"
+        ]
+      }
+    },
+    {
+      "id": "fresh-typer-annotated-default-conflicts",
+      "initial": {
+        "wire_tokens_delta": -236,
+        "context_tokens_delta": -207,
+        "relevant_lines_delta": 0,
+        "complete_blocks_delta": 0,
+        "line_coverage_delta": 0.0,
+        "block_coverage_delta": 0.0,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": []
+      },
+      "all_calls": {
+        "wire_tokens_delta": -455,
+        "context_tokens_delta": -408,
+        "relevant_lines_delta": -45,
+        "complete_blocks_delta": -2,
+        "line_coverage_delta": -0.2616279069767442,
+        "block_coverage_delta": -0.25
+      },
+      "all_call_union": {
+        "wire_tokens_delta": -455,
+        "context_tokens_delta": -408,
+        "relevant_lines_delta": 0,
+        "complete_blocks_delta": 0,
+        "line_coverage_delta": 0.0,
+        "block_coverage_delta": 0.0,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": []
+      }
+    },
+    {
+      "id": "fresh-starlette-background-order-failure",
+      "initial": {
+        "wire_tokens_delta": -220,
+        "context_tokens_delta": -186,
+        "relevant_lines_delta": 0,
+        "complete_blocks_delta": 0,
+        "line_coverage_delta": 0.0,
+        "block_coverage_delta": 0.0,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": []
+      },
+      "all_calls": {
+        "wire_tokens_delta": -429,
+        "context_tokens_delta": -362,
+        "relevant_lines_delta": 0,
+        "complete_blocks_delta": 0,
+        "line_coverage_delta": 0.0,
+        "block_coverage_delta": 0.0
+      },
+      "all_call_union": {
+        "wire_tokens_delta": -429,
+        "context_tokens_delta": -362,
+        "relevant_lines_delta": 0,
+        "complete_blocks_delta": 0,
+        "line_coverage_delta": 0.0,
+        "block_coverage_delta": 0.0,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": []
+      }
+    },
+    {
+      "id": "fresh-httpx-asgi-body-and-failure",
+      "initial": {
+        "wire_tokens_delta": -221,
+        "context_tokens_delta": -201,
+        "relevant_lines_delta": 10,
+        "complete_blocks_delta": 1,
+        "line_coverage_delta": 0.18518518518518523,
+        "block_coverage_delta": 0.19999999999999996,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [
+          {
+            "source": "httpx/_transports/asgi.py",
+            "start": 178,
+            "end": 187
+          }
+        ],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": [
+          "c4:1"
+        ]
+      },
+      "all_calls": {
+        "wire_tokens_delta": -221,
+        "context_tokens_delta": -201,
+        "relevant_lines_delta": 10,
+        "complete_blocks_delta": 1,
+        "line_coverage_delta": 0.18518518518518523,
+        "block_coverage_delta": 0.19999999999999996
+      },
+      "all_call_union": {
+        "wire_tokens_delta": -221,
+        "context_tokens_delta": -201,
+        "relevant_lines_delta": 10,
+        "complete_blocks_delta": 1,
+        "line_coverage_delta": 0.18518518518518523,
+        "block_coverage_delta": 0.19999999999999996,
+        "lost_relevant_ranges": [],
+        "gained_relevant_ranges": [
+          {
+            "source": "httpx/_transports/asgi.py",
+            "start": 178,
+            "end": 187
+          }
+        ],
+        "lost_complete_block_ids": [],
+        "gained_complete_block_ids": [
+          "c4:1"
+        ]
+      }
+    }
+  ],
+  "wire_token_change": {
+    "initial": -0.11701944587850632,
+    "all_calls": -0.12297016954002438
+  },
+  "verification": {
+    "pytest_passed": 509,
+    "subtests_passed": 58,
+    "skipped": 1,
+    "skip_reason": "Windows source symlink unavailable",
+    "ruff": "passed",
+    "stdio": {
+      "transport": "actual MCP stdio",
+      "calls": 8,
+      "initial": {
+        "complete_disabled_definition": true,
+        "context_tokens": 1268,
+        "json_context_tokens": 1496,
+        "wire_tokens": 1544
+      },
+      "ranges": {
+        "pages": 2,
+        "context_tokens": [
+          1493,
+          323
+        ],
+        "exact_lines_once": 120,
+        "stable_fingerprint": true
+      },
+      "same_size_mtime_edit_detected": true,
+      "invalid_scopes_refused": 3,
+      "oversized_first_line_not_skipped": true
+    },
+    "review_regressions": "Both reproduced before, corrected after, covered permanently."
+  },
+  "limitations": [
+    "Repeated development queries were used to diagnose and refine code; not held-out evidence.",
+    "Coverage counts fixed rubric physical source, including blank lines, not supported model answers.",
+    "Local response tokens do not measure adaptive trajectory cumulative provider input/output.",
+    "File-discovery ranking and three-file scope are unchanged; omitted files can still require follow-up.",
+    "Failed intermediate repairs are retained; no reserved forty-question answers were generated."
+  ],
+  "artifacts": {
+    "replay.py": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/replay.py",
+      "sha256": "b6f3829be3799f9350df646d8d6ed20f3474820e692ffca5c6cef7be2c535586"
+    },
+    "frozen_inputs.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/frozen_inputs.json",
+      "sha256": "86cba7a1633d36d03b2c1c5001d08f526975c8a8a30ded225f2e566ede722468"
+    },
+    "baseline.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/baseline.json",
+      "sha256": "226a7b183ec4f4afb200f7e8015aca695a917a55ce9cec2aa86d764700cb5f6d"
+    },
+    "definition_loss_diagnosis.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/definition_loss_diagnosis.json",
+      "sha256": "7eef2c9b7574af13f073defa19ce709a18597542d6065f643fbd5fea027068a8"
+    },
+    "after.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/after.json",
+      "sha256": "13ec02be5de214f80f790fe91921470317a6c454004aada4c14df24954424802"
+    },
+    "comparison.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/comparison.json",
+      "sha256": "fb32f37ad49b3cb7483fc24da9f6a41b41ab16ad7541c948a5af45bfab681158"
+    },
+    "containing_definitions.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/containing_definitions.json",
+      "sha256": "c732531ce653194ce19818dba2cbcb10f656d36fe310bad4a8ada6382abebdde"
+    },
+    "containing_comparison.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/containing_comparison.json",
+      "sha256": "69e401eaf3fa9dde2f47169f76935b303c495776e017fdc5cd36489f264b72cc"
+    },
+    "budgeted_definitions.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/budgeted_definitions.json",
+      "sha256": "82e7cd690cba5756b5686112e5d847313ae0af0f4179a836dd0da4a3d03ebd85"
+    },
+    "budgeted_comparison.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/budgeted_comparison.json",
+      "sha256": "958dddbbc52f3fe560adbb2a5b0946944b61811aa816ff7fe4a4254a19eccefe"
+    },
+    "named_budget.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/named_budget.json",
+      "sha256": "2f6868328ad4007077dec11c26c94f2eff7a5135bd44750f74d7fa2c0f08f366"
+    },
+    "named_budget_comparison.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/named_budget_comparison.json",
+      "sha256": "606785dad322582e36ab306c06da6e04afcef9f12b58afa379c96cdc0578a1fc"
+    },
+    "density_coverage.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/density_coverage.json",
+      "sha256": "9b69c2d1be49a4ed3062c648465d521f1ddb1676a07c84cf6fd9796272fa4997"
+    },
+    "density_comparison.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/density_comparison.json",
+      "sha256": "e991993e63cc4fd6714e5d174bb361b52d86b35e5ac8b655fd5686c3c6ceb140"
+    },
+    "retained_definitions.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/retained_definitions.json",
+      "sha256": "4f69ddf0d992f95a45cf9963f5a4238f28da17d4d12437313634970e502379cf"
+    },
+    "retained_comparison.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/retained_comparison.json",
+      "sha256": "a836be37ac4a3940f8b74b9eb7a8f4b11b6d8ffb8e1463980a13ef50cdcef0a3"
+    },
+    "overlap_union.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/overlap_union.json",
+      "sha256": "60121ca76fadceda969860ccc2e487f886583d194846f48e9dfeb708b133f733"
+    },
+    "overlap_comparison.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/overlap_comparison.json",
+      "sha256": "b0380e81b99afa8ab010af4537bd7bfc07b4a658c54f5bbd23db471a74fc814d"
+    },
+    "encoded_context.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/encoded_context.json",
+      "sha256": "6a7e077409ae1337a7080a817d04ed45c4791da50c3da306cad4ba65027ed62e"
+    },
+    "encoded_comparison.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/encoded_comparison.json",
+      "sha256": "75bbaadd83b3119259ff4d9db7998a3e02fadf093995ab87d9daf5b2bfca7732"
+    },
+    "final.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/final.json",
+      "sha256": "a4520321289976766d884d5008caf0de2e704a44ec3f8376d2143841e916d894"
+    },
+    "final_comparison.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/final_comparison.json",
+      "sha256": "79ea6a9c7ca33f49f90c8e236a98e3d00a92555573e84c5b163e740d58970662"
+    },
+    "stdio_smoke_final.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/stdio_smoke_final.json",
+      "sha256": "c417c3022cdc20efeb2acc9484ed2a54b923177c01eb42da026969a3b4697cbb"
+    },
+    "verification.json": {
+      "path": "eval/agent_bench/results/retrieval_precision_20260930/verification.json",
+      "sha256": "a53c2483abb1c8956ae15c6304513343c0389ad7d650fd9cc031db186999ba8c"
+    }
+  }
+}

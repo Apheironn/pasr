@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
+from pasr.source_text import physical_lines
 from pasr.tokenize import Tokenizer
 
 _IDENTIFIER_PART_RE = re.compile(r"[A-Z]?[a-z]+|[A-Z]+(?![a-z])|[0-9]+")
@@ -79,6 +80,6 @@ def line_additive_offsets(text: str, tokenizer: Tokenizer) -> list[int]:
     entry is the whole-file line-additive token count.
     """
     offsets = [0]
-    for line in text.splitlines(keepends=True):
+    for line in physical_lines(text, keepends=True):
         offsets.append(offsets[-1] + len(tokenizer.encode(line)))
     return offsets

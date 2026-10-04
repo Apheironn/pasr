@@ -17,6 +17,7 @@ from __future__ import annotations
 import math
 import os
 import re
+import warnings
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,7 @@ from pasr.evidence import STOPWORDS, extract_keywords
 from pasr.file_discovery import FileDiscoveryConfig, discover_workspace_files
 from pasr.index import FORMAT, EvidenceIndex, SymbolSpan, to_spans
 from pasr.retrieval.semantic import HashingScorer, get_scorer
+from pasr.source_text import physical_lines, read_source
 from pasr.symbols import get_provider, parse_symbols
 from pasr.symbols.base import identifier_terms
 
@@ -82,6 +84,7 @@ _READ_NEIGHBOR_LINES = 8
 # spell it that way -- in Rust, its definition and nothing else. Split on the last
 # qualifier to retry it bare.
 _QUALIFIER = re.compile(r"::|->|\.")
+_QUALIFIED_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:(?:::|->|\.)[A-Za-z_][A-Za-z0-9_]*)+")
 _READ_LINES_TOP_N = 5
 # A caller guessing "func" or "fn" for `kinds` used to get a silent empty result and no
 # way to tell that from "no such symbol"; a weaker model then loops on the wrong filter.
@@ -127,6 +130,10 @@ def find_symbols(
     query_names = {term.casefold() for term in query_terms}
     # The literal words as typed: `Signals` is a different request from `signals`.
     query_words = set(re.findall("[A-Za-z0-9_]+", query))
+    # A standalone identifier is one literal name, not several names introduced by
+    # keyword component expansion. Keep its parts only for the partial-match fallback.
+    if re.fullmatch(r"[A-Za-z0-9_]+", query.strip()):
+        query_names = {query.strip().casefold()}
     # "is_quiescent" splits to {is, quiescent}; without dropping "is" every `is_*`
     # helper in the repo scores 0.5 and buries the one real hit. Split the words as typed
     # too: `extract_keywords` folds case before splitting, so "PipelineData" arrives as one
@@ -143,23 +150,12 @@ def find_symbols(
         if get_provider(record.relative_path) is None:
             unsupported.add(record.path.suffix.lower() or "(no extension)")
             continue
-        # Parsing every file took fifteen seconds on a 2,500-file workspace while every
-        # other tool answered in under two. The symbols are already stored; read the file
-        # only when they are not.
         try:
-            info = record.path.stat()
-            stat = (info.st_size, info.st_mtime_ns)
-        except OSError:
+            snapshot = read_source(record.path)
+        except (OSError, ValueError) as exc:
+            warnings.warn(f"Skipping source {record.relative_path}: {exc}", RuntimeWarning, stacklevel=2)
             continue
-        definitions = index.definitions(record.relative_path, *stat) if index is not None else None
-        if definitions is None:
-            try:
-                text = record.path.read_text(encoding="utf-8", errors="replace")
-            except OSError:
-                continue
-            definitions = _definitions(record.relative_path, text)
-            if index is not None:
-                index.put_definitions(record.relative_path, *stat, definitions)
+        definitions = _definitions_of(record.relative_path, snapshot.text, index, snapshot.fingerprint)
         files_indexed += 1
 
         for definition in definitions:
@@ -174,14 +170,15 @@ def find_symbols(
                 continue
             kinds_seen.add(definition.kind)
             name_matches_any_kind += 1
-            if wanted_kinds and definition.kind.casefold() not in wanted_kinds:
+            kind = definition.kind.casefold()
+            if wanted_kinds and _KIND_ALIASES.get(kind, kind) not in wanted_kinds:
                 continue
             case_exact = exact and name in query_words
             scored.append(
                 (
                     (_EXACT_BONUS if exact else 0.0)
                     + (_CASE_EXACT_BONUS if case_exact else 0.0)
-                    + (0.0 if definition.kind.casefold() in _CONTAINER_KINDS else _DECLARATION_BONUS)
+                    + (0.0 if kind in _CONTAINER_KINDS else _DECLARATION_BONUS)
                     + overlap,
                     {
                         "name": name,
@@ -240,8 +237,9 @@ def _scan_usages(
 
     for record in records:
         try:
-            text = record.path.read_text(encoding="utf-8", errors="replace")
-        except OSError:
+            text = read_source(record.path).text
+        except (OSError, ValueError) as exc:
+            warnings.warn(f"Skipping source {record.relative_path}: {exc}", RuntimeWarning, stacklevel=2)
             continue
         files_scanned += 1
         if name not in text:  # cheap reject before the line walk
@@ -255,7 +253,7 @@ def _scan_usages(
             except (OSError, ValueError):
                 definitions = ()
 
-        lines = text.splitlines()
+        lines = physical_lines(text)
         read_sources[record.relative_path] = (len(lines), definitions)
         for line_no, line in enumerate(lines, start=1):
             if not pattern.search(line):
@@ -385,9 +383,6 @@ def _read_lines(line_no: int, line_count: int, definitions: tuple[Any, ...]) -> 
 # Deep enough that the answer is inside it -- the ground-truth file's lexical rank on the
 # queries two models actually issued was 12, 40, 49, 62 and 110 -- and shallow enough to
 # cost about a second. Going deeper measured identically; going shallower lost a question.
-# Deep enough that the answer is inside it -- the ground-truth file's lexical rank on the
-# queries two models actually issued was 12, 40, 49, 62 and 110 -- and shallow enough to
-# cost about a second. Rescoring the whole matched set measured identically.
 _RERANK_DEPTH = 250
 # How much of a file an embedding scorer reads. The hashing scorer blocks the whole file.
 _EMBED_CHARS = 2000
@@ -430,9 +425,8 @@ _SIMILARITY_WEIGHT = 1.0
 
 # An identifier long enough to be a name rather than a loop variable.
 _IDENTIFIER = re.compile("[A-Za-z_][A-Za-z0-9_]{2,}")
-# How far the reference graph may move a file. Flat between 0.5 and 2.0 on the recorded
-# queries -- it is not a tuned constant -- and unlike the similarity weight it never
-# threatened the rarity guarantee, because a file nothing references gains nothing.
+# Blend weight for lexical-seeded reference rank. Teleport and dangling mass can
+# boost even unreferenced candidates; this is not a relevance guarantee.
 _GRAPH_WEIGHT = 1.0
 _GRAPH_ITERATIONS = 12
 _GRAPH_DAMPING = 0.85
@@ -448,16 +442,14 @@ def _definitions(source: str, text: str) -> tuple[SymbolSpan, ...]:
         return ()
 
 
-def _definitions_of(
-    source: str, text: str, index: EvidenceIndex | None, stat: tuple[int, int]
-) -> tuple[SymbolSpan, ...]:
+def _definitions_of(source: str, text: str, index: EvidenceIndex | None, fingerprint: str) -> tuple[SymbolSpan, ...]:
     if index is not None:
-        stored = index.definitions(source, *stat)
+        stored = index.definitions(source, fingerprint)
         if stored is not None:
             return stored
     computed = _definitions(source, text)
     if index is not None:
-        index.put_definitions(source, *stat, computed)
+        index.put_definitions(source, fingerprint, computed)
     return computed
 
 
@@ -466,11 +458,11 @@ def _reference_rank(
 ) -> dict[str, float]:
     """Personalised PageRank over "this file names something that file defines".
 
-    Aider ranks a repository this way and it is the signal the other two cannot see: a file
-    can be the answer while saying none of the question's words, as long as the files that
-    do say them lean on it. `gc.rs` defines `PluginGc`; `persistent.rs`, which the question's
-    words do reach, calls it. The walk starts from the lexical scores, so relevance flows
-    along references rather than being invented.
+    The walk starts from lexical scores and redistributes relevance along name
+    references within the candidate head. For example, a file naming ``PluginGc``
+    can boost the candidate that defines it. Every node already passed the lexical
+    candidate gate; this graph cannot discover a file outside that head. Names in
+    comments and strings participate too: these are not resolved semantic references.
     """
     candidates = set(seed)
     defined_in: dict[str, set[str]] = {}
@@ -513,7 +505,7 @@ def _scaled(scores: dict[str, float]) -> dict[str, float]:
 
 
 # Blocks are a property of the file, not of the query. Featurising dominated a cold search
-# -- 3.3s of 4.6s -- so it is stored, keyed on the file's size and mtime.
+# -- 3.3s of 4.6s -- so it is stored, keyed on the fingerprint of the source read.
 #
 # There was a process-level cache here too, keyed on the relative path and the text length.
 # It was wrong: two workspaces holding a same-named file of the same length would share an
@@ -540,28 +532,28 @@ def _block_features(
     source: str,
     text: str,
     index: EvidenceIndex | None,
-    stat: tuple[int, int],
+    fingerprint: str,
 ) -> list[dict[int, float]]:
     if index is not None:
-        stored = index.blocks(source, *stat)
+        stored = index.blocks(source, fingerprint)
         if stored is not None:
             return stored
-    lines = text.splitlines()
+    lines = physical_lines(text)
     # The path is part of what a block means: `nu-plugin-engine/src/gc.rs` says a lot.
     features = [
         _trimmed(scorer._features(f"{source}\n" + "\n".join(lines[start : start + _RERANK_BLOCK])))
         for start in range(0, max(len(lines), 1), _RERANK_BLOCK)
     ]
     if index is not None:
-        index.put_blocks(source, *stat, features)
+        index.put_blocks(source, fingerprint, features)
     return features
 
 
 # Which scorer reranks the lexical head. The default is the zero-dependency hashing one,
 # which keeps the core torch-free; PASR_SEMANTIC_SCORER=minilm uses real sentence
 # embeddings from the `pasr-mcp[semantic]` extra. Hashing matches shared character n-grams,
-# so it survives morphology but not synonymy: asked what makes a server "idle" it cannot
-# reach a codebase that says "quiescent", and rust-analyzer's Q2 is 0 for 18 because of it.
+# so it can bridge morphology, not arbitrary synonyms such as "idle"/"quiescent".
+# An empty value or "none" disables similarity, leaving lexical and graph scoring.
 _SCORER_NAME = os.environ.get("PASR_SEMANTIC_SCORER", "hashing")
 
 
@@ -583,15 +575,17 @@ class _Span:
         self.text = text
 
 
-def _similarity_of(query, head, texts, index, stats) -> dict[str, float]:
+def _similarity_of(query, head, texts, index, fingerprints) -> dict[str, float]:
     """Similarity of each head file to the query, by whichever scorer is configured."""
     scorer = _semantic_scorer()
+    if scorer is None:
+        return {}
     if isinstance(scorer, HashingScorer):
         query_features = scorer._features(query)
         similarity: dict[str, float] = {}
         for source in head:
             best = 0.0
-            for features in _block_features(scorer, source, texts[source], index, stats[source]):
+            for features in _block_features(scorer, source, texts[source], index, fingerprints[source]):
                 small, large = (
                     (query_features, features) if len(query_features) < len(features) else (features, query_features)
                 )
@@ -609,17 +603,17 @@ def _rerank_semantically(
     texts: dict[str, str],
     definitions_by_source: dict[str, tuple[SymbolSpan, ...]],
     index: EvidenceIndex | None,
-    stats: dict[str, tuple[int, int]],
+    fingerprints: dict[str, str],
 ) -> dict[str, float]:
     """Blend the lexical file ranking with a sub-word similarity score of its head.
 
     Lexical ranking is right about what it can see and blind to everything else. Asked what
     stops an idle plugin, it prefers the file that says "idle" and "shutdown" over the one
     that says "inactivity" and "stops it automatically" -- and the second is the answer. The
-    scorer here matches shared character n-grams rather than whole words, so morphology and
-    near-synonyms survive the gap. On the queries two models really issued against nushell
-    this moved the ground-truth file inside the window they asked for in 10 of 14 rather
-    than 6, and the median rank from 31 to 4.
+    scorer here matches shared character n-grams rather than whole words, which can
+    bridge morphology but does not establish semantic equivalence. A historical replay
+    of queries two models issued against nushell moved the ground-truth file inside
+    the requested window in 10 of 14 rather than 6; that is not an answer-quality proof.
 
     Only the head of the lexical ranking is rescored: a file containing no query term at all
     is not a candidate, and rescoring thousands would cost more than the search itself.
@@ -627,7 +621,7 @@ def _rerank_semantically(
     if len(file_scores) < 2:
         return file_scores
     head = sorted(file_scores, key=lambda source: -file_scores[source])[:_RERANK_DEPTH]
-    similarity = _similarity_of(query, head, texts, index, stats)
+    similarity = _similarity_of(query, head, texts, index, fingerprints)
 
     lexical, similar = _scaled(file_scores), _scaled(similarity)
     referenced = _scaled(_reference_rank({source: lexical[source] for source in head}, texts, definitions_by_source))
@@ -639,7 +633,65 @@ def _rerank_semantically(
     }
 
 
-_RRF_K = 60
+_WORD = re.compile(r"[A-Za-z0-9]+(?:_[A-Za-z0-9]+)*")
+
+
+def _line_words(line: str) -> set[str]:
+    """Every word of a line, and every part of its identifiers, lower-cased.
+
+    A query term used to count only as a whole word, and `_` is a word character, so
+    `exit` never matched `LAST_EXIT_CODE` and `recursion` never matched
+    `recursion_count` -- the identifiers that answer the question were the one kind of
+    line a question in plain words could not reach. Replaying 67 recorded queries,
+    splitting identifiers took the replies that carry every required anchor from 0 to 13.
+    """
+    words: set[str] = set()
+    for word in _WORD.findall(line):
+        words.add(word.lower())
+        for part in word.split("_"):
+            if part:
+                words.add(part.lower())
+                words.update(identifier_terms([part]))
+    return words
+
+
+def _qualified_definition_sources(query: str, definitions_by_source: dict[str, tuple[SymbolSpan, ...]]) -> set[str]:
+    """Resolve explicit qualifications structurally, without guessing import aliases.
+
+    A module path or enclosing definition must supply the qualifier. Merely calling
+    ``hooks.enforce`` or defining an unrelated ``enforce`` is not a definition match.
+    """
+    requested: dict[str, list[tuple[str, ...]]] = {}
+    for match in _QUALIFIED_NAME.finditer(query):
+        parts = tuple(_QUALIFIER.split(match.group()))
+        requested.setdefault(parts[-1], []).append(parts)
+    if not requested:
+        return set()
+
+    matched = set()
+    for source, definitions in definitions_by_source.items():
+        module = tuple(source.replace("\\", "/").rsplit(".", 1)[0].split("/"))
+        if module[-1] == "__init__" and source.lower().endswith((".py", ".pyi")):
+            module = module[:-1]
+        for definition in definitions:
+            names = requested.get(definition.name)
+            if not names or definition.kind == "import":
+                continue
+            parents = sorted(
+                (
+                    parent
+                    for parent in definitions
+                    if parent.line_start <= definition.line_start
+                    and definition.line_end <= parent.line_end
+                    and (parent.line_start, parent.line_end) != (definition.line_start, definition.line_end)
+                ),
+                key=lambda parent: (parent.line_start, -parent.line_end),
+            )
+            qualified = (*module, *(parent.name for parent in parents), definition.name)
+            if any(qualified[-len(name) :] == name for name in names):
+                matched.add(source)
+                break
+    return matched
 
 
 def find_evidence(
@@ -650,7 +702,7 @@ def find_evidence(
     per_file: int = 2,
     config: FileDiscoveryConfig | None = None,
 ) -> dict[str, Any]:
-    """Which lines anywhere in the workspace bear on ``query``, rarest term first.
+    """Find evidence lines, preferring explicitly qualified definitions before blended relevance.
 
     The rung that decides questions asked in words the code does not use. A reader
     asks about the server going "idle"; rust-analyzer calls it "quiescent" and the
@@ -659,9 +711,9 @@ def find_evidence(
     files, one of them the line ``/// Unlike `is_quiescent`, this returns false when
     we're indexing``. Whole-workspace content search is the only thing that finds it.
 
-    Hits are ranked by the inverse document frequency of the terms they match, so a
-    term occurring in two files outranks one occurring in two hundred, and each hit
-    carries its line and enclosing definition rather than a body.
+    Within each qualification tier, file order blends term rarity, similarity and
+    reference rank. Inverse document frequency chooses the lines shown within a
+    file. Each hit carries its line and enclosing definition rather than a body.
     """
     if top_k <= 0 or per_file <= 0:
         raise ValueError("top_k and per_file must be positive.")
@@ -671,30 +723,30 @@ def find_evidence(
 
     records = discover_workspace_files(Path(workspace_root), include or ["."], config=config)
     texts: dict[str, str] = {}
-    stats: dict[str, tuple[int, int]] = {}
+    fingerprints: dict[str, str] = {}
     matched_terms: dict[str, set[str]] = {}
     document_frequency: dict[str, int] = dict.fromkeys(query_terms, 0)
+    files_scanned = 0
 
     for record in records:
         try:
-            text = record.path.read_text(encoding="utf-8", errors="replace")
-        except OSError:
+            snapshot = read_source(record.path)
+        except (OSError, ValueError) as exc:
+            warnings.warn(f"Skipping source {record.relative_path}: {exc}", RuntimeWarning, stacklevel=2)
             continue
+        text = snapshot.text
+        files_scanned += 1
         folded = text.casefold()
         present = {term for term in query_terms if term in folded}
         if not present:
             continue
         texts[record.relative_path] = text
-        try:
-            info = record.path.stat()
-            stats[record.relative_path] = (info.st_size, info.st_mtime_ns)
-        except OSError:
-            stats[record.relative_path] = (len(text), 0)
+        fingerprints[record.relative_path] = snapshot.fingerprint
         matched_terms[record.relative_path] = present
         for term in present:
             document_frequency[term] += 1
 
-    total = max(len(records), 1)
+    total = max(files_scanned, 1)
     too_common = max(1, int(total * _MAX_DOCUMENT_SHARE))
     idf = {
         term: math.log(1.0 + (total - df + 0.5) / (df + 0.5)) if 0 < df <= too_common else 0.0
@@ -719,7 +771,7 @@ def find_evidence(
     # of a question's words somewhere than the 306-line file that answers it -- and scored
     # as if that were the same evidence. Asked what stops an idle plugin, nushell's longest
     # command file led on a comment about tab stops.
-    lengths = {source: max(len(text.splitlines()), 1) for source, text in texts.items()}
+    lengths = {source: max(len(physical_lines(text)), 1) for source, text in texts.items()}
     mean_length = (sum(lengths.values()) / len(lengths)) if lengths else 1.0
     file_scores = {
         source: _path_prior(source)
@@ -731,9 +783,9 @@ def find_evidence(
     index = EvidenceIndex.open(Path(workspace_root), signature=_INDEX_SIGNATURE)
     try:
         definitions_by_source = {
-            source: _definitions_of(source, text, index, stats[source]) for source, text in texts.items()
+            source: _definitions_of(source, text, index, fingerprints[source]) for source, text in texts.items()
         }
-        file_scores = _rerank_semantically(query, file_scores, texts, definitions_by_source, index, stats)
+        file_scores = _rerank_semantically(query, file_scores, texts, definitions_by_source, index, fingerprints)
         if index is not None:
             index.commit()
     finally:
@@ -741,15 +793,17 @@ def find_evidence(
             index.close()
 
     hits: list[tuple[float, dict[str, Any]]] = []
+    qualified_sources = _qualified_definition_sources(query, definitions_by_source)
     read_sources: dict[str, tuple[int, tuple[Any, ...]]] = {}
     for source, text in texts.items():
-        patterns = [(term, re.compile(rf"\b{re.escape(term)}\b", re.IGNORECASE)) for term in matched_terms[source]]
+        terms_here = matched_terms[source]
         definitions = definitions_by_source[source]
         per_file_hits: list[tuple[float, dict[str, Any]]] = []
-        lines = text.splitlines()
+        lines = physical_lines(text)
         read_sources[source] = (len(lines), definitions)
         for line_no, line in enumerate(lines, start=1):
-            found = [term for term, pattern in patterns if pattern.search(line)]
+            words = _line_words(line)
+            found = [term for term in terms_here if term in words]
             if not found:
                 continue
             owner = _innermost_owner(definitions, line_no)
@@ -770,7 +824,14 @@ def find_evidence(
         # that file to show.
         hits.extend((file_scores[source], row) for _, row in per_file_hits[:per_file])
 
-    hits.sort(key=lambda item: (-item[0], item[1]["source"], item[1]["line"]))
+    hits.sort(
+        key=lambda item: (
+            item[1]["source"] not in qualified_sources,
+            -item[0],
+            item[1]["source"],
+            item[1]["line"],
+        )
+    )
     # Neither a score nor the terms it matched survives here. Hits arrive in rank order, so
     # the number restated the position, and on a blended rank it is not even interpretable;
     # the matched terms are visible in the line the hit carries. Together they were a fifth
@@ -780,7 +841,7 @@ def find_evidence(
         hit["read_lines"] = _read_lines(hit["line"], *read_sources[hit["source"]])
     return {
         "query": query,
-        "files_scanned": len(records),
+        "files_scanned": files_scanned,
         "files_with_a_match": len(texts),
         "hit_count": len(hits),
         "term_file_counts": {term: document_frequency[term] for term in query_terms},

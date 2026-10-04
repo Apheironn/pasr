@@ -151,6 +151,7 @@ activemq-data/
 .env
 .envrc
 .venv
+.venv-market/
 env/
 venv/
 ENV/
@@ -217,10 +218,24 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# PASR local artifacts — receipts are ignored, Context Packs are committable
+# PASR local artifacts — receipts are ignored, Context Packs are committable.
+# The index follows the workspace it was built for, so it lands wherever a benchmark
+# pointed: `src/.pasr/` after a run against this repo's own source tree.
 .pasr/*
 !.pasr/packs/
+**/.pasr/
 eval/runs/
 eval/pasr_eval/runs/
 pasr-bench-runs/
 .eval-checkouts/
+
+# Benchmark evidence: harness lives here, raw transcripts are archived outside the repo
+eval/agent_bench/results/
+
+# Frozen local records retain workstation identifiers. Publish only their
+# explicitly marked *.public.json derivatives; preserve these originals unchanged.
+eval/agent_bench/definition_retrieval_20260920.json
+eval/agent_bench/discovery_ranking_20260930.json
+eval/agent_bench/local_efficiency_20260920.json
+eval/agent_bench/priority_repair_20260929.json
+eval/agent_bench/retrieval_fixes_20260920.json

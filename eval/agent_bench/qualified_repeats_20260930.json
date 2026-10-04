@@ -1,0 +1,3289 @@
+{
+  "status": "development_gate_failed_validation_not_run",
+  "archive": "results/qualified_repeats_20260930",
+  "target_achieved": false,
+  "candidate_promoted": false,
+  "default_tool_catalog_changed": false,
+  "change": "Only qualified-definition discovery ranking in pasr/symbol_search.py; prior-reader and candidate catalogs byte-identical. No selection, schema, budget or explicit-scope change.",
+  "comparison": "Four fresh arms, ten reused development questions, three paired repetitions. Native and pre-repair controls remain exact; prior_reader is a prespecified diagnostic, not an alternative eligible winner. All120 trajectories included.",
+  "summary": {
+    "stage": "dev",
+    "profiles": {
+      "native@6": {
+        "runs": 30,
+        "passes": 26,
+        "failed": 4,
+        "materially_incorrect": 2,
+        "incomplete": 2,
+        "completed": 30,
+        "generation_failures": {},
+        "strict_all_criteria_passes": 25,
+        "total_provider_tokens": 245122,
+        "mean_total_tokens": 8170.733333333334,
+        "mean_tool_calls": 3.566666666666667,
+        "mean_api_requests": 4.566666666666666,
+        "published_rate_cost_bound_usd": 0.020988160000000002,
+        "tool_counts": {
+          "grep": 48,
+          "read_file": 59
+        },
+        "selection_options": {},
+        "continuation_usage": {}
+      },
+      "current@6": {
+        "runs": 30,
+        "passes": 24,
+        "failed": 6,
+        "materially_incorrect": 2,
+        "incomplete": 4,
+        "completed": 30,
+        "generation_failures": {},
+        "strict_all_criteria_passes": 24,
+        "total_provider_tokens": 242525,
+        "mean_total_tokens": 8084.166666666667,
+        "mean_tool_calls": 3.2,
+        "mean_api_requests": 4.2,
+        "published_rate_cost_bound_usd": 0.019741715,
+        "tool_counts": {
+          "find_evidence": 31,
+          "read_file": 49,
+          "find_symbols": 4,
+          "grep": 11,
+          "find_files": 1
+        },
+        "selection_options": {},
+        "continuation_usage": {}
+      },
+      "prior_reader@6": {
+        "runs": 30,
+        "passes": 27,
+        "failed": 3,
+        "materially_incorrect": 2,
+        "incomplete": 1,
+        "completed": 30,
+        "generation_failures": {},
+        "strict_all_criteria_passes": 27,
+        "total_provider_tokens": 187244,
+        "mean_total_tokens": 6241.466666666666,
+        "mean_tool_calls": 2.2333333333333334,
+        "mean_api_requests": 3.2333333333333334,
+        "published_rate_cost_bound_usd": 0.01717372,
+        "tool_counts": {
+          "search_code": 58,
+          "read_file": 9
+        },
+        "selection_options": {},
+        "continuation_usage": {}
+      },
+      "search_reader@6": {
+        "runs": 30,
+        "passes": 26,
+        "failed": 4,
+        "materially_incorrect": 1,
+        "incomplete": 3,
+        "completed": 30,
+        "generation_failures": {},
+        "strict_all_criteria_passes": 26,
+        "total_provider_tokens": 253409,
+        "mean_total_tokens": 8446.966666666667,
+        "mean_tool_calls": 2.7666666666666666,
+        "mean_api_requests": 3.7666666666666666,
+        "published_rate_cost_bound_usd": 0.019976415,
+        "tool_counts": {
+          "search_code": 63,
+          "read_file": 20
+        },
+        "selection_options": {},
+        "continuation_usage": {}
+      }
+    },
+    "comparisons": {
+      "current@6 vs native@6": {
+        "questions": 10,
+        "paired_observations": 30,
+        "resampling_unit": "original_question",
+        "question_cluster_sizes": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "repository_clusters": 10,
+        "bootstrap_draws": 10000,
+        "bootstrap_seed": 2026092901,
+        "accuracy_difference": -0.06666666666666667,
+        "accuracy_difference_ci95": [
+          -0.2,
+          0.06666666666666667
+        ],
+        "token_ratio": 0.9894052757402436,
+        "token_ratio_ci95": [
+          0.7350383611102157,
+          1.3707879360337405
+        ],
+        "repository_cluster_accuracy_ci95": [
+          -0.2,
+          0.06666666666666667
+        ],
+        "repository_cluster_token_ratio_ci95": [
+          0.7384855417724885,
+          1.388614952532005
+        ],
+        "candidate_only_correct": [
+          "fresh-click-atomic-write-close::r3",
+          "fresh-pluggy-blocked-plugin-lifecycle::r2"
+        ],
+        "control_only_correct": [
+          "fresh-attrs-disabled-restoration::r2",
+          "fresh-httpx-asgi-body-and-failure::r1",
+          "fresh-pluggy-blocked-plugin-lifecycle::r1",
+          "fresh-typer-annotated-default-conflicts::r3"
+        ]
+      },
+      "search_reader@6 vs native@6": {
+        "questions": 10,
+        "paired_observations": 30,
+        "resampling_unit": "original_question",
+        "question_cluster_sizes": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "repository_clusters": 10,
+        "bootstrap_draws": 10000,
+        "bootstrap_seed": 2026092901,
+        "accuracy_difference": 0,
+        "accuracy_difference_ci95": [
+          -0.26666666666666666,
+          0.23333333333333334
+        ],
+        "token_ratio": 1.0338076549636508,
+        "token_ratio_ci95": [
+          0.7010248771041263,
+          1.513202368782177
+        ],
+        "repository_cluster_accuracy_ci95": [
+          -0.26666666666666666,
+          0.23333333333333334
+        ],
+        "repository_cluster_token_ratio_ci95": [
+          0.702236817414149,
+          1.520423472834943
+        ],
+        "candidate_only_correct": [
+          "fresh-click-atomic-write-close::r3",
+          "fresh-packaging-collected-errors::r1",
+          "fresh-pluggy-blocked-plugin-lifecycle::r2",
+          "fresh-pluggy-blocked-plugin-lifecycle::r3"
+        ],
+        "control_only_correct": [
+          "fresh-attrs-disabled-restoration::r1",
+          "fresh-attrs-disabled-restoration::r2",
+          "fresh-attrs-disabled-restoration::r3",
+          "fresh-httpx-asgi-body-and-failure::r3"
+        ]
+      },
+      "search_reader@6 vs current@6": {
+        "questions": 10,
+        "paired_observations": 30,
+        "resampling_unit": "original_question",
+        "question_cluster_sizes": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "repository_clusters": 10,
+        "bootstrap_draws": 10000,
+        "bootstrap_seed": 2026092901,
+        "accuracy_difference": 0.06666666666666667,
+        "accuracy_difference_ci95": [
+          -0.13333333333333333,
+          0.26666666666666666
+        ],
+        "token_ratio": 1.0448778476445728,
+        "token_ratio_ci95": [
+          0.8703733700494047,
+          1.184451292341503
+        ],
+        "repository_cluster_accuracy_ci95": [
+          -0.13333333333333333,
+          0.26666666666666666
+        ],
+        "repository_cluster_token_ratio_ci95": [
+          0.8735901469259346,
+          1.1869957475315294
+        ],
+        "candidate_only_correct": [
+          "fresh-httpx-asgi-body-and-failure::r1",
+          "fresh-packaging-collected-errors::r1",
+          "fresh-pluggy-blocked-plugin-lifecycle::r1",
+          "fresh-pluggy-blocked-plugin-lifecycle::r3",
+          "fresh-typer-annotated-default-conflicts::r3"
+        ],
+        "control_only_correct": [
+          "fresh-attrs-disabled-restoration::r1",
+          "fresh-attrs-disabled-restoration::r3",
+          "fresh-httpx-asgi-body-and-failure::r3"
+        ]
+      },
+      "search_reader@6 vs prior_reader@6": {
+        "questions": 10,
+        "paired_observations": 30,
+        "resampling_unit": "original_question",
+        "question_cluster_sizes": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "repository_clusters": 10,
+        "bootstrap_draws": 10000,
+        "bootstrap_seed": 2026092901,
+        "accuracy_difference": -0.03333333333333333,
+        "accuracy_difference_ci95": [
+          -0.13333333333333333,
+          0.06666666666666667
+        ],
+        "token_ratio": 1.3533624575420307,
+        "token_ratio_ci95": [
+          1.1151699984057024,
+          1.6465024197096347
+        ],
+        "repository_cluster_accuracy_ci95": [
+          -0.13333333333333333,
+          0.06666666666666667
+        ],
+        "repository_cluster_token_ratio_ci95": [
+          1.119566785701403,
+          1.6438083453801484
+        ],
+        "candidate_only_correct": [
+          "fresh-pluggy-blocked-plugin-lifecycle::r3"
+        ],
+        "control_only_correct": [
+          "fresh-attrs-disabled-restoration::r2",
+          "fresh-httpx-asgi-body-and-failure::r3"
+        ]
+      }
+    },
+    "per_repetition": {
+      "1": {
+        "profiles": {
+          "native@6": {
+            "runs": 10,
+            "passes": 9,
+            "failed": 1,
+            "materially_incorrect": 0,
+            "incomplete": 1,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 9,
+            "total_provider_tokens": 83285,
+            "mean_total_tokens": 8328.5,
+            "mean_tool_calls": 3.8,
+            "mean_api_requests": 4.8,
+            "published_rate_cost_bound_usd": 0.007163940000000001,
+            "tool_counts": {
+              "grep": 17,
+              "read_file": 21
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "current@6": {
+            "runs": 10,
+            "passes": 7,
+            "failed": 3,
+            "materially_incorrect": 1,
+            "incomplete": 2,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 7,
+            "total_provider_tokens": 71088,
+            "mean_total_tokens": 7108.8,
+            "mean_tool_calls": 2.9,
+            "mean_api_requests": 3.9,
+            "published_rate_cost_bound_usd": 0.006439175,
+            "tool_counts": {
+              "find_evidence": 10,
+              "read_file": 15,
+              "find_symbols": 1,
+              "grep": 3
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "prior_reader@6": {
+            "runs": 10,
+            "passes": 9,
+            "failed": 1,
+            "materially_incorrect": 0,
+            "incomplete": 1,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 9,
+            "total_provider_tokens": 47705,
+            "mean_total_tokens": 4770.5,
+            "mean_tool_calls": 2,
+            "mean_api_requests": 3,
+            "published_rate_cost_bound_usd": 0.00554008,
+            "tool_counts": {
+              "search_code": 19,
+              "read_file": 1
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "search_reader@6": {
+            "runs": 10,
+            "passes": 9,
+            "failed": 1,
+            "materially_incorrect": 0,
+            "incomplete": 1,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 9,
+            "total_provider_tokens": 81536,
+            "mean_total_tokens": 8153.6,
+            "mean_tool_calls": 2.5,
+            "mean_api_requests": 3.5,
+            "published_rate_cost_bound_usd": 0.006707545,
+            "tool_counts": {
+              "search_code": 20,
+              "read_file": 5
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          }
+        },
+        "comparisons": {
+          "current@6 vs native@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": -0.2,
+            "accuracy_difference_ci95": [
+              -0.5,
+              0
+            ],
+            "token_ratio": 0.8535510596145764,
+            "token_ratio_ci95": [
+              0.5968305076218745,
+              1.2690906096230261
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.5,
+              0
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.5964394337173937,
+              1.2847422955485392
+            ],
+            "candidate_only_correct": [],
+            "control_only_correct": [
+              "fresh-httpx-asgi-body-and-failure::r1",
+              "fresh-pluggy-blocked-plugin-lifecycle::r1"
+            ]
+          },
+          "search_reader@6 vs native@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              -0.3,
+              0.3
+            ],
+            "token_ratio": 0.9789998198955394,
+            "token_ratio_ci95": [
+              0.46603605608724685,
+              1.6444115391734313
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.3,
+              0.3
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.4650067797695946,
+              1.6432757041280734
+            ],
+            "candidate_only_correct": [
+              "fresh-packaging-collected-errors::r1"
+            ],
+            "control_only_correct": [
+              "fresh-attrs-disabled-restoration::r1"
+            ]
+          },
+          "search_reader@6 vs current@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0.2,
+            "accuracy_difference_ci95": [
+              -0.2,
+              0.6
+            ],
+            "token_ratio": 1.1469727661489983,
+            "token_ratio_ci95": [
+              0.702219089627575,
+              1.658168547908003
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.2,
+              0.6
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.6992742846945452,
+              1.667019727260691
+            ],
+            "candidate_only_correct": [
+              "fresh-httpx-asgi-body-and-failure::r1",
+              "fresh-packaging-collected-errors::r1",
+              "fresh-pluggy-blocked-plugin-lifecycle::r1"
+            ],
+            "control_only_correct": [
+              "fresh-attrs-disabled-restoration::r1"
+            ]
+          },
+          "search_reader@6 vs prior_reader@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              0,
+              0
+            ],
+            "token_ratio": 1.709170946441673,
+            "token_ratio_ci95": [
+              1.0361056537873827,
+              2.6871666205697577
+            ],
+            "repository_cluster_accuracy_ci95": [
+              0,
+              0
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              1.0271979607541362,
+              2.6932686003862716
+            ],
+            "candidate_only_correct": [],
+            "control_only_correct": []
+          }
+        },
+        "same_gate_diagnostic": false
+      },
+      "2": {
+        "profiles": {
+          "native@6": {
+            "runs": 10,
+            "passes": 9,
+            "failed": 1,
+            "materially_incorrect": 1,
+            "incomplete": 0,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 9,
+            "total_provider_tokens": 76111,
+            "mean_total_tokens": 7611.1,
+            "mean_tool_calls": 3.4,
+            "mean_api_requests": 4.4,
+            "published_rate_cost_bound_usd": 0.006723595000000001,
+            "tool_counts": {
+              "grep": 16,
+              "read_file": 18
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "current@6": {
+            "runs": 10,
+            "passes": 9,
+            "failed": 1,
+            "materially_incorrect": 0,
+            "incomplete": 1,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 9,
+            "total_provider_tokens": 83097,
+            "mean_total_tokens": 8309.7,
+            "mean_tool_calls": 3.4,
+            "mean_api_requests": 4.4,
+            "published_rate_cost_bound_usd": 0.006681195,
+            "tool_counts": {
+              "find_evidence": 12,
+              "read_file": 16,
+              "find_symbols": 1,
+              "grep": 5
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "prior_reader@6": {
+            "runs": 10,
+            "passes": 10,
+            "failed": 0,
+            "materially_incorrect": 0,
+            "incomplete": 0,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 10,
+            "total_provider_tokens": 79800,
+            "mean_total_tokens": 7980,
+            "mean_tool_calls": 2.7,
+            "mean_api_requests": 3.7,
+            "published_rate_cost_bound_usd": 0.00666422,
+            "tool_counts": {
+              "search_code": 21,
+              "read_file": 6
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "search_reader@6": {
+            "runs": 10,
+            "passes": 9,
+            "failed": 1,
+            "materially_incorrect": 0,
+            "incomplete": 1,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 9,
+            "total_provider_tokens": 74135,
+            "mean_total_tokens": 7413.5,
+            "mean_tool_calls": 2.5,
+            "mean_api_requests": 3.5,
+            "published_rate_cost_bound_usd": 0.0060956050000000005,
+            "tool_counts": {
+              "search_code": 20,
+              "read_file": 5
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          }
+        },
+        "comparisons": {
+          "current@6 vs native@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              -0.3,
+              0.3
+            ],
+            "token_ratio": 1.0917869953094823,
+            "token_ratio_ci95": [
+              0.7111771068213899,
+              1.834558703395092
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.3,
+              0.3
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.7145342744725863,
+              1.8314180094024992
+            ],
+            "candidate_only_correct": [
+              "fresh-pluggy-blocked-plugin-lifecycle::r2"
+            ],
+            "control_only_correct": [
+              "fresh-attrs-disabled-restoration::r2"
+            ]
+          },
+          "search_reader@6 vs native@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              -0.3,
+              0.3
+            ],
+            "token_ratio": 0.9740379183035304,
+            "token_ratio_ci95": [
+              0.6429623106243034,
+              1.4296444172118672
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.3,
+              0.3
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.6550122161108236,
+              1.439415691622999
+            ],
+            "candidate_only_correct": [
+              "fresh-pluggy-blocked-plugin-lifecycle::r2"
+            ],
+            "control_only_correct": [
+              "fresh-attrs-disabled-restoration::r2"
+            ]
+          },
+          "search_reader@6 vs current@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              0,
+              0
+            ],
+            "token_ratio": 0.8921501377907747,
+            "token_ratio_ci95": [
+              0.6807349463343642,
+              1.1370260567168287
+            ],
+            "repository_cluster_accuracy_ci95": [
+              0,
+              0
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.6800897165370597,
+              1.13241245017799
+            ],
+            "candidate_only_correct": [],
+            "control_only_correct": []
+          },
+          "search_reader@6 vs prior_reader@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": -0.1,
+            "accuracy_difference_ci95": [
+              -0.3,
+              0
+            ],
+            "token_ratio": 0.9290100250626566,
+            "token_ratio_ci95": [
+              0.7147960921889819,
+              1.1837494722875581
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.3,
+              0
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.7153078891323333,
+              1.1848305470630325
+            ],
+            "candidate_only_correct": [],
+            "control_only_correct": [
+              "fresh-attrs-disabled-restoration::r2"
+            ]
+          }
+        },
+        "same_gate_diagnostic": false
+      },
+      "3": {
+        "profiles": {
+          "native@6": {
+            "runs": 10,
+            "passes": 8,
+            "failed": 2,
+            "materially_incorrect": 1,
+            "incomplete": 1,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 7,
+            "total_provider_tokens": 85726,
+            "mean_total_tokens": 8572.6,
+            "mean_tool_calls": 3.5,
+            "mean_api_requests": 4.5,
+            "published_rate_cost_bound_usd": 0.007100625,
+            "tool_counts": {
+              "grep": 15,
+              "read_file": 20
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "current@6": {
+            "runs": 10,
+            "passes": 8,
+            "failed": 2,
+            "materially_incorrect": 1,
+            "incomplete": 1,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 8,
+            "total_provider_tokens": 88340,
+            "mean_total_tokens": 8834,
+            "mean_tool_calls": 3.3,
+            "mean_api_requests": 4.3,
+            "published_rate_cost_bound_usd": 0.006621345000000001,
+            "tool_counts": {
+              "find_evidence": 9,
+              "read_file": 18,
+              "find_symbols": 2,
+              "grep": 3,
+              "find_files": 1
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "prior_reader@6": {
+            "runs": 10,
+            "passes": 8,
+            "failed": 2,
+            "materially_incorrect": 2,
+            "incomplete": 0,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 8,
+            "total_provider_tokens": 59739,
+            "mean_total_tokens": 5973.9,
+            "mean_tool_calls": 2,
+            "mean_api_requests": 3,
+            "published_rate_cost_bound_usd": 0.0049694200000000004,
+            "tool_counts": {
+              "search_code": 18,
+              "read_file": 2
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "search_reader@6": {
+            "runs": 10,
+            "passes": 8,
+            "failed": 2,
+            "materially_incorrect": 1,
+            "incomplete": 1,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 8,
+            "total_provider_tokens": 97738,
+            "mean_total_tokens": 9773.8,
+            "mean_tool_calls": 3.3,
+            "mean_api_requests": 4.3,
+            "published_rate_cost_bound_usd": 0.007173265,
+            "tool_counts": {
+              "search_code": 23,
+              "read_file": 10
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          }
+        },
+        "comparisons": {
+          "current@6 vs native@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              -0.3,
+              0.3
+            ],
+            "token_ratio": 1.030492499358421,
+            "token_ratio_ci95": [
+              0.7100206885576362,
+              1.586490662367325
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.3,
+              0.3
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.7160061103205826,
+              1.60701986294222
+            ],
+            "candidate_only_correct": [
+              "fresh-click-atomic-write-close::r3"
+            ],
+            "control_only_correct": [
+              "fresh-typer-annotated-default-conflicts::r3"
+            ]
+          },
+          "search_reader@6 vs native@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              -0.4,
+              0.4
+            ],
+            "token_ratio": 1.1401208501504794,
+            "token_ratio_ci95": [
+              0.756064262433781,
+              1.9142970324314084
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.4,
+              0.4
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.7617381996808013,
+              1.9512783024459637
+            ],
+            "candidate_only_correct": [
+              "fresh-click-atomic-write-close::r3",
+              "fresh-pluggy-blocked-plugin-lifecycle::r3"
+            ],
+            "control_only_correct": [
+              "fresh-attrs-disabled-restoration::r3",
+              "fresh-httpx-asgi-body-and-failure::r3"
+            ]
+          },
+          "search_reader@6 vs current@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              -0.4,
+              0.4
+            ],
+            "token_ratio": 1.1063844238170704,
+            "token_ratio_ci95": [
+              0.8616530373831776,
+              1.465947477389125
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.4,
+              0.4
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.8646732460366565,
+              1.457622520947616
+            ],
+            "candidate_only_correct": [
+              "fresh-pluggy-blocked-plugin-lifecycle::r3",
+              "fresh-typer-annotated-default-conflicts::r3"
+            ],
+            "control_only_correct": [
+              "fresh-attrs-disabled-restoration::r3",
+              "fresh-httpx-asgi-body-and-failure::r3"
+            ]
+          },
+          "search_reader@6 vs prior_reader@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              -0.3,
+              0.3
+            ],
+            "token_ratio": 1.636083630459164,
+            "token_ratio_ci95": [
+              1.104153760622667,
+              2.8395194825196364
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.3,
+              0.3
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              1.1092858153686496,
+              2.8041354472823614
+            ],
+            "candidate_only_correct": [
+              "fresh-pluggy-blocked-plugin-lifecycle::r3"
+            ],
+            "control_only_correct": [
+              "fresh-httpx-asgi-body-and-failure::r3"
+            ]
+          }
+        },
+        "same_gate_diagnostic": false
+      }
+    },
+    "prespecified_diagnostics": [
+      "search_reader@6 vs prior_reader@6; descriptive only, never a gate"
+    ],
+    "dev_eligibility_passed": false,
+    "validation_gate_passed": null,
+    "api_requests_reconciled": 473,
+    "accounting": {
+      "api_requests_reconciled": 473,
+      "all_study_requests_reconciled": 473,
+      "stage_cost_bound_usd": 0.07788001,
+      "study_cost_bound_usd": 0.07788001,
+      "prior_cost_bound_usd": 0.292481065,
+      "aggregate_cost_bound_usd": 0.370361075,
+      "exact_published_rate_requests": 473,
+      "all_costs_exact": true
+    },
+    "per_case": {
+      "native@6": {
+        "fresh-jinja-bytecode-file-cleanup::r1": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 12913,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r1": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2411,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r1": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 4537,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r1": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 15676,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r1": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 11274,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r1": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 1,
+          "passed": 0,
+          "tokens": 6588,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "Explain that error(exception) directly appends a supplied exception, unlike collect() catching exceptions from its body."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r1": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 7180,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r1": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 13901,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r1": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 4676,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r1": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 4129,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r2": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 11776,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r2": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 2386,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r2": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 2,
+          "passed": 0,
+          "tokens": 3334,
+          "verdict": "materially_incorrect",
+          "material_errors": [
+            {
+              "quote": "then deletes its name-to-plugin entry",
+              "reason": "_manager.py:224-226 deletes the mapping only if the stored plugin is truthy. Registration permits a falsey non-None plugin, so being registered does not establish this condition. set_blocked then overwrites the entry with None at line 233 regardless; the answer incorrectly attributes unconditional mapping deletion to unregister."
+            }
+          ],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r2": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 3401,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r2": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 4035,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r2": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 13886,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r2": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 15990,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r2": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 10537,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r2": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 4421,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r2": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 6345,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r3": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 11086,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r3": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 2385,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r3": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 3,
+          "passed": 0,
+          "tokens": 3448,
+          "verdict": "materially_incorrect",
+          "material_errors": [
+            {
+              "quote": "it then deletes the name-to-plugin entry and returns the plugin",
+              "reason": "_manager.py:224-226 deletes the mapping only if the stored plugin is truthy. Registration permits a falsey non-None plugin, so being registered does not establish this condition. set_blocked then overwrites the entry with None at line 233 regardless; the answer incorrectly attributes unconditional mapping deletion to unregister."
+            }
+          ],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r3": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 3,
+          "passed": 0,
+          "tokens": 13467,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "The wrapper stores and replaces the destination’s resolved real path (os.path.realpath), not merely the supplied target path."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r3": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 3998,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r3": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 6663,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r3": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 11361,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r3": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 23621,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r3": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 6242,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r3": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 3455,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        }
+      },
+      "current@6": {
+        "fresh-jinja-bytecode-file-cleanup::r1": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 5470,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r1": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 3654,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r1": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 1,
+          "passed": 0,
+          "tokens": 5290,
+          "verdict": "materially_incorrect",
+          "material_errors": [
+            {
+              "quote": "then removes its name-to-plugin entry",
+              "reason": "_manager.py:224-226 deletes the mapping only if the stored plugin is truthy. Registration permits a falsey non-None plugin, so being registered does not establish this condition. set_blocked then overwrites the entry with None at line 233 regardless; the answer incorrectly attributes unconditional mapping deletion to unregister."
+            }
+          ],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r1": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 7661,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r1": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 5043,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r1": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 1,
+          "passed": 0,
+          "tokens": 4480,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "Explain that finalize raises an ExceptionGroup containing the collected errors."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r1": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 15783,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r1": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 12281,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r1": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 6732,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r1": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 1,
+          "passed": 0,
+          "tokens": 4694,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "Explain that the response returned after a suppressed application exception includes any body chunks already collected."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r2": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 7553,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r2": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 3653,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r2": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 17094,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r2": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 7692,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r2": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 5711,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r2": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 4480,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r2": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 2,
+          "passed": 0,
+          "tokens": 12905,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "Concrete assignment-hook behavior: skip validation when disabled, otherwise invoke the attribute validator if present, including after inner-context exit."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r2": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 10542,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r2": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 8608,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r2": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 4859,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r3": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 5628,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r3": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 3637,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r3": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 3,
+          "passed": 0,
+          "tokens": 12012,
+          "verdict": "materially_incorrect",
+          "material_errors": [
+            {
+              "quote": "it then removes the name mapping",
+              "reason": "_manager.py:224-226 deletes the mapping only if the stored plugin is truthy. Registration permits a falsey non-None plugin, so being registered does not establish this condition. set_blocked then overwrites the entry with None at line 233 regardless; the answer incorrectly attributes unconditional mapping deletion to unregister."
+            }
+          ],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r3": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 4988,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r3": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 8712,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r3": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 4530,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r3": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 18774,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r3": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 3,
+          "passed": 0,
+          "tokens": 17596,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "Filtering Annotated metadata to ParameterInfo before counting Typer declarations.",
+            "Reinterpreting the Annotated Option positional default slot as an option spelling, resetting it, and copying the ordinary Python default into the metadata.",
+            "Transferring default_factory into the default slot when no explicit default is set."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r3": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 7784,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r3": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 4679,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        }
+      },
+      "prior_reader@6": {
+        "fresh-jinja-bytecode-file-cleanup::r1": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2673,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r1": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2632,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r1": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 3056,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r1": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2660,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r1": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 3318,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r1": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2556,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r1": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 1,
+          "passed": 0,
+          "tokens": 11979,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "The assignment hook validates only if the attribute has a validator; absent validators also bypass validation."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r1": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 6901,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r1": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 5820,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r1": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 6110,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r2": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 2658,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r2": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 2965,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r2": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 22558,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r2": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 3195,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r2": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 3299,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r2": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 6324,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r2": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 16614,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r2": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 9939,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r2": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 6831,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r2": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 5417,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r3": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 2607,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r3": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 2606,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r3": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 3,
+          "passed": 0,
+          "tokens": 2540,
+          "verdict": "materially_incorrect",
+          "material_errors": [
+            {
+              "quote": "before deleting the name-to-plugin entry",
+              "reason": "_manager.py:224-226 deletes the mapping only if the stored plugin is truthy. Registration permits a falsey non-None plugin, so being registered does not establish this condition. set_blocked then overwrites the entry with None at line 233 regardless; the answer incorrectly attributes unconditional mapping deletion to unregister."
+            }
+          ],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r3": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 3247,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r3": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 2803,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r3": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 5031,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r3": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 3,
+          "passed": 0,
+          "tokens": 18873,
+          "verdict": "materially_incorrect",
+          "material_errors": [
+            {
+              "quote": "skips validation only when it is `False`",
+              "reason": "setters.py:44-49 has two bypasses: the global flag is False, or attrib.validator is absent/falsy. The answer states an exclusive flag-only bypass without an existing-validator qualification."
+            }
+          ],
+          "missing": [
+            "The assignment hook validates only if the attribute has a validator; absent validators also bypass validation."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r3": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 10330,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r3": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 5791,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r3": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 5911,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        }
+      },
+      "search_reader@6": {
+        "fresh-jinja-bytecode-file-cleanup::r1": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2628,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r1": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2608,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r1": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 12638,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r1": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2691,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r1": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2727,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r1": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 5103,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r1": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 1,
+          "passed": 0,
+          "tokens": 13179,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "The assignment hook validates only if the attribute has a validator; absent validators also bypass validation."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r1": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 28133,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r1": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 5787,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r1": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 6042,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r2": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 6016,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r2": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 2607,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r2": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 12437,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r2": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 2676,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r2": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 3317,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r2": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 5005,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r2": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 2,
+          "passed": 0,
+          "tokens": 19548,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "The assignment hook validates only if the attribute has a validator; absent validators also bypass validation."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r2": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 10733,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r2": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 6353,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r2": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 5443,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r3": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 5964,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r3": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 5419,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r3": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 20388,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r3": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 10989,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r3": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 6283,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r3": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 9076,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r3": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 3,
+          "passed": 0,
+          "tokens": 17231,
+          "verdict": "materially_incorrect",
+          "material_errors": [
+            {
+              "quote": "`setters.validate()` returns without running the attribute’s validator only when `_config._run_validators is False`; otherwise it invokes the validator",
+              "reason": "setters.py:44-49 has two bypasses: the global flag is False, or attrib.validator is absent/falsy. The answer states an exclusive flag-only bypass without an existing-validator qualification."
+            }
+          ],
+          "missing": [
+            "The assignment hook validates only if the attribute has a validator; absent validators also bypass validation."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r3": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 13420,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r3": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 5793,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r3": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 3,
+          "passed": 0,
+          "tokens": 3175,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "Explain that the response returned after a suppressed application exception includes any body chunks already collected."
+          ],
+          "answered": true,
+          "failure": null
+        }
+      }
+    },
+    "grading": "Arm-blind coding-assistant source review; not independent human validation.",
+    "scope": "Ten reused development questions, three paired repetitions each, not thirty independent questions. All repetitions included; original-question bootstrap and repository-cluster sensitivity. Candidate versus prior_reader isolates the ranking correction and is diagnostic, not an extra gate. Validation retains the original forty reserved questions and unchanged gate. Reused Python repositories, one model, no universal product claim.",
+    "analyzer_sha256": "f773e48a00129f81e9c4546c4c47ef43b199b708d8b44bd0ff3febd5df0cd847",
+    "results_sha256": "9da05c44b1dbc222f28b36b0d18abbf39fb86f699614ae0afb6cfb1e0bf8acf9",
+    "analysis_amendment": "analysis_amendment.json",
+    "grading_scope_sha256": "f7275cd6b5564a9b975daebf75e076e82c5ae159fb8f02f940fbb43eaf164830"
+  },
+  "accounting": {
+    "trajectories": 120,
+    "original_questions": 10,
+    "repetitions": 3,
+    "api_requests": 473,
+    "input_tokens": 884866,
+    "output_tokens": 43434,
+    "total_provider_tokens": 928300,
+    "completed_answers": 120,
+    "generation_failures": {},
+    "study_published_rate_charge_bound_usd": 0.07788001,
+    "aggregate_requests": 2328,
+    "aggregate_trajectories": 540,
+    "aggregate_published_rate_charge_bound_usd": 0.370361075,
+    "aggregate_ceiling_usd": 2.0,
+    "unresolved_usage": false,
+    "results_sha256": "9da05c44b1dbc222f28b36b0d18abbf39fb86f699614ae0afb6cfb1e0bf8acf9",
+    "spend_ledger_sha256": "06ba9817ea170b97472cf50f47d5d974d1b2cfbd52c468193ea313a3e329cb6c",
+    "scope": "Provider-usage accounting reconciled after grading; supported-answer outcomes are reported separately in summary.",
+    "phase": "Complete generation, blind grading and frozen accounting reconciliation.",
+    "aggregate_api_requests": 2328,
+    "aggregate_charge_bound_usd": 0.370361075,
+    "remaining_authorized_ceiling_usd": 1.629638925,
+    "cost_caveat": "Published-rate charge bounds, not an exact provider invoice."
+  },
+  "reserved_validation": {
+    "questions": 40,
+    "answering_model_evaluated": false,
+    "authorized": false,
+    "reason": "Unchanged candidate gate failed; no validation approval or run."
+  },
+  "gate_decision": {
+    "quality_point_requirements_passed": true,
+    "native_token_reduction_requirement_passed": false,
+    "current_token_reduction_requirement_passed": false,
+    "any_repetition_gate_passed": false,
+    "candidate_vs_native_token_change_percent": 3.380765496365079,
+    "prior_reader_is_not_a_posthoc_substitute": true
+  },
+  "token_diagnostics": {
+    "method": "Provider-authoritative token totals; no answer grading or counterfactual savings.",
+    "model_api_requests_added": 0,
+    "profiles": {
+      "native@6": {
+        "mean_total_tokens": 8170.733333333334,
+        "total_provider_tokens": 245122,
+        "api_requests": 137,
+        "tool_counts": {
+          "grep": 48,
+          "read_file": 59
+        },
+        "tool_error_count": 0,
+        "tool_errors": [],
+        "empty_array_scope_errors": 0
+      },
+      "current@6": {
+        "mean_total_tokens": 8084.166666666667,
+        "total_provider_tokens": 242525,
+        "api_requests": 126,
+        "tool_counts": {
+          "find_evidence": 31,
+          "read_file": 49,
+          "find_symbols": 4,
+          "grep": 11,
+          "find_files": 1
+        },
+        "tool_error_count": 0,
+        "tool_errors": [],
+        "empty_array_scope_errors": 0
+      },
+      "prior_reader@6": {
+        "mean_total_tokens": 6241.466666666666,
+        "total_provider_tokens": 187244,
+        "api_requests": 97,
+        "tool_counts": {
+          "search_code": 58,
+          "read_file": 9
+        },
+        "tool_error_count": 12,
+        "tool_errors": [
+          {
+            "case_id": "fresh-pluggy-blocked-plugin-lifecycle::r1",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "block un-block blocked plugin name unregister hook implementations _blocked",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-anyio-buffered-boundary-reads::r1",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "receive_exactly receive_until",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-attrs-disabled-restoration::r1",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "disabled() context validator state assignment validation hook",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-typer-annotated-default-conflicts::r1",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "Annotated default_factory metadata styles conflicting declarations",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-httpx-asgi-body-and-failure::r1",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "ASGITransport receive send HEAD raise_app_exceptions",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-requests-adapter-certificate-paths::r2",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "def cert_verify",
+              "files": [
+                "requests/adapters.py"
+              ]
+            },
+            "error": "Error executing tool search_code: file does not exist: requests/adapters.py If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-click-atomic-write-close::r2",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "open_stream _AtomicFile close atomic file",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-anyio-buffered-boundary-reads::r2",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "receive_exactly receive_until",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-attrs-disabled-restoration::r2",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "disabled() validator state context manager assignment validation hook",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-starlette-background-order-failure::r2",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "class BackgroundTasks BackgroundTask __call__ run_in_threadpool",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-click-atomic-write-close::r3",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "_AtomicFile open_stream atomic_file temporary mode rollback",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-httpx-asgi-body-and-failure::r3",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "ASGI receive send HEAD raise_app_exceptions",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          }
+        ],
+        "empty_array_scope_errors": 11
+      },
+      "search_reader@6": {
+        "mean_total_tokens": 8446.966666666667,
+        "total_provider_tokens": 253409,
+        "api_requests": 113,
+        "tool_counts": {
+          "search_code": 63,
+          "read_file": 20
+        },
+        "tool_error_count": 13,
+        "tool_errors": [
+          {
+            "case_id": "fresh-pluggy-blocked-plugin-lifecycle::r1",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "blocked plugin unregister unblock set_blocked",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-attrs-disabled-restoration::r1",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "def disabled",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-httpx-asgi-body-and-failure::r1",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "ASGITransport receive send raise_app_exceptions HEAD response body",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-jinja-bytecode-file-cleanup::r2",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "filesystem bytecode cache temporary file replace read cache miss",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-pluggy-blocked-plugin-lifecycle::r2",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "blocked blocked_plugins block_unblock unregister hook implementations",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-anyio-buffered-boundary-reads::r2",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "receive_exactly receive_until",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-attrs-disabled-restoration::r2",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "disabled() context validator state assignment validation hook",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-jinja-bytecode-file-cleanup::r3",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "filesystem bytecode cache temporary file replace write failure cache miss",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-pluggy-blocked-plugin-lifecycle::r3",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "blocked_names block_plugin unblock_plugin unregister plugin hook implementations",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-anyio-buffered-boundary-reads::r3",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "receive_exactly receive_until",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-attrs-disabled-restoration::r3",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "disabled() validator state assignment validation hook validators disabled",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-attrs-disabled-restoration::r3",
+            "tool_index": 3,
+            "name": "search_code",
+            "input": {
+              "query": "disabled nested already disabled context manager test finally validators re-enabled",
+              "files": [
+                "tests/test_validators.py",
+                "tests"
+              ]
+            },
+            "error": "Error executing tool search_code: file does not exist: tests If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          },
+          {
+            "case_id": "fresh-httpx-asgi-body-and-failure::r3",
+            "tool_index": 0,
+            "name": "search_code",
+            "input": {
+              "query": "ASGI receive send raise_app_exceptions HEAD response body",
+              "files": []
+            },
+            "error": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+          }
+        ],
+        "empty_array_scope_errors": 12
+      }
+    },
+    "corpora": [
+      {
+        "corpus": "anyio",
+        "total_provider_tokens": {
+          "native@6": 19307,
+          "current@6": 19466,
+          "prior_reader@6": 9420,
+          "search_reader@6": 12327
+        },
+        "candidate_minus_native": -6980,
+        "candidate_minus_prior_reader": 2907
+      },
+      {
+        "corpus": "attrs",
+        "total_provider_tokens": {
+          "native@6": 34531,
+          "current@6": 47462,
+          "prior_reader@6": 47466,
+          "search_reader@6": 49958
+        },
+        "candidate_minus_native": 15427,
+        "candidate_minus_prior_reader": 2492
+      },
+      {
+        "corpus": "click",
+        "total_provider_tokens": {
+          "native@6": 32544,
+          "current@6": 20341,
+          "prior_reader@6": 9102,
+          "search_reader@6": 16356
+        },
+        "candidate_minus_native": -16188,
+        "candidate_minus_prior_reader": 7254
+      },
+      {
+        "corpus": "httpx",
+        "total_provider_tokens": {
+          "native@6": 13929,
+          "current@6": 14232,
+          "prior_reader@6": 17438,
+          "search_reader@6": 14660
+        },
+        "candidate_minus_native": 731,
+        "candidate_minus_prior_reader": -2778
+      },
+      {
+        "corpus": "jinja",
+        "total_provider_tokens": {
+          "native@6": 35775,
+          "current@6": 18651,
+          "prior_reader@6": 7938,
+          "search_reader@6": 14608
+        },
+        "candidate_minus_native": -21167,
+        "candidate_minus_prior_reader": 6670
+      },
+      {
+        "corpus": "packaging",
+        "total_provider_tokens": {
+          "native@6": 27137,
+          "current@6": 13490,
+          "prior_reader@6": 13911,
+          "search_reader@6": 19184
+        },
+        "candidate_minus_native": -7953,
+        "candidate_minus_prior_reader": 5273
+      },
+      {
+        "corpus": "pluggy",
+        "total_provider_tokens": {
+          "native@6": 11319,
+          "current@6": 34396,
+          "prior_reader@6": 28154,
+          "search_reader@6": 45463
+        },
+        "candidate_minus_native": 34144,
+        "candidate_minus_prior_reader": 17309
+      },
+      {
+        "corpus": "requests",
+        "total_provider_tokens": {
+          "native@6": 7182,
+          "current@6": 10944,
+          "prior_reader@6": 8203,
+          "search_reader@6": 10634
+        },
+        "candidate_minus_native": 3452,
+        "candidate_minus_prior_reader": 2431
+      },
+      {
+        "corpus": "starlette",
+        "total_provider_tokens": {
+          "native@6": 15339,
+          "current@6": 23124,
+          "prior_reader@6": 18442,
+          "search_reader@6": 17933
+        },
+        "candidate_minus_native": 2594,
+        "candidate_minus_prior_reader": -509
+      },
+      {
+        "corpus": "typer",
+        "total_provider_tokens": {
+          "native@6": 48059,
+          "current@6": 40419,
+          "prior_reader@6": 27170,
+          "search_reader@6": 52286
+        },
+        "candidate_minus_native": 4227,
+        "candidate_minus_prior_reader": 25116
+      }
+    ],
+    "identical_initial_tool_input_and_reply_pairs": [
+      {
+        "case_id": "fresh-anyio-buffered-boundary-reads::r2",
+        "initial_tool": "search_code",
+        "initial_input": {
+          "query": "receive_exactly receive_until",
+          "files": []
+        },
+        "prior_reader_tokens": 3299,
+        "candidate_tokens": 3317
+      },
+      {
+        "case_id": "fresh-click-atomic-write-close::r1",
+        "initial_tool": "search_code",
+        "initial_input": {
+          "query": "_AtomicFile open_stream"
+        },
+        "prior_reader_tokens": 2660,
+        "candidate_tokens": 2691
+      },
+      {
+        "case_id": "fresh-packaging-collected-errors::r2",
+        "initial_tool": "search_code",
+        "initial_input": {
+          "query": "ExceptionGroup collect error on_exit validation failures"
+        },
+        "prior_reader_tokens": 6324,
+        "candidate_tokens": 5005
+      },
+      {
+        "case_id": "fresh-requests-adapter-certificate-paths::r1",
+        "initial_tool": "search_code",
+        "initial_input": {
+          "query": "def cert_verify"
+        },
+        "prior_reader_tokens": 2632,
+        "candidate_tokens": 2608
+      },
+      {
+        "case_id": "fresh-requests-adapter-certificate-paths::r3",
+        "initial_tool": "search_code",
+        "initial_input": {
+          "query": "def cert_verify"
+        },
+        "prior_reader_tokens": 2606,
+        "candidate_tokens": 5419
+      },
+      {
+        "case_id": "fresh-starlette-background-order-failure::r1",
+        "initial_tool": "search_code",
+        "initial_input": {
+          "query": "class BackgroundTasks"
+        },
+        "prior_reader_tokens": 5820,
+        "candidate_tokens": 5787
+      },
+      {
+        "case_id": "fresh-starlette-background-order-failure::r3",
+        "initial_tool": "search_code",
+        "initial_input": {
+          "query": "class BackgroundTasks"
+        },
+        "prior_reader_tokens": 5791,
+        "candidate_tokens": 5793
+      }
+    ],
+    "error_detection": "JSON error objects and actual MCP plain-text Error executing tool prefixes; counts are separate from provider generation failures."
+  },
+  "trace_findings": {
+    "model_api_requests_added": 0,
+    "provider_totals": {
+      "native@6": {
+        "input_tokens": 233412,
+        "output_tokens": 11710,
+        "total_tokens": 245122,
+        "tool_calls": 107
+      },
+      "current@6": {
+        "input_tokens": 231322,
+        "output_tokens": 11203,
+        "total_tokens": 242525,
+        "tool_calls": 96
+      },
+      "prior_reader@6": {
+        "input_tokens": 177217,
+        "output_tokens": 10027,
+        "total_tokens": 187244,
+        "tool_calls": 67
+      },
+      "search_reader@6": {
+        "input_tokens": 242915,
+        "output_tokens": 10494,
+        "total_tokens": 253409,
+        "tool_calls": 83
+      }
+    },
+    "candidate_minus_native": {
+      "input_tokens": 9503,
+      "output_tokens": -1216,
+      "total_tokens": 8287,
+      "tool_calls": -24
+    },
+    "candidate_minus_prior_reader": {
+      "input_tokens": 65698,
+      "output_tokens": 467,
+      "total_tokens": 66165,
+      "tool_calls": 16
+    },
+    "limits": [
+      "Returned character counts and literal hook-presence checks are local diagnostics, not provider-token attribution or semantic coverage grading.",
+      "All API trajectories and all three repetitions remain in the frozen summary."
+    ]
+  },
+  "ranking_exposure": {
+    "model_api_requests": 0,
+    "all_recorded_reader_replies_reproduced": true,
+    "distinct_discovery_inputs": 49,
+    "offline_tool_dispatches": 98,
+    "summary": {
+      "prior_reader": {
+        "observed_discovery_calls": 31,
+        "calls_with_changed_reply": 0,
+        "calls_with_changed_context": 0
+      },
+      "search_reader": {
+        "observed_discovery_calls": 36,
+        "calls_with_changed_reply": 0,
+        "calls_with_changed_context": 0
+      }
+    },
+    "limits": [
+      "Fixed observed queries replayed on both frozen sources; no adaptive counterfactual model run.",
+      "Different replies establish exposure to the ranking change, not answer improvement or token savings.",
+      "Explicit-file/range calls bypass discovery and are not replayed here; scope errors remain in API totals."
+    ]
+  },
+  "diagnosis": [
+    "All67 recorded reader discovery calls (49 distinct corpus/query inputs) reproduced exactly; switching frozen ranking sources changed zero replies in98 offline dispatches. The measured arm gap is not evidence of a reply-mediated ranking regression.",
+    "Candidate used20 native reads and113 provider requests versus prior-reader9 reads and97 requests. Of66165 extra provider tokens,65698 were input and467 output; no counterfactual savings are inferred.",
+    "Candidate minus native corpus totals: Pluggy+34144 and Attrs+15427 dominate increases; Jinja-21167 and Click-16188 are substantial savings. All wins/losses remain counted.",
+    "Candidate search scopes still produced12 empty-array errors and one directory error; prior-reader produced11 empty-array errors and one wrong-path error. These are retained tool errors, not generation failures.",
+    "All six reader Attrs trajectories received the complete setter-hook implementation. Two candidate answers omitted its existing-validator condition; the third falsely asserted a flag-only bypass. These failures are not explained by absent hook text.",
+    "No further ranking retuning, catalog promotion or reserved evaluation follows from this failed gate."
+  ],
+  "grading_isolation": {
+    "method": "Intended arm-blind coding-assistant source review; not independent human validation.",
+    "shared_eval_globals_incident": true,
+    "unrelated_blind_answer_display_reported_by_groups": [
+      "02",
+      "06",
+      "08"
+    ],
+    "generic_variable_key_errors_reported_by_groups": [
+      "00",
+      "01",
+      "03",
+      "04",
+      "07",
+      "09"
+    ],
+    "group05": "No unrelated content observed; generic prepare/write state prompted an extra parent check, which verified all12 identities and48 own-answer quotes.",
+    "mitigation": "Broadcast unique namespaces/function-local state; affected reviewers reloaded only assigned packets and disregarded accidental unrelated output.",
+    "arm_labels_repetitions_tokens_or_costs_exposure_reported": false,
+    "all120_identity_criterion_and_quote_checks_passed": true,
+    "identical_answer_consistency_checked_by_frozen_analyzer": true,
+    "reviewer_reported_unresolved_source_ambiguities": [],
+    "post_delivery_review_corrections": 0,
+    "limitation": "Mechanical identity/quote checks do not restore strict per-question isolation or constitute independent human adjudication."
+  },
+  "verification": {
+    "passed": true,
+    "accepted_production": {
+      "passed": true,
+      "production_sha256": {
+        "pasr/__init__.py": "e9cb846c4aa6ebda1ce93390a7c22502dd5908880d8ec807ac1c675f99f869d7",
+        "pasr/_tokenize.py": "1fc31827c093aaea4a871de67c967077b9ec39f4ed0f134b0dd9fc2efb0a8e68",
+        "pasr/candidates.py": "6266d8f4b2ac0d2e98c01e102aa1e0c8503fa839cd17a6810bfdbc4152f58664",
+        "pasr/chunker.py": "98345a616afd33560f5fb4bdf5401494013d3803d0fe4398e9823695fdb1f663",
+        "pasr/cli.py": "d4edabf2de303b038f7ffc5a9d0f037f5d5fae2d73e8533c3ff12010640315b8",
+        "pasr/evidence.py": "779958f372f61bfbc8246b2cd92e0f09000ffda8e574f794348e4bb0c6a2b30d",
+        "pasr/file_discovery.py": "28f9cebd943981030daa0f2933a3d0cdc6bf7a5abdbe69d25f4b39d50098345b",
+        "pasr/find_files.py": "a65901d4d934ca51204d3f877c63f55c7f86d721a18e96994aea382e84f979b9",
+        "pasr/index.py": "696d37f9b0bebd4fac9fa5f90f011721bd16b924b3ed0ae0b9407cf4e8c302a6",
+        "pasr/ledger.py": "4b68494d420a32158323b8bd95d3ab816f8905351d6126b1c00d5d308d5279e3",
+        "pasr/mcp/__init__.py": "88edfdb9913625c27333f4f1ee0d0fa273eab42bba086c3e77b804663041986d",
+        "pasr/mcp/server.py": "b8755794509ef0731a2f4b13b44e5afee573afcf8c4469cf0b37d39b9bbd5665",
+        "pasr/packing.py": "df7de5a434f62ba15aeadb20188cf3a701190ba95283552fa50ed1f4e0c14d8b",
+        "pasr/packs.py": "66a4609dbef9be59441c8a928f743d409f4906a0e1dd440b00f508c1fb0cc30b",
+        "pasr/pipeline.py": "1215f4e6e41d3e7cf642f4d2215a23720efd4aa08d77fd1353377a624820c510",
+        "pasr/receipt.py": "f3e5f2aacc3e702500d6dee065bb75bb93ddf244d35bf7fea2a4bbbf58db3e4c",
+        "pasr/redaction.py": "f4505e757e80ff4e74e915d40702ab9f8e22db967122a31721143c442cfa5cc0",
+        "pasr/retrieval/__init__.py": "c79b1c094646b1619a610b9a1cec70e7c298a9b0a4fb46fd759e60ad463f3acf",
+        "pasr/retrieval/bm25.py": "3a7d5ca07f9f32cdbcb51222b452c837cde326d0d724ae178eee8cf3db03cb7e",
+        "pasr/retrieval/lexical.py": "40aa324a6ea037105bd93cea0807d2c50193c286fb0b9f20e0e9b456d5ceec52",
+        "pasr/retrieval/semantic.py": "e2cd6d89eb6b3a0144ece7f8d13a54279f47be5f0a2b008682c5bee6d4aada33",
+        "pasr/review.py": "af3c6cfe0d54490f2cdaf29fb0b0f84ff5734fad36548d538c38484bf25f52d1",
+        "pasr/routing.py": "4db4abb4a691576c1772c19f7b6ce51fecedfab589bc603f94d0e80cc7c5baf8",
+        "pasr/schema.py": "ffdadfef45b34790520a2a3f1617df445814aad178168c05b7a7b6cb0e25b853",
+        "pasr/select.py": "c40f3c962abdf5b53da04c3981158cf00f8c8dffb923c62bb376ccb9058decd3",
+        "pasr/source_text.py": "622e0c9ab11a96e836572acb7ec76e6b975279553e7b757a98bf03ad13e648fa",
+        "pasr/symbol_search.py": "fcf7e91c442d91a0f03b6be3bb635e62efefa82f915161a59ba3ac96d6d9f3d1",
+        "pasr/symbols/__init__.py": "a4055f553f6e4b9348d98e3a7514dc9418b86fdcfc6a911b52a9e4fe4ac0c996",
+        "pasr/symbols/base.py": "3a0ccde02b37f6d30dffc2b98c26f8b17f8c4a09fcf5125fa30ca431c0733e6d",
+        "pasr/symbols/candidates.py": "5dcfbe671090ddc9bb701b8d10fdcd9f095b0c1b3d4f1b683f602447e2b2427a",
+        "pasr/symbols/python_provider.py": "93c673f97205af727ab6b2733261924dac9a7dfa281958d5401b03ff6cd08e63",
+        "pasr/symbols/registry.py": "22088e505e7f2f36f7561344aeb5ce7329316cd6620957967182de4f36b9706b",
+        "pasr/symbols/treesitter_provider.py": "60bb90011652ef38335e8fc367b12565130c59b76a28e561eae4fb1700621baa",
+        "pasr/tokenize.py": "d16fe7ab09a41209aa583b25a9946cd9ef00ecee54c7271026ea1484d436e90b",
+        "pasr/trace.py": "7df0404c0ecfb3c2cf6ebbd1b798f996875d947eb47b364cfa97c28a8ccf5217",
+        "pasr/window.py": "7ca2b39a9bf83a6ef123f3bc62f21b9bb73b428f51f9a4f397f1cc0d65b225ea"
+      },
+      "full_suite_evidence": "pytest.xml",
+      "stdio_smoke_evidence": "stdio_replay.json",
+      "tests_passed": 514,
+      "subtests_passed": 58,
+      "skipped": 1,
+      "real_stdio_search_calls": 60,
+      "source_verified_native_reads": 17,
+      "origin": "Previously parent-executed exact-source offline acceptance; not rerun or synthetic model results.",
+      "accepted_report_sha256": "4481ac95531bf76cbbc763d1ad1ddade612c70a1643304c02c04ae21c31a6877",
+      "model_api_requests": 0
+    },
+    "four_arm_frozen_smoke": "frozen_smoke.json",
+    "analysis_smoke": "analysis_smoke.json",
+    "durability_smokes": [
+      "local_gate/durability_lock.json",
+      "local_gate/durability.json"
+    ],
+    "fixture_correction": "OS-lock smoke passed initially; checkpoint fixture first retained an old copied ceiling and was correctly rejected. Only that synthetic fixture was corrected, then checkpoint-only checks passed. No API retry or driver change.",
+    "replayed_discovery_dispatches": 98,
+    "recorded_discovery_replies_verified": 67
+  },
+  "limitations": [
+    "Ten reused original questions, not thirty independent questions; question-cluster bootstrap keeps all three paired repetitions together. Repository sensitivity also reported.",
+    "One answering model and reused Python repositories; broad confidence intervals and no universal quality/token-superiority claim.",
+    "Coding-assistant grading is not independent human validation. Shared Eval globals exposed unrelated blind answers to three reviewers; mitigation and all identity/quote checks are recorded, but strict per-question isolation was weakened.",
+    "No realized discovery reply changed between reader sources. The diagnostic arm comparison therefore does not establish a causal effect of qualified-definition ranking on token usage or answer accuracy.",
+    "The diagnostic prior-reader scored better in this sample but cannot replace the prespecified candidate after unblinding. Its earlier three-repetition study failed its gate.",
+    "Tool-error counts, local returned-character counts and fixed-input replay are diagnostics, not provider-token attribution or adaptive counterfactual savings."
+  ],
+  "artifact_sha256": {
+    "run_study.py": "e065b516b9d59dc73db669b9c0fe54bd62a6b4c24d74ce7a72d9db7b51e5ffb6",
+    "sixth_driver.py": "d7a730e13f52c95ba8291e090acf8a1d46ac3a38cabd41792504c334a22d2c95",
+    "driver_dependencies/run_pilot.py": "999fb2127331a699f76dc156c8ac72a9893119df376f8e839b7154d5ac42c67b",
+    "protocol.json": "a763df2eab11144df2fcca15d33c1cf2b7058816d4539a7c58deb1ef430b66be",
+    "candidate_commitment.json": "bd4a9429322bf656e462ca379201d1ae78a89fba101204350c007a5b4d4dda4e",
+    "schemas.json": "88960227c17e52e91588f1739e8892ec5270d65c15256e57a632891e8b008372",
+    "cases.json": "01a872bb7b71fe1c9317de865ef51e391243dcaf8ff49daceca6b8abfc88bb98",
+    "input_cases.json": "f339938667796359119b63100d94394b7ca76f10b2f9ae9dd0d544fc1d0cfcd0",
+    "repeated_case_mapping.json": "9f556f1589c7b90934765e38e2e6331e25b9832723be83790fbefc0091be83bc",
+    "schedules.json": "2345a62af5f847ea173b116bff31fe4d1d6bdd8adb73e608063c6680d65c8d3a",
+    "control_provenance.json": "921f4b9f9a9e85e277bb99d66bfbc676f704052251af78491c78f3c3cdbc6845",
+    "source_provenance.json": "ff6720c334d89434dffcb7e4b33f6c5d25c00287f9c4405694ebcb5c2aaebdec",
+    "commands.json": "aa3653fd951561129c919b317177c550a22a4cc8d425c7901fb82133868af9ca",
+    "analyze_question_scope.py": "f773e48a00129f81e9c4546c4c47ef43b199b708d8b44bd0ff3febd5df0cd847",
+    "grading_scope.json": "f7275cd6b5564a9b975daebf75e076e82c5ae159fb8f02f940fbb43eaf164830",
+    "analysis_amendment.json": "e8855ca41503086aec3b681e94c845eabb26e8de91db74d52a5d709f05a76e5e",
+    "analysis_provenance.json": "675e6b40616eae767b0d30fa88bd3cad58ebbf9d44bb96bfd752db9bb262c139",
+    "smoke_analysis.py": "5289bb5d7f35f326a8943804f2bad56bffe6553c9ae72915049ee9ec163c88ff",
+    "analysis_smoke.json": "c0bb81ab89aaf77493299eb977f3a83f61ce53ac33c1c5476a4f41c740e71e81",
+    "preparation_smoke.json": "8676fee6ce7f53f219bebd960cd0e7158690519c58267d3ed99ea9ca38b2fce2",
+    "frozen_smoke.json": "2df5626f674a9faec3706a5e7c3d3d515fcc56d3de585f5a51775b114b69fc23",
+    "freeze_approval.json": "e2a49f91625a5d86dd95030d809858af975b09ce2df241c8c55e6488daa9dfb2",
+    "freeze_attempt.json": "f593884eff2685a8b9f2a364259c8bfd7fd6b7da4190767f115451d61ea0c601",
+    "dev_approval.json": "321077527736186db643074eaa7a46eec79a3979961af400bc8bd69ea1a8032f",
+    "spend_ledger.json": "06ba9817ea170b97472cf50f47d5d974d1b2cfbd52c468193ea313a3e329cb6c",
+    "local_gate/verification.json": "00ad612db90fc4531c30552fa79d1d44fa6b2b06fa1ff4e97c0265ebbd36d74a",
+    "local_gate/accepted_verification.json": "4de6b4114347f0b716bb586bbf6b8274e8cc619d10cf2997db2af56313470b46",
+    "local_gate/stdio_replay.json": "e2f2aed7f7ed8d965a486acca19690549bb849464db7e40e8960117541e8d457",
+    "local_gate/pytest.xml": "64af83f71b3dbcafa3ac7c1f7674c6d0fb107a38a1e51b4f50fa05a838527b14",
+    "local_gate/verify_durability.py": "d1039196e0845b6696ddd1e44b797bda07cf8da998cdbfe75e0fb97cb95322e9",
+    "local_gate/durability.json": "78ab224c2ae6874bf626d70ce2dd5d59bb8aa772d5c1789b17709705b794539e",
+    "local_gate/durability_lock.json": "795f64d5fe3b0d89355e2a2803627b1ba07f9aab6dc30f9a88c97eacfd71c95b",
+    "dev/results.json": "9da05c44b1dbc222f28b36b0d18abbf39fb86f699614ae0afb6cfb1e0bf8acf9",
+    "dev/summary.json": "d6407c2f79aae3d66e4388836d9560045ec5b05f899bb9f8ed0d8d28b9692b32",
+    "dev/validation_gate.json": "29252aeb4a83b0d227a3bec0cade82d562666e61913571f86b7f46ef011fed9b",
+    "dev/manifest.json": "e02db1e42823a1dceeb0d7c7f4913f31f56460bebe3a932a9f0cead76ac8444e",
+    "dev/completion_accounting.json": "3838a4ed98c317d528f6fa52c84940176df286060b001c3fd79ce3c2025fabc4",
+    "dev/token_diagnostics.json": "788a7bd0224d81f5203bc2aac06421870f7d833eb5127945e8f33437e3f8df58",
+    "dev/trace_findings.json": "8ea49dab4576f7678ddc256e6e622263d8fe0a15a31b9d717c7e78776c15ca16",
+    "dev/ranking_exposure.json": "26b9e53e25b5ea6534d5fa08713977aaf26d6ff9463fcf74ae7fb6681e2d30f9",
+    "dev/grading_isolation.json": "3c4e7891476806af73c480349f88a4682c7009ac0132ef7a25a9e953067faf12",
+    "dev/grading/identities.json": "c627fa67a25962280560707e9df38e87755e51dafe5a3ec889099466093ba470",
+    "replay_exposure.py": "7395150a9512f7412f8ae6a5bae17346d6f11553c130560dd1f8977f7084f018",
+    "publication_baseline.json": "f148cb8be6dfe9ec338ecfba1748e4180662c7494bd13e37e84770ac101e0727",
+    "grading_protocol/grading_standards.json": "06bed632b2079bcaf1a25559ce5ece97d72d1a07f1158a250b2705dec915d57f",
+    "grading_protocol/reviewer_guidance.json": "cc4f96bfe95c45647f9eebb0ee4ea10151f9f6db072ea61cd31e504a1ffc2895",
+    "grading_protocol/prior_grading_decisions.json": "872131304b01f1565d1c0f009b1a3a341af46146d76cddaf74891477f250c0e6",
+    "grading_protocol/grading_clarifications.json": "132ecdeb118ff4dcc0cb6f01dabdd2ab58299d7a566466520b666e1e636140fc",
+    "grading_protocol/grade_packets.py": "1aa86329e9baa07ff78de9d6d2ebd1a72e9a51d5f4659ec071a29140a83e3a4a",
+    "dev/reviews/00.json": "2c634a0301c6469c6b2721114375cd69edd1c52989773f72598f7fe75d6ab7d3",
+    "dev/reviews/01.json": "32a04d3cf3682802f04e8700352be7c7a53086ca9a3e056a328f62add8d77dd7",
+    "dev/reviews/02.json": "db2184632dbc7b3a73b588429b5cd36cd6dadb91cae5f065456b4dba368a19d6",
+    "dev/reviews/03.json": "1255665063e18eab45d23d7e815cca2c42c7dafcf23d2476613677bb0191091d",
+    "dev/reviews/04.json": "ba536e9c3e7661d9d8e2330e67e4d636f361e456fe7869641e50b6c034899704",
+    "dev/reviews/05.json": "7cf8eb5cb6a30c48b6e7c8d05269ef0ecf0c5bef74dcff0452292c374e697587",
+    "dev/reviews/06.json": "19c337bf37af14a95552eea6a71221a495b36c5150b85f9c0415eda88b556536",
+    "dev/reviews/07.json": "842eb6081ce6171fe3254e318f3a892174a6ddfbbd63b11bf8de8789d4f39091",
+    "dev/reviews/08.json": "9dd056ea683c424c566b081f3da6b22472e9775b1ac6464d792ddf7878049ae9",
+    "dev/reviews/09.json": "f74ed8dd8968553d3a20295a312d4a459e236eec7e3da5f09195890116800f78",
+    "dev/review_inputs/00.json": "ade660edb3cbfd8b0c494b40156a7e7ee8e11d208167bbd7091e69f92a16b064",
+    "dev/review_inputs/01.json": "75e12dd703f96b99f818d64777ba08261b9ea505a9c9134136d44b78bc43cbea",
+    "dev/review_inputs/02.json": "d45bb2e4d0c7d0cef8fa926d0fafbebbaf29d25efda9af20587613582967c231",
+    "dev/review_inputs/03.json": "52289ef70d04b081f336658993fa3fb1c7ded350067288507dc85ca68bfa5fcb",
+    "dev/review_inputs/04.json": "6af076cb1514a8705001d3f23201b8df0e783d212a20217d8b272e1f73db6fd9",
+    "dev/review_inputs/05.json": "7d1392ff1ef91662a17d59b40561d991ed1dabfebd387c8eff3f4a28539a39a5",
+    "dev/review_inputs/06.json": "86df1dbc7f2824194a0fb7b1fb58cfa15f1455d59fe99727afa6cf37321a7ef7",
+    "dev/review_inputs/07.json": "81b615e3cf843bc9b7ad070631d627f4366334ec03958609617e5d2697c1f3da",
+    "dev/review_inputs/08.json": "ad106ec7e8b72ef9d2c075e6206132711e5953c814756bfffced63b8cca594f9",
+    "dev/review_inputs/09.json": "397d1a5dbccfaf47c3057d1971fcca2d7abdfe2c6b7e25d0d51673261b80a70d"
+  }
+}

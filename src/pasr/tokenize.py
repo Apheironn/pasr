@@ -1,8 +1,8 @@
 """Tokenizer abstraction for token counting and reversible slicing.
 
 The core needs to *count* and *slice* tokens without loading a model. The default is
-tiktoken (``o200k_base``, a small pip wheel, no download). A dependency-free
-``WhitespaceTokenizer`` is kept for tests, deterministic fixtures, and as a fallback.
+tiktoken (``o200k_base``; its encoding data must be cached for offline use). A
+dependency-free ``WhitespaceTokenizer`` is kept for fixtures and as a fallback.
 
 Any object with ``encode`` / ``decode`` / ``count`` satisfies ``Tokenizer``; Hugging
 Face tokenizers are accepted too (``pasr._tokenize`` normalises their return types).
@@ -50,9 +50,9 @@ class TiktokenTokenizer:
 class WhitespaceTokenizer:
     """Dependency-free tokenizer with a self-populating vocabulary.
 
-    ``encode`` learns any unseen whitespace-separated token, so
-    ``decode(encode(x)) == x`` for text passed through ``encode`` first. Useful for
-    tests and as a fallback when tiktoken is unavailable (counts are approximate).
+    ``encode`` learns any unseen whitespace-separated token. Decoding joins words
+    with single spaces: indentation, line endings and repeated whitespace are not
+    preserved. Useful for fixtures and approximate counts, not raw-source slicing.
     """
 
     def __init__(self, texts: list[str] | None = None) -> None:

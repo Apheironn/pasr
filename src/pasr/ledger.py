@@ -1,9 +1,9 @@
-"""Append-only usage ledger: what PASR saved, per call.
+"""Append-only source-context accounting for selected CLI/MCP calls.
 
-`.pasr/ledger.jsonl` (gitignored) accrues one row per real ``select_context`` run --
-tokens in vs. out, round trips saved, route. Unlike a receipt this is an operational
-log, so it carries a wall-clock timestamp and is not byte-stable. ``pasr report``
-summarises it: "this week PASR handed the model N fewer tokens across M calls."
+``.pasr/ledger.jsonl`` compares resolved input-file tokens with returned context tokens.
+It does not measure model/API usage or a native-tool counterfactual. ``tokens_saved``
+is the nonnegative source-context difference; ``round_trips_saved`` assumes one
+otherwise-needed read per source file. Neither implies actual cost or call savings.
 
 Writes are best-effort and never fail a selection.
 """
@@ -57,7 +57,7 @@ def ledger_entry(result: dict[str, Any], *, source: str = "") -> dict[str, Any]:
         query_class=result.get("query_class"),
         tokens_in=result.get("total_input_tokens", 0),
         tokens_out=result.get("token_count", 0),
-        files_scanned=len(result.get("diagnostics", {}).get("files", [])),
+        files_scanned=len(result.get("diagnostics", {}).get("files", result.get("sources", []))),
         receipt_id=result.get("receipt", {}).get("id"),
     )
 
@@ -108,9 +108,11 @@ def read_ledger(workspace_root: Path | str) -> list[dict[str, Any]]:
 
 
 def summarize(rows: list[dict[str, Any]], *, since: str = "", price_per_mtok: float = 0.0) -> dict[str, Any]:
-    """Aggregate ledger rows. ``since`` is an ISO date/prefix (``2026-09`` etc.);
-    ``price_per_mtok`` (USD per million input tokens) turns tokens saved into a dollar
-    estimate."""
+    """Aggregate recorded source-context differences, filtered by an ISO date/prefix.
+
+    ``price_per_mtok`` prices that hypothetical input-token difference only; it excludes
+    prompts, tool schemas/envelopes, repeated turns, outputs and provider cache pricing.
+    """
     kept = [row for row in rows if not since or str(row.get("ts", "")) >= since]
     n = len(kept)
     saved = sum(int(row.get("tokens_saved", 0)) for row in kept)
@@ -125,6 +127,8 @@ def summarize(rows: list[dict[str, Any]], *, since: str = "", price_per_mtok: fl
         bucket["tokens_saved"] += int(row.get("tokens_saved", 0))
     return {
         "calls": n,
+        "measurement_scope": "source_context_only",
+        "round_trips_basis": "one_hypothetical_read_per_source_file",
         "since": since or (kept[0]["ts"][:10] if kept else None),
         "tokens_in": tokens_in,
         "tokens_out": tokens_out,
@@ -143,14 +147,15 @@ def render_report(summary: dict[str, Any]) -> str:
     lines = [
         f"# PASR usage - {summary['calls']} calls since {summary['since']}",
         "",
-        f"- tokens handed to the model:  {summary['tokens_out']:,}",
-        f"- tokens NOT handed to the model:  {summary['tokens_saved']:,}  "
-        f"({summary['reduction']:.0%} of {summary['tokens_in']:,})",
-        f"- round trips saved:  {summary['round_trips_saved']:,}",
+        f"- source-context tokens returned:  {summary['tokens_out']:,}",
+        f"- source-context tokens omitted:  {summary['tokens_saved']:,}  "
+        f"({summary['reduction']:.0%} of {summary['tokens_in']:,} scanned)",
+        f"- hypothetical file reads avoided (one read per source):  {summary['round_trips_saved']:,}",
+        "- not measured: model/API tokens, actual tool calls, or actual cost savings",
     ]
     if summary["usd_saved_estimate"] is not None:
-        lines.append(f"- input cost avoided (estimate):  ${summary['usd_saved_estimate']:,.2f}")
-    lines += ["", "| day | calls | tokens saved |", "|---|---:|---:|"]
+        lines.append(f"- hypothetical input-token cost difference:  ${summary['usd_saved_estimate']:,.2f}")
+    lines += ["", "| day | calls | source tokens omitted |", "|---|---:|---:|"]
     for day, bucket in summary["by_day"].items():
         lines.append(f"| {day} | {bucket['calls']} | {bucket['tokens_saved']:,} |")
     return "\n".join(lines) + "\n"

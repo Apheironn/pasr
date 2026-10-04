@@ -1,0 +1,11 @@
+{
+  "corpus": "airguard",
+  "_scale": "medium: 825 Python files, 143,209 lines",
+  "_shape": "Q1 says 'disappears/dropped', the code says missed_frames and max_age_frames. Q2 says 'which detection belongs to which track', the code says linear_sum_assignment over an IoU cost matrix.",
+  "Q1": "When a tracked object stops being detected for several frames, what decides whether its track is dropped or kept alive, and where is that decision made?",
+  "Q2": "When new detections arrive on a frame, how does the tracker decide which detection belongs to which existing track, and what happens to detections that match nothing?",
+  "truth": {
+    "Q1": {"must": ["max_age_frames", "missed_frames"], "any": ["kalman_hungarian.py", "min_hits", "hit_count", "KalmanHungarianTracker"]},
+    "Q2": {"must": ["linear_sum_assignment", "kalman_hungarian.py"], "any": ["intersection_over_union", "IoU", "costs", "_Track"]}
+  }
+}

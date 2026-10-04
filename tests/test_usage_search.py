@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from pasr.symbol_search import find_usages
+from pasr.symbol_search import find_evidence, find_usages
 
 _RUST = """\
 pub struct Server {
@@ -74,3 +74,57 @@ def test_rejects_empty_symbol_and_bad_top_k(rust_workspace: Path):
         find_usages(rust_workspace, "   ")
     with pytest.raises(ValueError, match="top_k"):
         find_usages(rust_workspace, "is_ready", top_k=0)
+
+
+def test_read_lines_cover_complete_small_functions_in_hit_order(rust_workspace: Path):
+    hits = find_usages(rust_workspace, "is_ready")["hits"]
+
+    assert [(hit["provenance"], hit["role"], hit["read_lines"]) for hit in hits] == [
+        ("srv/server.rs:6", "definition", "6-8"),
+        ("srv/server.rs:11", "usage", "10-12"),
+        ("srv/server.rs:16", "usage", "15-17"),
+    ]
+    assert [hit["text"] for hit in hits] == [
+        "pub fn is_ready(&self) -> bool {",
+        "if self.is_ready() { Status::Up } else { Status::Down }",
+        "let _ = server.is_ready();",
+    ]
+
+
+@pytest.mark.parametrize("locate", [find_evidence, find_usages])
+@pytest.mark.parametrize("function_lines", [40, 41])
+def test_read_lines_switch_from_complete_function_to_neighborhood(tmp_path: Path, locate, function_lines: int):
+    lines = ["def process():", *("    pass" for _ in range(function_lines - 2)), "    return 1"]
+    lines[19] = "    checkpoint()"
+    (tmp_path / "worker.py").write_text("\n".join(lines), encoding="utf-8")
+
+    hit = locate(tmp_path, "checkpoint")["hits"][0]
+
+    assert hit["provenance"] == "worker.py:20"
+    assert hit["in"] == "function process"
+    assert hit["read_lines"] == ("1-40" if function_lines == 40 else "12-28")
+
+
+@pytest.mark.parametrize("locate", [find_evidence, find_usages])
+def test_read_lines_use_innermost_function_not_outer_class(tmp_path: Path, locate):
+    lines = ["class Worker:", "    def process(self):", "        checkpoint()", "        return 1"]
+    lines.extend("    field = 0" for _ in range(50))
+    (tmp_path / "worker.py").write_text("\n".join(lines), encoding="utf-8")
+
+    hit = locate(tmp_path, "checkpoint")["hits"][0]
+
+    assert hit["read_lines"] == "2-4"
+
+
+@pytest.mark.parametrize("locate", [find_evidence, find_usages])
+@pytest.mark.parametrize("newline", ["\n", "\r\n", "\r"])
+def test_search_provenance_uses_physical_lines(tmp_path: Path, locate, newline: str):
+    lines = ['label = "a\u2028b\fc"', "def target():", '    return "checkpoint café"']
+    (tmp_path / "m.py").write_bytes((newline.join(lines) + newline).encode("utf-8-sig"))
+
+    (hit,) = locate(tmp_path, "checkpoint")["hits"]
+
+    assert hit["provenance"] == "m.py:3"
+    assert hit["in"] == "function target"
+    assert hit["text"] == 'return "checkpoint café"'
+    assert hit["read_lines"] == "2-3"

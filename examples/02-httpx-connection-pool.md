@@ -8,39 +8,38 @@ pasr explain "how does the connection pool decide to open a new connection" http
 ```
 
 ```text
-# Selection receipt `c433fcba5423`
+# Selection receipt `e230062277e8`
 
 - Query: `how does the connection pool decide to open a new connection`
 - Sources (23): httpx/__init__.py, httpx/__version__.py, httpx/_api.py, httpx/_auth.py, httpx/_client.py, httpx/_config.py, httpx/_content.py, httpx/_decoders.py, httpx/_exceptions.py, httpx/_main.py, httpx/_models.py, httpx/_multipart.py, httpx/_status_codes.py, httpx/_transports/__init__.py, httpx/_transports/asgi.py, httpx/_transports/base.py, httpx/_transports/default.py, httpx/_transports/mock.py, httpx/_transports/wsgi.py, httpx/_types.py, httpx/_urlparse.py, httpx/_urls.py, httpx/_utils.py
-- Route: **selected**  |  2995/3000 tokens  |  65383 input  |  95% reduction
-- Assessment: localized query, confidence 0.544
-  - Looks complete for a localized question.
+- Route: **selected**  |  2990/3000 tokens  |  65383 input  |  95% reduction
+- Assessment: localized query, confidence 0.581
+  - Looks complete for a localized question: the slice covers the query's terms. Answer from it - further retrieval calls are unlikely to add evidence.
 
-## Kept (17 spans)
+## Kept (16 spans)
 
 | # | provenance | tokens | reasons |
 |--:|---|--:|---|
-| 1 | `httpx/__init__.py:1-73` | 398 | active_window |
-| 2 | `httpx/_urls.py:354-366` | 93 | symbol |
-| 3 | `httpx/_client.py:1275-1291` | 125 | symbol |
-| 4 | `httpx/_config.py:54-102` | 395 | bm25, lexical_anchor |
-| 5 | `httpx/_auth.py:64-128` | 394 | bm25, lexical_anchor |
-| 6 | `httpx/_models.py:944-993` | 392 | bm25, lexical_anchor |
-| 7 | `httpx/_api.py:1-65` | 398 | bm25, lexical_anchor |
-| 8 | `httpx/_status_codes.py:28-33` | 57 | symbol |
-| 9 | `httpx/_client.py:760-769` | 85 | symbol |
-| 10 | `httpx/_client.py:1474-1483` | 86 | symbol |
-| 11 | `httpx/_config.py:132-138` | 47 | symbol |
-| 12 | `httpx/_transports/default.py:261-262` | 14 | symbol |
-| 13 | `httpx/_utils.py:189-242` | 388 | active_window |
-| 14 | `httpx/_exceptions.py:158-161` | 24 | symbol |
-| 15 | `httpx/_transports/default.py:39-54` | 65 | symbol |
-| 16 | `httpx/_exceptions.py:187-190` | 17 | symbol |
-| 17 | `httpx/_exceptions.py:193-196` | 17 | symbol |
+| 1 | `httpx/_urls.py:354-366` | 93 | symbol |
+| 2 | `httpx/_client.py:1275-1291` | 125 | symbol |
+| 3 | `httpx/_config.py:54-102` | 395 | bm25, lexical_anchor |
+| 4 | `httpx/_auth.py:64-128` | 394 | bm25, lexical_anchor |
+| 5 | `httpx/_models.py:944-993` | 392 | bm25, lexical_anchor |
+| 6 | `httpx/_api.py:1-65` | 398 | bm25, lexical_anchor |
+| 7 | `httpx/_main.py:194-230` | 395 | bm25, lexical_anchor |
+| 8 | `httpx/_decoders.py:330-379` | 400 | bm25, lexical_anchor |
+| 9 | `httpx/_status_codes.py:28-33` | 57 | symbol |
+| 10 | `httpx/_client.py:760-769` | 85 | symbol |
+| 11 | `httpx/_client.py:1474-1483` | 86 | symbol |
+| 12 | `httpx/_config.py:132-138` | 47 | symbol |
+| 13 | `httpx/_exceptions.py:158-161` | 24 | symbol |
+| 14 | `httpx/_transports/default.py:39-54` | 65 | symbol |
+| 15 | `httpx/_exceptions.py:187-190` | 17 | symbol |
+| 16 | `httpx/_exceptions.py:193-196` | 17 | symbol |
 
-## Dropped candidates (41)
+## Dropped candidates (40)
 
-skipped: 32 over budget, 9 overlapping, 0 oversized
+skipped: 31 over budget, 9 overlapping, 0 oversized
 
 | provenance | tokens | reasons | rank |
 |---|--:|---|--:|
@@ -57,12 +56,10 @@ skipped: 32 over budget, 9 overlapping, 0 oversized
 | `httpx/_models.py:1045-1100` | 393 | bm25, lexical_anchor | 0.0267 |
 | `httpx/_urls.py:333-380` | 395 | bm25, lexical_anchor | 0.0267 |
 | `httpx/_urls.py:515-566` | 400 | bm25, lexical_anchor | 0.0262 |
-| `httpx/_main.py:194-230` | 395 | bm25, lexical_anchor | 0.0260 |
 | `httpx/_urls.py:567-619` | 400 | bm25, lexical_anchor | 0.0258 |
 | `httpx/_main.py:57-102` | 395 | bm25, lexical_anchor | 0.0257 |
 | `httpx/_main.py:349-420` | 398 | bm25, lexical_anchor | 0.0256 |
 | `httpx/_client.py:272-337` | 400 | bm25, lexical_anchor | 0.0253 |
-| `httpx/_decoders.py:330-379` | 400 | bm25, lexical_anchor | 0.0252 |
 | `httpx/_transports/default.py:1-65` | 399 | bm25, lexical_anchor | 0.0243 |
 | `httpx/_client.py:1303-1344` | 400 | bm25, lexical_anchor | 0.0241 |
 | `httpx/_config.py:140-147` | 60 | symbol | 0.0154 |
@@ -76,6 +73,7 @@ skipped: 32 over budget, 9 overlapping, 0 oversized
 | `httpx/_models.py:1065-1076` | 94 | symbol | 0.0132 |
 | `httpx/_transports/default.py:217-219` | 32 | symbol | 0.0127 |
 | `httpx/_transports/default.py:221-228` | 72 | symbol | 0.0125 |
+| `httpx/_transports/default.py:261-262` | 14 | symbol | 0.0123 |
 | `httpx/_transports/default.py:361-363` | 36 | symbol | 0.0122 |
 | `httpx/_transports/default.py:365-372` | 76 | symbol | 0.0120 |
 | `httpx/_transports/default.py:405-406` | 18 | symbol | 0.0119 |

@@ -1,10 +1,12 @@
+import json
+import os
 from pathlib import Path
 
 import pytest
 
 from pasr.packs import PACK_VERSION, content_hash, load_pack, pack_bytes, pack_staleness, write_pack
 from pasr.schema import validate_select_context_request
-from pasr.select import run_pack, save_pack
+from pasr.select import run_pack, run_select_context, save_pack
 from pasr.tokenize import WhitespaceTokenizer
 
 _PAYLOAD = {
@@ -41,6 +43,8 @@ def test_rejects_bad_names(tmp_path: Path):
         load_pack(tmp_path, "../evil")
     with pytest.raises(ValueError, match="pack name"):
         write_pack(tmp_path, {"name": "bad/name"})
+    with pytest.raises(ValueError, match="pack name"):
+        write_pack(tmp_path, {"name": "valid\n"})
 
 
 def test_warm_start_returns_the_stored_context(mini_workspace: Path):
@@ -72,5 +76,77 @@ def test_missing_pack_raises(tmp_path: Path):
         run_pack(tmp_path, "nope")
 
 
-def test_empty_fingerprint_is_not_stale(tmp_path: Path):
-    assert pack_staleness(tmp_path, {"source_fingerprint": {}}) == []
+@pytest.mark.parametrize("fingerprints", [None, {}])
+def test_missing_source_fingerprints_cannot_certify_supplied_results(tmp_path: Path, fingerprints):
+    (tmp_path / "sample.py").write_text("value = 'old'\n", encoding="utf-8")
+    request = validate_select_context_request({"query": "value", "files": ["sample.py"]}, tmp_path)
+    result = run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
+    if fingerprints is None:
+        result.pop("source_fingerprint")
+    else:
+        result["source_fingerprint"] = fingerprints
+    with pytest.raises(ValueError, match="fingerprint"):
+        save_pack("missing", request, result=result)
+
+
+def test_saving_old_result_after_preserved_metadata_edit_stays_stale(tmp_path: Path):
+    source = tmp_path / "sample.py"
+    source.write_text("value = 'old'\n", encoding="utf-8")
+    request = validate_select_context_request({"query": "value", "files": ["sample.py"]}, tmp_path)
+    result = run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
+    before = source.stat()
+    source.write_text("value = 'new'\n", encoding="utf-8")
+    os.utime(source, ns=(before.st_atime_ns, before.st_mtime_ns))
+
+    _, pack = save_pack("old", request, result=result)
+    assert pack["context"] == "value = 'old'\n"
+    assert pack_staleness(tmp_path, pack) == ["sample.py"]
+    assert run_pack(tmp_path, "old")["pack_stale"] == ["sample.py"]
+
+
+def test_tampered_pack_context_is_rejected(mini_workspace: Path):
+    path, pack = _save(mini_workspace)
+    pack["context"] += "\nmodified context"
+    path.write_text(json.dumps(pack), encoding="utf-8")
+    with pytest.raises(ValueError, match="context hash mismatch"):
+        load_pack(mini_workspace, "svc")
+
+
+@pytest.mark.parametrize("change", ["old_version", "missing_fingerprints"])
+def test_uncertified_saved_pack_is_rejected(mini_workspace: Path, change: str):
+    path, pack = _save(mini_workspace)
+    if change == "old_version":
+        pack["pack_version"] = "1.0"
+    else:
+        pack.pop("source_fingerprint")
+    path.write_text(json.dumps(pack), encoding="utf-8")
+    with pytest.raises(ValueError, match="version|fingerprint"):
+        load_pack(mini_workspace, "svc")
+
+
+@pytest.mark.parametrize("outside", ["../outside.py", "/outside.py"])
+def test_saved_source_paths_cannot_escape_workspace(mini_workspace: Path, outside: str):
+    path, pack = _save(mini_workspace)
+    pack["sources"] = [outside]
+    pack["source_fingerprint"] = {outside: "a" * 64}
+    with pytest.raises(ValueError, match="within workspace"):
+        write_pack(mini_workspace, pack)
+    path.write_text(json.dumps(pack), encoding="utf-8")
+    with pytest.raises(ValueError, match="within workspace"):
+        load_pack(mini_workspace, "svc")
+
+
+def test_saved_source_symlink_cannot_escape_workspace(mini_workspace: Path, tmp_path: Path):
+    outside = tmp_path / "outside.py"
+    outside.write_text("private source\n", encoding="utf-8")
+    linked = mini_workspace / "linked.py"
+    try:
+        linked.symlink_to(outside)
+    except OSError:
+        pytest.skip("source symlinks are unavailable")
+    path, pack = _save(mini_workspace)
+    pack["sources"] = ["linked.py"]
+    pack["source_fingerprint"] = {"linked.py": content_hash("private source\n")}
+    path.write_text(json.dumps(pack), encoding="utf-8")
+    with pytest.raises(ValueError, match="within workspace"):
+        load_pack(mini_workspace, "svc")

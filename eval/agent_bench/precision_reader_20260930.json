@@ -1,0 +1,503 @@
+{
+  "status": "development_gate_failed_validation_not_run",
+  "archive": "results/precision_reader_20260930",
+  "target_achieved": false,
+  "candidate_promoted": false,
+  "default_tool_catalog_changed": false,
+  "candidate": "native read_file plus repaired search_code, including optional precise files/ranges",
+  "controls": "Fresh native grep/read and byte-exact pre-repair current PASR catalog/source; thirty original-schedule trajectories.",
+  "summary": {
+    "stage": "dev",
+    "profiles": {
+      "native@6": {
+        "runs": 10,
+        "passes": 9,
+        "materially_incorrect": 1,
+        "completed": 10,
+        "strict_all_criteria_passes": 8,
+        "mean_total_tokens": 6929.4,
+        "mean_tool_calls": 3,
+        "mean_api_requests": 4,
+        "published_rate_cost_bound_usd": 0.006533115,
+        "tool_counts": {
+          "grep": 13,
+          "read_file": 17
+        },
+        "selection_options": {},
+        "continuation_usage": {}
+      },
+      "current@6": {
+        "runs": 10,
+        "passes": 9,
+        "materially_incorrect": 1,
+        "completed": 10,
+        "strict_all_criteria_passes": 9,
+        "mean_total_tokens": 10128.6,
+        "mean_tool_calls": 3.3,
+        "mean_api_requests": 4.3,
+        "published_rate_cost_bound_usd": 0.007632975,
+        "tool_counts": {
+          "find_evidence": 6,
+          "read_file": 19,
+          "find_symbols": 3,
+          "grep": 5
+        },
+        "selection_options": {},
+        "continuation_usage": {}
+      },
+      "search_reader@6": {
+        "runs": 10,
+        "passes": 8,
+        "materially_incorrect": 1,
+        "completed": 9,
+        "strict_all_criteria_passes": 8,
+        "mean_total_tokens": 6208.6,
+        "mean_tool_calls": 2.2,
+        "mean_api_requests": 3.2,
+        "published_rate_cost_bound_usd": 0.0076928050000000005,
+        "tool_counts": {
+          "search_code": 17,
+          "read_file": 5
+        },
+        "selection_options": {},
+        "continuation_usage": {}
+      }
+    },
+    "comparisons": {
+      "current@6 vs native@6": {
+        "questions": 10,
+        "accuracy_difference": 0,
+        "accuracy_difference_ci95": [
+          0,
+          0
+        ],
+        "token_ratio": 1.461684994371807,
+        "token_ratio_ci95": [
+          0.8310037494621673,
+          2.535841464641384
+        ],
+        "repository_cluster_accuracy_ci95": [
+          0,
+          0
+        ],
+        "repository_cluster_token_ratio_ci95": [
+          0.8275657704538885,
+          2.520472682627379
+        ],
+        "candidate_only_correct": [],
+        "control_only_correct": []
+      },
+      "search_reader@6 vs native@6": {
+        "questions": 10,
+        "accuracy_difference": -0.1,
+        "accuracy_difference_ci95": [
+          -0.3,
+          0
+        ],
+        "token_ratio": 0.8959794498802205,
+        "token_ratio_ci95": [
+          0.5743022413062207,
+          1.2584734006045648
+        ],
+        "repository_cluster_accuracy_ci95": [
+          -0.3,
+          0
+        ],
+        "repository_cluster_token_ratio_ci95": [
+          0.5696276258396863,
+          1.262089045605513
+        ],
+        "candidate_only_correct": [],
+        "control_only_correct": [
+          "fresh-requests-adapter-certificate-paths"
+        ]
+      },
+      "search_reader@6 vs current@6": {
+        "questions": 10,
+        "accuracy_difference": -0.1,
+        "accuracy_difference_ci95": [
+          -0.3,
+          0
+        ],
+        "token_ratio": 0.6129771143099737,
+        "token_ratio_ci95": [
+          0.3868098257240259,
+          0.9996828679765598
+        ],
+        "repository_cluster_accuracy_ci95": [
+          -0.3,
+          0
+        ],
+        "repository_cluster_token_ratio_ci95": [
+          0.3872275353172484,
+          1.0030715778342858
+        ],
+        "candidate_only_correct": [],
+        "control_only_correct": [
+          "fresh-requests-adapter-certificate-paths"
+        ]
+      }
+    },
+    "dev_eligibility_passed": false,
+    "validation_gate_passed": null,
+    "api_requests_reconciled": 115,
+    "per_case": {
+      "native@6": {
+        "fresh-jinja-bytecode-file-cleanup": {
+          "passed": 1,
+          "tokens": 11036,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-requests-adapter-certificate-paths": {
+          "passed": 1,
+          "tokens": 2445,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle": {
+          "passed": 0,
+          "tokens": 3424,
+          "verdict": "materially_incorrect",
+          "material_errors": [
+            {
+              "quote": "Unregistering removes the plugin’s implementations from each hook caller via `_remove_plugin(plugin)` (`src/pluggy/_manager.py:218–228`), then removes the name-to-plugin entry.",
+              "reason": "The mapping deletion in _manager.py:223-226 is guarded by if self._name2plugin.get(name), not merely by a registered plugin being present. Falsey plugin objects retain their mapping in unregister; set_blocked then overwrites it with None. The unqualified deletion claim therefore states a false condition for this internal state change."
+            }
+          ],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-click-atomic-write-close": {
+          "passed": 1,
+          "tokens": 6273,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-anyio-buffered-boundary-reads": {
+          "passed": 1,
+          "tokens": 3981,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-packaging-collected-errors": {
+          "passed": 1,
+          "tokens": 6646,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-attrs-disabled-restoration": {
+          "passed": 1,
+          "tokens": 10042,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-typer-annotated-default-conflicts": {
+          "passed": 1,
+          "tokens": 7397,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-starlette-background-order-failure": {
+          "passed": 1,
+          "tokens": 5957,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-httpx-asgi-body-and-failure": {
+          "passed": 1,
+          "tokens": 12093,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        }
+      },
+      "current@6": {
+        "fresh-jinja-bytecode-file-cleanup": {
+          "passed": 1,
+          "tokens": 5555,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-requests-adapter-certificate-paths": {
+          "passed": 1,
+          "tokens": 3671,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle": {
+          "passed": 0,
+          "tokens": 8351,
+          "verdict": "materially_incorrect",
+          "material_errors": [
+            {
+              "quote": "then removes its name-to-plugin entry when one exists (`src/pluggy/_manager.py:223-226`).",
+              "reason": "The source checks the mapping value's truthiness, not entry existence. A valid registered falsey plugin is not deleted by unregister, although set_blocked subsequently replaces its value with None."
+            }
+          ],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-click-atomic-write-close": {
+          "passed": 1,
+          "tokens": 8410,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-anyio-buffered-boundary-reads": {
+          "passed": 1,
+          "tokens": 5690,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-packaging-collected-errors": {
+          "passed": 1,
+          "tokens": 4436,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-attrs-disabled-restoration": {
+          "passed": 1,
+          "tokens": 12875,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-typer-annotated-default-conflicts": {
+          "passed": 1,
+          "tokens": 37527,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-starlette-background-order-failure": {
+          "passed": 1,
+          "tokens": 7455,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-httpx-asgi-body-and-failure": {
+          "passed": 1,
+          "tokens": 7316,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        }
+      },
+      "search_reader@6": {
+        "fresh-jinja-bytecode-file-cleanup": {
+          "passed": 1,
+          "tokens": 9618,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-requests-adapter-certificate-paths": {
+          "passed": 0,
+          "tokens": 4924,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "HTTPS/truthy verification enables CERT_REQUIRED; verify=True relies on the existing default-certificate context without loading a CA path here.",
+            "Custom CA paths must exist and are assigned to ca_cert_dir for directories or ca_certs for non-directories, with OSError for a nonexistent path.",
+            "The verification-off alternative sets CERT_NONE and clears both CA path fields.",
+            "Client certificate strings and certificate/key pairs populate the connection fields, with existence checks and OSError for missing nonempty paths."
+          ],
+          "answered": false
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle": {
+          "passed": 0,
+          "tokens": 6339,
+          "verdict": "materially_incorrect",
+          "material_errors": [
+            {
+              "quote": "unregistering has removed the plugin mapping and hook implementations",
+              "reason": "Although hook implementations are removed, _manager.py:223-226 removes the mapping only for a truthy stored plugin. For a falsey registered plugin, unregister retains that mapping and set_blocked overwrites it with None; attributing unconditional mapping removal to unregister is false."
+            }
+          ],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-click-atomic-write-close": {
+          "passed": 1,
+          "tokens": 2613,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-anyio-buffered-boundary-reads": {
+          "passed": 1,
+          "tokens": 3206,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-packaging-collected-errors": {
+          "passed": 1,
+          "tokens": 2533,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-attrs-disabled-restoration": {
+          "passed": 1,
+          "tokens": 14326,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-typer-annotated-default-conflicts": {
+          "passed": 1,
+          "tokens": 10242,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-starlette-background-order-failure": {
+          "passed": 1,
+          "tokens": 5747,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        },
+        "fresh-httpx-asgi-body-and-failure": {
+          "passed": 1,
+          "tokens": 2538,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true
+        }
+      }
+    },
+    "grading": "Arm-blind coding-assistant source review; not independent human validation.",
+    "scope": "Reused development questions; source-reviewed new validation questions remain unqueried from the previous candidate. This candidate was chosen after question authoring. Reused Python repositories, one model, no universal product claim.",
+    "analyzer_sha256": "38e3bb5894ef36b4944e195e34d38fc32f243ccd627e295e87a7ab148e9b780e",
+    "results_sha256": "aab364b7e6b6c1c37df4b8ba54a1553234748bbe8b2e1780b3f1637fa55c9d4a",
+    "analysis_amendment": "analysis_amendment.json",
+    "grading_scope_sha256": "81dac9cd59d51f9226ad87ac30d89952284359e19d4836655e13de66af9a44fb"
+  },
+  "api_requests": 115,
+  "scheduled_trajectories": 30,
+  "final_answers": 29,
+  "provider_input_tokens": 217919,
+  "provider_output_tokens": 14747,
+  "provider_total_tokens": 232666,
+  "published_rate_charge_bound_usd": 0.021858895,
+  "aggregate_seven_study_charge_bound_usd": 0.23264505,
+  "cost_caveat": "Published-rate conservative charge bound, not an exact provider invoice.",
+  "local_evidence": "retrieval_precision_20260930.json",
+  "failure_diagnosis": {
+    "case_id": "fresh-requests-adapter-certificate-paths",
+    "counted_as_failure": true,
+    "retried": false,
+    "tool_calls_executed": 1,
+    "first_tool_input": {
+      "query": "def cert_verify",
+      "files": [
+        "requests/adapters.py"
+      ]
+    },
+    "tool_result": "Error executing tool search_code: file does not exist: requests/adapters.py",
+    "next_response_status": "incomplete",
+    "next_response_incomplete_reason": "max_output_tokens",
+    "next_response_output_tokens": 4096,
+    "next_response_behavior": "Malformed/incomplete function-call arguments; no second tool call executed and no final answer.",
+    "trajectory_total_tokens": 4924,
+    "request_response_journal_ordinals_zero_based": [
+      12,
+      13
+    ],
+    "relation_to_host_interruption": "Occurred before the later fully committed44-request/13-trajectory interruption boundary; preserved unchanged.",
+    "causal_limit": "Observed invalid-path recovery failure in this sample, not proof that retrieval ranking causes provider argument-generation failures."
+  },
+  "continuation": {
+    "reason": "Infrastructure interruption after an exact committed prefix; exact OSError cause unavailable.",
+    "prefix_trajectories": 13,
+    "suffix_never_attempted_before_continuation": 17,
+    "prefix_requests": 44,
+    "suffix_requests": 71,
+    "issued_requests_retried": 0,
+    "protected_artifacts_byte_identical": 153,
+    "old_ledger_entries_unchanged": true,
+    "policy": "Additive hash-bound control-plane amendment. Original protocol/driver/analyzers/source/gates unchanged; canonical ledger appended with exact checkpoint bytes archived. No outcome grading preceded recovery decision."
+  },
+  "reserved_validation": {
+    "questions": 40,
+    "model_queries": 0,
+    "authorized": false
+  },
+  "grading": "Five arm-blind coding-assistant source reviewers; not independent human validation. Original whole-criterion scope and strict-all-criteria sensitivity retained; HTTPX incidental-subclause decision recorded before unblinding.",
+  "verification": {
+    "pytest_passed": 509,
+    "subtests_passed": 58,
+    "skipped": 1,
+    "skip_reason": "Windows source symlink unavailable",
+    "ruff": "production src/tests passed",
+    "stdio": "8 real calls; complete requested definition and exact sequential follow-ups"
+  },
+  "limitations": [
+    "Repeated ten-question development set; not held-out evidence.",
+    "One answering model and ten reused Python repositories.",
+    "Primary candidate/native token ratio95 interval includes1; no general token-saving claim.",
+    "Incomplete generation remains charged and counted as an accuracy failure.",
+    "Local source coverage and lower response tokens did not establish end-to-end accuracy parity."
+  ],
+  "artifact_sha256": {
+    "protocol.json": "3178c1ea85a8ef4c76f1f6fc280a720d4cf50643e86e1f028589fe6b5be621ca",
+    "run_study.py": "162050e00a15b1874a3e99bd3710159a142436adcd150e820b1c46450c368b6a",
+    "candidate_commitment.json": "838de6610322df1855f526aab9b17cca8c240563e9e86d9cfce61686cf75840e",
+    "control_provenance.json": "2dc88e20f7428309220a340b415c4638f271630f01433f28904e84e5cb687f9c",
+    "dev/results.json": "aab364b7e6b6c1c37df4b8ba54a1553234748bbe8b2e1780b3f1637fa55c9d4a",
+    "dev/summary.json": "f069c6bb34bcc447e879de5cf4c73d399b1b0b215accb1a4689998677e543eed",
+    "dev/validation_gate.json": "9134dfc22791f9683a23ab6a1eaf5cb3c5fd357db7bb10a4d444802b33cd6fcd",
+    "dev/failure_diagnosis.json": "a269cfd62b46f507b67216f6361e353fc2a7b3985cdfeb127cd309aefe2f85a5",
+    "dev/grading_decisions.json": "872131304b01f1565d1c0f009b1a3a341af46146d76cddaf74891477f250c0e6",
+    "dev/completion_accounting.json": "b1eea02d826212c9ccc46618def5a8df96d4ce163ee6506fa952269e5714a5fd",
+    "continue_unattempted_dev.py": "45bc12d74c1ae82ba3e2b06a236c5b67c42b0eab1eeff3d2903d032694ded4e0",
+    "continuation_amendment.json": "d88f5e4c4bfde1aed4e18fafdf01c2ae7950c0bfa4b187ff9eb369675361faca",
+    "continuation_approval.json": "cfab147496fbc92aeed4785a27c1522ddd75aef5322b3da4927190bf28f44d60",
+    "continuation_verification.json": "16e6fe72428ec43afc6db5dcbba2f5f8b12695460ef871bb2757299c0216018f",
+    "continuation_inputs/spend_ledger.json": "f8a8e8a998bc0a5c8fc57ade08c49d26a33af9e7d511d6f4fb5fa450b920e5ce",
+    "spend_ledger.json": "cd27b0a7708168071f10022a9d0edd4d5c7473cd8e677d658fecd2673e484cfa"
+  }
+}

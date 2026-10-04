@@ -1,0 +1,1295 @@
+{
+  "experiment": "budgeted-definition-retrieval-20260920",
+  "decision": "Reject candidate; production retrieval source is unchanged.",
+  "implemented_candidate": {
+    "surface": "Only MCP find_evidence changed; original library find_evidence contract and all other tools retained.",
+    "behavior": "Rank distinct enclosing definitions; prioritize parsed definitions within each file; pack non-overlapping source under a full-reply token budget; label oversized/module-level excerpts explicitly.",
+    "default_reply_budget": 1800,
+    "budget_tokenizer": "PASR cl100k_base, not the Qwen tokenizer",
+    "scope": "Frozen experimental source only; archived, not promoted."
+  },
+  "retained_changes": [
+    "eval/agent_bench/runner.py: explicit temperature and optional decoding seed; legacy unseeded calls remain supported.",
+    "eval/agent_bench/efficiency.py: CLI sampling controls and actual per-row/per-request settings.",
+    "eval/agent_bench/compare_sources.py: paired repetition seeds, distinct schedule_seed reporting, shared frozen harness.",
+    "README.md, CHANGELOG.md and eval/agent_bench/README.md: experiment decision and current sampling semantics."
+  ],
+  "protocol": {
+    "model": "qwen/qwen3.5-9b",
+    "quantization": "Q4_K_M",
+    "backend": "local LM Studio OpenAI-compatible API",
+    "base_url": "http://127.0.0.1:1234/v1",
+    "context_length": 32768,
+    "temperature": 0.2,
+    "sampling_seed_base": 20260921,
+    "sampling_seed_rule": "base + repetition - 1, shared across variants and questions within a repetition",
+    "schedule_seed": 20260921,
+    "reasoning_effort": "none",
+    "max_model_turns": 18,
+    "max_output_tokens_per_turn": 1200,
+    "history": "Append-only; no harness observation clipping or masking. Decreasing provider prompt usage fails the trajectory.",
+    "primary": {
+      "questions": [
+        "plugin idle shutdown",
+        "Ctrl-C cooperative cancellation"
+      ],
+      "repetitions_per_question_variant": 4,
+      "runs": 24
+    },
+    "holdout": {
+      "questions": [
+        "user-command recursion limit",
+        "last-error exit-code precedence"
+      ],
+      "repetitions_per_question_variant": 2,
+      "runs": 12,
+      "note": "Pre-existing holdout pair reused from the earlier investigation, not newly unseen tasks."
+    },
+    "corpus_revision": "76ba59d425c25b74ac5c9257ccfb36ddc0d352ed",
+    "dependencies": {
+      "openai": "3.13.0",
+      "tree-sitter": "0.26.0",
+      "tree-sitter-rust": "0.24.2",
+      "tiktoken": "0.14.0"
+    },
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "hosted_benchmark_inference": false
+  },
+  "results": {
+    "primary": {
+      "baseline": {
+        "runs": 8,
+        "completed": 8,
+        "total_tokens": 740614,
+        "logical_input_tokens": 732228,
+        "output_tokens": 8386,
+        "model_turns": 90,
+        "tool_calls": 84,
+        "failures": {},
+        "tool_counts": {
+          "grep": 29,
+          "read_file": 55
+        },
+        "runs_using_find_evidence": 0
+      },
+      "control": {
+        "runs": 8,
+        "completed": 4,
+        "total_tokens": 1431463,
+        "logical_input_tokens": 1423421,
+        "output_tokens": 8042,
+        "model_turns": 116,
+        "tool_calls": 111,
+        "failures": {
+          "nonmonotonic_prompt_usage": 1,
+          "turn_limit": 3
+        },
+        "tool_counts": {
+          "find_evidence": 4,
+          "find_files": 15,
+          "find_symbols": 16,
+          "find_usages": 11,
+          "grep": 8,
+          "read_file": 28,
+          "select_context": 24,
+          "trace_dependencies": 5
+        },
+        "runs_using_find_evidence": 4
+      },
+      "optimized": {
+        "runs": 8,
+        "completed": 0,
+        "total_tokens": 1614161,
+        "logical_input_tokens": 1606979,
+        "output_tokens": 7182,
+        "model_turns": 141,
+        "tool_calls": 140,
+        "failures": {
+          "nonmonotonic_prompt_usage": 1,
+          "turn_limit": 7
+        },
+        "tool_counts": {
+          "find_evidence": 1,
+          "find_files": 30,
+          "find_symbols": 14,
+          "find_usages": 5,
+          "grep": 14,
+          "read_file": 31,
+          "select_context": 42,
+          "trace_dependencies": 3
+        },
+        "runs_using_find_evidence": 1
+      }
+    },
+    "holdout": {
+      "baseline": {
+        "runs": 4,
+        "completed": 3,
+        "total_tokens": 364000,
+        "logical_input_tokens": 358684,
+        "output_tokens": 5316,
+        "model_turns": 61,
+        "tool_calls": 58,
+        "failures": {
+          "turn_limit": 1
+        },
+        "tool_counts": {
+          "grep": 31,
+          "read_file": 27
+        },
+        "runs_using_find_evidence": 0
+      },
+      "control": {
+        "runs": 4,
+        "completed": 3,
+        "total_tokens": 530061,
+        "logical_input_tokens": 526148,
+        "output_tokens": 3913,
+        "model_turns": 46,
+        "tool_calls": 42,
+        "failures": {
+          "nonmonotonic_prompt_usage": 1
+        },
+        "tool_counts": {
+          "find_evidence": 5,
+          "find_files": 4,
+          "find_symbols": 8,
+          "find_usages": 3,
+          "grep": 1,
+          "read_file": 6,
+          "select_context": 15
+        },
+        "runs_using_find_evidence": 3
+      },
+      "optimized": {
+        "runs": 4,
+        "completed": 0,
+        "total_tokens": 605353,
+        "logical_input_tokens": 601853,
+        "output_tokens": 3500,
+        "model_turns": 69,
+        "tool_calls": 68,
+        "failures": {
+          "nonmonotonic_prompt_usage": 1,
+          "turn_limit": 3
+        },
+        "tool_counts": {
+          "find_evidence": 3,
+          "find_files": 13,
+          "find_symbols": 4,
+          "find_usages": 2,
+          "grep": 29,
+          "read_file": 11,
+          "select_context": 6
+        },
+        "runs_using_find_evidence": 1
+      }
+    },
+    "combined": {
+      "baseline": {
+        "runs": 12,
+        "completed": 11,
+        "total_tokens": 1104614,
+        "logical_input_tokens": 1090912,
+        "output_tokens": 13702,
+        "model_turns": 151,
+        "tool_calls": 142,
+        "failures": {
+          "turn_limit": 1
+        },
+        "tool_counts": {
+          "grep": 60,
+          "read_file": 82
+        },
+        "runs_using_find_evidence": 0
+      },
+      "control": {
+        "runs": 12,
+        "completed": 7,
+        "total_tokens": 1961524,
+        "logical_input_tokens": 1949569,
+        "output_tokens": 11955,
+        "model_turns": 162,
+        "tool_calls": 153,
+        "failures": {
+          "nonmonotonic_prompt_usage": 2,
+          "turn_limit": 3
+        },
+        "tool_counts": {
+          "find_evidence": 9,
+          "find_files": 19,
+          "find_symbols": 24,
+          "find_usages": 14,
+          "grep": 9,
+          "read_file": 34,
+          "select_context": 39,
+          "trace_dependencies": 5
+        },
+        "runs_using_find_evidence": 7
+      },
+      "optimized": {
+        "runs": 12,
+        "completed": 0,
+        "total_tokens": 2219514,
+        "logical_input_tokens": 2208832,
+        "output_tokens": 10682,
+        "model_turns": 210,
+        "tool_calls": 208,
+        "failures": {
+          "nonmonotonic_prompt_usage": 2,
+          "turn_limit": 10
+        },
+        "tool_counts": {
+          "find_evidence": 4,
+          "find_files": 43,
+          "find_symbols": 18,
+          "find_usages": 7,
+          "grep": 43,
+          "read_file": 42,
+          "select_context": 48,
+          "trace_dependencies": 3
+        },
+        "runs_using_find_evidence": 2
+      }
+    }
+  },
+  "candidate_cost_change": {
+    "versus_current_pasr_fraction": 0.13152528340208947,
+    "versus_native_fraction": 1.009311850112347
+  },
+  "causal_quality": {
+    "method": "Five criteria per question scored 0/0.5/1 against source; failed generations score zero. Two label/cost-blinded reviewers froze answer scores before checking delivered observations. Main conservatively adjudicated one ambiguous false-claim flag without changing scores.",
+    "rubrics": {
+      "scoring": "Each item 0, 0.5, or 1. Correct causal explanation, not keyword presence. Contradiction zeros that item. 5 total; percentage=total*20. Separately flag material false claims and whether cited supporting evidence was actually delivered. Missing final answers score zero. No best-of-three selection.",
+      "primary": {
+        "Q1": [
+          {
+            "criterion": "Configurable enabled/stop_after idle policy, named overrides/default (10s); not age since launch",
+            "source": "crates/nu-protocol/src/config/plugin_gc.rs:14-19,45-60"
+          },
+          {
+            "criterion": "Active calls/output streams hold usage locks; lock changes update last_update; timeout gated on no locks, enabled, no plugin override",
+            "source": "crates/nu-plugin-engine/src/gc.rs:113-155; crates/nu-plugin-engine/src/interface/mod.rs:205-235,512-545,797-806"
+          },
+          {
+            "criterion": "GC worker computes remaining idle duration, waits/recomputes with recv_timeout, calls plugin.stop on expiry",
+            "source": "crates/nu-plugin-engine/src/gc.rs:169-213"
+          },
+          {
+            "criterion": "RegisteredPlugin.stop -> stop_internal(false), stops GC tracking and clears/drops running interface; not Child.kill",
+            "source": "crates/nu-plugin-engine/src/persistent.rs:228-251,276-278"
+          },
+          {
+            "criterion": "Last PluginInterface drop sends/flushed Goodbye, plugin call channel closes and serve loop ends gracefully; child.wait reaps rather than kills",
+            "source": "crates/nu-plugin-engine/src/interface/mod.rs:660-668,1219-1232; crates/nu-plugin/src/plugin/interface/mod.rs:339-343; crates/nu-plugin/src/plugin/mod.rs:575-650; crates/nu-plugin-engine/src/init.rs:107-139"
+          }
+        ],
+        "Q2": [
+          {
+            "criterion": "Signals wraps shared Option<Arc<AtomicBool>>, stored in EngineState; clones share flag",
+            "source": "crates/nu-protocol/src/pipeline/signals.rs:12-31; crates/nu-protocol/src/engine/engine_state.rs:109,286-288,316-318"
+          },
+          {
+            "criterion": "ctrlc_protection allocates false flag and installs same flag in EngineState and handler; handler stores true and dispatches interrupt handlers, not global unwinding",
+            "source": "src/signals.rs:7-33"
+          },
+          {
+            "criterion": "interrupted atomically loads flag; check returns ShellError::Interrupted; callers must honor result",
+            "source": "crates/nu-protocol/src/pipeline/signals.rs:43-74"
+          },
+          {
+            "criterion": "Concrete producing stream receives cloned Signals; InterruptIter.next stops with None before next value",
+            "source": "crates/nu-command/src/generators/generate.rs:126-146; crates/nu-protocol/src/pipeline/pipeline_data.rs:1081-1103; crates/nu-protocol/src/pipeline/list_stream.rs:22-34,166-190"
+          },
+          {
+            "criterion": "Another real checked I/O/evaluation checkpoint plus cooperative limit (does not preempt a blocked read/write or unchecked loop)",
+            "source": "crates/nu-protocol/src/pipeline/pipeline_data.rs:924-957; crates/nu-protocol/src/pipeline/byte_stream.rs:837-842; crates/nu-engine/src/eval.rs:343-350"
+          }
+        ]
+      },
+      "holdout": {
+        "Q1": [
+          "Stack carries inherited recursion_count",
+          "callee recursion_count increments for user block calls",
+          "config.recursion_limit compared against depth",
+          "returns RecursionLimitReached instead of native stack exhaustion",
+          "distinguishes evaluation paths with grounded citations"
+        ],
+        "Q2": [
+          "Stack::set_last_error",
+          "external_exit_code takes precedence and preserves returned span",
+          "otherwise error.exit_code with unknown span",
+          "no update if neither code exists",
+          "set_last_exit_code writes integer LAST_EXIT_CODE in environment"
+        ]
+      },
+      "protocol": "Only criteria/scoring are reused from the old rubric; its historical protocol/limitations do not apply. Current plan.json governs this experiment."
+    },
+    "aggregate": {
+      "primary": {
+        "baseline": {
+          "mean_score_out_of_5": 2.625,
+          "answered_only_mean_score_out_of_5": 2.625,
+          "answers_with_material_false_claims": 2,
+          "material_false_claim_count": 2,
+          "fully_satisfied_rubric": 0
+        },
+        "control": {
+          "mean_score_out_of_5": 1.0,
+          "answered_only_mean_score_out_of_5": 2.0,
+          "answers_with_material_false_claims": 1,
+          "material_false_claim_count": 3,
+          "fully_satisfied_rubric": 0
+        },
+        "optimized": {
+          "mean_score_out_of_5": 0,
+          "answered_only_mean_score_out_of_5": null,
+          "answers_with_material_false_claims": 0,
+          "material_false_claim_count": 0,
+          "fully_satisfied_rubric": 0
+        }
+      },
+      "holdout": {
+        "baseline": {
+          "mean_score_out_of_5": 2.25,
+          "answered_only_mean_score_out_of_5": 3.0,
+          "answers_with_material_false_claims": 3,
+          "material_false_claim_count": 3,
+          "fully_satisfied_rubric": 0
+        },
+        "control": {
+          "mean_score_out_of_5": 2.5,
+          "answered_only_mean_score_out_of_5": 3.3333333333333335,
+          "answers_with_material_false_claims": 1,
+          "material_false_claim_count": 1,
+          "fully_satisfied_rubric": 0
+        },
+        "optimized": {
+          "mean_score_out_of_5": 0,
+          "answered_only_mean_score_out_of_5": null,
+          "answers_with_material_false_claims": 0,
+          "material_false_claim_count": 0,
+          "fully_satisfied_rubric": 0
+        }
+      },
+      "combined": {
+        "baseline": {
+          "mean_score_out_of_5": 2.5,
+          "answered_only_mean_score_out_of_5": 2.727272727272727,
+          "answers_with_material_false_claims": 5,
+          "material_false_claim_count": 5,
+          "fully_satisfied_rubric": 0
+        },
+        "control": {
+          "mean_score_out_of_5": 1.5,
+          "answered_only_mean_score_out_of_5": 2.5714285714285716,
+          "answers_with_material_false_claims": 2,
+          "material_false_claim_count": 4,
+          "fully_satisfied_rubric": 0
+        },
+        "optimized": {
+          "mean_score_out_of_5": 0,
+          "answered_only_mean_score_out_of_5": null,
+          "answers_with_material_false_claims": 0,
+          "material_false_claim_count": 0,
+          "fully_satisfied_rubric": 0
+        }
+      }
+    },
+    "mean_by_question": {
+      "primary_Q1": {
+        "baseline": 2.0,
+        "control": 0.75,
+        "optimized": 0
+      },
+      "primary_Q2": {
+        "baseline": 3.25,
+        "control": 1.25,
+        "optimized": 0
+      },
+      "holdout_Q1": {
+        "baseline": 3.5,
+        "control": 3.5,
+        "optimized": 0
+      },
+      "holdout_Q2": {
+        "baseline": 1.0,
+        "control": 1.5,
+        "optimized": 0
+      }
+    },
+    "rows": [
+      {
+        "id": "R023",
+        "dataset": "holdout",
+        "row_index": 4,
+        "variant": "baseline",
+        "question": "Q1",
+        "rep": 1,
+        "answered": true,
+        "scores": [
+          0.5,
+          1,
+          1,
+          1,
+          0
+        ],
+        "total_out_of_5": 3.5,
+        "material_false_claims": [
+          {
+            "quote": "In `eval.rs:369-374`, after detecting the limit is exceeded, the code resets `recursion_count` to 0 before returning the error. This same pattern appears in `eval_ir.rs:59-64`.",
+            "reason": "IR immediately returns the error without resetting recursion_count; only the AST eval_call branch resets its callee counter.",
+            "source": "crates/nu-engine/src/eval.rs:368-374; crates/nu-engine/src/eval_ir.rs:58-64"
+          }
+        ],
+        "reviewer_flagged_claims": 1
+      },
+      {
+        "id": "R030",
+        "dataset": "holdout",
+        "row_index": 7,
+        "variant": "baseline",
+        "question": "Q1",
+        "rep": 2,
+        "answered": true,
+        "scores": [
+          0.5,
+          1,
+          1,
+          1,
+          0
+        ],
+        "total_out_of_5": 3.5,
+        "material_false_claims": [
+          {
+            "quote": "When the limit is exceeded (`recursion_count > maximum_call_stack_depth`), the code resets `recursion_count` to 0 and returns a `ShellError::RecursionLimitReached` error",
+            "reason": "The preceding explanation covers both evaluators, but only AST eval_call resets its callee counter; IR's block-entry check returns without reset.",
+            "source": "crates/nu-engine/src/eval.rs:368-374; crates/nu-engine/src/eval_ir.rs:58-64"
+          }
+        ],
+        "reviewer_flagged_claims": 1
+      },
+      {
+        "id": "R019",
+        "dataset": "holdout",
+        "row_index": 5,
+        "variant": "control",
+        "question": "Q1",
+        "rep": 1,
+        "answered": true,
+        "scores": [
+          0.5,
+          1,
+          1,
+          1,
+          0
+        ],
+        "total_out_of_5": 3.5,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R032",
+        "dataset": "holdout",
+        "row_index": 10,
+        "variant": "control",
+        "question": "Q1",
+        "rep": 2,
+        "answered": true,
+        "scores": [
+          0.5,
+          1,
+          1,
+          1,
+          0
+        ],
+        "total_out_of_5": 3.5,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R027",
+        "dataset": "holdout",
+        "row_index": 1,
+        "variant": "optimized",
+        "question": "Q1",
+        "rep": 1,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R008",
+        "dataset": "holdout",
+        "row_index": 6,
+        "variant": "optimized",
+        "question": "Q1",
+        "rep": 2,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R020",
+        "dataset": "holdout",
+        "row_index": 0,
+        "variant": "baseline",
+        "question": "Q2",
+        "rep": 1,
+        "answered": true,
+        "scores": [
+          1,
+          0.5,
+          0,
+          0,
+          0.5
+        ],
+        "total_out_of_5": 2.0,
+        "material_false_claims": [
+          {
+            "quote": "which returns 1 by default for internal shell errors (like generic errors or control flow statements).",
+            "reason": "Return, Break and Continue return None, not 1; set_last_error therefore leaves the prior LAST_EXIT_CODE unchanged for these variants.",
+            "source": "crates/nu-protocol/src/errors/shell_error/mod.rs:1501-1508; crates/nu-protocol/src/engine/stack.rs:681-686"
+          }
+        ],
+        "reviewer_flagged_claims": 1
+      },
+      {
+        "id": "R021",
+        "dataset": "holdout",
+        "row_index": 9,
+        "variant": "baseline",
+        "question": "Q2",
+        "rep": 2,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R010",
+        "dataset": "holdout",
+        "row_index": 2,
+        "variant": "control",
+        "question": "Q2",
+        "rep": 1,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R022",
+        "dataset": "holdout",
+        "row_index": 8,
+        "variant": "control",
+        "question": "Q2",
+        "rep": 2,
+        "answered": true,
+        "scores": [
+          1,
+          1,
+          0.5,
+          0,
+          0.5
+        ],
+        "total_out_of_5": 3.0,
+        "material_false_claims": [
+          {
+            "quote": "If neither provides an exit code, the value defaults to 0 (in `map_eval_error_to_exit_code` line 303) or 1 (in `exit_code()` method when no external exit code exists).",
+            "reason": "Conflates a separate helper's returned exit code with updating LAST_EXIT_CODE. With neither code, set_last_error does not call the setter; map_eval_error_to_exit_code's unwrap_or(0) does not store 0.",
+            "source": "crates/nu-protocol/src/engine/stack.rs:681-686; crates/nu-cli/src/util.rs:292-303; crates/nu-protocol/src/errors/shell_error/mod.rs:1501-1508"
+          }
+        ],
+        "reviewer_flagged_claims": 1
+      },
+      {
+        "id": "R013",
+        "dataset": "holdout",
+        "row_index": 3,
+        "variant": "optimized",
+        "question": "Q2",
+        "rep": 1,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R003",
+        "dataset": "holdout",
+        "row_index": 11,
+        "variant": "optimized",
+        "question": "Q2",
+        "rep": 2,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R007",
+        "dataset": "primary",
+        "row_index": 4,
+        "variant": "baseline",
+        "question": "Q1",
+        "rep": 1,
+        "answered": true,
+        "scores": [
+          0.5,
+          0,
+          1,
+          0.5,
+          0
+        ],
+        "total_out_of_5": 2.0,
+        "material_false_claims": [
+          {
+            "quote": "Plugins can also explicitly stop themselves by calling `engine.set_gc_disabled(true)`",
+            "reason": "This emits GcDisabled(true), disabling idle collection rather than requesting plugin shutdown.",
+            "source": "crates/nu-plugin/src/plugin/interface/mod.rs:1026-1035; crates/nu-plugin-engine/src/interface/mod.rs:512-518; crates/nu-plugin-engine/src/gc.rs:113-127,153-155"
+          }
+        ],
+        "reviewer_flagged_claims": 1
+      },
+      {
+        "id": "R005",
+        "dataset": "primary",
+        "row_index": 7,
+        "variant": "baseline",
+        "question": "Q1",
+        "rep": 2,
+        "answered": true,
+        "scores": [
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0
+        ],
+        "total_out_of_5": 2.0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R015",
+        "dataset": "primary",
+        "row_index": 14,
+        "variant": "baseline",
+        "question": "Q1",
+        "rep": 3,
+        "answered": true,
+        "scores": [
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0
+        ],
+        "total_out_of_5": 2.0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R036",
+        "dataset": "primary",
+        "row_index": 22,
+        "variant": "baseline",
+        "question": "Q1",
+        "rep": 4,
+        "answered": true,
+        "scores": [
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0
+        ],
+        "total_out_of_5": 2.0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 1
+      },
+      {
+        "id": "R011",
+        "dataset": "primary",
+        "row_index": 5,
+        "variant": "control",
+        "question": "Q1",
+        "rep": 1,
+        "answered": true,
+        "scores": [
+          0.5,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0.5,
+        "material_false_claims": [
+          {
+            "quote": "When the timeout fires (or channel disconnects), the GC loop breaks and calls `plugin.stop()`",
+            "reason": "Disconnection only breaks the receive loop; plugin.stop is conditional on always_stop or a zero next_timeout, not unconditional on disconnection.",
+            "source": "crates/nu-plugin-engine/src/gc.rs:169-213"
+          },
+          {
+            "quote": "`PluginGc::flush()` - stop tracking the plugin (line 75)",
+            "reason": "flush waits for pending GC messages; stop_tracking is a separate request that terminates tracking.",
+            "source": "crates/nu-plugin-engine/src/gc.rs:50-55,75-78,135-139,156-159"
+          },
+          {
+            "quote": "The GC stops a plugin when: timeout expires AND (`enabled=true` AND `stop_after > 0` AND `last_update` exists AND `locks <= 0` AND `disabled=false`).",
+            "reason": "A configured zero duration is allowed and yields an immediate timeout once last_update exists; positivity is not a prerequisite.",
+            "source": "crates/nu-plugin-engine/src/gc.rs:113-127; crates/nu-protocol/src/config/plugin_gc.rs:88-97"
+          }
+        ],
+        "reviewer_flagged_claims": 3
+      },
+      {
+        "id": "R016",
+        "dataset": "primary",
+        "row_index": 10,
+        "variant": "control",
+        "question": "Q1",
+        "rep": 2,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R031",
+        "dataset": "primary",
+        "row_index": 13,
+        "variant": "control",
+        "question": "Q1",
+        "rep": 3,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R034",
+        "dataset": "primary",
+        "row_index": 18,
+        "variant": "control",
+        "question": "Q1",
+        "rep": 4,
+        "answered": true,
+        "scores": [
+          0.5,
+          0.5,
+          1,
+          0.5,
+          0
+        ],
+        "total_out_of_5": 2.5,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R025",
+        "dataset": "primary",
+        "row_index": 1,
+        "variant": "optimized",
+        "question": "Q1",
+        "rep": 1,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R029",
+        "dataset": "primary",
+        "row_index": 6,
+        "variant": "optimized",
+        "question": "Q1",
+        "rep": 2,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R024",
+        "dataset": "primary",
+        "row_index": 16,
+        "variant": "optimized",
+        "question": "Q1",
+        "rep": 3,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R033",
+        "dataset": "primary",
+        "row_index": 23,
+        "variant": "optimized",
+        "question": "Q1",
+        "rep": 4,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R028",
+        "dataset": "primary",
+        "row_index": 0,
+        "variant": "baseline",
+        "question": "Q2",
+        "rep": 1,
+        "answered": true,
+        "scores": [
+          1,
+          1,
+          1,
+          0.5,
+          0.5
+        ],
+        "total_out_of_5": 4.0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R006",
+        "dataset": "primary",
+        "row_index": 9,
+        "variant": "baseline",
+        "question": "Q2",
+        "rep": 2,
+        "answered": true,
+        "scores": [
+          1,
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ],
+        "total_out_of_5": 3.0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R009",
+        "dataset": "primary",
+        "row_index": 12,
+        "variant": "baseline",
+        "question": "Q2",
+        "rep": 3,
+        "answered": true,
+        "scores": [
+          1,
+          0.5,
+          1,
+          0.5,
+          0.5
+        ],
+        "total_out_of_5": 3.5,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R002",
+        "dataset": "primary",
+        "row_index": 21,
+        "variant": "baseline",
+        "question": "Q2",
+        "rep": 4,
+        "answered": true,
+        "scores": [
+          1,
+          0.5,
+          0.5,
+          0.5,
+          0
+        ],
+        "total_out_of_5": 2.5,
+        "material_false_claims": [
+          {
+            "quote": "The `Signals` struct is passed from the engine state (`engine_state.signals()`) through to all streams (ListStream and ByteStream) when they are created, ensuring all long-running pipelines can be interrupted.",
+            "reason": "Not every stream receives an active engine signal: Signals::empty never interrupts, and par_each deliberately passes empty Signals to its outer pipeline while polling internally. Flag checks also do not preempt an already-running underlying read, so universal interruptibility is not guaranteed.",
+            "source": "crates/nu-protocol/src/pipeline/signals.rs:18-40; crates/nu-command/src/filters/par_each.rs:407-435; crates/nu-protocol/src/pipeline/byte_stream.rs:837-850"
+          }
+        ],
+        "reviewer_flagged_claims": 1
+      },
+      {
+        "id": "R018",
+        "dataset": "primary",
+        "row_index": 2,
+        "variant": "control",
+        "question": "Q2",
+        "rep": 1,
+        "answered": true,
+        "scores": [
+          1,
+          0.5,
+          1,
+          0.5,
+          0
+        ],
+        "total_out_of_5": 3.0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R012",
+        "dataset": "primary",
+        "row_index": 8,
+        "variant": "control",
+        "question": "Q2",
+        "rep": 2,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R035",
+        "dataset": "primary",
+        "row_index": 15,
+        "variant": "control",
+        "question": "Q2",
+        "rep": 3,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R017",
+        "dataset": "primary",
+        "row_index": 19,
+        "variant": "control",
+        "question": "Q2",
+        "rep": 4,
+        "answered": true,
+        "scores": [
+          0.5,
+          0.5,
+          1,
+          0,
+          0
+        ],
+        "total_out_of_5": 2.0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R014",
+        "dataset": "primary",
+        "row_index": 3,
+        "variant": "optimized",
+        "question": "Q2",
+        "rep": 1,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R001",
+        "dataset": "primary",
+        "row_index": 11,
+        "variant": "optimized",
+        "question": "Q2",
+        "rep": 2,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R004",
+        "dataset": "primary",
+        "row_index": 17,
+        "variant": "optimized",
+        "question": "Q2",
+        "rep": 3,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      },
+      {
+        "id": "R026",
+        "dataset": "primary",
+        "row_index": 20,
+        "variant": "optimized",
+        "question": "Q2",
+        "rep": 4,
+        "answered": false,
+        "scores": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total_out_of_5": 0,
+        "material_false_claims": [],
+        "reviewer_flagged_claims": 0
+      }
+    ],
+    "adjudications": [
+      {
+        "id": "R036",
+        "field": "material_false_claims",
+        "decision": "Remove the false-claim flag; retain all five rubric scores.",
+        "reason": "In context, the statement follows dropping RunningPlugin. It omits the Goodbye/channel/serve chain but does not unambiguously assert that mere idle silence alone terminates the plugin. Treat this as incomplete causal explanation, not a definitive false behavioral claim. The unmodified reviewer judgment remains in Q1_answer_scores.json and Q1_review.json.",
+        "source": "crates/nu-plugin-engine/src/interface/mod.rs:660-668,1219-1232; crates/nu-plugin/src/plugin/interface/mod.rs:339-343"
+      }
+    ],
+    "tokens_per_fully_satisfied_answer": null,
+    "note": "No completed answer satisfied all five criteria. Completion and keyword localization are not semantic correctness. Delivery audit notes are qualitative and not pooled as a coverage metric."
+  },
+  "acceptance": {
+    "predeclared_gate": [
+      "Candidate must reduce aggregate total input+output at least 15% versus current PASR.",
+      "No more failed generations or material false claims than current PASR; no lower mean causal-rubric score on either primary or holdout question.",
+      "Default promotion additionally requires no lower quality and no greater total token cost than native baseline.",
+      "Small sample is exploratory; do not claim general non-inferiority. If gates fail, preserve evidence and do not change production runtime."
+    ],
+    "checks": {
+      "at_least_15_percent_token_reduction_vs_control": false,
+      "no_more_failed_generations_than_control": false,
+      "no_more_answers_with_material_false_claims_than_control": true,
+      "no_lower_mean_causal_score_on_each_question_vs_control": false,
+      "no_greater_total_cost_than_native": false,
+      "no_lower_mean_causal_score_on_each_question_vs_native": false
+    },
+    "promoted": false,
+    "false_claim_gate_caveat": "Candidate has zero flagged final-answer claims because it produced no final answers; this is not a quality success."
+  },
+  "diagnosis": [
+    "Only 2 of 12 candidate trajectories invoked the changed find_evidence tool: 4 calls total, only 1 on primary questions. This does not isolate the quality of definition packing in actual use.",
+    "Candidate trajectories instead made 48 select_context, 43 find_files, 43 grep and 42 read_file calls. End-to-end routing remained a problem despite the direct-body tool.",
+    "All 3 holdout find_evidence calls restricted include to nu-cli/nu-command or nu-cli, excluding nu-protocol/src/engine/stack.rs, the required exit-status source.",
+    "The 4 actual candidate replies respected their 1800-token PASR budgets; all 38 returned source regions matched the cited corpus lines.",
+    "Candidate failed 10 times at the 18-turn limit and twice on decreasing provider prompt usage. These were retained as failures, not silently retried or counted as savings.",
+    "The first Rust smoke exposed doc-comment neighborhoods displacing real definitions. That issue was reproduced and corrected before benchmark inference; it was not a post-result tuning change."
+  ],
+  "next_experiment_recommendation": {
+    "status": "Not run in this experiment",
+    "steps": [
+      "Replay fixed recorded queries and scopes against current and definition retrieval, with source-grounded target definitions, to measure retrieval quality independently of model tool choice.",
+      "Evaluate tool routing and scope selection separately before claiming an end-to-end benefit from another retrieval payload change."
+    ]
+  },
+  "verification": {
+    "production": {
+      "command": "py -3.12 -m pytest -q",
+      "passed": 302,
+      "skipped": 1
+    },
+    "candidate": {
+      "command": "py -3.12 -m pytest -q",
+      "passed": 305,
+      "skipped": 1
+    },
+    "skip_reason": "sentence-transformers optional semantic dependency not installed",
+    "ruff": "All modified harness and candidate files passed targeted checks.",
+    "rust_regression": "Failed before the definition-priority fix; passed afterward with 52 targeted retrieval/MCP tests.",
+    "actual_mcp_smoke": "200- and 1800-token calls on Nushell; legacy library search output matched frozen control for the smoke query.",
+    "actual_candidate_calls": {
+      "count": 4,
+      "regions_verified_against_corpus": 38,
+      "all_full_reply_budgets_respected": true
+    },
+    "request_audit": {
+      "benchmark_rows": 36,
+      "requests": 523,
+      "row_settings_match_every_actual_request": true,
+      "provider_usage_reconciles": true,
+      "all_raw_observations_delivered_unchanged": true
+    },
+    "legacy_runner_smoke": {
+      "answer": "OK",
+      "requests": 1,
+      "sampling_seed": null,
+      "part_of_benchmark": false
+    },
+    "frozen_answer_scores_unchanged_during_trace_review": true
+  },
+  "cleanup": {
+    "temporary_source_trees_removed": [
+      "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-definitions-p5tdylmg",
+      "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-definitions-control-vv_wyx03"
+    ],
+    "source_archive_matches_every_benchmark_source_and_harness_hash": true,
+    "question_text_matches_all_36_recorded_prompts": true,
+    "qwen_instance_unloaded": "qwen/qwen3.5-9b",
+    "corpus_and_existing_index_preserved": true,
+    "qwen_loaded_instances_after_cleanup": 0,
+    "existing_embedding_model_still_loaded": true
+  },
+  "limitations": [
+    "One small local Qwen model, one Rust repository and four pre-existing questions; no general superiority or statistical non-inferiority claim.",
+    "Generation seeds were submitted and recorded, not proof of deterministic GPU execution or backend seed compliance.",
+    "The candidate changed a tool description/schema as well as its retrieval response; catalog-driven routing effects cannot be separated from packing effects here.",
+    "Provider prompt-count regressions were rejected; their backend cause was not established. Token totals include provider-reported usage for failed attempts.",
+    "Rubric judgments are AI-assisted and subjective. Labels/costs were hidden, but observation formats can reveal the arm during the later delivery audit. Main adjudication was not blinded.",
+    "The archived grading sources cover 27 consulted files, not the entire corpus.",
+    "These are Python agent-loop/MCP-server measurements, not a claim about a separate Pi session or a universal native CLI baseline."
+  ],
+  "evidence": {
+    "directory": "eval/agent_bench/results/definitions_20260920",
+    "bundle": {
+      "path": "eval/agent_bench/results/definitions_20260920/evidence_bundle.zip",
+      "sha256": "6ab119e48923ecc02f71d3b24b5633d269b0361fbc13ff8fc0c2e28eab0d7f47",
+      "bytes": 1838549,
+      "files": 66,
+      "crc_and_entry_hashes_verified": true
+    },
+    "source_snapshots": {
+      "path": "eval\\agent_bench\\results\\definitions_20260920\\source_snapshots.zip",
+      "sha256": "0fe48b294c4e16967cf842a7f2a1c8e0c2ebc4097568327828f4c46ba8490e22",
+      "bytes": 477507,
+      "crc_and_entry_hashes_verified": true,
+      "production_source_unchanged": true,
+      "shared_harness_unchanged_since_freeze": true
+    },
+    "ground_truth_archive": {
+      "path": "eval/agent_bench/results/definitions_20260920/ground_truth.zip",
+      "sha256": "d88a810040417e320ed2a6935e2131163c77e93ff891cd920420606c8c9305c3",
+      "files": 27
+    },
+    "primary_sha256": "74b19d3bc00d173a0fcf545a95f5cf66c1c9943107bc5e887a8d90141963e343",
+    "holdout_sha256": "5d2aff0a18f28684cd46970e6542a690556fb9e066a18ea8780714c34287a77e",
+    "replay_note": "Extract source_snapshots.zip. Use shared_harness/compare_sources.py with the extracted control and candidate roots, an equivalent Nushell checkout and experiment/primary_questions.json or holdout_questions.json via PASR_BENCH_QUESTIONS. Per-snapshot historical harness copies are not the driver used in this experiment."
+  },
+  "_publication": {
+    "source_record": "definition_retrieval_20260920.json",
+    "source_sha256": "2305f9c913409962bce4a3150622d7a3ac4cb476b93f59753f94bab654d759e9",
+    "redactions": "Only local Windows user-profile prefixes and hostname identifiers are replaced. Original frozen record remains unchanged and is not published. No metrics, answers, judgments or experimental outcomes were recomputed.",
+    "redacted_fields": [
+      "cleanup/temporary_source_trees_removed/0",
+      "cleanup/temporary_source_trees_removed/1"
+    ]
+  }
+}

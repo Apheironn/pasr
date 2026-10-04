@@ -1,3 +1,4 @@
+import json
 import unittest
 from pathlib import Path
 
@@ -6,8 +7,6 @@ from pasr.receipt import (
     build_receipt,
     read_receipt,
     receipt_bytes,
-    receipt_id,
-    render_markdown,
     write_receipt,
 )
 
@@ -27,6 +26,9 @@ _RESULT = {
     "within_budget": True,
     "total_input_tokens": 1200,
     "token_reduction": 0.825,
+    "context": "[a.py:1-4]\ndef limit(): ...",
+    "sources": ["a.py", "b.py"],
+    "source_fingerprint": {"a.py": "a" * 64, "b.py": "b" * 64},
     "spans": [
         {
             "source": "a.py",
@@ -68,34 +70,35 @@ _CANDIDATES = [
 
 
 class ReceiptIdTests(unittest.TestCase):
-    def test_id_is_stable_and_request_sensitive(self):
-        self.assertEqual(receipt_id(_REQUEST), receipt_id(dict(_REQUEST)))
-        self.assertEqual(len(receipt_id(_REQUEST)), 12)
-        self.assertNotEqual(receipt_id(_REQUEST), receipt_id({**_REQUEST, "budget_tokens": 4000}))
+    def test_identity_changes_with_request_source_or_rendering(self):
+        original = build_receipt(_REQUEST, _RESULT, _CANDIDATES)
+        changed_request = build_receipt({**_REQUEST, "budget_tokens": 4000}, _RESULT, _CANDIDATES)
+        changed_source = build_receipt(
+            _REQUEST, {**_RESULT, "source_fingerprint": {"a.py": "c" * 64, "b.py": "b" * 64}}, _CANDIDATES
+        )
+        changed_rendering = build_receipt(_REQUEST, {**_RESULT, "context": "different rendering"}, _CANDIDATES)
+        self.assertEqual(
+            len(
+                {
+                    item["id"]
+                    for item in (
+                        original,
+                        changed_request,
+                        changed_source,
+                        changed_rendering,
+                    )
+                }
+            ),
+            4,
+        )
 
 
 class BuildReceiptTests(unittest.TestCase):
-    def test_kept_mirrors_result_and_dropped_is_unselected_candidates(self):
-        receipt = build_receipt(_REQUEST, _RESULT, _CANDIDATES)
-
-        self.assertEqual(receipt["receipt_version"], RECEIPT_VERSION)
-        self.assertEqual(receipt["request"], _REQUEST)
-        self.assertEqual([span["provenance"] for span in receipt["kept"]], ["a.py:1-4"])
-        self.assertEqual(receipt["kept"][0]["text"], "def limit(): ...")
-        self.assertEqual([c["provenance"] for c in receipt["dropped"]], ["b.py:9-20"])
-        self.assertEqual(receipt["result"]["token_reduction"], 0.825)
-
     def test_serialisation_is_deterministic(self):
         a = receipt_bytes(build_receipt(_REQUEST, _RESULT, _CANDIDATES))
         b = receipt_bytes(build_receipt(dict(_REQUEST), dict(_RESULT), list(_CANDIDATES)))
         self.assertEqual(a, b)
         self.assertTrue(a.endswith("\n"))
-
-    def test_markdown_lists_every_kept_span(self):
-        md = render_markdown(build_receipt(_REQUEST, _RESULT, _CANDIDATES))
-        self.assertIn("Selection receipt", md)
-        self.assertIn("a.py:1-4", md)
-        self.assertIn("Dropped candidates (1)", md)
 
 
 class ReceiptIoTests(unittest.TestCase):
@@ -110,6 +113,8 @@ class ReceiptIoTests(unittest.TestCase):
             self.assertTrue(path.is_file())
             self.assertTrue(path.with_suffix(".md").is_file())
             self.assertEqual(read_receipt(root, receipt["id"]), receipt)
+            self.assertEqual(path.read_bytes(), receipt_bytes(receipt).encode("utf-8"))
+            self.assertNotIn(b"\r\n", path.with_suffix(".md").read_bytes())
 
     def test_bad_and_missing_ids(self):
         import tempfile
@@ -119,6 +124,33 @@ class ReceiptIoTests(unittest.TestCase):
                 read_receipt(Path(tmp), "../evil")
             with self.assertRaises(FileNotFoundError):
                 read_receipt(Path(tmp), "deadbeef0000")
+
+    def test_tampered_receipt_cannot_recertify_old_evidence(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            receipt = build_receipt(_REQUEST, _RESULT, _CANDIDATES)
+            path = write_receipt(root, receipt)
+            receipt["context"] = "modified context"
+            path.write_text(json.dumps(receipt), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "content hash mismatch"):
+                read_receipt(root, receipt["id"])
+            with self.assertRaisesRegex(ValueError, "content hash mismatch"):
+                write_receipt(root, receipt)
+
+    def test_old_receipt_version_requires_new_selection(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            receipt = build_receipt(_REQUEST, _RESULT, _CANDIDATES)
+            self.assertEqual(receipt["receipt_version"], RECEIPT_VERSION)
+            path = write_receipt(root, receipt)
+            receipt["receipt_version"] = "1.0"
+            path.write_text(json.dumps(receipt), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "unsupported receipt version"):
+                read_receipt(root, receipt["id"])
 
 
 if __name__ == "__main__":

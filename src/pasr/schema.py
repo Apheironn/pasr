@@ -57,9 +57,10 @@ def validate_select_context_request(payload: dict[str, Any], workspace_root: Pat
         ValueError: on a missing query, an unsafe path, an unresolved file set, or an
             out-of-range numeric field.
     """
-    query = str(payload.get("query", "")).strip()
-    if not query:
-        raise ValueError("query is required.")
+    query = payload.get("query", "")
+    if not isinstance(query, str) or not query.strip():
+        raise ValueError("query is required and must be a non-empty string.")
+    query = query.strip()
 
     root = workspace_root.resolve()
     files, metadata = _resolve_files(payload, root)
@@ -71,6 +72,13 @@ def validate_select_context_request(payload: dict[str, Any], workspace_root: Pat
     semantic = str(payload.get("semantic", "") or "")
     if semantic not in _SEMANTIC_SCORERS:
         raise ValueError(f"semantic must be one of {_SEMANTIC_SCORERS}.")
+
+    outline = payload.get("outline", False)
+    if not isinstance(outline, bool):
+        raise ValueError("outline must be a boolean.")
+    trace = payload.get("trace", "") or ""
+    if not isinstance(trace, str):
+        raise ValueError("trace must be a string.")
 
     return SelectContextRequest(
         query=query,
@@ -84,16 +92,17 @@ def validate_select_context_request(payload: dict[str, Any], workspace_root: Pat
         block_size=_positive_int(payload.get("block_size", 400), "block_size"),
         semantic="" if semantic == "none" else semantic,
         map_tokens=_non_negative_int(payload.get("map_tokens", 0), "map_tokens"),
-        trace=str(payload.get("trace", "") or "").strip(),
-        outline=bool(payload.get("outline", False)),
+        trace=trace.strip(),
+        outline=outline,
     )
 
 
 def validate_trace_dependencies_request(payload: dict[str, Any], workspace_root: Path) -> TraceDependenciesRequest:
     """Validate a raw ``trace_dependencies`` payload."""
-    symbol = str(payload.get("symbol", "")).strip()
-    if not symbol:
-        raise ValueError("symbol is required.")
+    symbol = payload.get("symbol", "")
+    if not isinstance(symbol, str) or not symbol.strip():
+        raise ValueError("symbol is required and must be a non-empty string.")
+    symbol = symbol.strip()
     direction = str(payload.get("direction", "dependencies") or "dependencies")
     if direction not in _TRACE_DIRECTIONS:
         raise ValueError(f"direction must be one of {_TRACE_DIRECTIONS}.")
@@ -283,9 +292,9 @@ def _non_negative_int(value: Any, field_name: str) -> int:
 
 
 def _int(value: Any, field_name: str) -> int:
-    if isinstance(value, bool):
+    if isinstance(value, bool) or (isinstance(value, float) and not value.is_integer()):
         raise ValueError(f"{field_name} must be an integer.")
     try:
         return int(value)
-    except (TypeError, ValueError) as exc:
+    except (TypeError, ValueError, OverflowError) as exc:
         raise ValueError(f"{field_name} must be an integer.") from exc

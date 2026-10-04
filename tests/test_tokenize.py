@@ -55,5 +55,33 @@ class GetTokenizerTests(unittest.TestCase):
             get_tokenizer("bogus")
 
 
+class TokenizerAdapterTests(unittest.TestCase):
+    def test_plain_protocol_tokenizer_can_select_matching_raw_tokens(self):
+        from pasr.candidates import generate_lexical_candidates
+
+        class PlainTokenizer:
+            def encode(self, text):
+                return [ord(character) for character in text]
+
+            def decode(self, ids):
+                return "".join(chr(value) for value in ids)
+
+        candidates = generate_lexical_candidates("alpha beta", "beta", PlainTokenizer(), "words.txt", 6)
+
+        self.assertEqual([(item.start, item.end, item.text) for item in candidates], [(6, 10, "beta")])
+
+    def test_internal_type_error_is_not_retried_as_keyword_incompatibility(self):
+        from pasr._tokenize import encode_ids
+
+        class FailingTokenizer:
+            def encode(self, text, truncation=False, add_special_tokens=None):
+                if add_special_tokens is not None:
+                    raise TypeError("broken tokenizer state")
+                return [1]
+
+        with self.assertRaisesRegex(TypeError, "broken tokenizer state"):
+            encode_ids(FailingTokenizer(), "alpha")
+
+
 if __name__ == "__main__":
     unittest.main()

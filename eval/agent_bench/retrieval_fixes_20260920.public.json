@@ -1,0 +1,370 @@
+{
+  "experiment": "retrieval_fixes_20260920",
+  "decision": "Do not promote either fix; production retrieval unchanged by this study.",
+  "protocol": {
+    "goal": "Isolate identifier-component matching from remaining-budget packing; no query/ranking/schema tuning.",
+    "variants": {
+      "locator_control": {
+        "root": "control",
+        "method": "locator_hints"
+      },
+      "locator_identifier": {
+        "root": "identifier",
+        "method": "locator_hints"
+      },
+      "definitions_control": {
+        "root": "candidate",
+        "method": "definitions"
+      },
+      "definitions_identifier": {
+        "root": "definition_identifier",
+        "method": "definitions"
+      },
+      "definitions_packing": {
+        "root": "packing",
+        "method": "definitions"
+      },
+      "definitions_combined": {
+        "root": "combined",
+        "method": "definitions"
+      }
+    },
+    "matching": "Unicode-aware boundaries that treat underscores as delimiters; compound terms remain contiguous; exact find_usages unchanged. File-frequency substring matching and file ranking unchanged.",
+    "packing": "Use existing hit-centered partial fallback whenever the whole definition cannot fit remaining full-response budget, not only when it exceeds the entire budget. No reranking or new quotas.",
+    "replay": "All 16 frozen cases, same adapters and 1800 cl100k_base ceiling. PYTHONHASHSEED=0 for all fresh workers. Primary analysis: 13 recorded-scope queries, equally weighted over four questions; three scope ablations separate.",
+    "model_gate": "A candidate must strictly improve recorded-scope macro canonical-line coverage over locator_control without lowering any question. Test eligible locator_identifier, plus at most one eligible definition variant: highest coverage, tie-break lower mean context tokens then variant name. All candidates and gate outcomes are reported; selection makes this exploratory, not confirmatory.",
+    "model_protocol": {
+      "baseline": "locator_control",
+      "samples_per_method": 32,
+      "seeds": [
+        20260923,
+        20260924
+      ],
+      "temperature": 0.2,
+      "max_output": 1200,
+      "model": "qwen/qwen3.5-9b Q4_K_M",
+      "context_length": 32768,
+      "thinking": false,
+      "tools": false,
+      "system_prompt": "Unchanged answer_contexts.py from the fixed-query study.",
+      "grading": "Same five source-grounded criteria, blinded method labels/costs; material false claims and grounding separately. No candidate passing the source gate means no model run."
+    },
+    "promotion": "Definition retrieval remains experimental without free-agent verification. The narrower identifier matching correction may enter production only with pre-fix failing/post-fix passing boundary regressions, full-suite pass, no per-question source-coverage or causal-score regression, strictly better macro causal score and no increase in material false answers. No end-to-end savings claim.",
+    "no_tuning": "Freeze code before replay. No changes to match/rank/packing parameters based on replay outcomes in this study."
+  },
+  "cohort": {
+    "accepted_retrieval_calls": 96,
+    "excluded_wrong_import_calls": 32,
+    "failed_pre_retrieval_launches": 4,
+    "recorded_cases": 13,
+    "scope_ablation_cases": 3,
+    "questions": 4,
+    "model_calls": 64,
+    "model_failures": 0,
+    "recorded_answers_per_method": 26,
+    "scope_ablation_answers_per_method": 6
+  },
+  "question_labels": {
+    "primary_Q1": "Idle plugin lifecycle",
+    "primary_Q2": "Ctrl-C propagation",
+    "holdout_Q1": "Recursion limits",
+    "holdout_Q2": "Exit-status precedence"
+  },
+  "source_metrics": {
+    "locator_control": {
+      "by_question": {
+        "primary_Q1": 0.0768924218335983,
+        "holdout_Q1": 0.1609920634920635,
+        "primary_Q2": 0.25,
+        "holdout_Q2": 0.0
+      },
+      "macro_coverage": 0.12197112133141545,
+      "mean_context_tokens": 651.2307692307693,
+      "source_gate": false
+    },
+    "locator_identifier": {
+      "by_question": {
+        "primary_Q1": 0.036431372549019604,
+        "holdout_Q1": 0.17904761904761904,
+        "primary_Q2": 0.25,
+        "holdout_Q2": 0.0
+      },
+      "macro_coverage": 0.11636974789915966,
+      "mean_context_tokens": 650.2307692307693,
+      "source_gate": false
+    },
+    "definitions_control": {
+      "by_question": {
+        "primary_Q1": 0.1598018018018018,
+        "holdout_Q1": 0.0,
+        "primary_Q2": 0.25,
+        "holdout_Q2": 0.0
+      },
+      "macro_coverage": 0.10245045045045045,
+      "mean_context_tokens": 1730.5384615384614,
+      "source_gate": false
+    },
+    "definitions_identifier": {
+      "by_question": {
+        "primary_Q1": 0.1598018018018018,
+        "holdout_Q1": 0.1957142857142857,
+        "primary_Q2": 0.23333333333333334,
+        "holdout_Q2": 0.0
+      },
+      "macro_coverage": 0.1472123552123552,
+      "mean_context_tokens": 1730.6153846153845,
+      "source_gate": false
+    },
+    "definitions_packing": {
+      "by_question": {
+        "primary_Q1": 0.1516936936936937,
+        "holdout_Q1": 0.1609920634920635,
+        "primary_Q2": 0.25,
+        "holdout_Q2": 0.0
+      },
+      "macro_coverage": 0.1406714392964393,
+      "mean_context_tokens": 1715,
+      "source_gate": true
+    },
+    "definitions_combined": {
+      "by_question": {
+        "primary_Q1": 0.1516936936936937,
+        "holdout_Q1": 0.3567063492063492,
+        "primary_Q2": 0.23333333333333334,
+        "holdout_Q2": 0.0
+      },
+      "macro_coverage": 0.18543334405834405,
+      "mean_context_tokens": 1708.6923076923076,
+      "source_gate": false
+    }
+  },
+  "selected_for_model": [
+    "definitions_packing"
+  ],
+  "answer_quality": {
+    "locator_control": {
+      "recorded": {
+        "answers": 26,
+        "by_question": {
+          "holdout_Q1": 2.0,
+          "holdout_Q2": 0,
+          "primary_Q1": 0.625,
+          "primary_Q2": 2.3333333333333335
+        },
+        "question_macro_score": 1.2395833333333335,
+        "answers_with_material_false_claims": 4,
+        "answers_with_unsupported_claims": 9,
+        "fully_correct": 0,
+        "by_rep": {
+          "1": 1.2291666666666665,
+          "2": 1.25
+        }
+      },
+      "workspace": {
+        "answers": 6,
+        "by_question": {
+          "holdout_Q2": 0
+        },
+        "question_macro_score": 0,
+        "answers_with_material_false_claims": 0,
+        "answers_with_unsupported_claims": 0,
+        "fully_correct": 0,
+        "by_rep": {
+          "1": 0,
+          "2": 0
+        }
+      }
+    },
+    "definitions_packing": {
+      "recorded": {
+        "answers": 26,
+        "by_question": {
+          "holdout_Q1": 2.0,
+          "holdout_Q2": 0.16666666666666666,
+          "primary_Q1": 0.875,
+          "primary_Q2": 2.75
+        },
+        "question_macro_score": 1.4479166666666667,
+        "answers_with_material_false_claims": 5,
+        "answers_with_unsupported_claims": 11,
+        "fully_correct": 0,
+        "by_rep": {
+          "1": 1.4791666666666665,
+          "2": 1.4166666666666667
+        }
+      },
+      "workspace": {
+        "answers": 6,
+        "by_question": {
+          "holdout_Q2": 0
+        },
+        "question_macro_score": 0,
+        "answers_with_material_false_claims": 1,
+        "answers_with_unsupported_claims": 3,
+        "fully_correct": 0,
+        "by_rep": {
+          "1": 0,
+          "2": 0
+        }
+      }
+    }
+  },
+  "provider_usage": {
+    "recorded": {
+      "locator_control": {
+        "answers": 26,
+        "total_tokens": 31552,
+        "input_tokens": 22108,
+        "output_tokens": 9444
+      },
+      "definitions_packing": {
+        "answers": 26,
+        "total_tokens": 65797,
+        "input_tokens": 53294,
+        "output_tokens": 12503
+      }
+    },
+    "workspace": {
+      "locator_control": {
+        "answers": 6,
+        "total_tokens": 6934,
+        "input_tokens": 5462,
+        "output_tokens": 1472
+      },
+      "definitions_packing": {
+        "answers": 6,
+        "total_tokens": 14296,
+        "input_tokens": 12220,
+        "output_tokens": 2076
+      }
+    },
+    "all": {
+      "locator_control": {
+        "answers": 32,
+        "total_tokens": 38486,
+        "input_tokens": 27570,
+        "output_tokens": 10916
+      },
+      "definitions_packing": {
+        "answers": 32,
+        "total_tokens": 80093,
+        "input_tokens": 65514,
+        "output_tokens": 14579
+      }
+    }
+  },
+  "recorded_total_token_ratio": 2.0853511663286004,
+  "packing_candidate_quality_screen": {
+    "higher_macro_causal_score": true,
+    "no_question_score_regression": true,
+    "no_increase_in_material_false_answers": false,
+    "free_agent_verification_performed": false,
+    "production_promotion": false
+  },
+  "findings": [
+    "Identifier matching passes its boundary regressions, but two next_timeout hits take both per-file slots and displace the GC worker. Locator canonical coverage falls from 12.2% to 11.6%; no model evaluation or production promotion of this variant.",
+    "Remaining-budget partial fallback passes its red/green regression and restores recursion evidence. Its definition variant alone passes the frozen source gate, but the model comparison has more material false answers and 2.09 times the provider tokens of the locator baseline.",
+    "Combined fixes reach the highest canonical coverage (18.5%) but fail the question-level gate. Lost Signals struct anchors have an alternative interrupt_flag getter exposing/cloning Option<Arc<AtomicBool>>. The conservative anchor gate may reject equivalent evidence; this is not established semantic regression. Combined answer quality was not tested.",
+    "The combined context supplies a nested interrupt-error helper without the surrounding Signals::check condition. Prioritize distinct useful regions and controlling caller context; do not tune this frozen experiment after observing outcomes.",
+    "Both scope-ablation arms score zero on exit-status causality. Packing produces one materially false ablation answer; locator produces none."
+  ],
+  "verification": {
+    "identifier_regressions": "Two fail before, pass after.",
+    "packing_regression": "One fails before, passes after. The initial test-parser mistake and corrected run are retained separately.",
+    "focused_search_suite_passed": 14,
+    "focused_context_suite_passed": 10,
+    "ruff_passed": true,
+    "full_production_suite_run": false,
+    "source_context_checks": "All 96 accepted contexts passed source text, ranges, non-overlap and 1800-token ceiling checks. Imported module path and source hash verified.",
+    "control_context_parity_with_previous_study": {
+      "locator_control": true,
+      "definitions_control": true
+    },
+    "request_audit": "All 64 requests preserve the selected context, generation parameters, one API turn and provider-token reconciliation.",
+    "reviews": "Four method/cost-blinded source-grounded reviews; original judgments retained. G047 false-claim flag removed conservatively before arm aggregates; criterion scores unchanged.",
+    "model_resource": "Qwen unloaded after all calls; preexisting embedding model not modified."
+  },
+  "limitations": [
+    "Exploratory reused questions in one repository, two seeds, model reviewers rather than independent human validation. One additional observed false answer is not a statistical proof of regression.",
+    "Source-gate selection makes the model comparison exploratory. Canonical-line overlap is not semantic evidence sufficiency and does not credit alternative code.",
+    "Locator adapter materializes the leading read hints; it is not a full production agent, select_context path or native grep/read baseline.",
+    "Definition retrieval budgets its native response including metadata before source-only normalization; source-only contexts are not topped up. cl100k_base context estimates are distinct from provider token usage.",
+    "No free-agent or end-to-end efficiency verification; no production promotion. Focused regression suites are not a full production-suite pass.",
+    "Concurrent workers shared the corpus/index. Replay elapsed times are not isolated performance comparisons.",
+    "Within-study methods share reviewers. Do not treat score differences from earlier experiments as calibrated longitudinal effects; borderline rubric interpretations differ.",
+    "Archived corpus excerpts permit evidence audit, not full retrieval reproduction: file-frequency ranking requires the original full corpus."
+  ],
+  "reproduction": {
+    "environment": "Set PYTHONHASHSEED=0; use Python 3.12 and dependencies from the archived source tree.",
+    "retrieval_command": "python replay_worker.py --source-root <extracted-snapshots>/packing --workspace <full-nushell-checkout> --cases cases.json --method definitions --out <new-output>.json",
+    "source_root_mapping": {
+      "locator_control": {
+        "root": "control",
+        "method": "locator_hints"
+      },
+      "locator_identifier": {
+        "root": "identifier",
+        "method": "locator_hints"
+      },
+      "definitions_control": {
+        "root": "candidate",
+        "method": "definitions"
+      },
+      "definitions_identifier": {
+        "root": "definition_identifier",
+        "method": "definitions"
+      },
+      "definitions_packing": {
+        "root": "packing",
+        "method": "definitions"
+      },
+      "definitions_combined": {
+        "root": "combined",
+        "method": "definitions"
+      }
+    },
+    "harness_integrity": "protocol_manifest.json records the original freeze; launcher_amendment.json records the fail-closed import guard amendment without algorithm changes."
+  },
+  "artifacts": {
+    "directory": "eval/agent_bench/results/retrieval_fixes_20260920",
+    "source_snapshots": {
+      "path": "eval/agent_bench/results/retrieval_fixes_20260920/source_snapshots.zip",
+      "sha256": "df4d105e0f3d87c4359c377beab4fbc29f34be59a6659b376751c1e2a72f0c3a",
+      "files": 694
+    },
+    "source_evidence_files": 68,
+    "source_snapshot_manifest": "source_snapshot_manifest.json",
+    "source_evidence_manifest": "source_evidence_manifest.json",
+    "raw_answers": "answers.json",
+    "raw_retrievals": "Six variant-named JSON files.",
+    "quality": "quality.json",
+    "paired_quality": "paired_quality.json",
+    "raw_reviews": "blind_review/*_review.json",
+    "adjudications": "adjudications.json",
+    "invalid_launches": "invalid_launch/",
+    "previous_source_archive_sha256": "0fe48b294c4e16967cf842a7f2a1c8e0c2ebc4097568327828f4c46ba8490e22",
+    "evidence_bundle": {
+      "path": "eval/agent_bench/results/retrieval_fixes_20260920/evidence_bundle.zip",
+      "sha256": "fcd5dfd6a79ea5d0f20ea45ba44d2001518b11dcc7fe1125e0ed0d75036adb10",
+      "files": 187,
+      "bytes": 2362785,
+      "verification": "ZIP CRC and SHA256 checked for every payload member. bundle_manifest.json excludes its own digest. Internal summary predates outer bundle hash and temporary-root removal."
+    }
+  },
+  "cleanup": {
+    "tested_source_archive_verified": true,
+    "evidence_bundle_verified": true,
+    "owned_temporary_root_removed": "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-retrieval-fixes-3f3mb3gj",
+    "experiment_test_bytecode_removed": true,
+    "model_unload_evidence": "model_unload.json",
+    "production_source_promoted": false
+  },
+  "_publication": {
+    "source_record": "retrieval_fixes_20260920.json",
+    "source_sha256": "e3ed19a5970c0b94cb2a65d7df00dc305e3a861a92a0f65fd5bcb2620ce181f4",
+    "redactions": "Only local Windows user-profile prefixes and hostname identifiers are replaced. Original frozen record remains unchanged and is not published. No metrics, answers, judgments or experimental outcomes were recomputed.",
+    "redacted_fields": [
+      "cleanup/owned_temporary_root_removed"
+    ]
+  }
+}

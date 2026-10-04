@@ -32,8 +32,8 @@ from pasr.trace import trace_dependencies
 
 
 def context_metrics(result: dict) -> dict:
-    """Compact machine-readable metrics for a headless selection."""
-    files = result.get("diagnostics", {}).get("files", [])
+    """Source-context metrics, not model/API usage or measured native-tool savings."""
+    files = result.get("diagnostics", {}).get("files", result.get("sources", []))
     return {
         "route": result["route"],
         "query_class": result.get("query_class"),
@@ -157,31 +157,29 @@ def _explain(args: argparse.Namespace) -> int:
 
 
 def _review(args: argparse.Namespace) -> int:
-    from pasr.file_discovery import discover_workspace_files
-    from pasr.review import parse_unified_diff, read_git_diff, render_review, review_context
+    from pasr.review import parse_unified_diff, read_review_inputs, render_review, review_context
 
-    if args.diff:
-        diff_text = Path(args.diff).read_text(encoding="utf-8", errors="replace")
-    else:
-        try:
-            diff_text = read_git_diff(Path(args.workspace), staged=args.staged, ref_range=args.ref_range)
-        except RuntimeError as exc:
-            print(f"error: {exc}\nhint: pass --diff <file> with a unified diff", file=sys.stderr)
-            return 2
-
-    changes = parse_unified_diff(diff_text)
-    if not changes:
-        print("no changed files with hunks in the diff")
-        return 0
-
-    records = discover_workspace_files(Path(args.workspace).resolve(), include_patterns=args.paths or ["."])
-    texts = {r.relative_path: r.path.read_text(encoding="utf-8", errors="replace") for r in records}
-    result = review_context(changes, texts, budget_tokens=args.budget, callers_depth=args.callers_depth)
+    try:
+        diff_text, texts, revision = read_review_inputs(
+            Path(args.workspace),
+            args.paths or ["."],
+            staged=args.staged,
+            ref_range=args.ref_range,
+            diff_path=Path(args.diff) if args.diff else None,
+        )
+        changes = parse_unified_diff(diff_text)
+        result = review_context(changes, texts, budget_tokens=args.budget, callers_depth=args.callers_depth)
+    except (OSError, RuntimeError, UnicodeError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    result["source_revision"] = revision
 
     if args.context_file:
         Path(args.context_file).write_text(result["context"], encoding="utf-8", newline="\n")
     if args.json:
         print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
+    elif not changes:
+        print("no changed files with hunks in the diff")
     else:
         print(render_review(result), end="")
     return 0
@@ -208,10 +206,18 @@ def _trace(args: argparse.Namespace) -> int:
         },
         workspace_root=args.workspace,
     )
-    texts = {
-        meta["relative_path"]: path.read_text(encoding="utf-8", errors="replace")
-        for path, meta in zip(request.files, request.file_metadata, strict=True)
-    }
+    import warnings
+
+    from pasr.source_text import read_source
+
+    texts = {}
+    for path, meta in zip(request.files, request.file_metadata, strict=True):
+        try:
+            texts[meta["relative_path"]] = read_source(path).text
+        except (OSError, UnicodeError, ValueError) as exc:
+            if meta.get("source") == "explicit":
+                raise ValueError(f"unreadable source {meta['relative_path']}: {exc}") from exc
+            warnings.warn(f"skipping unreadable source {meta['relative_path']}: {exc}", RuntimeWarning, stacklevel=2)
     result = trace_dependencies(args.symbol, texts, max_depth=request.max_depth, direction=request.direction).to_dict()
     if args.json:
         print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
@@ -225,7 +231,11 @@ def _trace(args: argparse.Namespace) -> int:
         print(f"# {args.symbol} -- {len(result['spans'])} {noun}, {pct_str}% fewer tokens than the index\n")
         for span in result["spans"]:
             print(f"- {span['provenance']}  ({span['kind']} {span['name']})")
-    return 0
+        if result["diagnostics"].get("truncated_by_depth"):
+            print(f"\nstatic trace stopped at depth {result['depth']}; further definitions were not included")
+        if result["diagnostics"].get("over_budget"):
+            print(f"\nsoft budget exceeded: {result['token_count']}/{result['budget_tokens']} context tokens")
+    return 0 if result["found"] else 1
 
 
 def _pack(args: argparse.Namespace) -> int:
@@ -358,23 +368,33 @@ def build_parser() -> argparse.ArgumentParser:
 
     review = sub.add_parser("review", help="Diff-aware context: touched definitions + the callers they affect.")
     review.add_argument("paths", nargs="*", help="Globs / directories to scan for callers (default: '.').")
-    review.add_argument("--diff", default="", help="Read a unified diff from this file instead of running git.")
-    review.add_argument("--staged", action="store_true", help="Review the staged diff (git diff --cached).")
-    review.add_argument("--range", default="", dest="ref_range", help="A git range, e.g. main..HEAD.")
+    review_source = review.add_mutually_exclusive_group()
+    review_source.add_argument(
+        "--diff", default="", help="Read an external unified diff; source/callers come from the working tree."
+    )
+    review_source.add_argument(
+        "--staged", action="store_true", help="Review staged changes and source from a pinned index tree."
+    )
+    review_source.add_argument(
+        "--range",
+        default="",
+        dest="ref_range",
+        help="Review A..B or A...B; source/callers come from commit B (omitted endpoints mean HEAD).",
+    )
     review.add_argument("--budget", type=int, default=6000, dest="budget")
     review.add_argument("--callers-depth", type=int, default=1, dest="callers_depth")
     review.add_argument("--context-file", default="", dest="context_file", help="Write the raw review context here.")
     review.add_argument("--json", action="store_true", help="Emit the review as JSON.")
     review.set_defaults(func=_review)
 
-    report = sub.add_parser("report", help="Summarise .pasr/ledger.jsonl: tokens and round trips saved.")
+    report = sub.add_parser("report", help="Summarise source-context reduction estimates in .pasr/ledger.jsonl.")
     report.add_argument("--since", default="", help="Only rows on/after this ISO date prefix, e.g. 2026-09-01.")
     report.add_argument(
         "--price-per-mtok",
         type=float,
         default=0.0,
         dest="price_per_mtok",
-        help="USD per million input tokens; if set, show an estimated cost avoided.",
+        help="USD per million input tokens; prices omitted source context, not actual API savings.",
     )
     report.add_argument("--json", action="store_true", help="Emit the summary as JSON.")
     report.set_defaults(func=_report)

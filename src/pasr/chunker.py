@@ -11,6 +11,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from pasr.source_text import physical_lines
 from pasr.tokenize import Tokenizer, get_tokenizer
 
 
@@ -78,7 +79,7 @@ def chunk_text(
         return []
     tok = tokenizer or get_tokenizer()
 
-    lines = text.splitlines(keepends=True)
+    lines = physical_lines(text, keepends=True)
     spans: list[RawSpan] = []
 
     pending: list[tuple[int, str, int]] = []  # (lineno, line_text, ntok)

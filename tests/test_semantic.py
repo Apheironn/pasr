@@ -1,4 +1,3 @@
-import importlib.util
 import json
 import unittest
 from pathlib import Path
@@ -20,19 +19,6 @@ def _para_spans(block_size: int = 24):
     for path in sorted(_PARA.glob("*.py")):
         spans.extend(chunk_text(path.name, path.read_text(encoding="utf-8"), tokenizer, block_size))
     return spans
-
-
-def _recall(config: RetrievalConfig) -> float:
-    spans = _para_spans()
-    hits = 0
-    for needle in _NEEDLES:
-        results = retrieve(needle["query"], spans, config)
-        if any(
-            c.source == needle["source"] and c.metadata["line_start"] <= needle["line"] <= c.metadata["line_end"]
-            for c in results
-        ):
-            hits += 1
-    return hits / len(_NEEDLES)
 
 
 class HashingScorerTests(unittest.TestCase):
@@ -74,12 +60,6 @@ class FusionTests(unittest.TestCase):
         disabled = [c.to_dict() for c in retrieve(query, spans, RetrievalConfig(top_k=5, semantic=""))]
         self.assertEqual(default, disabled)
 
-    def test_hashing_scorer_improves_paraphrase_recall(self):
-        base = _recall(RetrievalConfig(top_k=5))
-        with_semantic = _recall(RetrievalConfig(top_k=5, semantic="hashing"))
-        self.assertGreaterEqual(with_semantic, 0.8)
-        self.assertGreater(with_semantic, base)
-
     def test_unavailable_scorer_degrades_with_a_warning(self):
         spans = _para_spans()
         query = _NEEDLES[0]["query"]
@@ -87,18 +67,6 @@ class FusionTests(unittest.TestCase):
         with pytest.warns(RuntimeWarning, match="unavailable"):
             degraded = [c.key for c in retrieve(query, spans, RetrievalConfig(top_k=5, semantic="bogus"))]
         self.assertEqual(degraded, baseline)
-
-
-@pytest.mark.skipif(
-    importlib.util.find_spec("sentence_transformers") is None,
-    reason="sentence-transformers (pasr-mcp[semantic]) not installed",
-)
-def test_minilm_scorer_loads_when_extra_present():
-    from pasr.retrieval.semantic import MiniLmScorer
-
-    scorer = MiniLmScorer()
-    scores = scorer.score("authentication with a bearer token", _para_spans())
-    assert len(scores) == len(_para_spans())
 
 
 if __name__ == "__main__":

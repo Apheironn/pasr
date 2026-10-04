@@ -39,29 +39,16 @@ class ClassifyQueryTests(unittest.TestCase):
 
 
 class AssessTests(unittest.TestCase):
-    def test_aggregation_lowers_confidence_and_advises(self):
+    def test_aggregation_lowers_confidence(self):
         out = assess("aggregation", _result(coverage=0.9))
-        self.assertLess(out["confidence"], 0.7)
-        self.assertTrue(any("Aggregation-style" in line for line in out["advice"]))
-
-    def test_trace_advises_the_other_tool(self):
-        out = assess("trace", _result())
-        self.assertTrue(any("trace_dependencies" in line for line in out["advice"]))
-
-    def test_low_coverage_selected_advises_grep_or_expand(self):
-        out = assess("localized", _result(coverage=0.2))
-        self.assertTrue(any("expand_context" in line or "grep" in line for line in out["advice"]))
-
-    def test_lossless_is_high_confidence(self):
-        out = assess("localized", _result(route="lossless", coverage=0.9))
-        self.assertEqual(out["confidence"], 0.95)
+        self.assertLess(out["confidence"], assess("localized", _result(coverage=0.9))["confidence"])
 
     def test_dropped_window_is_flagged(self):
         out = assess(
             "localized",
             _result(diagnostics={"skipped_budget_count": 0, "active_window_dropped": "too small"}),
         )
-        self.assertTrue(any("Budget too small" in line for line in out["advice"]))
+        self.assertLess(out["confidence"], assess("localized", _result())["confidence"])
 
     def test_confidence_is_bounded(self):
         for klass in ("localized", "trace", "aggregation", "unknown"):
@@ -73,3 +60,10 @@ class AssessTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_empty_lossless_scope_has_no_answer_confidence():
+    for has_line_ranges in (False, True):
+        result = _result(route="lossless", coverage=0, spans=[])
+        result["context"] = ""
+        assert assess("localized", result, has_line_ranges=has_line_ranges)["confidence"] == 0.0

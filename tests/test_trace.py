@@ -78,6 +78,26 @@ class TraceDependenciesTests(unittest.TestCase):
         self.assertTrue(shallow.diagnostics["truncated_by_depth"])
         self.assertFalse(deep.diagnostics["truncated_by_depth"])
 
+    def test_last_frontier_only_counts_unvisited_definitions(self):
+        files = {
+            "graph.py": "def root():\n    return a() + b()\n\ndef a():\n    return b()\n\ndef b():\n    return 1\n"
+        }
+        result = trace_dependencies("root", files, tokenizer=WhitespaceTokenizer(), max_depth=1)
+        self.assertEqual({span.name for span in result.spans}, {"root", "a", "b"})
+        self.assertFalse(result.diagnostics["truncated_by_depth"])
+        self.assertEqual(result.depth, 1)
+
+    def test_token_count_includes_separators_between_definitions(self):
+        from pasr.tokenize import TiktokenTokenizer
+
+        tok = TiktokenTokenizer()
+        result = trace_dependencies(
+            "root", {"a.py": "X = 1\nY = 2\ndef root():\n    return X + Y\n"}, tokenizer=tok, budget_tokens=16
+        )
+        self.assertEqual(result.token_count, tok.count(result.text))
+        self.assertEqual(result.total_index_tokens, result.token_count)
+        self.assertFalse(result.within_budget)
+
     def test_is_deterministic(self):
         self.assertEqual(_trace("run_pipeline").to_dict(), _trace("run_pipeline").to_dict())
 

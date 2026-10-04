@@ -1,0 +1,11 @@
+{
+  "corpus": "nushell",
+  "_revision": "76ba59d425c25b74ac5c9257ccfb36ddc0d352ed",
+  "_shape": "The two reused holdout questions from the 2026-09-20 retrieval studies, restated verbatim so agent runs and the frozen-context replays ask the same thing. Q1 spans three files (carrier, config, two evaluators); Q2 is a precedence branch whose words (exit/status/last) do not match the identifiers that implement it.",
+  "Q1": "How does Nushell prevent a recursive user-defined command from exhausting the native call stack? Identify where the recursion depth is carried and incremented, which configurable limit is checked, and what happens when the limit is exceeded in its evaluators.",
+  "Q2": "When a Nushell error updates the last command's exit status, how does it choose between an external program's exit status and a shell error's status, and where does it store the chosen value?",
+  "truth": {
+    "Q1": {"must": ["recursion_count", "recursion_limit"], "any": ["RecursionLimitReached", "stack.rs", "eval.rs", "eval_ir.rs"]},
+    "Q2": {"must": ["set_last_error", "LAST_EXIT_CODE"], "any": ["external_exit_code", "set_last_exit_code", "stack.rs"]}
+  }
+}

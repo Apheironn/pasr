@@ -1,8 +1,9 @@
 import random
 import unittest
 
-from pasr.chunker import RawSpan
+from pasr.chunker import RawSpan, chunk_text
 from pasr.pipeline import ROUTE_LOSSLESS, ROUTE_SELECTED, AssembleConfig, assemble
+from pasr.tokenize import WhitespaceTokenizer
 
 
 def _span(line: int, text: str, token_start: int, source: str = "f.py") -> RawSpan:
@@ -41,6 +42,54 @@ class LosslessRouteTests(unittest.TestCase):
         self.assertEqual(pack.token_count, sum(s.token_count for s in spans))
         self.assertTrue(pack.within_budget)
         self.assertEqual(len(pack.spans), 3)
+
+    def test_exact_lossless_measure_can_fit_when_additive_source_counts_do_not(self):
+        tokenizer = WhitespaceTokenizer()
+        spans = [
+            *chunk_text("a.txt", "alpha", tokenizer),
+            *chunk_text("b.txt", "beta", tokenizer),
+        ]
+        pack = assemble(
+            "unrelated",
+            spans,
+            AssembleConfig(budget_tokens=1),
+            measure=lambda selected, route: tokenizer.count("".join(span.text for span in selected)),
+        )
+
+        self.assertEqual(pack.route, ROUTE_LOSSLESS)
+        self.assertEqual(pack.text, "alphabeta")
+        self.assertEqual(pack.token_count, tokenizer.count(pack.text))
+        self.assertEqual(sum(span.token_count for span in pack.spans), 2)
+
+
+class RenderedBudgetTests(unittest.TestCase):
+    def test_labels_and_header_are_priced_before_whole_span_selection(self):
+        tokenizer = WhitespaceTokenizer()
+        spans = [
+            *chunk_text("a.txt", "alpha\n", tokenizer),
+            *chunk_text("b.txt", "beta\n", tokenizer),
+            *chunk_text("noise.txt", "noise " * 10, tokenizer),
+        ]
+
+        def render(selected, route):
+            if route == ROUTE_LOSSLESS:
+                return "".join(span.text for span in selected)
+            return "# context\n" + "\n\n".join(f"[{span.metadata['provenance']}]\n{span.text}" for span in selected)
+
+        for strategy in ("score_only", "coverage_aware"):
+            with self.subTest(strategy=strategy):
+                pack = assemble(
+                    "alpha beta",
+                    spans,
+                    AssembleConfig(budget_tokens=5, prefix_tokens=0, tail_tokens=0, recall_strategy=strategy),
+                    measure=lambda selected, route: tokenizer.count(render(selected, route)),
+                )
+
+                self.assertEqual(pack.route, ROUTE_SELECTED)
+                self.assertEqual([span.source for span in pack.spans], ["a.txt"])
+                self.assertEqual(pack.token_count, tokenizer.count(render(pack.spans, pack.route)))
+                self.assertEqual(pack.token_count, 4)
+                self.assertLessEqual(pack.token_count, pack.budget_tokens)
 
 
 class SelectedRouteTests(unittest.TestCase):

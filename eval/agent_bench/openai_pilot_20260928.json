@@ -1,0 +1,542 @@
+{
+  "date": "2026-09-28",
+  "decision": "GPT-6 Luna at reasoning_effort=none is usable for inexpensive development measurements. GPT-5 nano at minimal effort failed the frozen source-answering gate. PASR at six calls matched the observed baseline pass count with 9.29% fewer total tokens; this small development pilot does not establish generalization. No production retrieval change.",
+  "authorization_and_security": {
+    "user_stated_account_credit_usd": 6,
+    "study_spending_cap_usd": 5,
+    "credential_echoed_or_saved_in_repository": false,
+    "credential_source": "User-authorized credential in this conversation, loaded only into process memory.",
+    "credential_rotation_recommended": true,
+    "actual_account_balance_queried": false
+  },
+  "protocol": {
+    "date": "2026-09-28",
+    "authorization": "User supplied an OpenAI project credential and authorized use of its stated $6 balance. Credential values are never persisted in study artifacts.",
+    "study_ceiling_usd": 5.0,
+    "account_balance_stated_by_user_usd": 6.0,
+    "balance_reserve_intent_usd": 1.0,
+    "budget_policy": "Sequential requests, reserve a conservative per-request maximum before sending, retain unknown usage as reserved cost and stop. No automatic retries, provider fallback, Flex or paid built-in tools. Other activity on the same account is outside this study's control.",
+    "models": {
+      "luna": {
+        "id": "gpt-6-luna",
+        "reasoning_effort": "none",
+        "input_per_million": 0.1,
+        "cached_input_per_million": 0.01,
+        "cache_write_per_million": 0.125,
+        "output_per_million": 0.5
+      },
+      "nano": {
+        "id": "gpt-5-nano-2025-08-07",
+        "reasoning_effort": "minimal",
+        "input_per_million": 0.05,
+        "cached_input_per_million": 0.005,
+        "cache_write_per_million": 0.05,
+        "output_per_million": 0.4
+      }
+    },
+    "api": "First-party OpenAI Responses API, explicit Standard/default service tier, store=false, encrypted reasoning items preserved across tool turns.",
+    "max_output_tokens_per_request": 4096,
+    "input_reservation_bound": "2 * UTF-8 serialized request bytes + 8192 overhead; refuse requests whose bound exceeds 262000 input tokens.",
+    "sampling": "No unsupported temperature or seed parameters. Model-specific effort fixed before execution; comparisons are paired within model, not pooled across models.",
+    "tool_policy": "Frozen production MCP tool schemas and outputs from the required-query snapshot, plus original grep/read baseline. Responses function strict=false preserves optional arguments. Sequential tool calls, identical 4/6-call limits in both arms, complete append-only history, workspace-confined read_file.",
+    "smoke": "Per model: one real read_file round-trip and one real PASR find_evidence round-trip, each followed by a final answer.",
+    "oracle": "Eight existing development questions; supply their frozen source excerpts, not criterion descriptions or reference answers. No retrieval tools. This is a comprehension ceiling control, not retrieval accuracy.",
+    "capability_gate": "Each model must complete both native tool smoke trajectories without protocol/execution errors and earn at least 4/8 full-answer passes in arm-blind source review of oracle answers. Select based on capability, not whether PASR beats baseline.",
+    "paired": "For each eligible model: all eight development questions x baseline/PASR x 4/6 tool-call limits, one repetition, deterministic shuffled schedule seed 2026092801. 32 trajectories per eligible model.",
+    "grading": "Reuse frozen source-grounded criteria and grading standards. Independent arm-blind coding-assistant reviews, not keyword scores or human validation. Retain incomplete and failed generations in denominators.",
+    "scope": "Model screening and development comparison only. Not fresh held-out validation, not a production optimization, and not pooled with prior Qwen/Llama/Haiku experiments.",
+    "official_pricing": "https://developers.openai.com/api/docs/pricing"
+  },
+  "capability_gate": {
+    "rule": "Frozen before inference: both real tool smoke paths pass and at least 4/8 source-supported oracle answers.",
+    "native_tool_smokes_passed": true,
+    "oracle_counts": {
+      "luna": {
+        "complete_supported": 7,
+        "incomplete": 1
+      },
+      "nano": {
+        "incomplete": 2,
+        "complete_supported": 2,
+        "materially_incorrect": 4
+      }
+    },
+    "eligible_models": [
+      "luna"
+    ],
+    "excluded_models": [
+      "nano"
+    ],
+    "interpretation": "Capability screening only, not retrieval performance. No model chosen based on a PASR-versus-baseline result."
+  },
+  "paired_profiles": [
+    {
+      "variant": "luna:baseline@4",
+      "runs": 8,
+      "completed": 8,
+      "mean_total_tokens": 10434.125,
+      "mean_calls": 3.625,
+      "sum_cost_usd": 0.006191830000000001,
+      "mean_cost_usd": 0.0007739787500000001,
+      "mean_elapsed_s": 11.16075,
+      "tool_counts": {
+        "grep": 18,
+        "read_file": 11
+      },
+      "tool_error_outputs": 0,
+      "semantic_passes": 3,
+      "verdict_counts": {
+        "complete_supported": 3,
+        "incomplete": 4,
+        "materially_incorrect": 1
+      },
+      "total_tokens_per_correct_answer": 27824.333333333332
+    },
+    {
+      "variant": "luna:baseline@6",
+      "runs": 8,
+      "completed": 8,
+      "mean_total_tokens": 19170.875,
+      "mean_calls": 5.5,
+      "sum_cost_usd": 0.008315030000000001,
+      "mean_cost_usd": 0.0010393787500000001,
+      "mean_elapsed_s": 11.751249999999999,
+      "tool_counts": {
+        "grep": 21,
+        "read_file": 23
+      },
+      "tool_error_outputs": 0,
+      "semantic_passes": 4,
+      "verdict_counts": {
+        "incomplete": 3,
+        "complete_supported": 4,
+        "materially_incorrect": 1
+      },
+      "total_tokens_per_correct_answer": 38341.75
+    },
+    {
+      "variant": "luna:pasr@4",
+      "runs": 8,
+      "completed": 8,
+      "mean_total_tokens": 14503.125,
+      "mean_calls": 3.75,
+      "sum_cost_usd": 0.005232195,
+      "mean_cost_usd": 0.000654024375,
+      "mean_elapsed_s": 14.755,
+      "tool_counts": {
+        "find_evidence": 11,
+        "select_context": 11,
+        "read_file": 2,
+        "grep": 2,
+        "find_symbols": 3,
+        "find_files": 1
+      },
+      "tool_error_outputs": 0,
+      "semantic_passes": 1,
+      "verdict_counts": {
+        "complete_supported": 1,
+        "incomplete": 7
+      },
+      "total_tokens_per_correct_answer": 116025.0
+    },
+    {
+      "variant": "luna:pasr@6",
+      "runs": 8,
+      "completed": 8,
+      "mean_total_tokens": 17390.25,
+      "mean_calls": 4.25,
+      "sum_cost_usd": 0.0061594399999999995,
+      "mean_cost_usd": 0.0007699299999999999,
+      "mean_elapsed_s": 14.973625,
+      "tool_counts": {
+        "find_evidence": 13,
+        "select_context": 12,
+        "find_symbols": 3,
+        "grep": 1,
+        "find_files": 2,
+        "read_file": 3
+      },
+      "tool_error_outputs": 0,
+      "semantic_passes": 4,
+      "verdict_counts": {
+        "incomplete": 4,
+        "complete_supported": 4
+      },
+      "total_tokens_per_correct_answer": 34780.5
+    }
+  ],
+  "comparisons": [
+    {
+      "baseline": "luna:baseline@4",
+      "pasr": "luna:pasr@4",
+      "pass_difference": -2,
+      "mean_total_token_change": 0.38997040959352125,
+      "mean_api_dollar_change": -0.15498406771503748,
+      "observed_accuracy_and_token_gate": false
+    },
+    {
+      "baseline": "luna:baseline@6",
+      "pasr": "luna:pasr@6",
+      "pass_difference": 0,
+      "mean_total_token_change": -0.09288178030475913,
+      "mean_api_dollar_change": -0.2592401951646598,
+      "observed_accuracy_and_token_gate": true
+    },
+    {
+      "baseline": "luna:baseline@6",
+      "pasr": "luna:pasr@4",
+      "pass_difference": -3,
+      "mean_total_token_change": -0.24348132257917288,
+      "mean_api_dollar_change": -0.37075452523923547,
+      "observed_accuracy_and_token_gate": false
+    },
+    {
+      "baseline": "luna:baseline@4",
+      "pasr": "luna:pasr@6",
+      "pass_difference": 1,
+      "mean_total_token_change": 0.6666706599738839,
+      "mean_api_dollar_change": -0.005231086770793314,
+      "observed_accuracy_and_token_gate": false
+    }
+  ],
+  "question_results": [
+    {
+      "case_id": "airguard_Q1",
+      "profiles": {
+        "luna:baseline@4": {
+          "fully_correct": true,
+          "verdict": "complete_supported",
+          "total_tokens": 14366,
+          "cost_usd": 0.0011165950000000002
+        },
+        "luna:pasr@6": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 13008,
+          "cost_usd": 0.000506845
+        },
+        "luna:baseline@6": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 25864,
+          "cost_usd": 0.001337375
+        },
+        "luna:pasr@4": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 14107,
+          "cost_usd": 0.00061489
+        }
+      }
+    },
+    {
+      "case_id": "airguard_Q2",
+      "profiles": {
+        "luna:pasr@4": {
+          "fully_correct": true,
+          "verdict": "complete_supported",
+          "total_tokens": 20883,
+          "cost_usd": 0.00115542
+        },
+        "luna:pasr@6": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 18558,
+          "cost_usd": 0.000781555
+        },
+        "luna:baseline@4": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 9952,
+          "cost_usd": 0.00061238
+        },
+        "luna:baseline@6": {
+          "fully_correct": true,
+          "verdict": "complete_supported",
+          "total_tokens": 22576,
+          "cost_usd": 0.0012025
+        }
+      }
+    },
+    {
+      "case_id": "nushell_Q1",
+      "profiles": {
+        "luna:baseline@6": {
+          "fully_correct": true,
+          "verdict": "complete_supported",
+          "total_tokens": 31191,
+          "cost_usd": 0.00144779
+        },
+        "luna:pasr@6": {
+          "fully_correct": true,
+          "verdict": "complete_supported",
+          "total_tokens": 14150,
+          "cost_usd": 0.00080296
+        },
+        "luna:baseline@4": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 14557,
+          "cost_usd": 0.0008735500000000001
+        },
+        "luna:pasr@4": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 15666,
+          "cost_usd": 0.00061542
+        }
+      }
+    },
+    {
+      "case_id": "nushell_Q2",
+      "profiles": {
+        "luna:pasr@6": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 7540,
+          "cost_usd": 0.000455205
+        },
+        "luna:baseline@6": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 15871,
+          "cost_usd": 0.00091006
+        },
+        "luna:baseline@4": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 6647,
+          "cost_usd": 0.0006894900000000001
+        },
+        "luna:pasr@4": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 7541,
+          "cost_usd": 0.000441535
+        }
+      }
+    },
+    {
+      "case_id": "nushell_fresh_Q1",
+      "profiles": {
+        "luna:pasr@4": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 14237,
+          "cost_usd": 0.000636315
+        },
+        "luna:baseline@6": {
+          "fully_correct": false,
+          "verdict": "materially_incorrect",
+          "total_tokens": 14179,
+          "cost_usd": 0.000899045
+        },
+        "luna:baseline@4": {
+          "fully_correct": false,
+          "verdict": "materially_incorrect",
+          "total_tokens": 17261,
+          "cost_usd": 0.001178655
+        },
+        "luna:pasr@6": {
+          "fully_correct": true,
+          "verdict": "complete_supported",
+          "total_tokens": 16872,
+          "cost_usd": 0.000746605
+        }
+      }
+    },
+    {
+      "case_id": "nushell_fresh_Q2",
+      "profiles": {
+        "luna:baseline@4": {
+          "fully_correct": true,
+          "verdict": "complete_supported",
+          "total_tokens": 3675,
+          "cost_usd": 0.00054325
+        },
+        "luna:pasr@6": {
+          "fully_correct": true,
+          "verdict": "complete_supported",
+          "total_tokens": 16576,
+          "cost_usd": 0.00085106
+        },
+        "luna:pasr@4": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 14893,
+          "cost_usd": 0.000588095
+        },
+        "luna:baseline@6": {
+          "fully_correct": true,
+          "verdict": "complete_supported",
+          "total_tokens": 6153,
+          "cost_usd": 0.00071334
+        }
+      }
+    },
+    {
+      "case_id": "nushell_holdout_Q1",
+      "profiles": {
+        "luna:pasr@6": {
+          "fully_correct": true,
+          "verdict": "complete_supported",
+          "total_tokens": 21588,
+          "cost_usd": 0.000822105
+        },
+        "luna:pasr@4": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 15301,
+          "cost_usd": 0.00068156
+        },
+        "luna:baseline@4": {
+          "fully_correct": true,
+          "verdict": "complete_supported",
+          "total_tokens": 8838,
+          "cost_usd": 0.000637795
+        },
+        "luna:baseline@6": {
+          "fully_correct": true,
+          "verdict": "complete_supported",
+          "total_tokens": 16371,
+          "cost_usd": 0.00085705
+        }
+      }
+    },
+    {
+      "case_id": "nushell_holdout_Q2",
+      "profiles": {
+        "luna:pasr@4": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 13397,
+          "cost_usd": 0.00049896
+        },
+        "luna:pasr@6": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 30830,
+          "cost_usd": 0.0011931049999999999
+        },
+        "luna:baseline@6": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 21162,
+          "cost_usd": 0.0009478700000000001
+        },
+        "luna:baseline@4": {
+          "fully_correct": false,
+          "verdict": "incomplete",
+          "total_tokens": 8177,
+          "cost_usd": 0.000540115
+        }
+      }
+    }
+  ],
+  "spending": {
+    "provider": "OpenAI direct Responses API",
+    "requests": 193,
+    "trajectories": 52,
+    "published_rate_cost_usd": 0.032731210000000004,
+    "budget_ceiling_usd": 5,
+    "stages": {
+      "smoke": {
+        "requests": 8,
+        "input_tokens": 8764,
+        "output_tokens": 829,
+        "cache_read_tokens": 2719,
+        "cache_write_tokens": 1640,
+        "reasoning_tokens": 0,
+        "published_rate_usd": 0.00086344
+      },
+      "oracle": {
+        "requests": 16,
+        "input_tokens": 25902,
+        "output_tokens": 8749,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 11945,
+        "reasoning_tokens": 0,
+        "published_rate_usd": 0.005969275
+      },
+      "paired": {
+        "requests": 169,
+        "input_tokens": 480380,
+        "output_tokens": 11607,
+        "cache_read_tokens": 344872,
+        "cache_write_tokens": 123819,
+        "reasoning_tokens": 0,
+        "published_rate_usd": 0.025898495000000007
+      }
+    },
+    "incomplete_usage_requests": 0,
+    "all_usage_categories_reconciled": true,
+    "billing_status": "Calculated from observed provider usage and published token rates; not an invoice or a queried account balance. Excludes unmetered coding-assistant source review, local computation and any taxes/account adjustments.",
+    "no_further_api_inference_started": true
+  },
+  "grading": {
+    "method": "Arm-blind coding-assistant source review against verified frozen source excerpts; not independent human validation or keyword proxy scoring.",
+    "oracle_answers": 16,
+    "paired_answers": 32,
+    "complete_coverage_and_exact_quotes_checked": true,
+    "duplicate_question_answer_verdicts_consistent": true,
+    "source_files_verified": 19,
+    "gate_predeclared_before_inference": true
+  },
+  "limitations": [
+    "Eight reused development questions from two source repositories; one generation per profile/question, not fresh held-out evidence.",
+    "Equal observed 4/8 pass counts at six calls do not prove accuracy equivalence; 9.29% fewer tokens is a point estimate on this sample.",
+    "PASR at four calls scored 1/8 versus baseline 3/8 while using 39.0% more total tokens. The positive observation does not extend to four calls.",
+    "Luna none and nano minimal are specific tested configurations; the nano result does not rule out other reasoning settings.",
+    "This Responses protocol uses sequential calls, no seed/temperature setting and 4096 maximum billed output tokens per request; do not pool with older local/Haiku protocols.",
+    "Dollar savings reflect observed cache reads/writes and one interleaved schedule; do not reinterpret cheaper cached dollars as fewer logical tokens.",
+    "Oracle source-answering control supplies correct excerpts and is not repository-retrieval accuracy.",
+    "No newer API balance or invoice was available; do not infer exact remaining credit from the user-stated starting balance."
+  ],
+  "verification": {
+    "native_read_file_and_pasr_find_evidence_smokes": 4,
+    "completed_paired_trajectories": 32,
+    "api_failures": 0,
+    "truncations": 0,
+    "recorded_paired_tool_error_outputs": 0,
+    "append_only_histories": true,
+    "raw_and_delivered_tool_observations_identical": true,
+    "frozen_source_and_harness_hashes_unchanged": true,
+    "all_193_request_costs_within_pre_request_reservations": true,
+    "production_code_changes": false,
+    "production_tests_rerun": false
+  },
+  "artifacts": {
+    "raw_root": "eval/agent_bench/results/openai_pilot_20260928",
+    "raw_evidence_git_ignored": true,
+    "sha256": {
+      "protocol.json": "b7d0f2fc7c38f673eb4a8718f453f50e699a2b8995cfc3d63f4dbda3f69c268c",
+      "run_pilot.py": "999fb2127331a699f76dc156c8ac72a9893119df376f8e839b7154d5ac42c67b",
+      "spend_ledger.json": "4b1e36ec9633c2a3f5e63207f49f5e89df374bfef46a7435c361be032c02ef9e",
+      "smoke/results.json": "696447d66b5830634c991a5302e551dc0714445ccc475212be0b989df99ea818",
+      "smoke/manifest.json": "f43c43e08a2422b4f80d481687f07296f7e3fd38b3fc326219599ce51630314b",
+      "smoke_verification.json": "bd3ad36d6ecec592c2a333b13d34bad85a490c68fe176f35bf684951b601a045",
+      "oracle/results.json": "e435be4cc0cd46ccd12ed9b319a64f1f4243893aaa106c9fb5b2392bcebf7eef",
+      "oracle/manifest.json": "af1741c51208900f5581d9e84b465e7256bf344909309365eba8272b39aeaaee",
+      "oracle_source_grades/grades.json": "08abcd059ee9b061e0bd30a920157818472e3abf434df42840cb0955b241b542",
+      "oracle_source_grades/manifest.json": "9dbd563d7ec299b354bc62225cfd8b3711606cf6b075e1273d696b20a8e615b6",
+      "oracle_grade_integrity.json": "1bfa1b1a7ad5fb9e0073e846097a428b1479acc15692e10d4ecb1478965af8a3",
+      "capability_gate.json": "9c4ed42d4af2cb41ab86711b35fb6e95dec55a1156d086d3e322c03209b5261d",
+      "paired/results.json": "44edfbf3a6a67ff373edcabe83fe6d0af43df0c993d342e1f22c51250e89f589",
+      "paired/manifest.json": "559877ea175d2544ab2737cabf574d7b85d5542918530cf2e570c316b474f958",
+      "paired_source_grades/grades.json": "e597e1debdd59c4dd61b7a58bd1097df49ffab1e4e117650022cd7ca329b0190",
+      "paired_source_grades/manifest.json": "9cfacb65576faeaefdf7936c3acc7c5d0775a3053e0a28eef0c395c4cb6f84ba",
+      "source_summary.json": "2b025274d6032abb7316a9aa017549af99c78999e0efc2b8adc6a5324d20b795",
+      "integrity.json": "ed3a71f7f635cf0c25ebdf2a1e83d4543ed900854d38dbb4777748ce3360e101",
+      "source_integrity.json": "c019584f20e96308231094b4c2737856c21e26e3e6c095e02f4c3b409d84bd9b",
+      "stage_spending.json": "8e467aaf84bf72480bb581f49d57c34dbe03787b95890d6e7e2e295c00edcd4b",
+      "security_and_freeze_check.json": "a8c969b46d8245d7a10f892f4686a328f58848f9bb29fb24df768cee44cced00",
+      "oracle_review_1.json": "a159f5182ba37e660f3f413d918940cb3731dcef713916024c73d60b3f447402",
+      "oracle_review_2.json": "4d5601db83f926e8e82885f719528f57a3d1df54c67e2fbf9cf444d7b503247d",
+      "paired_review_1.json": "ea3171e5e8e1087a94b4c4679fd250afe3b86ec90e9872396297656593613fc4",
+      "paired_review_2.json": "41d296385ac7b426e82e3a5420ce3941b92250dcd6963c3939f99c858743a39c",
+      "paired_review_3.json": "8203c7aa029ba864419b3d087ec7941150ba735a144ccf39f415c2e029c90bb2",
+      "paired_review_4.json": "1245b2aeb43456ce341bd1f5e8544dbfc2e663b74dd07e982f1c037dc8fe161f"
+    }
+  },
+  "next_research_step": "Replicate the six-call observation on unseen, source-graded questions and an independently chosen second model before asserting a PASR accuracy/token win. Preserve baseline@4 as the cheaper optimized control."
+}

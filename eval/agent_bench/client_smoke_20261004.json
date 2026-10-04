@@ -1,0 +1,237 @@
+{
+  "kind": "maintainer-operated real-client integration smoke, not a benchmark",
+  "date": "2026-10-04",
+  "client": {
+    "name": "Codex CLI",
+    "version": "0.160.0",
+    "model": "gpt-6-luna",
+    "mcp_sdk": "2.3.0",
+    "platform": "win32",
+    "python": "3.14.6"
+  },
+  "package": {
+    "version": "0.3.0",
+    "artifact": "dist/0.3.0/pasr_mcp-0.3.0-py3-none-any.whl",
+    "sha256": "87467d39f85210419aebd5808bb3f0734d23a7ef883bb1e2c5e08dcd32d73170"
+  },
+  "fixture": {
+    "original": "src/pasr/source_text.py",
+    "workspace_path": "source_text.py",
+    "sha256": "622e0c9ab11a96e836572acb7ec76e6b975279553e7b757a98bf03ad13e648fa",
+    "unchanged_after_run": true,
+    "scope": "One unmodified public source file copied into an isolated workspace; not a full repository or independent user task."
+  },
+  "configuration": {
+    "isolated_codex_home": true,
+    "approval_policy": "never",
+    "sandbox_mode": "read-only",
+    "final_pasr_approval_mode": "approve",
+    "approval_scope": "Only this isolated PASR MCP server; source reads confined by PASR; receipts/cache can be written inside its temporary workspace. Native shell sandbox does not sandbox the MCP server.",
+    "ephemeral_credentials": true,
+    "auth_json_created": false,
+    "provider_retries": 0,
+    "process_timeout_seconds": 90,
+    "pasr_call_limit": "At most four requested in the prompt, not enforced by the MCP server."
+  },
+  "prompts": {
+    "initial": "Use the configured PASR MCP tools as your primary source reader for one read-only onboarding task. In this workspace, how does source loading handle a UTF-8 BOM, CRLF and bare-CR newlines, invalid UTF-8, and NUL bytes? What exactly is fingerprinted, and does the returned snapshot guarantee an atomic multi-file view? Cite file:line ranges for each claim. Do not edit files, execute repository code, delegate, or access the network. Use at most four PASR calls; if evidence is incomplete say so. Keep the final answer under 350 words.",
+    "final": "Use the configured PASR MCP tools as your primary source reader for one read-only onboarding task. In this workspace, how does source loading handle a UTF-8 BOM, CRLF and bare-CR newlines, invalid UTF-8, and NUL bytes? What exactly is fingerprinted, and does the returned snapshot guarantee an atomic multi-file view? Cite workspace-relative file:line ranges copied from PASR output for each claim. Use plain-text citations, not absolute paths or Markdown links. Answer only the questions asked. Do not edit files, execute repository code, delegate, or access the network. Use at most four PASR calls; if evidence is incomplete say so. Keep the final answer under 350 words."
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "stage": "configuration",
+      "returncode": 1,
+      "timed_out": false,
+      "usage": [],
+      "mcp_calls": [],
+      "final_answer": null
+    },
+    {
+      "attempt": 2,
+      "stage": "client_execution",
+      "returncode": null,
+      "timed_out": true,
+      "usage": [],
+      "mcp_calls": [],
+      "final_answer": null
+    },
+    {
+      "attempt": 3,
+      "stage": "client_execution_stdin_closed",
+      "returncode": 0,
+      "timed_out": false,
+      "usage": [
+        {
+          "input_tokens": 32877,
+          "cached_input_tokens": 21582,
+          "cache_write_input_tokens": 11286,
+          "output_tokens": 221,
+          "reasoning_output_tokens": 0
+        }
+      ],
+      "mcp_calls": [
+        {
+          "tool": "find_evidence",
+          "status": "failed",
+          "arguments": {
+            "query": "source loading UTF-8 BOM CRLF bare CR invalid UTF-8 NUL fingerprint snapshot atomic multi-file",
+            "include": [
+              "**/*"
+            ],
+            "top_k": 12,
+            "per_file": 3
+          },
+          "error": {
+            "message": "MCP tool call requires approval, but approval policy is never"
+          }
+        }
+      ],
+      "final_answer": "I couldn’t retrieve source evidence: the PASR search call was rejected because the tool requires approval, and the configured approval policy is “never.” I made one PASR call and did not use another source reader, so I can’t substantiate the loading behavior, fingerprint contents, or atomicity claim with file:line citations."
+    },
+    {
+      "attempt": 4,
+      "stage": "client_execution_pasr_preapproved",
+      "returncode": 0,
+      "timed_out": false,
+      "usage": [
+        {
+          "input_tokens": 85893,
+          "cached_input_tokens": 71492,
+          "cache_write_input_tokens": 14380,
+          "output_tokens": 641,
+          "reasoning_output_tokens": 0
+        }
+      ],
+      "mcp_calls": [
+        {
+          "tool": "find_evidence",
+          "status": "completed",
+          "arguments": {
+            "query": "UTF-8 BOM CRLF bare CR invalid UTF-8 NUL bytes fingerprint snapshot atomic multi-file source loading",
+            "top_k": 12,
+            "per_file": 5
+          },
+          "error": null
+        },
+        {
+          "tool": "find_files",
+          "status": "completed",
+          "arguments": {
+            "query": "snapshot loader project source",
+            "top_k": 12
+          },
+          "error": null
+        },
+        {
+          "tool": "select_context",
+          "status": "completed",
+          "arguments": {
+            "files": [
+              "source_text.py"
+            ],
+            "query": "Read source loading normalization line splitting fingerprints and snapshots; include definitions and callers if present.",
+            "budget_tokens": 1500,
+            "outline": true
+          },
+          "error": null
+        },
+        {
+          "tool": "select_context",
+          "status": "completed",
+          "arguments": {
+            "files": [
+              "source_text.py:1-60"
+            ],
+            "query": "Show exact code for normalization, physical line splitting, fingerprint, snapshot and source reader; determine claims from these definitions.",
+            "budget_tokens": 1500
+          },
+          "error": null
+        }
+      ],
+      "final_answer": "`read_source` reads the file’s bytes once and decodes them with `utf-8-sig`, so an optional leading UTF-8 BOM is consumed. Invalid UTF-8 raises `ValueError`; decoded text containing NUL is also rejected with `ValueError` ([source_text.py](/workspace/source_text.py:35)).\n\nCRLF and bare CR are both normalized to LF, as is LF itself. The physical-line helper also recognizes CR, LF, and CRLF as line endings ([source_text.py](/workspace/source_text.py:11)).\n\nThe fingerprint is SHA-256 of the normalized text encoded as UTF-8. It therefore covers the decoded source after BOM removal and newline normalization, rather than the original raw bytes ([source_text.py](/workspace/source_text.py:22), [source_text.py](/workspace/source_text.py:38)).\n\nA `SourceSnapshot` contains the text and fingerprint from one file read. Its docstring explicitly says it is not a transaction across multiple files, so it does not guarantee an atomic multi-file view ([source_text.py](/workspace/source_text.py:28), [source_text.py](/workspace/source_text.py:35))."
+    },
+    {
+      "attempt": 5,
+      "stage": "client_execution_relative_citations",
+      "returncode": 0,
+      "timed_out": false,
+      "usage": [
+        {
+          "input_tokens": 66214,
+          "cached_input_tokens": 50750,
+          "cache_write_input_tokens": 15449,
+          "output_tokens": 417,
+          "reasoning_output_tokens": 0
+        }
+      ],
+      "mcp_calls": [
+        {
+          "tool": "find_evidence",
+          "status": "completed",
+          "arguments": {
+            "query": "UTF-8 BOM CRLF bare-CR invalid UTF-8 NUL fingerprint snapshot atomic source loading",
+            "top_k": 12,
+            "per_file": 6
+          },
+          "error": null
+        },
+        {
+          "tool": "select_context",
+          "status": "completed",
+          "arguments": {
+            "query": "Read source_text.py implementation for physical_lines normalize_source source_fingerprint read_source plus any multi-file snapshot caller guaranteeing atomicity",
+            "files": [
+              "source_text.py"
+            ],
+            "budget_tokens": 1400
+          },
+          "error": null
+        },
+        {
+          "tool": "find_evidence",
+          "status": "completed",
+          "arguments": {
+            "query": "SourceSnapshot multi-file snapshot read source files consistency transaction",
+            "top_k": 10,
+            "per_file": 4
+          },
+          "error": null
+        }
+      ],
+      "final_answer": "- **BOM and decoding:** Each file is read once and decoded as UTF-8 with an optional BOM; invalid UTF-8 raises `ValueError`. NUL bytes also raise `ValueError`. (source_text.py:35-42)\n- **Newlines:** CRLF and bare CR are both normalized to LF. Physical line splitting recognizes CR, LF, and CRLF. (source_text.py:11-18, 42-43)\n- **Fingerprint:** SHA-256 of the normalized decoded text encoded as UTF-8. (source_text.py:22-24, 42-44)\n- **Atomicity:** No. A `SourceSnapshot` represents one file read and is explicitly “not a transaction across multiple files.” (source_text.py:27-29, 35-44)"
+    }
+  ],
+  "observed_completed_turn_usage": {
+    "input_tokens": 184984,
+    "cached_input_tokens": 143824,
+    "cache_write_input_tokens": 41115,
+    "output_tokens": 1279,
+    "reasoning_output_tokens": 0
+  },
+  "usage_limit": "CLI-reported totals from the three completed model turns; no request-level billing ledger. The first two setup attempts reported no model usage.",
+  "final_observation": {
+    "mcp_calls": 3,
+    "selected_context_tokens": 364,
+    "selection_budget_tokens": 1400,
+    "source_claims_checked_by": "coding assistant against the exact source; not independent or blinded",
+    "claims_supported": [
+      "UTF-8-sig decoding and optional BOM removal",
+      "invalid UTF-8 rejection",
+      "NUL rejection",
+      "CRLF and CR normalized to LF",
+      "SHA-256 of normalized UTF-8 text",
+      "no atomic multi-file snapshot guarantee"
+    ],
+    "citations": "Final answer uses matching workspace-relative paths and line ranges. Previous completed answer used unsupported /workspace absolute prefixes; retained in attempts.",
+    "repository_code_executed": false,
+    "source_modified": false
+  },
+  "limits": [
+    "One prompted integration task; not evidence of unprompted tool adoption, task quality generalization, cost superiority, GUI compatibility or independent user retention.",
+    "An unsupported configuration field and inherited-stdin wait were corrected before the completed model turns.",
+    "Initial noninteractive MCP call was blocked by approval policy; only the isolated PASR server was preapproved.",
+    "Codex warned that PATH helpers were not created under the temporary home; absolute executable paths were used."
+  ],
+  "raw_archive": "eval/agent_bench/results/client_smoke_20261004/attempts.json"
+}

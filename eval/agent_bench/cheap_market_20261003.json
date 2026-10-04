@@ -1,0 +1,4466 @@
+{
+  "methodology": {
+    "design": "Exploratory reuse of 40 frozen questions, three models, four profiles; 480 trajectories. No tuning, retries or fresh-holdout/generalization claim. All generation failures remain in denominators.",
+    "models": [
+      "nano5",
+      "nano41",
+      "luna"
+    ],
+    "profiles": [
+      "native",
+      "split",
+      "aider",
+      "repomix"
+    ],
+    "blinding": {
+      "groups": 40,
+      "answers_per_group": 12,
+      "question_shuffle_seed": 2026100303,
+      "identity": "Frozen answer_identity(ordinal, answer): first 20 hex digits of SHA256 UTF-8 results.json:{ordinal}:{answer}; opaque keys only, private row/model/profile mapping never sent to reviewers.",
+      "protocol": "Reuse frozen make_packet, scope_for, standards, clarifications, guidance, review_instructions and review_format without changing originals."
+    },
+    "validation": [
+      "Exactly 40 unique cases and all 480 unique case/model/profile combinations.",
+      "Exactly 40 input and review files 00.json through 39.json, 12 identities each, one question per group.",
+      "Reject duplicate JSON object keys, missing/extra/duplicate identities, missing/unknown/duplicate criteria, nonboolean support grades, invalid verdicts and malformed review fields.",
+      "Verify prepared results, cases, scope, input files, protocol source and answer SHA256 hashes against current artifacts and regenerate expected packets from frozen make_packet.",
+      "All nonempty criterion quotations must occur literally in that answer; supported criteria and material errors require nonempty own-answer quotations.",
+      "Complete requires completed nonfailed generation, no missing items or material errors, and support for every required criterion. Materially incorrect requires quoted material error; material errors require materially_incorrect verdict.",
+      "Identical question plus exact answer must have identical verdict and criterion-support mapping.",
+      "Any validation or ledger reconciliation failure suppresses quality comparisons and all gate claims; write all discovered failures to analysis.json and return nonzero."
+    ],
+    "metrics": {
+      "supported": "Number with complete_supported verdict; denominator includes failures.",
+      "material_errors": "Number of answers with materially_incorrect verdict; also report total individual quoted errors.",
+      "strict_all": "Complete_supported and all criteria supported, including optional criteria.",
+      "tokens": "Cumulative provider-reported input plus output tokens across all API turns, including reasoning counted in provider output. Never add reasoning a second time.",
+      "efficiency": "Total cumulative tokens or conservative charged USD divided by supported answers; null when no supported answers.",
+      "summary": "Per model/profile n, supported/rate, material errors/rate, strict_all, mean/median/total tokens, total/mean cost, tokens and cost per supported answer, calls/requests and failures. Also descriptive model summaries pooling all four fixed profiles; not proof of generalization."
+    },
+    "bootstrap": {
+      "seed": 2026100304,
+      "draws": 10000,
+      "unit": "Question, paired across all arms. Sort case IDs; for every draw use random.Random(seed).choice(keys) 40 times with replacement. Reset seed for every comparison. Equal question weighting.",
+      "comparisons_per_model": [
+        [
+          "split",
+          "native"
+        ],
+        [
+          "aider",
+          "native"
+        ],
+        [
+          "repomix",
+          "native"
+        ],
+        [
+          "split",
+          "aider"
+        ],
+        [
+          "split",
+          "repomix"
+        ]
+      ],
+      "statistics": [
+        "candidate minus reference supported proportion",
+        "candidate minus reference material-error proportion",
+        "candidate/reference ratio of cumulative tokens",
+        "candidate/reference ratio of cumulative cost"
+      ],
+      "interval": "Percentile endpoints sorted samples indices 250 and 9749 (zero based). Undefined zero-denominator ratio draws are counted, not silently discarded; interval null if any draw undefined. No multiplicity adjustment; descriptive exploratory intervals."
+    },
+    "gates": {
+      "source": "reserved_confirm_20261003/analyze_confirm.py lines 39-45: original validation gate, not development gate.",
+      "criteria": {
+        "no_net_pass_loss": "Candidate supported count >= reference supported count.",
+        "no_extra_material_errors": "Candidate materially-incorrect count <= reference materially-incorrect count.",
+        "accuracy_difference_lower_ge_-0.05": "Paired supported-proportion difference bootstrap lower endpoint >= -0.05.",
+        "token_ratio_upper_lt_1.0": "Paired cumulative-token ratio bootstrap upper endpoint < 1.0.",
+        "mean_token_ratio_le_0.85": "Unrounded candidate/reference mean cumulative token ratio <= 0.85."
+      },
+      "primary": "Unchanged five-condition conjunction for split/native separately within each model.",
+      "secondary": "Apply the same five conditions to aider/native, repomix/native, split/aider and split/repomix descriptively; no new cross-model or cross-comparison conjunction, no promotion selection.",
+      "claim": "No success claim for a failed per-model gate, invalid reviews, or unknown provider token usage. No overall promotion/generalization claim even if all gates pass."
+    },
+    "ledger": {
+      "ceiling_source": "Read model_ceiling_usd and total_ceiling_usd from pre-request frozen protocol.json; require aggregate spend_ledger.json ceiling_usd agrees. Do not infer or change ceilings from results.",
+      "reconcile": "Map ledger identity market/{schedule_ordinal:04d}/turn-N to unique row; require matching model and no duplicate request identities. Report ledger/API-turn counts and conservative charge totals, row charge totals, model/profile costs, all failed requests/trajectories and discrepancies. Charge tolerance absolute 1e-8 USD. Each API-turn charge is the full ledger entry; usage must match. Row tokens must equal cumulative known ledger input/output usage and row cost must equal all ledger charges. Nonfailed rows require exact API-turn ledger coverage; failed rows may omit API turns but omitted charges and identities are explicitly reported. Unknown provider usage is not invented: known-token totals are lower bounds, usage uncertainty is disclosed and success claims suppressed for affected comparisons. Each shard and aggregate must remain within its frozen protocol ceiling."
+    },
+    "provenance": "Parent freezes code, methodology and final context_production/contexts.json and context_production/competitor_manifest.json before API requests. Root preflight context files are not the actual treatment. Original frozen outcomes are never read."
+  },
+  "validation_problems": [],
+  "valid": true,
+  "overall_success_claim": false,
+  "interpretation": "Per-model split/native validation gates and secondary comparisons are descriptive on reused questions. Failed gates or incomplete token usage do not permit a success claim; no fresh-generalization or overall promotion claim.",
+  "ledger": {
+    "ledger_requests": 1879,
+    "api_turn_requests": 1874,
+    "ledger_charge_usd": 1.0407179200000005,
+    "row_charge_usd": 1.0407179199999983,
+    "api_turn_charge_usd": 1.0363585699999984,
+    "charges_not_in_api_turns_usd": 0.0043593500000020935,
+    "model_charge_usd": {
+      "nano5": 0.2624371499999999,
+      "nano41": 0.3025887000000001,
+      "luna": 0.4756920700000003
+    },
+    "ceiling_usd": 3.75,
+    "model_ceilings_usd": {
+      "nano5": 1.0,
+      "nano41": 1.25,
+      "luna": 1.5
+    },
+    "generation_failures": [
+      {
+        "schedule_ordinal": 26,
+        "case_id": "unseen-20260929-click-short-cluster-consumption",
+        "model_key": "nano5",
+        "profile": "native",
+        "failure": "length_truncated",
+        "answered": false
+      },
+      {
+        "schedule_ordinal": 177,
+        "case_id": "unseen-20260929-starlette-template-context-debug",
+        "model_key": "nano5",
+        "profile": "split",
+        "failure": "length_truncated",
+        "answered": false
+      },
+      {
+        "schedule_ordinal": 202,
+        "case_id": "unseen-20260929-starlette-lifespan-phase-failures",
+        "model_key": "luna",
+        "profile": "native",
+        "failure": "host_process_timeout_3600s; interrupted trajectory not retried",
+        "answered": false
+      },
+      {
+        "schedule_ordinal": 242,
+        "case_id": "unseen-20260929-httpx-base-url-append-versus-join",
+        "model_key": "nano5",
+        "profile": "aider",
+        "failure": "host_process_timeout_3600s; interrupted trajectory not retried",
+        "answered": false
+      },
+      {
+        "schedule_ordinal": 448,
+        "case_id": "unseen-20260929-typer-collection-type-translation",
+        "model_key": "nano5",
+        "profile": "split",
+        "failure": "length_truncated",
+        "answered": false
+      }
+    ],
+    "ledger_failures": [
+      {
+        "index": 1400,
+        "identity": "market/0202/turn-3",
+        "model": "gpt-6-luna",
+        "status": "complete",
+        "input_token_bound": 13380,
+        "reserved_usd": 0.0037205,
+        "budget_charge_usd": 0.0037205,
+        "request_sha256": "70ad4fff4b77ffa8a34ca50a38ed499aef43b217204498746e638bd00d8f7f45",
+        "started_at": "2026-10-03T21:29:56+0200",
+        "host_failure": true,
+        "error_type": "HostProcessTimeout",
+        "published_rate_cost_usd": null
+      }
+    ],
+    "requests_with_unknown_usage": [
+      "market/0202/turn-3"
+    ],
+    "token_usage_complete": false
+  },
+  "models": {
+    "nano5": {
+      "descriptive_pooled_profiles": {
+        "n": 160,
+        "supported": 11,
+        "supported_rate": 0.06875,
+        "material_errors": 98,
+        "material_error_rate": 0.6125,
+        "quoted_material_errors": 182,
+        "strict_all": 11,
+        "total_tokens": 8628378,
+        "mean_tokens": 53927.3625,
+        "median_tokens": 31782.5,
+        "cost_usd": 0.26243715,
+        "mean_cost_usd": 0.0016402321875,
+        "tokens_per_supported": 784398.0,
+        "cost_per_supported_usd": 0.02385792272727273,
+        "tool_calls": 513,
+        "requests": 674,
+        "generation_failures": 4
+      },
+      "profiles": {
+        "native": {
+          "n": 40,
+          "supported": 5,
+          "supported_rate": 0.125,
+          "material_errors": 18,
+          "material_error_rate": 0.45,
+          "quoted_material_errors": 27,
+          "strict_all": 5,
+          "total_tokens": 982656,
+          "mean_tokens": 24566.4,
+          "median_tokens": 25196.0,
+          "cost_usd": 0.05054932,
+          "mean_cost_usd": 0.001263733,
+          "tokens_per_supported": 196531.2,
+          "cost_per_supported_usd": 0.010109864,
+          "tool_calls": 175,
+          "requests": 215,
+          "generation_failures": 1
+        },
+        "split": {
+          "n": 40,
+          "supported": 4,
+          "supported_rate": 0.1,
+          "material_errors": 22,
+          "material_error_rate": 0.55,
+          "quoted_material_errors": 39,
+          "strict_all": 4,
+          "total_tokens": 369313,
+          "mean_tokens": 9232.825,
+          "median_tokens": 9069.5,
+          "cost_usd": 0.034404790000000005,
+          "mean_cost_usd": 0.0008601197500000002,
+          "tokens_per_supported": 92328.25,
+          "cost_per_supported_usd": 0.008601197500000001,
+          "tool_calls": 113,
+          "requests": 153,
+          "generation_failures": 2
+        },
+        "aider": {
+          "n": 40,
+          "supported": 2,
+          "supported_rate": 0.05,
+          "material_errors": 26,
+          "material_error_rate": 0.65,
+          "quoted_material_errors": 43,
+          "strict_all": 2,
+          "total_tokens": 1957543,
+          "mean_tokens": 48938.575,
+          "median_tokens": 43677.5,
+          "cost_usd": 0.054955920000000005,
+          "mean_cost_usd": 0.0013738980000000001,
+          "tokens_per_supported": 978771.5,
+          "cost_per_supported_usd": 0.027477960000000003,
+          "tool_calls": 145,
+          "requests": 186,
+          "generation_failures": 1
+        },
+        "repomix": {
+          "n": 40,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 32,
+          "material_error_rate": 0.8,
+          "quoted_material_errors": 73,
+          "strict_all": 0,
+          "total_tokens": 5318866,
+          "mean_tokens": 132971.65,
+          "median_tokens": 85563.5,
+          "cost_usd": 0.12252712,
+          "mean_cost_usd": 0.003063178,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 80,
+          "requests": 120,
+          "generation_failures": 0
+        }
+      }
+    },
+    "nano41": {
+      "descriptive_pooled_profiles": {
+        "n": 160,
+        "supported": 0,
+        "supported_rate": 0.0,
+        "material_errors": 133,
+        "material_error_rate": 0.83125,
+        "quoted_material_errors": 278,
+        "strict_all": 0,
+        "total_tokens": 4830501,
+        "mean_tokens": 30190.63125,
+        "median_tokens": 8455.0,
+        "cost_usd": 0.3025887,
+        "mean_cost_usd": 0.001891179375,
+        "tokens_per_supported": null,
+        "cost_per_supported_usd": null,
+        "tool_calls": 255,
+        "requests": 415,
+        "generation_failures": 0
+      },
+      "profiles": {
+        "native": {
+          "n": 40,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 34,
+          "material_error_rate": 0.85,
+          "quoted_material_errors": 63,
+          "strict_all": 0,
+          "total_tokens": 93511,
+          "mean_tokens": 2337.775,
+          "median_tokens": 1857.5,
+          "cost_usd": 0.012776800000000001,
+          "mean_cost_usd": 0.00031942000000000006,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 78,
+          "requests": 118,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 40,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 29,
+          "material_error_rate": 0.725,
+          "quoted_material_errors": 54,
+          "strict_all": 0,
+          "total_tokens": 177514,
+          "mean_tokens": 4437.85,
+          "median_tokens": 4651.5,
+          "cost_usd": 0.0179137,
+          "mean_cost_usd": 0.0004478425,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 68,
+          "requests": 108,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 40,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 34,
+          "material_error_rate": 0.85,
+          "quoted_material_errors": 76,
+          "strict_all": 0,
+          "total_tokens": 839297,
+          "mean_tokens": 20982.425,
+          "median_tokens": 17967.0,
+          "cost_usd": 0.052262300000000005,
+          "mean_cost_usd": 0.0013065575,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 62,
+          "requests": 102,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 40,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 36,
+          "material_error_rate": 0.9,
+          "quoted_material_errors": 85,
+          "strict_all": 0,
+          "total_tokens": 3720179,
+          "mean_tokens": 93004.475,
+          "median_tokens": 94737.0,
+          "cost_usd": 0.21963590000000002,
+          "mean_cost_usd": 0.0054908975,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 47,
+          "requests": 87,
+          "generation_failures": 0
+        }
+      }
+    },
+    "luna": {
+      "descriptive_pooled_profiles": {
+        "n": 160,
+        "supported": 121,
+        "supported_rate": 0.75625,
+        "material_errors": 8,
+        "material_error_rate": 0.05,
+        "quoted_material_errors": 12,
+        "strict_all": 121,
+        "total_tokens": 11938684,
+        "mean_tokens": 74616.775,
+        "median_tokens": 24333.0,
+        "cost_usd": 0.47569207,
+        "mean_cost_usd": 0.0029730754375,
+        "tokens_per_supported": 98666.80991735538,
+        "cost_per_supported_usd": 0.003931339421487603,
+        "tool_calls": 628,
+        "requests": 790,
+        "generation_failures": 1
+      },
+      "profiles": {
+        "native": {
+          "n": 40,
+          "supported": 26,
+          "supported_rate": 0.65,
+          "material_errors": 2,
+          "material_error_rate": 0.05,
+          "quoted_material_errors": 2,
+          "strict_all": 26,
+          "total_tokens": 497235,
+          "mean_tokens": 12430.875,
+          "median_tokens": 10431.0,
+          "cost_usd": 0.04011361,
+          "mean_cost_usd": 0.00100284025,
+          "tokens_per_supported": 19124.423076923078,
+          "cost_per_supported_usd": 0.0015428311538461538,
+          "tool_calls": 183,
+          "requests": 225,
+          "generation_failures": 1
+        },
+        "split": {
+          "n": 40,
+          "supported": 32,
+          "supported_rate": 0.8,
+          "material_errors": 2,
+          "material_error_rate": 0.05,
+          "quoted_material_errors": 3,
+          "strict_all": 32,
+          "total_tokens": 427923,
+          "mean_tokens": 10698.075,
+          "median_tokens": 10528.0,
+          "cost_usd": 0.035778535,
+          "mean_cost_usd": 0.000894463375,
+          "tokens_per_supported": 13372.59375,
+          "cost_per_supported_usd": 0.00111807921875,
+          "tool_calls": 118,
+          "requests": 158,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 40,
+          "supported": 30,
+          "supported_rate": 0.75,
+          "material_errors": 1,
+          "material_error_rate": 0.025,
+          "quoted_material_errors": 3,
+          "strict_all": 30,
+          "total_tokens": 2150893,
+          "mean_tokens": 53772.325,
+          "median_tokens": 53026.5,
+          "cost_usd": 0.08498135999999999,
+          "mean_cost_usd": 0.002124534,
+          "tokens_per_supported": 71696.43333333333,
+          "cost_per_supported_usd": 0.002832712,
+          "tool_calls": 177,
+          "requests": 217,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 40,
+          "supported": 33,
+          "supported_rate": 0.825,
+          "material_errors": 3,
+          "material_error_rate": 0.075,
+          "quoted_material_errors": 4,
+          "strict_all": 33,
+          "total_tokens": 8862633,
+          "mean_tokens": 221565.825,
+          "median_tokens": 200794.5,
+          "cost_usd": 0.314818565,
+          "mean_cost_usd": 0.007870464125,
+          "tokens_per_supported": 268564.63636363635,
+          "cost_per_supported_usd": 0.009539956515151516,
+          "tool_calls": 150,
+          "requests": 190,
+          "generation_failures": 0
+        }
+      }
+    }
+  },
+  "comparisons": {
+    "nano5": {
+      "split_vs_native": {
+        "candidate": "split",
+        "reference": "native",
+        "point": {
+          "supported_difference": -0.025,
+          "material_error_difference": 0.1,
+          "token_ratio": 0.3758314201511007,
+          "cost_ratio": 0.6806182555967123
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            -0.15,
+            0.1
+          ],
+          "material_error_difference": [
+            -0.1,
+            0.3
+          ],
+          "token_ratio": [
+            0.3024167293782901,
+            0.4795190948376518
+          ],
+          "cost_ratio": [
+            0.5828247637493839,
+            0.8005901600241604
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": false,
+          "no_extra_material_errors": false,
+          "accuracy_difference_lower_ge_-0.05": false,
+          "token_ratio_upper_lt_1.0": true,
+          "mean_token_ratio_le_0.85": true
+        },
+        "gate_passed": false,
+        "role": "primary_per_model",
+        "material_error_pairs": {
+          "only_candidate": 11,
+          "only_reference": 7
+        },
+        "token_usage_complete": true,
+        "claim_permitted": false
+      },
+      "aider_vs_native": {
+        "candidate": "aider",
+        "reference": "native",
+        "point": {
+          "supported_difference": -0.075,
+          "material_error_difference": 0.2,
+          "token_ratio": 1.9920938761886153,
+          "cost_ratio": 1.0871742686152852
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            -0.175,
+            0.025
+          ],
+          "material_error_difference": [
+            -0.05,
+            0.425
+          ],
+          "token_ratio": [
+            1.6527784416826004,
+            2.4432955859137073
+          ],
+          "cost_ratio": [
+            0.9251071661056163,
+            1.2714399798016438
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": false,
+          "no_extra_material_errors": false,
+          "accuracy_difference_lower_ge_-0.05": false,
+          "token_ratio_upper_lt_1.0": false,
+          "mean_token_ratio_le_0.85": false
+        },
+        "gate_passed": false,
+        "role": "descriptive_secondary",
+        "material_error_pairs": {
+          "only_candidate": 16,
+          "only_reference": 8
+        },
+        "token_usage_complete": true,
+        "claim_permitted": false
+      },
+      "repomix_vs_native": {
+        "candidate": "repomix",
+        "reference": "native",
+        "point": {
+          "supported_difference": -0.125,
+          "material_error_difference": 0.35,
+          "token_ratio": 5.412744643089749,
+          "cost_ratio": 2.423912329582277
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            -0.225,
+            -0.025
+          ],
+          "material_error_difference": [
+            0.175,
+            0.55
+          ],
+          "token_ratio": [
+            3.839645590754449,
+            7.441321567458466
+          ],
+          "cost_ratio": [
+            2.01187479722763,
+            2.928815444506236
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": false,
+          "no_extra_material_errors": false,
+          "accuracy_difference_lower_ge_-0.05": false,
+          "token_ratio_upper_lt_1.0": false,
+          "mean_token_ratio_le_0.85": false
+        },
+        "gate_passed": false,
+        "role": "descriptive_secondary",
+        "material_error_pairs": {
+          "only_candidate": 17,
+          "only_reference": 3
+        },
+        "token_usage_complete": true,
+        "claim_permitted": false
+      },
+      "split_vs_aider": {
+        "candidate": "split",
+        "reference": "aider",
+        "point": {
+          "supported_difference": 0.05,
+          "material_error_difference": -0.1,
+          "token_ratio": 0.18866150066690746,
+          "cost_ratio": 0.6260433816775336
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            -0.075,
+            0.175
+          ],
+          "material_error_difference": [
+            -0.3,
+            0.125
+          ],
+          "token_ratio": [
+            0.16252267872415926,
+            0.22071720672714995
+          ],
+          "cost_ratio": [
+            0.5409388438803614,
+            0.7281630590083867
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": true,
+          "no_extra_material_errors": true,
+          "accuracy_difference_lower_ge_-0.05": false,
+          "token_ratio_upper_lt_1.0": true,
+          "mean_token_ratio_le_0.85": true
+        },
+        "gate_passed": false,
+        "role": "descriptive_secondary",
+        "material_error_pairs": {
+          "only_candidate": 8,
+          "only_reference": 12
+        },
+        "token_usage_complete": true,
+        "claim_permitted": false
+      },
+      "split_vs_repomix": {
+        "candidate": "split",
+        "reference": "repomix",
+        "point": {
+          "supported_difference": 0.1,
+          "material_error_difference": -0.25,
+          "token_ratio": 0.06943453736191135,
+          "cost_ratio": 0.2807932643809795
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            0.025,
+            0.2
+          ],
+          "material_error_difference": [
+            -0.475,
+            -0.025
+          ],
+          "token_ratio": [
+            0.052472660272801785,
+            0.09409316707430579
+          ],
+          "cost_ratio": [
+            0.2354530201076534,
+            0.3341013555873347
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": true,
+          "no_extra_material_errors": true,
+          "accuracy_difference_lower_ge_-0.05": true,
+          "token_ratio_upper_lt_1.0": true,
+          "mean_token_ratio_le_0.85": true
+        },
+        "gate_passed": true,
+        "role": "descriptive_secondary",
+        "material_error_pairs": {
+          "only_candidate": 6,
+          "only_reference": 16
+        },
+        "token_usage_complete": true,
+        "claim_permitted": true
+      }
+    },
+    "nano41": {
+      "split_vs_native": {
+        "candidate": "split",
+        "reference": "native",
+        "point": {
+          "supported_difference": 0.0,
+          "material_error_difference": -0.125,
+          "token_ratio": 1.8983221225310392,
+          "cost_ratio": 1.4020490263602778
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            0.0,
+            0.0
+          ],
+          "material_error_difference": [
+            -0.275,
+            0.0
+          ],
+          "token_ratio": [
+            1.4615862226724616,
+            2.480417331134957
+          ],
+          "cost_ratio": [
+            1.2096840738310866,
+            1.6326890358339328
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": true,
+          "no_extra_material_errors": true,
+          "accuracy_difference_lower_ge_-0.05": true,
+          "token_ratio_upper_lt_1.0": false,
+          "mean_token_ratio_le_0.85": false
+        },
+        "gate_passed": false,
+        "role": "primary_per_model",
+        "material_error_pairs": {
+          "only_candidate": 2,
+          "only_reference": 7
+        },
+        "token_usage_complete": true,
+        "claim_permitted": false
+      },
+      "aider_vs_native": {
+        "candidate": "aider",
+        "reference": "native",
+        "point": {
+          "supported_difference": 0.0,
+          "material_error_difference": 0.0,
+          "token_ratio": 8.975382575311995,
+          "cost_ratio": 4.090406048462839
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            0.0,
+            0.0
+          ],
+          "material_error_difference": [
+            -0.125,
+            0.15
+          ],
+          "token_ratio": [
+            6.930305491239589,
+            11.676818011465375
+          ],
+          "cost_ratio": [
+            3.4821769138316934,
+            4.77254114885267
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": true,
+          "no_extra_material_errors": true,
+          "accuracy_difference_lower_ge_-0.05": true,
+          "token_ratio_upper_lt_1.0": false,
+          "mean_token_ratio_le_0.85": false
+        },
+        "gate_passed": false,
+        "role": "descriptive_secondary",
+        "material_error_pairs": {
+          "only_candidate": 4,
+          "only_reference": 4
+        },
+        "token_usage_complete": true,
+        "claim_permitted": false
+      },
+      "repomix_vs_native": {
+        "candidate": "repomix",
+        "reference": "native",
+        "point": {
+          "supported_difference": 0.0,
+          "material_error_difference": 0.05,
+          "token_ratio": 39.78333030338677,
+          "cost_ratio": 17.19021194665331
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            0.0,
+            0.0
+          ],
+          "material_error_difference": [
+            -0.075,
+            0.2
+          ],
+          "token_ratio": [
+            29.781958261016804,
+            54.21947014297729
+          ],
+          "cost_ratio": [
+            13.769061714489787,
+            21.452066608560024
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": true,
+          "no_extra_material_errors": false,
+          "accuracy_difference_lower_ge_-0.05": true,
+          "token_ratio_upper_lt_1.0": false,
+          "mean_token_ratio_le_0.85": false
+        },
+        "gate_passed": false,
+        "role": "descriptive_secondary",
+        "material_error_pairs": {
+          "only_candidate": 5,
+          "only_reference": 3
+        },
+        "token_usage_complete": true,
+        "claim_permitted": false
+      },
+      "split_vs_aider": {
+        "candidate": "split",
+        "reference": "aider",
+        "point": {
+          "supported_difference": 0.0,
+          "material_error_difference": -0.125,
+          "token_ratio": 0.21150319851018173,
+          "cost_ratio": 0.3427652437799331
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            0.0,
+            0.0
+          ],
+          "material_error_difference": [
+            -0.275,
+            0.025
+          ],
+          "token_ratio": [
+            0.17285077176661381,
+            0.2591469167362405
+          ],
+          "cost_ratio": [
+            0.2975309124641472,
+            0.39687204917673985
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": true,
+          "no_extra_material_errors": true,
+          "accuracy_difference_lower_ge_-0.05": true,
+          "token_ratio_upper_lt_1.0": true,
+          "mean_token_ratio_le_0.85": true
+        },
+        "gate_passed": true,
+        "role": "descriptive_secondary",
+        "material_error_pairs": {
+          "only_candidate": 3,
+          "only_reference": 8
+        },
+        "token_usage_complete": true,
+        "claim_permitted": true
+      },
+      "split_vs_repomix": {
+        "candidate": "split",
+        "reference": "repomix",
+        "point": {
+          "supported_difference": 0.0,
+          "material_error_difference": -0.175,
+          "token_ratio": 0.04771652116739544,
+          "cost_ratio": 0.08156089236777776
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            0.0,
+            0.0
+          ],
+          "material_error_difference": [
+            -0.325,
+            -0.025
+          ],
+          "token_ratio": [
+            0.03845437721523914,
+            0.06036773865828779
+          ],
+          "cost_ratio": [
+            0.06886562359194708,
+            0.09839573139727763
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": true,
+          "no_extra_material_errors": true,
+          "accuracy_difference_lower_ge_-0.05": true,
+          "token_ratio_upper_lt_1.0": true,
+          "mean_token_ratio_le_0.85": true
+        },
+        "gate_passed": true,
+        "role": "descriptive_secondary",
+        "material_error_pairs": {
+          "only_candidate": 2,
+          "only_reference": 9
+        },
+        "token_usage_complete": true,
+        "claim_permitted": true
+      }
+    },
+    "luna": {
+      "split_vs_native": {
+        "candidate": "split",
+        "reference": "native",
+        "point": {
+          "supported_difference": 0.15,
+          "material_error_difference": 0.0,
+          "token_ratio": 0.8606051464599234,
+          "cost_ratio": 0.8919300706169302
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            0.0,
+            0.325
+          ],
+          "material_error_difference": [
+            -0.075,
+            0.075
+          ],
+          "token_ratio": [
+            0.7167679314443308,
+            1.0312932218137194
+          ],
+          "cost_ratio": [
+            0.7373856894571194,
+            1.0425703764852634
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": true,
+          "no_extra_material_errors": true,
+          "accuracy_difference_lower_ge_-0.05": true,
+          "token_ratio_upper_lt_1.0": false,
+          "mean_token_ratio_le_0.85": false
+        },
+        "gate_passed": false,
+        "role": "primary_per_model",
+        "material_error_pairs": {
+          "only_candidate": 1,
+          "only_reference": 1
+        },
+        "token_usage_complete": false,
+        "claim_permitted": false
+      },
+      "aider_vs_native": {
+        "candidate": "aider",
+        "reference": "native",
+        "point": {
+          "supported_difference": 0.1,
+          "material_error_difference": -0.025,
+          "token_ratio": 4.325707160598108,
+          "cost_ratio": 2.118516882424693
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            -0.05,
+            0.275
+          ],
+          "material_error_difference": [
+            -0.1,
+            0.05
+          ],
+          "token_ratio": [
+            3.861546428893092,
+            4.917026822614192
+          ],
+          "cost_ratio": [
+            1.7847690157273994,
+            2.406072780979851
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": true,
+          "no_extra_material_errors": true,
+          "accuracy_difference_lower_ge_-0.05": true,
+          "token_ratio_upper_lt_1.0": false,
+          "mean_token_ratio_le_0.85": false
+        },
+        "gate_passed": false,
+        "role": "descriptive_secondary",
+        "material_error_pairs": {
+          "only_candidate": 1,
+          "only_reference": 2
+        },
+        "token_usage_complete": false,
+        "claim_permitted": false
+      },
+      "repomix_vs_native": {
+        "candidate": "repomix",
+        "reference": "native",
+        "point": {
+          "supported_difference": 0.175,
+          "material_error_difference": 0.025,
+          "token_ratio": 17.82383178979758,
+          "cost_ratio": 7.848173350640842
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            0.025,
+            0.325
+          ],
+          "material_error_difference": [
+            -0.05,
+            0.125
+          ],
+          "token_ratio": [
+            14.851673832480719,
+            21.329218302653203
+          ],
+          "cost_ratio": [
+            6.2920647408728945,
+            9.430862858811139
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": true,
+          "no_extra_material_errors": false,
+          "accuracy_difference_lower_ge_-0.05": true,
+          "token_ratio_upper_lt_1.0": false,
+          "mean_token_ratio_le_0.85": false
+        },
+        "gate_passed": false,
+        "role": "descriptive_secondary",
+        "material_error_pairs": {
+          "only_candidate": 2,
+          "only_reference": 1
+        },
+        "token_usage_complete": false,
+        "claim_permitted": false
+      },
+      "split_vs_aider": {
+        "candidate": "split",
+        "reference": "aider",
+        "point": {
+          "supported_difference": 0.05,
+          "material_error_difference": 0.025,
+          "token_ratio": 0.19895131928924406,
+          "cost_ratio": 0.42101626756738186
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            -0.1,
+            0.2
+          ],
+          "material_error_difference": [
+            0.0,
+            0.075
+          ],
+          "token_ratio": [
+            0.16918548047544815,
+            0.23118520896863087
+          ],
+          "cost_ratio": [
+            0.38020894987557463,
+            0.4630749566702406
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": true,
+          "no_extra_material_errors": false,
+          "accuracy_difference_lower_ge_-0.05": false,
+          "token_ratio_upper_lt_1.0": true,
+          "mean_token_ratio_le_0.85": true
+        },
+        "gate_passed": false,
+        "role": "descriptive_secondary",
+        "material_error_pairs": {
+          "only_candidate": 1,
+          "only_reference": 0
+        },
+        "token_usage_complete": true,
+        "claim_permitted": false
+      },
+      "split_vs_repomix": {
+        "candidate": "split",
+        "reference": "repomix",
+        "point": {
+          "supported_difference": -0.025,
+          "material_error_difference": -0.025,
+          "token_ratio": 0.048283958051743764,
+          "cost_ratio": 0.11364811030124605
+        },
+        "bootstrap_95": {
+          "supported_difference": [
+            -0.175,
+            0.15
+          ],
+          "material_error_difference": [
+            -0.075,
+            0.0
+          ],
+          "token_ratio": [
+            0.03815210554874806,
+            0.06065743783184497
+          ],
+          "cost_ratio": [
+            0.09628381184668816,
+            0.13505119312562952
+          ]
+        },
+        "undefined_bootstrap_draws": {
+          "supported_difference": 0,
+          "material_error_difference": 0,
+          "token_ratio": 0,
+          "cost_ratio": 0
+        },
+        "gate": {
+          "no_net_pass_loss": false,
+          "no_extra_material_errors": true,
+          "accuracy_difference_lower_ge_-0.05": false,
+          "token_ratio_upper_lt_1.0": true,
+          "mean_token_ratio_le_0.85": true
+        },
+        "gate_passed": false,
+        "role": "descriptive_secondary",
+        "material_error_pairs": {
+          "only_candidate": 0,
+          "only_reference": 1
+        },
+        "token_usage_complete": true,
+        "claim_permitted": false
+      }
+    }
+  },
+  "split_gate_by_model": {
+    "nano5": {
+      "validation_gate_passed": false,
+      "token_usage_complete": true,
+      "claim_permitted": false
+    },
+    "nano41": {
+      "validation_gate_passed": false,
+      "token_usage_complete": true,
+      "claim_permitted": false
+    },
+    "luna": {
+      "validation_gate_passed": false,
+      "token_usage_complete": false,
+      "claim_permitted": false
+    }
+  },
+  "corpus_breakdown": {
+    "anyio": {
+      "nano5": {
+        "native": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 2,
+          "strict_all": 3,
+          "total_tokens": 50667,
+          "mean_tokens": 12666.75,
+          "median_tokens": 9024.0,
+          "cost_usd": 0.00315005,
+          "mean_cost_usd": 0.0007875125,
+          "tokens_per_supported": 16889.0,
+          "cost_per_supported_usd": 0.0010500166666666667,
+          "tool_calls": 14,
+          "requests": 18,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 3,
+          "strict_all": 0,
+          "total_tokens": 36238,
+          "mean_tokens": 9059.5,
+          "median_tokens": 8223.0,
+          "cost_usd": 0.0029099900000000003,
+          "mean_cost_usd": 0.0007274975000000001,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 12,
+          "requests": 16,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 1,
+          "supported_rate": 0.25,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 4,
+          "strict_all": 1,
+          "total_tokens": 179253,
+          "mean_tokens": 44813.25,
+          "median_tokens": 35216.0,
+          "cost_usd": 0.00525101,
+          "mean_cost_usd": 0.0013127525,
+          "tokens_per_supported": 179253.0,
+          "cost_per_supported_usd": 0.00525101,
+          "tool_calls": 13,
+          "requests": 17,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 6,
+          "strict_all": 0,
+          "total_tokens": 660047,
+          "mean_tokens": 165011.75,
+          "median_tokens": 179576.5,
+          "cost_usd": 0.01314172,
+          "mean_cost_usd": 0.00328543,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 7,
+          "requests": 11,
+          "generation_failures": 0
+        }
+      },
+      "nano41": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 7,
+          "strict_all": 0,
+          "total_tokens": 13364,
+          "mean_tokens": 3341.0,
+          "median_tokens": 1619.5,
+          "cost_usd": 0.0014588000000000001,
+          "mean_cost_usd": 0.00036470000000000003,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 11,
+          "requests": 15,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 4,
+          "strict_all": 0,
+          "total_tokens": 11423,
+          "mean_tokens": 2855.75,
+          "median_tokens": 2413.0,
+          "cost_usd": 0.0013559000000000002,
+          "mean_cost_usd": 0.00033897500000000004,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 5,
+          "requests": 9,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 7,
+          "strict_all": 0,
+          "total_tokens": 99901,
+          "mean_tokens": 24975.25,
+          "median_tokens": 27049.0,
+          "cost_usd": 0.005837800000000001,
+          "mean_cost_usd": 0.0014594500000000002,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 7,
+          "requests": 11,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 8,
+          "strict_all": 0,
+          "total_tokens": 473529,
+          "mean_tokens": 118382.25,
+          "median_tokens": 117893.0,
+          "cost_usd": 0.030161100000000003,
+          "mean_cost_usd": 0.007540275000000001,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 4,
+          "requests": 8,
+          "generation_failures": 0
+        }
+      },
+      "luna": {
+        "native": {
+          "n": 4,
+          "supported": 4,
+          "supported_rate": 1.0,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 4,
+          "total_tokens": 31874,
+          "mean_tokens": 7968.5,
+          "median_tokens": 6878.0,
+          "cost_usd": 0.00310341,
+          "mean_cost_usd": 0.0007758525,
+          "tokens_per_supported": 7968.5,
+          "cost_per_supported_usd": 0.0007758525,
+          "tool_calls": 13,
+          "requests": 17,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 4,
+          "supported_rate": 1.0,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 4,
+          "total_tokens": 37399,
+          "mean_tokens": 9349.75,
+          "median_tokens": 9864.5,
+          "cost_usd": 0.003365895,
+          "mean_cost_usd": 0.00084147375,
+          "tokens_per_supported": 9349.75,
+          "cost_per_supported_usd": 0.00084147375,
+          "tool_calls": 11,
+          "requests": 15,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 4,
+          "supported_rate": 1.0,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 4,
+          "total_tokens": 128304,
+          "mean_tokens": 32076.0,
+          "median_tokens": 34767.5,
+          "cost_usd": 0.00719682,
+          "mean_cost_usd": 0.001799205,
+          "tokens_per_supported": 32076.0,
+          "cost_per_supported_usd": 0.001799205,
+          "tool_calls": 9,
+          "requests": 13,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 4,
+          "supported_rate": 1.0,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 4,
+          "total_tokens": 721893,
+          "mean_tokens": 180473.25,
+          "median_tokens": 180553.0,
+          "cost_usd": 0.036281065,
+          "mean_cost_usd": 0.00907026625,
+          "tokens_per_supported": 180473.25,
+          "cost_per_supported_usd": 0.00907026625,
+          "tool_calls": 8,
+          "requests": 12,
+          "generation_failures": 0
+        }
+      }
+    },
+    "attrs": {
+      "nano5": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 2,
+          "strict_all": 0,
+          "total_tokens": 115963,
+          "mean_tokens": 28990.75,
+          "median_tokens": 30683.0,
+          "cost_usd": 0.005364300000000001,
+          "mean_cost_usd": 0.0013410750000000002,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 21,
+          "requests": 25,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 7,
+          "strict_all": 0,
+          "total_tokens": 38833,
+          "mean_tokens": 9708.25,
+          "median_tokens": 10696.5,
+          "cost_usd": 0.00311893,
+          "mean_cost_usd": 0.0007797325,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 13,
+          "requests": 17,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 5,
+          "strict_all": 0,
+          "total_tokens": 232837,
+          "mean_tokens": 58209.25,
+          "median_tokens": 54452.5,
+          "cost_usd": 0.006217230000000001,
+          "mean_cost_usd": 0.0015543075000000002,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 18,
+          "requests": 22,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 4,
+          "strict_all": 0,
+          "total_tokens": 289699,
+          "mean_tokens": 72424.75,
+          "median_tokens": 72265.5,
+          "cost_usd": 0.00798386,
+          "mean_cost_usd": 0.001995965,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 6,
+          "requests": 10,
+          "generation_failures": 0
+        }
+      },
+      "nano41": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 9,
+          "strict_all": 0,
+          "total_tokens": 9649,
+          "mean_tokens": 2412.25,
+          "median_tokens": 1901.5,
+          "cost_usd": 0.0013417000000000001,
+          "mean_cost_usd": 0.00033542500000000004,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 8,
+          "requests": 12,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 5,
+          "strict_all": 0,
+          "total_tokens": 19975,
+          "mean_tokens": 4993.75,
+          "median_tokens": 5241.0,
+          "cost_usd": 0.0020143,
+          "mean_cost_usd": 0.000503575,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 8,
+          "requests": 12,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 5,
+          "strict_all": 0,
+          "total_tokens": 50852,
+          "mean_tokens": 12713.0,
+          "median_tokens": 12689.5,
+          "cost_usd": 0.0035867,
+          "mean_cost_usd": 0.000896675,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 4,
+          "requests": 8,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 10,
+          "strict_all": 0,
+          "total_tokens": 252340,
+          "mean_tokens": 63085.0,
+          "median_tokens": 55905.0,
+          "cost_usd": 0.0151885,
+          "mean_cost_usd": 0.003797125,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 5,
+          "requests": 9,
+          "generation_failures": 0
+        }
+      },
+      "luna": {
+        "native": {
+          "n": 4,
+          "supported": 2,
+          "supported_rate": 0.5,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 2,
+          "total_tokens": 37407,
+          "mean_tokens": 9351.75,
+          "median_tokens": 10145.0,
+          "cost_usd": 0.00283657,
+          "mean_cost_usd": 0.0007091425,
+          "tokens_per_supported": 18703.5,
+          "cost_per_supported_usd": 0.001418285,
+          "tool_calls": 18,
+          "requests": 22,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 55689,
+          "mean_tokens": 13922.25,
+          "median_tokens": 16300.5,
+          "cost_usd": 0.00403931,
+          "mean_cost_usd": 0.0010098275,
+          "tokens_per_supported": 18563.0,
+          "cost_per_supported_usd": 0.0013464366666666666,
+          "tool_calls": 14,
+          "requests": 18,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 2,
+          "supported_rate": 0.5,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 2,
+          "total_tokens": 182659,
+          "mean_tokens": 45664.75,
+          "median_tokens": 48205.5,
+          "cost_usd": 0.00715315,
+          "mean_cost_usd": 0.0017882875,
+          "tokens_per_supported": 91329.5,
+          "cost_per_supported_usd": 0.003576575,
+          "tool_calls": 19,
+          "requests": 23,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 496109,
+          "mean_tokens": 124027.25,
+          "median_tokens": 117127.5,
+          "cost_usd": 0.019791295,
+          "mean_cost_usd": 0.00494782375,
+          "tokens_per_supported": 165369.66666666666,
+          "cost_per_supported_usd": 0.006597098333333333,
+          "tool_calls": 13,
+          "requests": 17,
+          "generation_failures": 0
+        }
+      }
+    },
+    "click": {
+      "nano5": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 2,
+          "strict_all": 0,
+          "total_tokens": 59374,
+          "mean_tokens": 14843.5,
+          "median_tokens": 16577.5,
+          "cost_usd": 0.00493951,
+          "mean_cost_usd": 0.0012348775,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 15,
+          "requests": 19,
+          "generation_failures": 1
+        },
+        "split": {
+          "n": 4,
+          "supported": 1,
+          "supported_rate": 0.25,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 4,
+          "strict_all": 1,
+          "total_tokens": 46015,
+          "mean_tokens": 11503.75,
+          "median_tokens": 11530.5,
+          "cost_usd": 0.0035194500000000004,
+          "mean_cost_usd": 0.0008798625000000001,
+          "tokens_per_supported": 46015.0,
+          "cost_per_supported_usd": 0.0035194500000000004,
+          "tool_calls": 12,
+          "requests": 16,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 7,
+          "strict_all": 0,
+          "total_tokens": 222803,
+          "mean_tokens": 55700.75,
+          "median_tokens": 54990.0,
+          "cost_usd": 0.00609938,
+          "mean_cost_usd": 0.001524845,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 16,
+          "requests": 20,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 8,
+          "strict_all": 0,
+          "total_tokens": 955090,
+          "mean_tokens": 238772.5,
+          "median_tokens": 236290.5,
+          "cost_usd": 0.016338270000000002,
+          "mean_cost_usd": 0.0040845675000000005,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 14,
+          "requests": 18,
+          "generation_failures": 0
+        }
+      },
+      "nano41": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 7,
+          "strict_all": 0,
+          "total_tokens": 4253,
+          "mean_tokens": 1063.25,
+          "median_tokens": 1049.0,
+          "cost_usd": 0.000845,
+          "mean_cost_usd": 0.00021125,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 4,
+          "requests": 8,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 7,
+          "strict_all": 0,
+          "total_tokens": 21703,
+          "mean_tokens": 5425.75,
+          "median_tokens": 5402.0,
+          "cost_usd": 0.0020725,
+          "mean_cost_usd": 0.000518125,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 8,
+          "requests": 12,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 9,
+          "strict_all": 0,
+          "total_tokens": 73404,
+          "mean_tokens": 18351.0,
+          "median_tokens": 16686.0,
+          "cost_usd": 0.004614,
+          "mean_cost_usd": 0.0011535,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 5,
+          "requests": 9,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 10,
+          "strict_all": 0,
+          "total_tokens": 406544,
+          "mean_tokens": 101636.0,
+          "median_tokens": 101650.5,
+          "cost_usd": 0.0258863,
+          "mean_cost_usd": 0.006471575,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 4,
+          "requests": 8,
+          "generation_failures": 0
+        }
+      },
+      "luna": {
+        "native": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 36039,
+          "mean_tokens": 9009.75,
+          "median_tokens": 9099.0,
+          "cost_usd": 0.0031686450000000003,
+          "mean_cost_usd": 0.0007921612500000001,
+          "tokens_per_supported": 12013.0,
+          "cost_per_supported_usd": 0.001056215,
+          "tool_calls": 19,
+          "requests": 23,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 32922,
+          "mean_tokens": 8230.5,
+          "median_tokens": 8144.5,
+          "cost_usd": 0.0031054850000000003,
+          "mean_cost_usd": 0.0007763712500000001,
+          "tokens_per_supported": 10974.0,
+          "cost_per_supported_usd": 0.0010351616666666667,
+          "tool_calls": 10,
+          "requests": 14,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 231681,
+          "mean_tokens": 57920.25,
+          "median_tokens": 63369.5,
+          "cost_usd": 0.008672985,
+          "mean_cost_usd": 0.00216824625,
+          "tokens_per_supported": 77227.0,
+          "cost_per_supported_usd": 0.002890995,
+          "tool_calls": 20,
+          "requests": 24,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 4,
+          "supported_rate": 1.0,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 4,
+          "total_tokens": 837408,
+          "mean_tokens": 209352.0,
+          "median_tokens": 209374.5,
+          "cost_usd": 0.03396412,
+          "mean_cost_usd": 0.00849103,
+          "tokens_per_supported": 209352.0,
+          "cost_per_supported_usd": 0.00849103,
+          "tool_calls": 12,
+          "requests": 16,
+          "generation_failures": 0
+        }
+      }
+    },
+    "httpx": {
+      "nano5": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 3,
+          "strict_all": 0,
+          "total_tokens": 171875,
+          "mean_tokens": 42968.75,
+          "median_tokens": 51150.0,
+          "cost_usd": 0.0077781000000000005,
+          "mean_cost_usd": 0.0019445250000000001,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 19,
+          "requests": 23,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 4,
+          "strict_all": 0,
+          "total_tokens": 39981,
+          "mean_tokens": 9995.25,
+          "median_tokens": 9834.5,
+          "cost_usd": 0.00400141,
+          "mean_cost_usd": 0.0010003525,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 13,
+          "requests": 17,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 1,
+          "strict_all": 0,
+          "total_tokens": 178205,
+          "mean_tokens": 44551.25,
+          "median_tokens": 36372.5,
+          "cost_usd": 0.00517978,
+          "mean_cost_usd": 0.001294945,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 10,
+          "requests": 15,
+          "generation_failures": 1
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 2,
+          "strict_all": 0,
+          "total_tokens": 737541,
+          "mean_tokens": 184385.25,
+          "median_tokens": 155039.5,
+          "cost_usd": 0.013029309999999999,
+          "mean_cost_usd": 0.0032573274999999997,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 14,
+          "requests": 18,
+          "generation_failures": 0
+        }
+      },
+      "nano41": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 7,
+          "strict_all": 0,
+          "total_tokens": 9133,
+          "mean_tokens": 2283.25,
+          "median_tokens": 2104.5,
+          "cost_usd": 0.0013585000000000001,
+          "mean_cost_usd": 0.00033962500000000003,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 9,
+          "requests": 13,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 5,
+          "strict_all": 0,
+          "total_tokens": 17848,
+          "mean_tokens": 4462.0,
+          "median_tokens": 4919.5,
+          "cost_usd": 0.0018004000000000002,
+          "mean_cost_usd": 0.00045010000000000004,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 7,
+          "requests": 11,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 9,
+          "strict_all": 0,
+          "total_tokens": 97773,
+          "mean_tokens": 24443.25,
+          "median_tokens": 22754.0,
+          "cost_usd": 0.0056841,
+          "mean_cost_usd": 0.001421025,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 7,
+          "requests": 11,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 11,
+          "strict_all": 0,
+          "total_tokens": 298898,
+          "mean_tokens": 74724.5,
+          "median_tokens": 74356.0,
+          "cost_usd": 0.019361,
+          "mean_cost_usd": 0.00484025,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 4,
+          "requests": 8,
+          "generation_failures": 0
+        }
+      },
+      "luna": {
+        "native": {
+          "n": 4,
+          "supported": 2,
+          "supported_rate": 0.5,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 1,
+          "strict_all": 2,
+          "total_tokens": 60408,
+          "mean_tokens": 15102.0,
+          "median_tokens": 16031.5,
+          "cost_usd": 0.00409835,
+          "mean_cost_usd": 0.0010245875,
+          "tokens_per_supported": 30204.0,
+          "cost_per_supported_usd": 0.002049175,
+          "tool_calls": 21,
+          "requests": 25,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 1,
+          "strict_all": 3,
+          "total_tokens": 58297,
+          "mean_tokens": 14574.25,
+          "median_tokens": 15482.0,
+          "cost_usd": 0.00437125,
+          "mean_cost_usd": 0.0010928125,
+          "tokens_per_supported": 19432.333333333332,
+          "cost_per_supported_usd": 0.0014570833333333335,
+          "tool_calls": 15,
+          "requests": 19,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 2,
+          "supported_rate": 0.5,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 2,
+          "total_tokens": 249345,
+          "mean_tokens": 62336.25,
+          "median_tokens": 63678.0,
+          "cost_usd": 0.008702095,
+          "mean_cost_usd": 0.00217552375,
+          "tokens_per_supported": 124672.5,
+          "cost_per_supported_usd": 0.0043510475,
+          "tool_calls": 21,
+          "requests": 25,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 2,
+          "supported_rate": 0.5,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 1,
+          "strict_all": 2,
+          "total_tokens": 885817,
+          "mean_tokens": 221454.25,
+          "median_tokens": 230439.5,
+          "cost_usd": 0.028408370000000002,
+          "mean_cost_usd": 0.0071020925000000006,
+          "tokens_per_supported": 442908.5,
+          "cost_per_supported_usd": 0.014204185000000001,
+          "tool_calls": 19,
+          "requests": 23,
+          "generation_failures": 0
+        }
+      }
+    },
+    "jinja": {
+      "nano5": {
+        "native": {
+          "n": 4,
+          "supported": 1,
+          "supported_rate": 0.25,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 3,
+          "strict_all": 1,
+          "total_tokens": 79905,
+          "mean_tokens": 19976.25,
+          "median_tokens": 19572.5,
+          "cost_usd": 0.00428669,
+          "mean_cost_usd": 0.0010716725,
+          "tokens_per_supported": 79905.0,
+          "cost_per_supported_usd": 0.00428669,
+          "tool_calls": 19,
+          "requests": 23,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 1,
+          "supported_rate": 0.25,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 2,
+          "strict_all": 1,
+          "total_tokens": 39626,
+          "mean_tokens": 9906.5,
+          "median_tokens": 11757.0,
+          "cost_usd": 0.00316591,
+          "mean_cost_usd": 0.0007914775,
+          "tokens_per_supported": 39626.0,
+          "cost_per_supported_usd": 0.00316591,
+          "tool_calls": 12,
+          "requests": 16,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 1,
+          "supported_rate": 0.25,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 3,
+          "strict_all": 1,
+          "total_tokens": 156693,
+          "mean_tokens": 39173.25,
+          "median_tokens": 39114.0,
+          "cost_usd": 0.004706900000000001,
+          "mean_cost_usd": 0.0011767250000000002,
+          "tokens_per_supported": 156693.0,
+          "cost_per_supported_usd": 0.004706900000000001,
+          "tool_calls": 10,
+          "requests": 14,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 8,
+          "strict_all": 0,
+          "total_tokens": 995721,
+          "mean_tokens": 248930.25,
+          "median_tokens": 190586.0,
+          "cost_usd": 0.02082933,
+          "mean_cost_usd": 0.0052073325,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 9,
+          "requests": 13,
+          "generation_failures": 0
+        }
+      },
+      "nano41": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 7,
+          "strict_all": 0,
+          "total_tokens": 5647,
+          "mean_tokens": 1411.75,
+          "median_tokens": 1050.5,
+          "cost_usd": 0.0009682,
+          "mean_cost_usd": 0.00024205,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 6,
+          "requests": 10,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 4,
+          "strict_all": 0,
+          "total_tokens": 14299,
+          "mean_tokens": 3574.75,
+          "median_tokens": 3286.5,
+          "cost_usd": 0.0015373000000000001,
+          "mean_cost_usd": 0.00038432500000000003,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 6,
+          "requests": 10,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 5,
+          "strict_all": 0,
+          "total_tokens": 108847,
+          "mean_tokens": 27211.75,
+          "median_tokens": 26881.5,
+          "cost_usd": 0.0064993,
+          "mean_cost_usd": 0.001624825,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 7,
+          "requests": 11,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 5,
+          "strict_all": 0,
+          "total_tokens": 594497,
+          "mean_tokens": 148624.25,
+          "median_tokens": 148599.5,
+          "cost_usd": 0.0321596,
+          "mean_cost_usd": 0.0080399,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 4,
+          "requests": 8,
+          "generation_failures": 0
+        }
+      },
+      "luna": {
+        "native": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 1,
+          "strict_all": 3,
+          "total_tokens": 47528,
+          "mean_tokens": 11882.0,
+          "median_tokens": 11722.0,
+          "cost_usd": 0.00385965,
+          "mean_cost_usd": 0.0009649125,
+          "tokens_per_supported": 15842.666666666666,
+          "cost_per_supported_usd": 0.00128655,
+          "tool_calls": 20,
+          "requests": 24,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 24568,
+          "mean_tokens": 6142.0,
+          "median_tokens": 5957.0,
+          "cost_usd": 0.00275085,
+          "mean_cost_usd": 0.0006877125,
+          "tokens_per_supported": 8189.333333333333,
+          "cost_per_supported_usd": 0.00091695,
+          "tool_calls": 8,
+          "requests": 12,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 4,
+          "supported_rate": 1.0,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 4,
+          "total_tokens": 251194,
+          "mean_tokens": 62798.5,
+          "median_tokens": 64175.5,
+          "cost_usd": 0.009374015,
+          "mean_cost_usd": 0.00234350375,
+          "tokens_per_supported": 62798.5,
+          "cost_per_supported_usd": 0.00234350375,
+          "tool_calls": 19,
+          "requests": 23,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 4,
+          "supported_rate": 1.0,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 4,
+          "total_tokens": 1588556,
+          "mean_tokens": 397139.0,
+          "median_tokens": 415819.5,
+          "cost_usd": 0.052280595,
+          "mean_cost_usd": 0.01307014875,
+          "tokens_per_supported": 397139.0,
+          "cost_per_supported_usd": 0.01307014875,
+          "tool_calls": 17,
+          "requests": 21,
+          "generation_failures": 0
+        }
+      }
+    },
+    "packaging": {
+      "nano5": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 4,
+          "strict_all": 0,
+          "total_tokens": 114648,
+          "mean_tokens": 28662.0,
+          "median_tokens": 30877.0,
+          "cost_usd": 0.00596394,
+          "mean_cost_usd": 0.001490985,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 19,
+          "requests": 23,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 6,
+          "strict_all": 0,
+          "total_tokens": 27631,
+          "mean_tokens": 6907.75,
+          "median_tokens": 3769.0,
+          "cost_usd": 0.00304204,
+          "mean_cost_usd": 0.00076051,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 7,
+          "requests": 11,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 8,
+          "strict_all": 0,
+          "total_tokens": 247628,
+          "mean_tokens": 61907.0,
+          "median_tokens": 60379.0,
+          "cost_usd": 0.006024440000000001,
+          "mean_cost_usd": 0.0015061100000000002,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 16,
+          "requests": 20,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 11,
+          "strict_all": 0,
+          "total_tokens": 605203,
+          "mean_tokens": 151300.75,
+          "median_tokens": 74687.0,
+          "cost_usd": 0.01798151,
+          "mean_cost_usd": 0.0044953775,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 4,
+          "requests": 8,
+          "generation_failures": 0
+        }
+      },
+      "nano41": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 5,
+          "strict_all": 0,
+          "total_tokens": 5684,
+          "mean_tokens": 1421.0,
+          "median_tokens": 1023.5,
+          "cost_usd": 0.0009701000000000001,
+          "mean_cost_usd": 0.00024252500000000003,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 6,
+          "requests": 10,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 4,
+          "strict_all": 0,
+          "total_tokens": 15663,
+          "mean_tokens": 3915.75,
+          "median_tokens": 3890.5,
+          "cost_usd": 0.0017772,
+          "mean_cost_usd": 0.0004443,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 6,
+          "requests": 10,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 8,
+          "strict_all": 0,
+          "total_tokens": 92595,
+          "mean_tokens": 23148.75,
+          "median_tokens": 23268.0,
+          "cost_usd": 0.0056949,
+          "mean_cost_usd": 0.001423725,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 6,
+          "requests": 10,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 14,
+          "strict_all": 0,
+          "total_tokens": 594288,
+          "mean_tokens": 148572.0,
+          "median_tokens": 148001.5,
+          "cost_usd": 0.0377349,
+          "mean_cost_usd": 0.009433725,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 4,
+          "requests": 8,
+          "generation_failures": 0
+        }
+      },
+      "luna": {
+        "native": {
+          "n": 4,
+          "supported": 1,
+          "supported_rate": 0.25,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 1,
+          "total_tokens": 101358,
+          "mean_tokens": 25339.5,
+          "median_tokens": 26730.0,
+          "cost_usd": 0.0054084350000000005,
+          "mean_cost_usd": 0.0013521087500000001,
+          "tokens_per_supported": 101358.0,
+          "cost_per_supported_usd": 0.0054084350000000005,
+          "tool_calls": 24,
+          "requests": 28,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 1,
+          "supported_rate": 0.25,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 1,
+          "total_tokens": 45143,
+          "mean_tokens": 11285.75,
+          "median_tokens": 12624.0,
+          "cost_usd": 0.0035693499999999998,
+          "mean_cost_usd": 0.0008923374999999999,
+          "tokens_per_supported": 45143.0,
+          "cost_per_supported_usd": 0.0035693499999999998,
+          "tool_calls": 12,
+          "requests": 16,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 365893,
+          "mean_tokens": 91473.25,
+          "median_tokens": 92806.0,
+          "cost_usd": 0.013057025,
+          "mean_cost_usd": 0.00326425625,
+          "tokens_per_supported": 121964.33333333333,
+          "cost_per_supported_usd": 0.004352341666666666,
+          "tool_calls": 22,
+          "requests": 26,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 4,
+          "supported_rate": 1.0,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 4,
+          "total_tokens": 1914413,
+          "mean_tokens": 478603.25,
+          "median_tokens": 498488.5,
+          "cost_usd": 0.056317769999999996,
+          "mean_cost_usd": 0.014079442499999999,
+          "tokens_per_supported": 478603.25,
+          "cost_per_supported_usd": 0.014079442499999999,
+          "tool_calls": 21,
+          "requests": 25,
+          "generation_failures": 0
+        }
+      }
+    },
+    "pluggy": {
+      "nano5": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 4,
+          "strict_all": 0,
+          "total_tokens": 95113,
+          "mean_tokens": 23778.25,
+          "median_tokens": 18532.0,
+          "cost_usd": 0.00495011,
+          "mean_cost_usd": 0.0012375275,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 19,
+          "requests": 23,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 8,
+          "strict_all": 0,
+          "total_tokens": 35884,
+          "mean_tokens": 8971.0,
+          "median_tokens": 7781.5,
+          "cost_usd": 0.00310289,
+          "mean_cost_usd": 0.0007757225,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 11,
+          "requests": 15,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 3,
+          "strict_all": 0,
+          "total_tokens": 103056,
+          "mean_tokens": 25764.0,
+          "median_tokens": 25473.0,
+          "cost_usd": 0.00331013,
+          "mean_cost_usd": 0.0008275325,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 13,
+          "requests": 17,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 6,
+          "strict_all": 0,
+          "total_tokens": 196219,
+          "mean_tokens": 49054.75,
+          "median_tokens": 50501.5,
+          "cost_usd": 0.00492187,
+          "mean_cost_usd": 0.0012304675,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 13,
+          "requests": 17,
+          "generation_failures": 0
+        }
+      },
+      "nano41": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 7,
+          "strict_all": 0,
+          "total_tokens": 11018,
+          "mean_tokens": 2754.5,
+          "median_tokens": 2220.5,
+          "cost_usd": 0.0014240000000000001,
+          "mean_cost_usd": 0.00035600000000000003,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 8,
+          "requests": 12,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 5,
+          "strict_all": 0,
+          "total_tokens": 16435,
+          "mean_tokens": 4108.75,
+          "median_tokens": 4282.5,
+          "cost_usd": 0.0016723,
+          "mean_cost_usd": 0.000418075,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 7,
+          "requests": 11,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 10,
+          "strict_all": 0,
+          "total_tokens": 38180,
+          "mean_tokens": 9545.0,
+          "median_tokens": 8455.0,
+          "cost_usd": 0.002474,
+          "mean_cost_usd": 0.0006185,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 5,
+          "requests": 9,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 4,
+          "strict_all": 0,
+          "total_tokens": 82430,
+          "mean_tokens": 20607.5,
+          "median_tokens": 18278.0,
+          "cost_usd": 0.0047186,
+          "mean_cost_usd": 0.00117965,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 5,
+          "requests": 9,
+          "generation_failures": 0
+        }
+      },
+      "luna": {
+        "native": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 56691,
+          "mean_tokens": 14172.75,
+          "median_tokens": 14758.5,
+          "cost_usd": 0.003835635,
+          "mean_cost_usd": 0.00095890875,
+          "tokens_per_supported": 18897.0,
+          "cost_per_supported_usd": 0.001278545,
+          "tool_calls": 21,
+          "requests": 25,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 2,
+          "strict_all": 3,
+          "total_tokens": 47440,
+          "mean_tokens": 11860.0,
+          "median_tokens": 12068.5,
+          "cost_usd": 0.003829865,
+          "mean_cost_usd": 0.00095746625,
+          "tokens_per_supported": 15813.333333333334,
+          "cost_per_supported_usd": 0.0012766216666666667,
+          "tool_calls": 13,
+          "requests": 17,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 3,
+          "strict_all": 3,
+          "total_tokens": 124796,
+          "mean_tokens": 31199.0,
+          "median_tokens": 35108.0,
+          "cost_usd": 0.005886085,
+          "mean_cost_usd": 0.00147152125,
+          "tokens_per_supported": 41598.666666666664,
+          "cost_per_supported_usd": 0.0019620283333333334,
+          "tool_calls": 17,
+          "requests": 21,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 2,
+          "supported_rate": 0.5,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 3,
+          "strict_all": 2,
+          "total_tokens": 205373,
+          "mean_tokens": 51343.25,
+          "median_tokens": 45417.0,
+          "cost_usd": 0.008749105,
+          "mean_cost_usd": 0.00218727625,
+          "tokens_per_supported": 102686.5,
+          "cost_per_supported_usd": 0.0043745525,
+          "tool_calls": 15,
+          "requests": 19,
+          "generation_failures": 0
+        }
+      }
+    },
+    "requests": {
+      "nano5": {
+        "native": {
+          "n": 4,
+          "supported": 1,
+          "supported_rate": 0.25,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 2,
+          "strict_all": 1,
+          "total_tokens": 81340,
+          "mean_tokens": 20335.0,
+          "median_tokens": 18744.5,
+          "cost_usd": 0.00457554,
+          "mean_cost_usd": 0.001143885,
+          "tokens_per_supported": 81340.0,
+          "cost_per_supported_usd": 0.00457554,
+          "tool_calls": 15,
+          "requests": 19,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 1,
+          "supported_rate": 0.25,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 3,
+          "strict_all": 1,
+          "total_tokens": 28916,
+          "mean_tokens": 7229.0,
+          "median_tokens": 7564.5,
+          "cost_usd": 0.00298282,
+          "mean_cost_usd": 0.000745705,
+          "tokens_per_supported": 28916.0,
+          "cost_per_supported_usd": 0.00298282,
+          "tool_calls": 10,
+          "requests": 14,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 4,
+          "strict_all": 0,
+          "total_tokens": 179017,
+          "mean_tokens": 44754.25,
+          "median_tokens": 46787.5,
+          "cost_usd": 0.00611759,
+          "mean_cost_usd": 0.0015293975,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 17,
+          "requests": 21,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 9,
+          "strict_all": 0,
+          "total_tokens": 261766,
+          "mean_tokens": 65441.5,
+          "median_tokens": 65307.0,
+          "cost_usd": 0.00868029,
+          "mean_cost_usd": 0.0021700725,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 4,
+          "requests": 8,
+          "generation_failures": 0
+        }
+      },
+      "nano41": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 5,
+          "strict_all": 0,
+          "total_tokens": 8745,
+          "mean_tokens": 2186.25,
+          "median_tokens": 2257.0,
+          "cost_usd": 0.0012615,
+          "mean_cost_usd": 0.000315375,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 8,
+          "requests": 12,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 8,
+          "strict_all": 0,
+          "total_tokens": 12672,
+          "mean_tokens": 3168.0,
+          "median_tokens": 2468.0,
+          "cost_usd": 0.0014877000000000002,
+          "mean_cost_usd": 0.00037192500000000006,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 5,
+          "requests": 9,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 8,
+          "strict_all": 0,
+          "total_tokens": 62592,
+          "mean_tokens": 15648.0,
+          "median_tokens": 15582.5,
+          "cost_usd": 0.0039138,
+          "mean_cost_usd": 0.00097845,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 6,
+          "requests": 10,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 6,
+          "strict_all": 0,
+          "total_tokens": 321022,
+          "mean_tokens": 80255.5,
+          "median_tokens": 80416.5,
+          "cost_usd": 0.013630000000000001,
+          "mean_cost_usd": 0.0034075000000000004,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 6,
+          "requests": 10,
+          "generation_failures": 0
+        }
+      },
+      "luna": {
+        "native": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 32043,
+          "mean_tokens": 8010.75,
+          "median_tokens": 7073.0,
+          "cost_usd": 0.00314309,
+          "mean_cost_usd": 0.0007857725,
+          "tokens_per_supported": 10681.0,
+          "cost_per_supported_usd": 0.0010476966666666666,
+          "tool_calls": 18,
+          "requests": 22,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 4,
+          "supported_rate": 1.0,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 4,
+          "total_tokens": 32877,
+          "mean_tokens": 8219.25,
+          "median_tokens": 8273.0,
+          "cost_usd": 0.003155545,
+          "mean_cost_usd": 0.00078888625,
+          "tokens_per_supported": 8219.25,
+          "cost_per_supported_usd": 0.00078888625,
+          "tool_calls": 10,
+          "requests": 14,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 140021,
+          "mean_tokens": 35005.25,
+          "median_tokens": 31904.0,
+          "cost_usd": 0.0064927299999999995,
+          "mean_cost_usd": 0.0016231824999999999,
+          "tokens_per_supported": 46673.666666666664,
+          "cost_per_supported_usd": 0.0021642433333333333,
+          "tool_calls": 14,
+          "requests": 18,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 595357,
+          "mean_tokens": 148839.25,
+          "median_tokens": 149128.0,
+          "cost_usd": 0.022660475,
+          "mean_cost_usd": 0.00566511875,
+          "tokens_per_supported": 198452.33333333334,
+          "cost_per_supported_usd": 0.007553491666666666,
+          "tool_calls": 14,
+          "requests": 18,
+          "generation_failures": 0
+        }
+      }
+    },
+    "starlette": {
+      "nano5": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 2,
+          "strict_all": 0,
+          "total_tokens": 61414,
+          "mean_tokens": 15353.5,
+          "median_tokens": 15631.0,
+          "cost_usd": 0.0036780700000000003,
+          "mean_cost_usd": 0.0009195175000000001,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 14,
+          "requests": 18,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 1,
+          "supported_rate": 0.25,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 1,
+          "strict_all": 1,
+          "total_tokens": 42691,
+          "mean_tokens": 10672.75,
+          "median_tokens": 9854.5,
+          "cost_usd": 0.004676250000000001,
+          "mean_cost_usd": 0.0011690625000000002,
+          "tokens_per_supported": 42691.0,
+          "cost_per_supported_usd": 0.004676250000000001,
+          "tool_calls": 12,
+          "requests": 16,
+          "generation_failures": 1
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 3,
+          "strict_all": 0,
+          "total_tokens": 182079,
+          "mean_tokens": 45519.75,
+          "median_tokens": 38074.5,
+          "cost_usd": 0.00480063,
+          "mean_cost_usd": 0.0012001575,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 13,
+          "requests": 17,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 9,
+          "strict_all": 0,
+          "total_tokens": 284521,
+          "mean_tokens": 71130.25,
+          "median_tokens": 85027.5,
+          "cost_usd": 0.00797369,
+          "mean_cost_usd": 0.0019934225,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 6,
+          "requests": 10,
+          "generation_failures": 0
+        }
+      },
+      "nano41": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 3,
+          "strict_all": 0,
+          "total_tokens": 15284,
+          "mean_tokens": 3821.0,
+          "median_tokens": 3639.0,
+          "cost_usd": 0.0018803000000000001,
+          "mean_cost_usd": 0.00047007500000000003,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 9,
+          "requests": 13,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 9,
+          "strict_all": 0,
+          "total_tokens": 32414,
+          "mean_tokens": 8103.5,
+          "median_tokens": 5602.5,
+          "cost_usd": 0.0026033000000000002,
+          "mean_cost_usd": 0.0006508250000000001,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 10,
+          "requests": 14,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 8,
+          "strict_all": 0,
+          "total_tokens": 124621,
+          "mean_tokens": 31155.25,
+          "median_tokens": 32853.0,
+          "cost_usd": 0.0078412,
+          "mean_cost_usd": 0.0019603,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 9,
+          "requests": 13,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 10,
+          "strict_all": 0,
+          "total_tokens": 276782,
+          "mean_tokens": 69195.5,
+          "median_tokens": 55091.0,
+          "cost_usd": 0.015773000000000002,
+          "mean_cost_usd": 0.003943250000000001,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 6,
+          "requests": 10,
+          "generation_failures": 0
+        }
+      },
+      "luna": {
+        "native": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 38747,
+          "mean_tokens": 9686.75,
+          "median_tokens": 8134.5,
+          "cost_usd": 0.006930344999999999,
+          "mean_cost_usd": 0.0017325862499999998,
+          "tokens_per_supported": 12915.666666666666,
+          "cost_per_supported_usd": 0.0023101149999999997,
+          "tool_calls": 12,
+          "requests": 18,
+          "generation_failures": 1
+        },
+        "split": {
+          "n": 4,
+          "supported": 4,
+          "supported_rate": 1.0,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 4,
+          "total_tokens": 37432,
+          "mean_tokens": 9358.0,
+          "median_tokens": 10237.5,
+          "cost_usd": 0.0033555,
+          "mean_cost_usd": 0.000838875,
+          "tokens_per_supported": 9358.0,
+          "cost_per_supported_usd": 0.000838875,
+          "tool_calls": 11,
+          "requests": 15,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 193279,
+          "mean_tokens": 48319.75,
+          "median_tokens": 44229.0,
+          "cost_usd": 0.008371865,
+          "mean_cost_usd": 0.00209296625,
+          "tokens_per_supported": 64426.333333333336,
+          "cost_per_supported_usd": 0.0027906216666666664,
+          "tool_calls": 14,
+          "requests": 18,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 4,
+          "supported_rate": 1.0,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 4,
+          "total_tokens": 467529,
+          "mean_tokens": 116882.25,
+          "median_tokens": 102420.5,
+          "cost_usd": 0.019599515,
+          "mean_cost_usd": 0.00489987875,
+          "tokens_per_supported": 116882.25,
+          "cost_per_supported_usd": 0.00489987875,
+          "tool_calls": 12,
+          "requests": 16,
+          "generation_failures": 0
+        }
+      }
+    },
+    "typer": {
+      "nano5": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 2,
+          "material_error_rate": 0.5,
+          "quoted_material_errors": 3,
+          "strict_all": 0,
+          "total_tokens": 152357,
+          "mean_tokens": 38089.25,
+          "median_tokens": 41479.0,
+          "cost_usd": 0.00586301,
+          "mean_cost_usd": 0.0014657525,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 20,
+          "requests": 24,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 1,
+          "strict_all": 0,
+          "total_tokens": 33498,
+          "mean_tokens": 8374.5,
+          "median_tokens": 9069.5,
+          "cost_usd": 0.0038851,
+          "mean_cost_usd": 0.000971275,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 11,
+          "requests": 15,
+          "generation_failures": 1
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 5,
+          "strict_all": 0,
+          "total_tokens": 275972,
+          "mean_tokens": 68993.0,
+          "median_tokens": 68497.0,
+          "cost_usd": 0.00724883,
+          "mean_cost_usd": 0.0018122075,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 19,
+          "requests": 23,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 10,
+          "strict_all": 0,
+          "total_tokens": 333059,
+          "mean_tokens": 83264.75,
+          "median_tokens": 47431.0,
+          "cost_usd": 0.011647270000000001,
+          "mean_cost_usd": 0.0029118175000000003,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 3,
+          "requests": 7,
+          "generation_failures": 0
+        }
+      },
+      "nano41": {
+        "native": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 6,
+          "strict_all": 0,
+          "total_tokens": 10734,
+          "mean_tokens": 2683.5,
+          "median_tokens": 1288.0,
+          "cost_usd": 0.0012687,
+          "mean_cost_usd": 0.000317175,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 9,
+          "requests": 13,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 1,
+          "material_error_rate": 0.25,
+          "quoted_material_errors": 3,
+          "strict_all": 0,
+          "total_tokens": 15082,
+          "mean_tokens": 3770.5,
+          "median_tokens": 3703.0,
+          "cost_usd": 0.0015928000000000001,
+          "mean_cost_usd": 0.00039820000000000003,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 6,
+          "requests": 10,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 4,
+          "material_error_rate": 1.0,
+          "quoted_material_errors": 7,
+          "strict_all": 0,
+          "total_tokens": 90532,
+          "mean_tokens": 22633.0,
+          "median_tokens": 17753.5,
+          "cost_usd": 0.0061165,
+          "mean_cost_usd": 0.001529125,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 6,
+          "requests": 10,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 0,
+          "supported_rate": 0.0,
+          "material_errors": 3,
+          "material_error_rate": 0.75,
+          "quoted_material_errors": 7,
+          "strict_all": 0,
+          "total_tokens": 419849,
+          "mean_tokens": 104962.25,
+          "median_tokens": 93365.5,
+          "cost_usd": 0.0250229,
+          "mean_cost_usd": 0.006255725,
+          "tokens_per_supported": null,
+          "cost_per_supported_usd": null,
+          "tool_calls": 5,
+          "requests": 9,
+          "generation_failures": 0
+        }
+      },
+      "luna": {
+        "native": {
+          "n": 4,
+          "supported": 2,
+          "supported_rate": 0.5,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 2,
+          "total_tokens": 55140,
+          "mean_tokens": 13785.0,
+          "median_tokens": 14017.5,
+          "cost_usd": 0.0037294800000000003,
+          "mean_cost_usd": 0.0009323700000000001,
+          "tokens_per_supported": 27570.0,
+          "cost_per_supported_usd": 0.0018647400000000001,
+          "tool_calls": 17,
+          "requests": 21,
+          "generation_failures": 0
+        },
+        "split": {
+          "n": 4,
+          "supported": 4,
+          "supported_rate": 1.0,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 4,
+          "total_tokens": 56156,
+          "mean_tokens": 14039.0,
+          "median_tokens": 16588.0,
+          "cost_usd": 0.004235485,
+          "mean_cost_usd": 0.00105887125,
+          "tokens_per_supported": 14039.0,
+          "cost_per_supported_usd": 0.00105887125,
+          "tool_calls": 14,
+          "requests": 18,
+          "generation_failures": 0
+        },
+        "aider": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 283721,
+          "mean_tokens": 70930.25,
+          "median_tokens": 76026.5,
+          "cost_usd": 0.01007459,
+          "mean_cost_usd": 0.0025186475,
+          "tokens_per_supported": 94573.66666666667,
+          "cost_per_supported_usd": 0.0033581966666666667,
+          "tool_calls": 22,
+          "requests": 26,
+          "generation_failures": 0
+        },
+        "repomix": {
+          "n": 4,
+          "supported": 3,
+          "supported_rate": 0.75,
+          "material_errors": 0,
+          "material_error_rate": 0.0,
+          "quoted_material_errors": 0,
+          "strict_all": 3,
+          "total_tokens": 1150178,
+          "mean_tokens": 287544.5,
+          "median_tokens": 300731.5,
+          "cost_usd": 0.036766255,
+          "mean_cost_usd": 0.00919156375,
+          "tokens_per_supported": 383392.6666666667,
+          "cost_per_supported_usd": 0.012255418333333332,
+          "tool_calls": 19,
+          "requests": 23,
+          "generation_failures": 0
+        }
+      }
+    }
+  },
+  "overall_gate": "Not defined: report unchanged split/native validation gate separately for each model; no cross-model conjunction or promotion selection.",
+  "study": "cheap_market_20261003",
+  "archive": "eval/agent_bench/results/cheap_market_20261003",
+  "protocol_sha256": "45d946fb44deb325a1197266d982955943561fcbd55a048fc9704cd9dc7873c6",
+  "preregistration": {
+    "before_any_request": true,
+    "recorded_at": "2026-10-03T20:29:34+0200",
+    "protocol_sha256": "45d946fb44deb325a1197266d982955943561fcbd55a048fc9704cd9dc7873c6",
+    "frozen_sha256": {
+      "run_market.py": "0079fae2c14f8ce75bdaaff2c9a026b1d565cfcba04013a8e93305b83ab6d478",
+      "prepare_contexts.py": "8d7c4d0900fa6ee76409567b30685d7feed00b0280a8fec3cd6e74b18ea03e46",
+      "analyze_market.py": "7e2032462940f252f330dbb05dd0dac14418ac5e401ed2e95eb5a50708ce44c5",
+      "protocol_analysis.json": "1ec5020d9f0235109ab1a20476155aa13b63af50bce36a092affd8d5ea57ca9e",
+      "context_production/contexts.json": "ec7f950464848a9cd8ce66f9dbd27be324a11315d2346e5b3316ecde1e31b1b6",
+      "context_production/competitor_manifest.json": "1e4cce71e0b2ce1a9de92a6c08677a4e89b1f3a4d1ad3391581c001b1f8f301d",
+      "cases.json": "0294286959dbecfa8c9def33011d9f8037d4ce91b60d5174a94f0dd4984e4254",
+      "context_production/contexts/aider/unseen-20260929-anyio-async-manager-lifecycle.txt": "36354af78e16e6f0b4c182717cdbc40e93e73da932b7c0f35972bf6453b41076",
+      "context_production/contexts/aider/unseen-20260929-anyio-portal-future-bridge.txt": "2759b5127073e8a39cd4a572e1bc8cb7422fe3066aad8380e4f97fcfc886bef4",
+      "context_production/contexts/aider/unseen-20260929-anyio-process-input-capture.txt": "b3dba9cd0faf460a0ff4f0cb1213c5b76df9d0b8a34e8cf2f1a7250850270056",
+      "context_production/contexts/aider/unseen-20260929-anyio-task-handle-outcomes.txt": "254f155336040d2a0d377635afaddaa838a63e23074a509e6f9d078d93c4aeb4",
+      "context_production/contexts/aider/unseen-20260929-attrs-asdict-transform-order.txt": "330be4f9cf76944ca6b873570881f702f8192098b2514064f8861ccb382b2662",
+      "context_production/contexts/aider/unseen-20260929-attrs-evolve-reconstruction.txt": "330be4f9cf76944ca6b873570881f702f8192098b2514064f8861ccb382b2662",
+      "context_production/contexts/aider/unseen-20260929-attrs-generated-hash-cache.txt": "330be4f9cf76944ca6b873570881f702f8192098b2514064f8861ccb382b2662",
+      "context_production/contexts/aider/unseen-20260929-attrs-mro-field-transform-order.txt": "330be4f9cf76944ca6b873570881f702f8192098b2514064f8861ccb382b2662",
+      "context_production/contexts/aider/unseen-20260929-click-chain-parse-before-invoke.txt": "36eed7fb3f9dac68a93fef449837a99856de65768c94428a17f0f52427657f07",
+      "context_production/contexts/aider/unseen-20260929-click-path-validation-bypasses.txt": "6be5d04ed69939dc3d4e687b991603d7bd79697780ed1ebe6df79c813a6bef36",
+      "context_production/contexts/aider/unseen-20260929-click-positional-wildcard-reservation.txt": "4f6fc91502d261ef548b61841f232c43ae0643d60cabe105be8ea9d9905f7f1d",
+      "context_production/contexts/aider/unseen-20260929-click-short-cluster-consumption.txt": "4012eda6489f9478b6df6e0cfb3915cc96dd26ae012abb21f935ced2ba5e6d41",
+      "context_production/contexts/aider/unseen-20260929-httpx-async-client-open-close-state.txt": "c0a3322d40b4fc4b1782bbe5f81887489d02460bac8c37466e1b8acaa3da0594",
+      "context_production/contexts/aider/unseen-20260929-httpx-base-url-append-versus-join.txt": "b56acbc7c702b86e5e0b36841ee8650ebaa2bb7e303820e0e0bae1e0669742bd",
+      "context_production/contexts/aider/unseen-20260929-httpx-digest-challenge-state.txt": "a17b9844e5f52a8446ee3f82cc3827985f2e71994717867c61fa930c520e2dc5",
+      "context_production/contexts/aider/unseen-20260929-httpx-redirect-request-rewriting.txt": "8d709524b858e9adf3f71fd850e5e627c90412b7ba35451bee0c048224e61750",
+      "context_production/contexts/aider/unseen-20260929-jinja-async-variant-context-dispatch.txt": "c63379e0378cc7989c101ec4c96db4984d9d4084bba86b35b76f7882a12a6b00",
+      "context_production/contexts/aider/unseen-20260929-jinja-groupby-key-reconstruction.txt": "e4f6b453287545ffab9e97bd2a17870b753d917c074a1e5b2a437bb9f66515c1",
+      "context_production/contexts/aider/unseen-20260929-jinja-macro-call-binding.txt": "33d36f806d575616d525adb4ae0e185c5246573c08d481e534765f4932f2d9c9",
+      "context_production/contexts/aider/unseen-20260929-jinja-sandbox-format-traversal.txt": "464acc83e58c2f43c4d07b50ccaeabf7152236242b255ff8c783776d9743962a",
+      "context_production/contexts/aider/unseen-20260929-packaging-empty-specifier-prerelease-stream.txt": "62488252a64a605f20b542a783582f6ed02c6ee10e2ad325c28ebe5a5cb54a6f",
+      "context_production/contexts/aider/unseen-20260929-packaging-range-union-empty-gaps.txt": "48d9e863e915a18c1332d4dea2efc3295f23a3bf1c0f699a0901bd976f40e90b",
+      "context_production/contexts/aider/unseen-20260929-packaging-requirement-url-marker-boundary.txt": "b77bffa0807a1bb5212b715c796c0234c170652f02ba8d2150098df6ebf89472",
+      "context_production/contexts/aider/unseen-20260929-packaging-version-comparison-key.txt": "b8bd6769b2bc1adf305d7f8f0a639902b658c7cc772f099dba14ea4e6235d2e1",
+      "context_production/contexts/aider/unseen-20260929-pluggy-declaration-option-validation.txt": "5a573ff9bd22307120b836851b66e6c81c660f154ae45eaad54043a88640c366",
+      "context_production/contexts/aider/unseen-20260929-pluggy-implementation-metadata-routing.txt": "5a573ff9bd22307120b836851b66e6c81c660f154ae45eaad54043a88640c366",
+      "context_production/contexts/aider/unseen-20260929-pluggy-newstyle-wrapper-unwinding.txt": "5a573ff9bd22307120b836851b66e6c81c660f154ae45eaad54043a88640c366",
+      "context_production/contexts/aider/unseen-20260929-pluggy-temporary-call-order.txt": "5a573ff9bd22307120b836851b66e6c81c660f154ae45eaad54043a88640c366",
+      "context_production/contexts/aider/unseen-20260929-requests-adapter-pool-state-restoration.txt": "b7fa49dec3eba7589025479ac174d6d1816467790da1193c82fd6241edb15b43",
+      "context_production/contexts/aider/unseen-20260929-requests-digest-challenge-retry.txt": "b7fa49dec3eba7589025479ac174d6d1816467790da1193c82fd6241edb15b43",
+      "context_production/contexts/aider/unseen-20260929-requests-multipart-field-construction.txt": "b7fa49dec3eba7589025479ac174d6d1816467790da1193c82fd6241edb15b43",
+      "context_production/contexts/aider/unseen-20260929-requests-redirect-authorization-rebuilding.txt": "b7fa49dec3eba7589025479ac174d6d1816467790da1193c82fd6241edb15b43",
+      "context_production/contexts/aider/unseen-20260929-starlette-lifespan-phase-failures.txt": "2a799ca0c8e9574ddbff68c90cc99938a389c5753724485a5463b68452621a8e",
+      "context_production/contexts/aider/unseen-20260929-starlette-multipart-deferred-io.txt": "1f8718c5f0b5d75e8fe2217769273ab8f8cc2609964281b5de7cf269391dc290",
+      "context_production/contexts/aider/unseen-20260929-starlette-route-match-priority.txt": "766d026cf9ef7658b75a27891c525e7e06ddce4f1543116e3129dc1c4638e2e0",
+      "context_production/contexts/aider/unseen-20260929-starlette-template-context-debug.txt": "2d2912295a91c64e1da9e5d66484a4fcdacafed77a4a55b01d5cab7c866bf3ae",
+      "context_production/contexts/aider/unseen-20260929-typer-collection-type-translation.txt": "e48caa1f5d6c8bb78a03c9e949aa5bc49847e33a78cd935e363b537704e9a8c0",
+      "context_production/contexts/aider/unseen-20260929-typer-command-tree-flattening.txt": "c365262a061bb70b33049d8cba781f9fa12293e1a3c94a6c65e9b13df96e94b3",
+      "context_production/contexts/aider/unseen-20260929-typer-command-typo-suggestions.txt": "d77564fd7c69d8cd59480e60984ca49327793076ba522bdedb75cff9b76d2610",
+      "context_production/contexts/aider/unseen-20260929-typer-numeric-range-clamping.txt": "0b5a40b508a5281a75a7f56df909e3954f5a0cfa068340e63b8110631ba52367",
+      "context_production/contexts/repomix/anyio.txt": "013016a6cfd076e8b4de53a63fc313a6f7d89fc5763392debe179cc96036920c",
+      "context_production/contexts/repomix/attrs.txt": "d18fc39100871dd9a1f268bcab05ac1a8aa10644b58f9bcc4dcd80c7cb514608",
+      "context_production/contexts/repomix/click.txt": "17d19334b7a9ccc98775322163cc707e846f07c79f9060445330b076839b69bf",
+      "context_production/contexts/repomix/httpx.txt": "6b0cd8e2c8f07a0d370da21a56e170d2a3d690ea9e9f6575201ff557c39f615b",
+      "context_production/contexts/repomix/jinja.txt": "c88da57c6e3637686f3a9f04c4bd4ec97a60fa295e0cf3cb815146801e019163",
+      "context_production/contexts/repomix/packaging.txt": "2304feba2a3f462182821f8067ecc120172a42a68a1ab8dfefc120e5d2c8acca",
+      "context_production/contexts/repomix/pluggy.txt": "b0120e291147bd0711d18aa5a5d54c0f2bb948598334c63cfa4f2c18b95e36db",
+      "context_production/contexts/repomix/requests.txt": "3fee43432cf0d2a84af7421bae9916103f8c16453348a95d8c5f2209a37ddfc8",
+      "context_production/contexts/repomix/starlette.txt": "2defaa675d72fd1e46a58261f5287b8a5716c50f5ade5580706eef5553678486",
+      "context_production/contexts/repomix/typer.txt": "16f142d5850d3edffdf0468afc299f28ce8e3210f57ed9625a711015c3395cfe"
+    }
+  },
+  "model_settings": {
+    "nano5": {
+      "id": "gpt-5-nano-2025-08-07",
+      "effort": "minimal",
+      "input": 0.05,
+      "cached": 0.005,
+      "write": 0.05,
+      "output": 0.4
+    },
+    "nano41": {
+      "id": "gpt-4.1-nano-2025-04-14",
+      "effort": null,
+      "input": 0.1,
+      "cached": 0.025,
+      "write": 0.1,
+      "output": 0.4
+    },
+    "luna": {
+      "id": "gpt-6-luna",
+      "effort": "none",
+      "input": 0.1,
+      "cached": 0.01,
+      "write": 0.125,
+      "output": 0.5
+    }
+  },
+  "stop_after": {
+    "native": 6,
+    "split": 4,
+    "aider": 6,
+    "repomix": 6
+  },
+  "competitors": {
+    "aider_chat": "0.86.2",
+    "component": "actual aider.repomap.RepoMap, not full coding agent",
+    "repomix": "1.18.1",
+    "scope": {
+      "source_only": true,
+      "rule": "All *.py below corpus/src when present; otherwise all *.py below root import-package directories containing __init__.py, including leading-underscore packages. Root tests/docs/examples/scripts directories are excluded. Same source list for both competitors.",
+      "non_production_root_names": [
+        "doc",
+        "docs",
+        "example",
+        "examples",
+        "script",
+        "scripts",
+        "test",
+        "tests"
+      ],
+      "native_tool_scope": "Shared native read/grep can access the full frozen corpus, broader than production-only initial context.",
+      "selection_note": "Generic source-only configuration chosen before answer generation to control context cost; no question/rubric-based selection.",
+      "excluded_directories": [
+        ".eggs",
+        ".git",
+        ".mypy_cache",
+        ".nox",
+        ".pasr",
+        ".pytest_cache",
+        ".ruff_cache",
+        ".tox",
+        ".venv",
+        "__pycache__",
+        "build",
+        "dist",
+        "node_modules",
+        "venv"
+      ],
+      "excluded_directory_patterns": [
+        ".aider.tags.cache.*",
+        "*.egg-info"
+      ],
+      "non_python_files": "Not part of this shared source-code scope.",
+      "symlinks": "Directory symlinks are not traversed; source-file symlinks are rejected.",
+      "question_relevance_filtering": false
+    },
+    "token_costs": "All cumulative provider input/output tokens, including repeated context; costs are published-rate charges/bounds, not invoices. Source review and local indexing costs excluded."
+  },
+  "interruptions": {
+    "recorded_at": "2026-10-03T21:31:18+0200",
+    "before_new_study_grading": true,
+    "cause": "Parent shell watchdog terminated two generation processes after 3600 seconds, not a provider/model failure.",
+    "policy": "No retry or regeneration of interrupted/completed trajectories; preserve successful request tokens and unresolved reservation, count interrupted answers unsupported, continue only never-attempted rows using unchanged frozen driver with shell timeout disabled.",
+    "interruptions": [
+      {
+        "model_key": "nano5",
+        "ordinal": 242,
+        "case_id": "unseen-20260929-httpx-base-url-append-versus-join",
+        "profile": "aider",
+        "known_tokens": 17039,
+        "unknown_usage_requests": [],
+        "charge_retained_usd": 0.00050205,
+        "saved_successful_requests": 2
+      },
+      {
+        "model_key": "luna",
+        "ordinal": 202,
+        "case_id": "unseen-20260929-starlette-lifespan-phase-failures",
+        "profile": "native",
+        "known_tokens": 1092,
+        "unknown_usage_requests": [
+          "market/0202/turn-3"
+        ],
+        "charge_retained_usd": 0.0038572999999999997,
+        "saved_successful_requests": 2
+      }
+    ],
+    "sensitivity_predeclared": "Alongside unchanged primary analysis, report supplementary paired comparisons excluding each affected model-question from every profile of that model. Not a replacement verdict; exclude by host-interruption identity only, before grading."
+  },
+  "interruption_sensitivity": {
+    "role": "Supplementary descriptive sensitivity; NEVER replaces the unchanged primary analysis.",
+    "rule_record": "interruptions.json, recorded after generation began but before any new-study grading.",
+    "exclusion_rule": "Drop every profile of the affected model-question, not just the interrupted answer.",
+    "excluded": {
+      "nano5": [
+        "unseen-20260929-httpx-base-url-append-versus-join"
+      ],
+      "luna": [
+        "unseen-20260929-starlette-lifespan-phase-failures"
+      ]
+    },
+    "models": {
+      "luna": {
+        "questions": 39,
+        "profiles": {
+          "native": {
+            "n": 39,
+            "supported": 26,
+            "supported_rate": 0.6666666666666666,
+            "material_errors": 2,
+            "material_error_rate": 0.05128205128205128,
+            "quoted_material_errors": 2,
+            "strict_all": 26,
+            "total_tokens": 496143,
+            "mean_tokens": 12721.615384615385,
+            "median_tokens": 10493,
+            "cost_usd": 0.03625631,
+            "mean_cost_usd": 0.0009296489743589744,
+            "tokens_per_supported": 19082.423076923078,
+            "cost_per_supported_usd": 0.0013944734615384616,
+            "tool_calls": 183,
+            "requests": 222,
+            "generation_failures": 0
+          },
+          "split": {
+            "n": 39,
+            "supported": 31,
+            "supported_rate": 0.7948717948717948,
+            "material_errors": 2,
+            "material_error_rate": 0.05128205128205128,
+            "quoted_material_errors": 3,
+            "strict_all": 31,
+            "total_tokens": 418155,
+            "mean_tokens": 10721.923076923076,
+            "median_tokens": 10605,
+            "cost_usd": 0.034959285,
+            "mean_cost_usd": 0.000896391923076923,
+            "tokens_per_supported": 13488.870967741936,
+            "cost_per_supported_usd": 0.001127718870967742,
+            "tool_calls": 115,
+            "requests": 154,
+            "generation_failures": 0
+          },
+          "aider": {
+            "n": 39,
+            "supported": 29,
+            "supported_rate": 0.7435897435897436,
+            "material_errors": 1,
+            "material_error_rate": 0.02564102564102564,
+            "quoted_material_errors": 3,
+            "strict_all": 29,
+            "total_tokens": 2119850,
+            "mean_tokens": 54355.1282051282,
+            "median_tokens": 53156,
+            "cost_usd": 0.08316227,
+            "mean_cost_usd": 0.0021323658974358975,
+            "tokens_per_supported": 73098.27586206897,
+            "cost_per_supported_usd": 0.0028676644827586206,
+            "tool_calls": 175,
+            "requests": 214,
+            "generation_failures": 0
+          },
+          "repomix": {
+            "n": 39,
+            "supported": 32,
+            "supported_rate": 0.8205128205128205,
+            "material_errors": 3,
+            "material_error_rate": 0.07692307692307693,
+            "quoted_material_errors": 4,
+            "strict_all": 32,
+            "total_tokens": 8743795,
+            "mean_tokens": 224199.87179487178,
+            "median_tokens": 203218,
+            "cost_usd": 0.30984606,
+            "mean_cost_usd": 0.007944770769230768,
+            "tokens_per_supported": 273243.59375,
+            "cost_per_supported_usd": 0.009682689375,
+            "tool_calls": 147,
+            "requests": 186,
+            "generation_failures": 0
+          }
+        },
+        "comparisons": {
+          "split_vs_native": {
+            "candidate": "split",
+            "reference": "native",
+            "point": {
+              "supported_difference": 0.1282051282051282,
+              "material_error_difference": 0.0,
+              "token_ratio": 0.8428114475060617,
+              "cost_ratio": 0.9642262271036407
+            },
+            "bootstrap_95": {
+              "supported_difference": [
+                -0.02564102564102564,
+                0.28205128205128205
+              ],
+              "material_error_difference": [
+                -0.07692307692307693,
+                0.07692307692307693
+              ],
+              "token_ratio": [
+                0.7018284632206425,
+                1.0045901477953754
+              ],
+              "cost_ratio": [
+                0.8630333445246541,
+                1.0680645801910096
+              ]
+            },
+            "undefined_bootstrap_draws": {
+              "supported_difference": 0,
+              "material_error_difference": 0,
+              "token_ratio": 0,
+              "cost_ratio": 0
+            },
+            "gate": {
+              "no_net_pass_loss": true,
+              "no_extra_material_errors": true,
+              "accuracy_difference_lower_ge_-0.05": true,
+              "token_ratio_upper_lt_1.0": false,
+              "mean_token_ratio_le_0.85": true
+            },
+            "gate_passed": false,
+            "role": "primary_per_model",
+            "material_error_pairs": {
+              "only_candidate": 1,
+              "only_reference": 1
+            }
+          },
+          "aider_vs_native": {
+            "candidate": "aider",
+            "reference": "native",
+            "point": {
+              "supported_difference": 0.07692307692307693,
+              "material_error_difference": -0.02564102564102564,
+              "token_ratio": 4.272659293792314,
+              "cost_ratio": 2.2937323185950254
+            },
+            "bootstrap_95": {
+              "supported_difference": [
+                -0.07692307692307693,
+                0.2564102564102564
+              ],
+              "material_error_difference": [
+                -0.10256410256410256,
+                0.05128205128205128
+              ],
+              "token_ratio": [
+                3.8115875066006364,
+                4.832186530304978
+              ],
+              "cost_ratio": [
+                2.1524654266054006,
+                2.4453380900855377
+              ]
+            },
+            "undefined_bootstrap_draws": {
+              "supported_difference": 0,
+              "material_error_difference": 0,
+              "token_ratio": 0,
+              "cost_ratio": 0
+            },
+            "gate": {
+              "no_net_pass_loss": true,
+              "no_extra_material_errors": true,
+              "accuracy_difference_lower_ge_-0.05": false,
+              "token_ratio_upper_lt_1.0": false,
+              "mean_token_ratio_le_0.85": false
+            },
+            "gate_passed": false,
+            "role": "descriptive_secondary",
+            "material_error_pairs": {
+              "only_candidate": 1,
+              "only_reference": 2
+            }
+          },
+          "repomix_vs_native": {
+            "candidate": "repomix",
+            "reference": "native",
+            "point": {
+              "supported_difference": 0.15384615384615385,
+              "material_error_difference": 0.02564102564102564,
+              "token_ratio": 17.623537971915354,
+              "cost_ratio": 8.545989925615705
+            },
+            "bootstrap_95": {
+              "supported_difference": [
+                0.0,
+                0.3076923076923077
+              ],
+              "material_error_difference": [
+                -0.05128205128205128,
+                0.10256410256410256
+              ],
+              "token_ratio": [
+                14.640505605707032,
+                21.111761881671757
+              ],
+              "cost_ratio": [
+                7.403481258690929,
+                9.75359697104517
+              ]
+            },
+            "undefined_bootstrap_draws": {
+              "supported_difference": 0,
+              "material_error_difference": 0,
+              "token_ratio": 0,
+              "cost_ratio": 0
+            },
+            "gate": {
+              "no_net_pass_loss": true,
+              "no_extra_material_errors": false,
+              "accuracy_difference_lower_ge_-0.05": true,
+              "token_ratio_upper_lt_1.0": false,
+              "mean_token_ratio_le_0.85": false
+            },
+            "gate_passed": false,
+            "role": "descriptive_secondary",
+            "material_error_pairs": {
+              "only_candidate": 2,
+              "only_reference": 1
+            }
+          },
+          "split_vs_aider": {
+            "candidate": "split",
+            "reference": "aider",
+            "point": {
+              "supported_difference": 0.05128205128205128,
+              "material_error_difference": 0.02564102564102564,
+              "token_ratio": 0.19725688138311673,
+              "cost_ratio": 0.42037434764587356
+            },
+            "bootstrap_95": {
+              "supported_difference": [
+                -0.10256410256410256,
+                0.20512820512820512
+              ],
+              "material_error_difference": [
+                0.0,
+                0.07692307692307693
+              ],
+              "token_ratio": [
+                0.167529012724932,
+                0.22948612038430635
+              ],
+              "cost_ratio": [
+                0.3786696158658641,
+                0.46289132756346363
+              ]
+            },
+            "undefined_bootstrap_draws": {
+              "supported_difference": 0,
+              "material_error_difference": 0,
+              "token_ratio": 0,
+              "cost_ratio": 0
+            },
+            "gate": {
+              "no_net_pass_loss": true,
+              "no_extra_material_errors": false,
+              "accuracy_difference_lower_ge_-0.05": false,
+              "token_ratio_upper_lt_1.0": true,
+              "mean_token_ratio_le_0.85": true
+            },
+            "gate_passed": false,
+            "role": "descriptive_secondary",
+            "material_error_pairs": {
+              "only_candidate": 1,
+              "only_reference": 0
+            }
+          },
+          "split_vs_repomix": {
+            "candidate": "split",
+            "reference": "repomix",
+            "point": {
+              "supported_difference": -0.02564102564102564,
+              "material_error_difference": -0.02564102564102564,
+              "token_ratio": 0.04782305623587927,
+              "cost_ratio": 0.1128279152557241
+            },
+            "bootstrap_95": {
+              "supported_difference": [
+                -0.1794871794871795,
+                0.1282051282051282
+              ],
+              "material_error_difference": [
+                -0.07692307692307693,
+                0.0
+              ],
+              "token_ratio": [
+                0.03767664061405374,
+                0.0604420737635729
+              ],
+              "cost_ratio": [
+                0.09536285746670842,
+                0.13439678394502738
+              ]
+            },
+            "undefined_bootstrap_draws": {
+              "supported_difference": 0,
+              "material_error_difference": 0,
+              "token_ratio": 0,
+              "cost_ratio": 0
+            },
+            "gate": {
+              "no_net_pass_loss": false,
+              "no_extra_material_errors": true,
+              "accuracy_difference_lower_ge_-0.05": false,
+              "token_ratio_upper_lt_1.0": true,
+              "mean_token_ratio_le_0.85": true
+            },
+            "gate_passed": false,
+            "role": "descriptive_secondary",
+            "material_error_pairs": {
+              "only_candidate": 0,
+              "only_reference": 1
+            }
+          }
+        }
+      },
+      "nano5": {
+        "questions": 39,
+        "profiles": {
+          "native": {
+            "n": 39,
+            "supported": 5,
+            "supported_rate": 0.1282051282051282,
+            "material_errors": 17,
+            "material_error_rate": 0.4358974358974359,
+            "quoted_material_errors": 26,
+            "strict_all": 5,
+            "total_tokens": 937995,
+            "mean_tokens": 24051.153846153848,
+            "median_tokens": 24429,
+            "cost_usd": 0.04821839,
+            "mean_cost_usd": 0.0012363689743589744,
+            "tokens_per_supported": 187599.0,
+            "cost_per_supported_usd": 0.009643678,
+            "tool_calls": 169,
+            "requests": 208,
+            "generation_failures": 1
+          },
+          "split": {
+            "n": 39,
+            "supported": 4,
+            "supported_rate": 0.10256410256410256,
+            "material_errors": 21,
+            "material_error_rate": 0.5384615384615384,
+            "quoted_material_errors": 37,
+            "strict_all": 4,
+            "total_tokens": 360024,
+            "mean_tokens": 9231.384615384615,
+            "median_tokens": 8851,
+            "cost_usd": 0.03348023,
+            "mean_cost_usd": 0.0008584674358974359,
+            "tokens_per_supported": 90006.0,
+            "cost_per_supported_usd": 0.0083700575,
+            "tool_calls": 110,
+            "requests": 149,
+            "generation_failures": 2
+          },
+          "aider": {
+            "n": 39,
+            "supported": 2,
+            "supported_rate": 0.05128205128205128,
+            "material_errors": 26,
+            "material_error_rate": 0.6666666666666666,
+            "quoted_material_errors": 43,
+            "strict_all": 2,
+            "total_tokens": 1940504,
+            "mean_tokens": 49756.51282051282,
+            "median_tokens": 43710,
+            "cost_usd": 0.05445387,
+            "mean_cost_usd": 0.001396253076923077,
+            "tokens_per_supported": 970252.0,
+            "cost_per_supported_usd": 0.027226935,
+            "tool_calls": 145,
+            "requests": 184,
+            "generation_failures": 0
+          },
+          "repomix": {
+            "n": 39,
+            "supported": 0,
+            "supported_rate": 0.0,
+            "material_errors": 31,
+            "material_error_rate": 0.7948717948717948,
+            "quoted_material_errors": 72,
+            "strict_all": 0,
+            "total_tokens": 5121891,
+            "mean_tokens": 131330.53846153847,
+            "median_tokens": 85170,
+            "cost_usd": 0.11883445000000001,
+            "mean_cost_usd": 0.0030470371794871797,
+            "tokens_per_supported": null,
+            "cost_per_supported_usd": null,
+            "tool_calls": 76,
+            "requests": 115,
+            "generation_failures": 0
+          }
+        },
+        "comparisons": {
+          "split_vs_native": {
+            "candidate": "split",
+            "reference": "native",
+            "point": {
+              "supported_difference": -0.02564102564102564,
+              "material_error_difference": 0.10256410256410256,
+              "token_ratio": 0.38382294148689494,
+              "cost_ratio": 0.6943456635528478
+            },
+            "bootstrap_95": {
+              "supported_difference": [
+                -0.15384615384615385,
+                0.10256410256410256
+              ],
+              "material_error_difference": [
+                -0.10256410256410256,
+                0.3076923076923077
+              ],
+              "token_ratio": [
+                0.30845546767176457,
+                0.494182994471652
+              ],
+              "cost_ratio": [
+                0.5936878179910473,
+                0.821764172206269
+              ]
+            },
+            "undefined_bootstrap_draws": {
+              "supported_difference": 0,
+              "material_error_difference": 0,
+              "token_ratio": 0,
+              "cost_ratio": 0
+            },
+            "gate": {
+              "no_net_pass_loss": false,
+              "no_extra_material_errors": false,
+              "accuracy_difference_lower_ge_-0.05": false,
+              "token_ratio_upper_lt_1.0": true,
+              "mean_token_ratio_le_0.85": true
+            },
+            "gate_passed": false,
+            "role": "primary_per_model",
+            "material_error_pairs": {
+              "only_candidate": 11,
+              "only_reference": 7
+            }
+          },
+          "aider_vs_native": {
+            "candidate": "aider",
+            "reference": "native",
+            "point": {
+              "supported_difference": -0.07692307692307693,
+              "material_error_difference": 0.23076923076923078,
+              "token_ratio": 2.0687786182229115,
+              "cost_ratio": 1.129317465805059
+            },
+            "bootstrap_95": {
+              "supported_difference": [
+                -0.1794871794871795,
+                0.02564102564102564
+              ],
+              "material_error_difference": [
+                0.0,
+                0.46153846153846156
+              ],
+              "token_ratio": [
+                1.729664263645726,
+                2.5181230122365372
+              ],
+              "cost_ratio": [
+                0.9723075745183604,
+                1.3049134333408525
+              ]
+            },
+            "undefined_bootstrap_draws": {
+              "supported_difference": 0,
+              "material_error_difference": 0,
+              "token_ratio": 0,
+              "cost_ratio": 0
+            },
+            "gate": {
+              "no_net_pass_loss": false,
+              "no_extra_material_errors": false,
+              "accuracy_difference_lower_ge_-0.05": false,
+              "token_ratio_upper_lt_1.0": false,
+              "mean_token_ratio_le_0.85": false
+            },
+            "gate_passed": false,
+            "role": "descriptive_secondary",
+            "material_error_pairs": {
+              "only_candidate": 16,
+              "only_reference": 7
+            }
+          },
+          "repomix_vs_native": {
+            "candidate": "repomix",
+            "reference": "native",
+            "point": {
+              "supported_difference": -0.1282051282051282,
+              "material_error_difference": 0.358974358974359,
+              "token_ratio": 5.460467273279709,
+              "cost_ratio": 2.4645047252718313
+            },
+            "bootstrap_95": {
+              "supported_difference": [
+                -0.23076923076923078,
+                -0.02564102564102564
+              ],
+              "material_error_difference": [
+                0.15384615384615385,
+                0.5384615384615384
+              ],
+              "token_ratio": [
+                3.840016707211979,
+                7.62351135730578
+              ],
+              "cost_ratio": [
+                2.035154874838901,
+                2.984188187570104
+              ]
+            },
+            "undefined_bootstrap_draws": {
+              "supported_difference": 0,
+              "material_error_difference": 0,
+              "token_ratio": 0,
+              "cost_ratio": 0
+            },
+            "gate": {
+              "no_net_pass_loss": false,
+              "no_extra_material_errors": false,
+              "accuracy_difference_lower_ge_-0.05": false,
+              "token_ratio_upper_lt_1.0": false,
+              "mean_token_ratio_le_0.85": false
+            },
+            "gate_passed": false,
+            "role": "descriptive_secondary",
+            "material_error_pairs": {
+              "only_candidate": 17,
+              "only_reference": 3
+            }
+          },
+          "split_vs_aider": {
+            "candidate": "split",
+            "reference": "aider",
+            "point": {
+              "supported_difference": 0.05128205128205128,
+              "material_error_difference": -0.1282051282051282,
+              "token_ratio": 0.18553118158993745,
+              "cost_ratio": 0.6148365579893587
+            },
+            "bootstrap_95": {
+              "supported_difference": [
+                -0.07692307692307693,
+                0.1794871794871795
+              ],
+              "material_error_difference": [
+                -0.3333333333333333,
+                0.10256410256410256
+              ],
+              "token_ratio": [
+                0.16038186812209904,
+                0.21687360859036736
+              ],
+              "cost_ratio": [
+                0.5327289299457705,
+                0.7175549760673565
+              ]
+            },
+            "undefined_bootstrap_draws": {
+              "supported_difference": 0,
+              "material_error_difference": 0,
+              "token_ratio": 0,
+              "cost_ratio": 0
+            },
+            "gate": {
+              "no_net_pass_loss": true,
+              "no_extra_material_errors": true,
+              "accuracy_difference_lower_ge_-0.05": false,
+              "token_ratio_upper_lt_1.0": true,
+              "mean_token_ratio_le_0.85": true
+            },
+            "gate_passed": false,
+            "role": "descriptive_secondary",
+            "material_error_pairs": {
+              "only_candidate": 7,
+              "only_reference": 12
+            }
+          },
+          "split_vs_repomix": {
+            "candidate": "split",
+            "reference": "repomix",
+            "point": {
+              "supported_difference": 0.10256410256410256,
+              "material_error_difference": -0.2564102564102564,
+              "token_ratio": 0.07029122642399067,
+              "cost_ratio": 0.2817384184468393
+            },
+            "bootstrap_95": {
+              "supported_difference": [
+                0.02564102564102564,
+                0.20512820512820512
+              ],
+              "material_error_difference": [
+                -0.46153846153846156,
+                -0.02564102564102564
+              ],
+              "token_ratio": [
+                0.0519780540761447,
+                0.095628065218449
+              ],
+              "cost_ratio": [
+                0.23397489530378537,
+                0.3390276091000043
+              ]
+            },
+            "undefined_bootstrap_draws": {
+              "supported_difference": 0,
+              "material_error_difference": 0,
+              "token_ratio": 0,
+              "cost_ratio": 0
+            },
+            "gate": {
+              "no_net_pass_loss": true,
+              "no_extra_material_errors": true,
+              "accuracy_difference_lower_ge_-0.05": true,
+              "token_ratio_upper_lt_1.0": true,
+              "mean_token_ratio_le_0.85": true
+            },
+            "gate_passed": true,
+            "role": "descriptive_secondary",
+            "material_error_pairs": {
+              "only_candidate": 6,
+              "only_reference": 16
+            }
+          }
+        }
+      }
+    }
+  },
+  "grading": {
+    "method": "Arm/model-blind coding-assistant source review, not independent human validation.",
+    "groups": 40,
+    "reviewers": 21,
+    "answers": 480,
+    "validation_problems": [],
+    "early_inputs": "31 groups reviewed as soon as all twelve answers existed; final frozen prepare output identical after physical CRLF/LF normalization, parsed JSON identical. Evidence in early_grading_transfer.json.",
+    "corrections": [
+      {
+        "group": "11",
+        "identities": [
+          "3af777a9e5bbd005f139",
+          "60436be4da67a23e5e3d"
+        ],
+        "reason": "Corrected nonverbatim quote prefix/capitalization; criterion support and verdict unchanged."
+      },
+      {
+        "group": "22",
+        "identities": [
+          "d1026c4bb425869a3d60"
+        ],
+        "reason": "Added omitted identity review, incomplete. No previous grade existed."
+      },
+      {
+        "group": "23",
+        "identities": [
+          "7a35bf22ff079131d2d6"
+        ],
+        "reason": "Restored literal backticks in quote; support and verdict unchanged."
+      }
+    ],
+    "originals_preserved": "grading_early/review_originals/"
+  },
+  "verification": {
+    "python_syntax": "py_compile passed for all three pre-registered drivers.",
+    "runtime": "Actual upstream context generation, offline native/control/split tool dispatch and 480 real provider trajectories exercised.",
+    "accounting": "All 1879 request records reconcile with trajectory usage/cost; one interrupted request has unknown usage and keeps reserved cost bound.",
+    "lint": "Full Ruff check reported line-length/import-order style diagnostics; no clean lint claim. Frozen research scripts were not restyled after registration."
+  },
+  "decision": "Luna+split4 has the lowest observed tokens and API cost per supported answer among cells with supported answers; no primary validation gate passed. Do not promote or claim fresh generalization from this reused-question matrix."
+}

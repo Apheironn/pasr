@@ -2,11 +2,11 @@ cff-version: 1.2.0
 message: "If you use PASR in your work, please cite it as below."
 title: "PASR — Provenance-Aware Span Recall"
 abstract: >-
-  A zero-setup context-broker MCP server for coding and document agents. Given a query
-  and a workspace it returns a small, hard-budgeted, fully-traceable slice: every span
-  carries its file:line, token count, retrieval score, and the reason it was kept. It
-  classifies each query and signals when it is the wrong tool. Deterministic and offline
-  by default.
+  Local, token-budgeted, source-traceable context for coding agents. Selects source
+  spans for a query and records their file:line provenance, token accounting, and
+  retrieval signals in recoverable receipts. The budget covers rendered context,
+  not the complete model conversation; routing advice is heuristic, not a
+  correctness guarantee. Selection is offline by default.
 type: software
 authors:
   - family-names: Catak
@@ -15,8 +15,7 @@ authors:
 repository-code: "https://github.com/Apheironn/pasr"
 url: "https://github.com/Apheironn/pasr"
 license: Apache-2.0
-version: 0.2.1
-date-released: 2026-09-07
+version: 0.3.0
 keywords:
   - model-context-protocol
   - mcp

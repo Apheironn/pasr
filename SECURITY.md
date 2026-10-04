@@ -2,10 +2,15 @@
 
 ## Supported versions
 
-| Version | Supported |
+| Version | Status |
 |---|---|
-| 0.2.x | ✅ |
-| < 0.2 | ❌ (internal pre-releases, never published) |
+| 0.3.x | Current source/GitHub release line; reports accepted |
+| 0.2.x | Previous release line, still available on PyPI; reports accepted |
+| < 0.2 | Unsupported internal pre-releases |
+
+The source tree and MCP registry manifest identify 0.3.0. GitHub artifact delivery
+does not itself publish that version to PyPI or register the MCP manifest.
+Check the installed version and distribution source when reporting.
 
 ## Reporting a vulnerability
 
@@ -41,3 +46,14 @@ PASR runs locally and offline by default. The areas most relevant to a report:
 
 Optional semantic extras (`pasr-mcp[semantic]`) pull in `sentence-transformers` and may
 download a model on first use; issues in that opt-in path are in scope too.
+
+## Privacy and audit boundaries
+
+Local selection does not prevent an MCP client from forwarding returned source to
+a remote model. The default redaction hook does not detect or remove secrets.
+Review the selected workspace and your client's data-handling policy before use.
+
+Receipts and the usage ledger are best-effort local records of PASR's own output,
+not a complete record of everything an agent read or a proof that its answer is
+correct. They may contain source text, queries, paths, and other sensitive metadata.
+Treat `.pasr/` as potentially sensitive workspace data.

@@ -1,3 +1,5 @@
 * text=auto eol=lf
 *.sh text eol=lf
 *.png binary
+# Frozen evaluation records retain their recorded byte representation.
+eval/agent_bench/*.json -text

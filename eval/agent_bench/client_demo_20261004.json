@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-04",
+  "kind": "live Codex/PASR onboarding integration demo, not a benchmark or correctness evaluation",
+  "driver": "scripts/demo_client.py",
+  "codex_version": "codex-cli 0.160.0",
+  "installed_versions": {
+    "pasr-mcp": "0.3.0",
+    "mcp": "2.3.0",
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]"
+  },
+  "model": "gpt-6-luna",
+  "package": {
+    "artifact": "dist/0.3.0-ci-20261004/pasr_mcp-0.3.0-py3-none-any.whl",
+    "sha256": "1204bc6f4c05609cac32170c127bb1e7420c7ca10d491ffa64a13d55f0e2fe47"
+  },
+  "fixture": {
+    "original": "src/pasr/source_text.py",
+    "workspace_path": "source_text.py",
+    "sha256": "622e0c9ab11a96e836572acb7ec76e6b975279553e7b757a98bf03ad13e648fa",
+    "unchanged_after_run": true
+  },
+  "prompt": "Use the configured PASR MCP tools as your primary source reader for one read-only onboarding task. In this workspace, how does source loading handle a UTF-8 BOM, CRLF and bare-CR newlines, invalid UTF-8, and NUL bytes? What exactly is fingerprinted, and does the returned snapshot guarantee an atomic multi-file view? Cite workspace-relative file:line ranges copied from PASR output for each claim. Use plain-text citations, not absolute paths or Markdown links. Answer only the questions asked. Do not edit files, execute repository code, delegate, or access the network. Use at most four PASR calls; if evidence is incomplete say so. Keep the final answer under 350 words.",
+  "success": true,
+  "calls": [
+    {
+      "tool": "find_evidence",
+      "arguments": {
+        "query": "UTF-8 BOM CRLF bare CR invalid UTF-8 NUL byte fingerprint source loading snapshot atomic multi-file",
+        "top_k": 10,
+        "per_file": 4
+      },
+      "status": "completed"
+    },
+    {
+      "tool": "select_context",
+      "arguments": {
+        "query": "Read source loading, newline normalization, fingerprint and snapshot construction / atomicity",
+        "files": [
+          "source_text.py",
+          "**/*.py"
+        ],
+        "budget_tokens": 1400
+      },
+      "status": "completed"
+    }
+  ],
+  "selected_context_tokens": 364,
+  "requested_selection_budget": 1400,
+  "usage": [
+    {
+      "input_tokens": 50545,
+      "cached_input_tokens": 35922,
+      "cache_write_input_tokens": 14611,
+      "output_tokens": 353,
+      "reasoning_output_tokens": 0
+    }
+  ],
+  "final_answer": "- `read_source` decodes bytes as UTF-8 with `utf-8-sig`, which strips an optional UTF-8 BOM. Invalid UTF-8 raises `ValueError`; decoded text containing NUL also raises `ValueError`. (source_text.py:35-43)\n- CRLF and bare CR are each normalized to LF. Physical-line splitting recognizes CR, LF, and CRLF, and can preserve line endings when requested. (source_text.py:11-19)\n- The fingerprint is SHA-256 of the normalized decoded text re-encoded as UTF-8. (source_text.py:22-24, 43-44)\n- A snapshot covers one file read; it does not guarantee an atomic transaction across multiple files. (source_text.py:27-29)",
+  "source_review": "Coding assistant checked claims and cited ranges against the exact source, not independent or blinded.",
+  "auth_json_created": false,
+  "timeout_boundary_smoke": "Separate throwaway child-process scenario verified timeout recording, descendant termination on Windows and exact credential-sentinel redaction; no model call used for this boundary.",
+  "limits": [
+    "One prompted task over one copied public source file; not unprompted adoption or a full repository task.",
+    "CLI usage is host token accounting, not selected-context size or a request-level billing ledger.",
+    "Four-call limit and no-code-execution instruction are prompt requests, not MCP enforcement.",
+    "Native read-only sandbox does not sandbox MCP; PASR can write receipts/cache in its temporary workspace.",
+    "Only OPENAI_API_KEY exact matches are redacted; do not use a private source fixture or publish blindly."
+  ],
+  "raw_local_archive": "eval/agent_bench/results/client_demo_20261004/"
+}

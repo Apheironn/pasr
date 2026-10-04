@@ -1,40 +1,109 @@
 # PASR — Provenance-Aware Span Recall
 
-> A zero-setup context-broker MCP server for coding and document agents. Given a query
-> and a workspace, it returns a small, hard-budgeted, fully-traceable slice: every span
-> carries its `file:line`, token count, retrieval score, and the reason it was kept. It
-> classifies each query (localized / trace / aggregation) and tells the agent when it
-> is the wrong tool. Deterministic (byte-identical output for the same input), offline
-> by default — no daemon, no vector database, no index to build.
+> PASR is a local source-context MCP server. Live select_context bounds its returned
+> context, including provenance labels and headings; JSON envelopes, catalogs, and
+> cumulative model history are separate costs. Receipt persistence is best-effort,
+> covering only PASR-delivered context, not a complete global agent audit.
+> Query classification and keyword coverage are heuristics, not correctness or
+> completeness guarantees. End-to-end superiority to native grep/read is unproven.
+> Offline use requires installed dependencies and cached tokenizer encoding data.
 
-Install: `pip install pasr-mcp` (PyPI: pasr-mcp) or `uvx pasr-mcp --workspace .`.
-MCP config: `{"command":"uvx","args":["pasr-mcp","--workspace","."]}`.
+Source version: 0.3.0. GitHub release artifacts:
+https://github.com/Apheironn/pasr/releases/tag/v0.3.0
+PyPI publication is separate; it provides 0.2.1 at release preparation.
+For the behavior documented here, clone/update the checkout and run:
+`uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project`.
+MCP config: `{"command":"uvx","args":["--from","/absolute/path/to/pasr","pasr-mcp","--workspace","/absolute/path/to/project"]}`.
+Replace both absolute paths. Published install: `pip install pasr-mcp` or
+`uvx pasr-mcp --workspace /absolute/path/to/project`; it can lack checkout features.
+
+Local selection does not prevent the client forwarding source to a cloud model.
+Default redaction is a no-op, not automatic secret detection. Computed spans are
+not guaranteed full functions or complete answer evidence.
 
 ## MCP tools
 
-- select_context(query, include=[...], budget_tokens=3000, map_tokens=0, trace=""): a
-  budgeted, provenance-tracked slice for a query. `map_tokens` prepends a query-ranked
-  symbol-index header carved out of the budget; `trace` folds a symbol's dependency
-  closure into the same slice.
-- trace_dependencies(symbol, include=[...], max_depth=4, direction="dependencies"):
-  deterministic def/reference closure for a symbol (Python, JS/TS). direction="callers"
-  reverses it for impact analysis.
-- explain_selection(selection_id): return the stored receipt for a prior selection.
-- expand_context(selection_id, budget_tokens): re-run a prior selection once, larger.
+Default tools:
+- find_files(query, include=None): lexical path/filename location.
+- find_symbols(query, include=None): definitions, not complete bodies.
+- find_evidence(query, include=None): ranked content locations; not semantic proof.
+- find_usages(symbol, include=None): literal occurrences and enclosing-definition hints.
+- select_context(query, files=None, include=None, budget_tokens=1500, outline=False,
+  advanced=None): context from known files/ranges. Optional map_tokens, trace,
+  semantic, pack, and save_as settings belong inside advanced. Every selection is
+  independent; repeated requests resend source. Range-only body reads return ordered
+  whole-line prefixes, not ranked fragments. Reissue continuation.files as files,
+  without include; [] means the requested extant lines are exhausted. blocked=true
+  means no body line fit: use more budget where possible or a direct reader (MCP cap
+  1500). Compare shared-file source_fingerprint values before combining pages.
+  Whole-file/mixed scopes remain ranked; outline returns definitions only.
+
+Opt-in tools (`pasr-mcp --tools all`):
+- trace_dependencies(symbol, files=None, include=None, max_depth=4,
+  direction="dependencies"): bounded static name-reference approximation.
+- explain_selection(receipt_id): retrieve a stored selection receipt.
+- expand_context(receipt_id, extra_budget): reselect with more budget in the same scope.
+- search_code(query): discover/select from up to three matching files. No files,
+  include, or other scope arguments are accepted. Use returned paths for follow-ups.
+- read_code(query, files): select from a required non-empty list of known paths/ranges;
+  never guess paths. Migrate old search_code(query, files=...) calls here; old scoped
+  discovery calls are rejected rather than silently widened.
+  Both tools reject unknown arguments. Queries remain required and non-empty.
+  Explicit empty/missing/directory/unsafe scopes fail; no automatic discovery occurs.
+  Range-only reads return ordered prefixes, continuation.files, blocked, and
+  source_fingerprint values. Compare shared fingerprints before combining pages.
+  Stop on empty continuation.files or blocked=true; do not submit an empty list.
+  Whole-file/mixed scopes remain ranked. Calls are independent.
+  Both tools cap context at 1500 tokens. Discovery additionally prices JSON
+  string quoting/escaping; read_code retains the former explicit-follow-up pricing.
+  Advice/metadata still cost extra. Literal case-sensitive definitions get selection
+  priority; compatible overlapping evidence is returned once. Not complete recall.
+  Expose the opt-in pair with --tools search_code,read_code; default tools unchanged.
+  This does not enforce a four-call limit or the experiments' host stopping policy.
+  The compact pair does not persist receipts or append usage-ledger entries.
+  Text replies contain raw source with an optional one-line JSON metadata header;
+  MCP structuredContent contains the full response object.
+
+The host owns question lifetime, stopping policy, and retained-context knowledge.
+The server has no lifetime call ceiling or implicit source-holding state. Saved packs
+larger than the requested selection budget (at most 1500) are rejected, not clipped.
 
 ## CLI
 
 - pasr explain "<query>" [paths]: run a selection, print the receipt.
 - pasr trace <symbol> [paths] [--callers]: a dependency closure.
 - pasr pack <name> "<query>" [paths]: save a committable Context Pack.
-- pasr review [--staged|--range|--diff]: diff-aware context — touched defs + affected callers.
-- pasr context --issue <text> [paths]: headless slice for CI / agents.
-- pasr report [--price-per-mtok N]: summarise the usage ledger.
+- pasr review [--staged|--range|--diff]: changed-definition/caller context. Staged reads
+  a pinned index tree; A..B/A...B reads pinned B; external --diff uses the working tree.
+- pasr context --issue <text> [paths]: headless source context for CI / agents.
+- pasr report [--price-per-mtok N]: source-context ledger estimates, not measured API savings.
+
+Packs and receipts use format 2. Rebuild/reselect format-1 records; they are not
+automatically recertified. Source reads are strict UTF-8 (optional BOM), normalized
+to LF. Fingerprints describe each actual read, not an atomic workspace snapshot.
+Expansion reports changed source identities. Standalone dependency tracing has a
+soft token target and may report within_budget=false.
+
+## Current evidence (2026-10-03)
+
+- Untouched 40-question confirmation: native/split supported 28/40 each, material
+  errors 3/7; split used 25.3% fewer cumulative provider tokens. Primary gate failed.
+- Exploratory reuse of the same 40 questions with GPT-6 Luna: native/split supported
+  26/40 and 32/40, material errors 2/2. Mean tokens were 12,430.875 native known
+  subtotal and 10,698.075 split. One interrupted native request has unknown usage.
+  The combined quality/cost gate failed.
+- The experimental split workflow used four host calls and conservative stopping,
+  not the default installed configuration. Actual Aider RepoMap and Repomix
+  components ran under a shared answering harness, not the full Aider coding agent.
+  No universal quality/cost superiority or equivalent accuracy is established.
+- Confirmation: https://github.com/Apheironn/pasr/blob/main/eval/agent_bench/reserved_confirm_20261003.json
+- Exploratory matrix: https://github.com/Apheironn/pasr/blob/main/eval/agent_bench/cheap_market_20261003.json
 
 ## Docs
 
 - README: https://github.com/Apheironn/pasr
-- Evaluation (50 tasks, 10 repos, pre-registered): https://github.com/Apheironn/pasr/blob/main/eval/RESULTS.md
-- Bake-off vs grep / repo-map / semantic search: https://github.com/Apheironn/pasr/blob/main/docs/competitors-benchmark.md
+- Historical selector evaluation (different protocol): https://github.com/Apheironn/pasr/blob/main/eval/RESULTS.md
+- Current real-component comparison and historical proxies: https://github.com/Apheironn/pasr/blob/main/docs/competitors-benchmark.md#real-upstream-components-with-low-cost-openai-models--2026-10-03
 - Architecture: https://github.com/Apheironn/pasr/blob/main/docs/architecture.md
 - Roadmap: https://github.com/Apheironn/pasr/blob/main/docs/roadmap.md
+- First-principles audit: https://github.com/Apheironn/pasr/blob/main/docs/pipeline-audit-20260929.md

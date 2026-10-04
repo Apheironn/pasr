@@ -1,0 +1,3355 @@
+{
+  "date": "2026-09-28",
+  "decision": "The eight-question pilot token advantage did not replicate on 50 disjoint-from-pilot questions. Frozen pre-fix PASR@6 achieved 36/50 full-answer passes versus baseline 42/50 and used 62.11% more total tokens. Ship three reproduced lookup/coverage correctness repairs, not a claimed aggregate accuracy/token optimization.",
+  "api_only": true,
+  "protocol": {
+    "purpose": "Broader model-specific replication, not fresh-to-research held-out validation.",
+    "model": {
+      "id": "gpt-6-luna",
+      "effort": "none",
+      "input": 0.1,
+      "cached": 0.01,
+      "write": 0.125,
+      "output": 0.5
+    },
+    "provider": "https://api.openai.com/v1",
+    "local_llm_permitted": false,
+    "cases": 50,
+    "repositories": 10,
+    "repetitions": 1,
+    "trajectories": 200,
+    "schedule_seed": 2026092802,
+    "study_total_ceiling_usd": 5.0,
+    "prior_pilot_charge_usd": 0.032731210000000004,
+    "replication_ceiling_usd": 4.96726879,
+    "prices_verified_at": "https://developers.openai.com/api/docs/pricing",
+    "max_output_tokens_per_request": 4096,
+    "sampling": "reasoning none, no seed/temperature, default service tier, sequential tool calls",
+    "history": "Unchanged pilot executor, complete append-only history and raw MCP output, no masking.",
+    "budget": "No retries/fallback; reserve before sending, reconcile cache categories, stop on unknown usage.",
+    "primary_comparison": "PASR@6 versus baseline@6: paired full-answer source accuracy and mean cumulative input+output tokens.",
+    "secondary_comparisons": [
+      "PASR@4 versus baseline@4",
+      "PASR@6 versus baseline@4"
+    ],
+    "grading": "Frozen source-grounded criteria; blinded coding-assistant review, not keyword/API self-grading or human validation. Keep failures in denominators.",
+    "analysis": "Report every profile, paired answer transitions, per-repository results, bootstrap question-paired token ratios and accuracy differences. No production promotion from non-significance or equal point estimates alone.",
+    "reuse_disclosure": "All 50 questions were previously used in local-model research. They are disjoint from the eight-question OpenAI pilot, not a newly authored holdout."
+  },
+  "measured_implementation": "Unchanged query_contract snapshot from accuracy_tokens_20260927; none of the new production fixes were used in these 200 trajectories.",
+  "profiles": [
+    {
+      "variant": "luna:baseline@4",
+      "runs": 50,
+      "full_answer_passes": 34,
+      "verdict_counts": {
+        "complete_supported": 34,
+        "incomplete": 15,
+        "materially_incorrect": 1
+      },
+      "mean_total_tokens": 6707.84,
+      "median_total_tokens": 6354.5,
+      "sum_total_tokens": 335392,
+      "total_tokens_per_correct_answer": 9864.470588235294,
+      "sum_api_cost_usd": 0.03174369,
+      "mean_tool_calls": 3.18,
+      "ended_before_call_limit": 27,
+      "mean_elapsed_s": 8.57212,
+      "tool_counts": {
+        "grep": 79,
+        "read_file": 80
+      },
+      "mean_tool_output_utf8_bytes": 8709.56,
+      "mean_cumulative_schema_utf8_bytes": 3017.96
+    },
+    {
+      "variant": "luna:baseline@6",
+      "runs": 50,
+      "full_answer_passes": 42,
+      "verdict_counts": {
+        "complete_supported": 42,
+        "incomplete": 7,
+        "materially_incorrect": 1
+      },
+      "mean_total_tokens": 8395.62,
+      "median_total_tokens": 6305.0,
+      "sum_total_tokens": 419781,
+      "total_tokens_per_correct_answer": 9994.785714285714,
+      "sum_api_cost_usd": 0.03458638,
+      "mean_tool_calls": 3.52,
+      "ended_before_call_limit": 41,
+      "mean_elapsed_s": 10.21422,
+      "tool_counts": {
+        "grep": 76,
+        "read_file": 100
+      },
+      "mean_tool_output_utf8_bytes": 9654.78,
+      "mean_cumulative_schema_utf8_bytes": 3263.44
+    },
+    {
+      "variant": "luna:pasr@4",
+      "runs": 50,
+      "full_answer_passes": 32,
+      "verdict_counts": {
+        "complete_supported": 32,
+        "incomplete": 15,
+        "materially_incorrect": 3
+      },
+      "mean_total_tokens": 11466.7,
+      "median_total_tokens": 11423.5,
+      "sum_total_tokens": 573335,
+      "total_tokens_per_correct_answer": 17916.71875,
+      "sum_api_cost_usd": 0.02946464,
+      "mean_tool_calls": 3.04,
+      "ended_before_call_limit": 29,
+      "mean_elapsed_s": 10.08494,
+      "tool_counts": {
+        "find_evidence": 56,
+        "select_context": 70,
+        "find_symbols": 16,
+        "read_file": 9,
+        "grep": 1
+      },
+      "mean_tool_output_utf8_bytes": 8785.72,
+      "mean_cumulative_schema_utf8_bytes": 27112.44
+    },
+    {
+      "variant": "luna:pasr@6",
+      "runs": 50,
+      "full_answer_passes": 36,
+      "verdict_counts": {
+        "complete_supported": 36,
+        "materially_incorrect": 3,
+        "incomplete": 11
+      },
+      "mean_total_tokens": 13609.8,
+      "median_total_tokens": 12588.0,
+      "sum_total_tokens": 680490,
+      "total_tokens_per_correct_answer": 18902.5,
+      "sum_api_cost_usd": 0.032904265,
+      "mean_tool_calls": 3.58,
+      "ended_before_call_limit": 42,
+      "mean_elapsed_s": 11.37938,
+      "tool_counts": {
+        "find_evidence": 61,
+        "find_symbols": 17,
+        "select_context": 77,
+        "find_usages": 4,
+        "read_file": 19,
+        "grep": 1
+      },
+      "mean_tool_output_utf8_bytes": 9520.64,
+      "mean_cumulative_schema_utf8_bytes": 30736.38
+    }
+  ],
+  "comparisons": [
+    {
+      "baseline": "luna:baseline@6",
+      "pasr": "luna:pasr@6",
+      "question_pairs": 50,
+      "pass_difference": -6,
+      "mean_total_token_change": 0.6210595524809366,
+      "api_dollar_change": -0.048635185295483274,
+      "paired_transitions": {
+        "baseline_only": 8,
+        "both_pass": 34,
+        "both_fail": 6,
+        "pasr_only": 2
+      },
+      "point_estimate_meets_accuracy_token_target": false,
+      "bootstrap": {
+        "question_paired": {
+          "resamples": 10000,
+          "seed": 2026092803,
+          "total_token_change_percentile_95_interval": [
+            0.38437263173846253,
+            0.9426903772126547
+          ],
+          "accuracy_difference_percentile_95_interval": [
+            -0.24,
+            0.0
+          ]
+        },
+        "repository_cluster": {
+          "resamples": 10000,
+          "seed": 2026092803,
+          "total_token_change_percentile_95_interval": [
+            0.38791792388830454,
+            0.9363380219931394
+          ],
+          "accuracy_difference_percentile_95_interval": [
+            -0.2,
+            -0.04
+          ]
+        }
+      }
+    },
+    {
+      "baseline": "luna:baseline@4",
+      "pasr": "luna:pasr@4",
+      "question_pairs": 50,
+      "pass_difference": -2,
+      "mean_total_token_change": 0.7094474525331553,
+      "api_dollar_change": -0.07179537098554067,
+      "paired_transitions": {
+        "baseline_only": 5,
+        "both_pass": 29,
+        "both_fail": 13,
+        "pasr_only": 3
+      },
+      "point_estimate_meets_accuracy_token_target": false,
+      "bootstrap": {
+        "question_paired": {
+          "resamples": 10000,
+          "seed": 2026092803,
+          "total_token_change_percentile_95_interval": [
+            0.4865651755382231,
+            0.9841078132209489
+          ],
+          "accuracy_difference_percentile_95_interval": [
+            -0.14049999999999957,
+            0.06
+          ]
+        },
+        "repository_cluster": {
+          "resamples": 10000,
+          "seed": 2026092803,
+          "total_token_change_percentile_95_interval": [
+            0.43890067337029304,
+            1.0729933097284279
+          ],
+          "accuracy_difference_percentile_95_interval": [
+            -0.14,
+            0.08
+          ]
+        }
+      }
+    },
+    {
+      "baseline": "luna:baseline@4",
+      "pasr": "luna:pasr@6",
+      "question_pairs": 50,
+      "pass_difference": 2,
+      "mean_total_token_change": 1.0289392710619216,
+      "api_dollar_change": 0.03656080940810602,
+      "paired_transitions": {
+        "baseline_only": 5,
+        "both_pass": 29,
+        "both_fail": 9,
+        "pasr_only": 7
+      },
+      "point_estimate_meets_accuracy_token_target": false,
+      "bootstrap": {
+        "question_paired": {
+          "resamples": 10000,
+          "seed": 2026092803,
+          "total_token_change_percentile_95_interval": [
+            0.7432839345447574,
+            1.38127177342273
+          ],
+          "accuracy_difference_percentile_95_interval": [
+            -0.1,
+            0.18
+          ]
+        },
+        "repository_cluster": {
+          "resamples": 10000,
+          "seed": 2026092803,
+          "total_token_change_percentile_95_interval": [
+            0.7004087558438338,
+            1.465268288788168
+          ],
+          "accuracy_difference_percentile_95_interval": [
+            -0.06,
+            0.16
+          ]
+        }
+      }
+    }
+  ],
+  "repository_results": [
+    {
+      "corpus": "anyio",
+      "profiles": {
+        "luna:baseline@4": {
+          "passes": 4,
+          "mean_total_tokens": 6288.6
+        },
+        "luna:baseline@6": {
+          "passes": 4,
+          "mean_total_tokens": 6427
+        },
+        "luna:pasr@4": {
+          "passes": 3,
+          "mean_total_tokens": 10563.6
+        },
+        "luna:pasr@6": {
+          "passes": 3,
+          "mean_total_tokens": 11711.8
+        }
+      }
+    },
+    {
+      "corpus": "attrs",
+      "profiles": {
+        "luna:baseline@4": {
+          "passes": 4,
+          "mean_total_tokens": 5392.2
+        },
+        "luna:baseline@6": {
+          "passes": 5,
+          "mean_total_tokens": 6211.4
+        },
+        "luna:pasr@4": {
+          "passes": 4,
+          "mean_total_tokens": 11625.4
+        },
+        "luna:pasr@6": {
+          "passes": 4,
+          "mean_total_tokens": 11591.4
+        }
+      }
+    },
+    {
+      "corpus": "click",
+      "profiles": {
+        "luna:baseline@4": {
+          "passes": 4,
+          "mean_total_tokens": 5017.2
+        },
+        "luna:baseline@6": {
+          "passes": 3,
+          "mean_total_tokens": 8330.4
+        },
+        "luna:pasr@4": {
+          "passes": 4,
+          "mean_total_tokens": 10938.6
+        },
+        "luna:pasr@6": {
+          "passes": 3,
+          "mean_total_tokens": 18089.8
+        }
+      }
+    },
+    {
+      "corpus": "httpx",
+      "profiles": {
+        "luna:baseline@4": {
+          "passes": 5,
+          "mean_total_tokens": 6154.2
+        },
+        "luna:baseline@6": {
+          "passes": 5,
+          "mean_total_tokens": 7646.8
+        },
+        "luna:pasr@4": {
+          "passes": 4,
+          "mean_total_tokens": 9976.2
+        },
+        "luna:pasr@6": {
+          "passes": 5,
+          "mean_total_tokens": 9970.8
+        }
+      }
+    },
+    {
+      "corpus": "jinja",
+      "profiles": {
+        "luna:baseline@4": {
+          "passes": 4,
+          "mean_total_tokens": 5681.4
+        },
+        "luna:baseline@6": {
+          "passes": 5,
+          "mean_total_tokens": 6462.6
+        },
+        "luna:pasr@4": {
+          "passes": 3,
+          "mean_total_tokens": 14135.4
+        },
+        "luna:pasr@6": {
+          "passes": 5,
+          "mean_total_tokens": 15494.6
+        }
+      }
+    },
+    {
+      "corpus": "packaging",
+      "profiles": {
+        "luna:baseline@4": {
+          "passes": 3,
+          "mean_total_tokens": 9851
+        },
+        "luna:baseline@6": {
+          "passes": 4,
+          "mean_total_tokens": 11779.2
+        },
+        "luna:pasr@4": {
+          "passes": 2,
+          "mean_total_tokens": 12375.6
+        },
+        "luna:pasr@6": {
+          "passes": 3,
+          "mean_total_tokens": 14312.8
+        }
+      }
+    },
+    {
+      "corpus": "pluggy",
+      "profiles": {
+        "luna:baseline@4": {
+          "passes": 3,
+          "mean_total_tokens": 7979.8
+        },
+        "luna:baseline@6": {
+          "passes": 5,
+          "mean_total_tokens": 12493
+        },
+        "luna:pasr@4": {
+          "passes": 4,
+          "mean_total_tokens": 10024
+        },
+        "luna:pasr@6": {
+          "passes": 3,
+          "mean_total_tokens": 18382
+        }
+      }
+    },
+    {
+      "corpus": "requests",
+      "profiles": {
+        "luna:baseline@4": {
+          "passes": 1,
+          "mean_total_tokens": 4441.8
+        },
+        "luna:baseline@6": {
+          "passes": 3,
+          "mean_total_tokens": 6696.6
+        },
+        "luna:pasr@4": {
+          "passes": 2,
+          "mean_total_tokens": 10738.2
+        },
+        "luna:pasr@6": {
+          "passes": 3,
+          "mean_total_tokens": 11371.2
+        }
+      }
+    },
+    {
+      "corpus": "starlette",
+      "profiles": {
+        "luna:baseline@4": {
+          "passes": 5,
+          "mean_total_tokens": 5696
+        },
+        "luna:baseline@6": {
+          "passes": 5,
+          "mean_total_tokens": 4537
+        },
+        "luna:pasr@4": {
+          "passes": 4,
+          "mean_total_tokens": 12215
+        },
+        "luna:pasr@6": {
+          "passes": 5,
+          "mean_total_tokens": 10129.6
+        }
+      }
+    },
+    {
+      "corpus": "typer",
+      "profiles": {
+        "luna:baseline@4": {
+          "passes": 1,
+          "mean_total_tokens": 10576.2
+        },
+        "luna:baseline@6": {
+          "passes": 3,
+          "mean_total_tokens": 13372.2
+        },
+        "luna:pasr@4": {
+          "passes": 2,
+          "mean_total_tokens": 12075
+        },
+        "luna:pasr@6": {
+          "passes": 2,
+          "mean_total_tokens": 15044
+        }
+      }
+    }
+  ],
+  "case_results": [
+    {
+      "case_id": "fresh-starlette-upload-file-dispatch",
+      "corpus": "starlette",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "8d54921138c5a6864295",
+      "total_tokens": 3154,
+      "api_cost_usd": 0.00046790000000000004,
+      "tool_calls": 2,
+      "elapsed_s": 9.357,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-subset-live-view",
+      "corpus": "pluggy",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "bb5f717b2a2434851303",
+      "total_tokens": 18644,
+      "api_cost_usd": 0.00090797,
+      "tool_calls": 5,
+      "elapsed_s": 12.146,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+      "corpus": "pluggy",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "3b227b1f2230b5a6630b",
+      "total_tokens": 12808,
+      "api_cost_usd": 0.000559405,
+      "tool_calls": 4,
+      "elapsed_s": 8.623,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-anyio-stapled-half-close",
+      "corpus": "anyio",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "b7ea663fb56248b9f0dd",
+      "total_tokens": 8353,
+      "api_cost_usd": 0.000705935,
+      "tool_calls": 2,
+      "elapsed_s": 10.432,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-distribution-filenames",
+      "corpus": "packaging",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "materially_incorrect",
+      "blind_id": "0eb0d17497e00d3488ca",
+      "total_tokens": 14168,
+      "api_cost_usd": 0.0009764800000000001,
+      "tool_calls": 3,
+      "elapsed_s": 13.71,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-monitoring-exceptions",
+      "corpus": "pluggy",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "8a99d10cda37d68911b5",
+      "total_tokens": 2538,
+      "api_cost_usd": 0.00038232500000000004,
+      "tool_calls": 2,
+      "elapsed_s": 5.609,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-disabled-restoration",
+      "corpus": "attrs",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "1177a3c40ea15b9bfb12",
+      "total_tokens": 18769,
+      "api_cost_usd": 0.00083272,
+      "tool_calls": 6,
+      "elapsed_s": 15.905,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-anyio-incremental-text-receive",
+      "corpus": "anyio",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "aba76484700424d42abe",
+      "total_tokens": 4139,
+      "api_cost_usd": 0.00061135,
+      "tool_calls": 2,
+      "elapsed_s": 11.571,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-multipart-stream-length",
+      "corpus": "httpx",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "872cedcecd2751a5139d",
+      "total_tokens": 13726,
+      "api_cost_usd": 0.0009894300000000001,
+      "tool_calls": 3,
+      "elapsed_s": 12.849,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-setter-dataflow",
+      "corpus": "attrs",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "3e0a9a538e4714e81de2",
+      "total_tokens": 3655,
+      "api_cost_usd": 0.000418535,
+      "tool_calls": 2,
+      "elapsed_s": 6.592,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-template-selection-fallback",
+      "corpus": "jinja",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "9c84331e16f6a84eba40",
+      "total_tokens": 10429,
+      "api_cost_usd": 0.0009633700000000001,
+      "tool_calls": 3,
+      "elapsed_s": 12.547,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-requests-adapter-certificate-paths",
+      "corpus": "requests",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "6d10b094428212366b0a",
+      "total_tokens": 12550,
+      "api_cost_usd": 0.000715485,
+      "tool_calls": 4,
+      "elapsed_s": 12.158,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-exception-display-routing",
+      "corpus": "typer",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "b54e7928ceb052d1e0ca",
+      "total_tokens": 18148,
+      "api_cost_usd": 0.0008860399999999999,
+      "tool_calls": 5,
+      "elapsed_s": 17.028,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-conditional-static-response",
+      "corpus": "starlette",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "f2a2f181012dd97d1138",
+      "total_tokens": 4601,
+      "api_cost_usd": 0.0006771,
+      "tool_calls": 2,
+      "elapsed_s": 7.012,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-completion-instruction-dispatch",
+      "corpus": "typer",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "994155440824583c8f61",
+      "total_tokens": 11680,
+      "api_cost_usd": 0.00047181999999999997,
+      "tool_calls": 4,
+      "elapsed_s": 9.818,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-starlette-websocket-state-machines",
+      "corpus": "starlette",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "7d69b81c6b3a8042f2c6",
+      "total_tokens": 8242,
+      "api_cost_usd": 0.00079265,
+      "tool_calls": 2,
+      "elapsed_s": 9.813,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-direct-url-credentials",
+      "corpus": "packaging",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "efc9f8497869bb62fa4e",
+      "total_tokens": 13688,
+      "api_cost_usd": 0.00056186,
+      "tool_calls": 4,
+      "elapsed_s": 12.262,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-typer-callback-adaptation",
+      "corpus": "typer",
+      "variant": "luna:baseline@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "8d95196e5e0d4b50efe1",
+      "total_tokens": 24170,
+      "api_cost_usd": 0.0011693300000000001,
+      "tool_calls": 6,
+      "elapsed_s": 13.998,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-httpx-asgi-body-and-failure",
+      "corpus": "httpx",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "5b24ddc82eb259a83294",
+      "total_tokens": 6466,
+      "api_cost_usd": 0.000634615,
+      "tool_calls": 3,
+      "elapsed_s": 7.546,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-validator-combinators",
+      "corpus": "attrs",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "5f34226c5a51aad74cef",
+      "total_tokens": 16618,
+      "api_cost_usd": 0.000812085,
+      "tool_calls": 4,
+      "elapsed_s": 12.052,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-starlette-exception-handler-precedence",
+      "corpus": "starlette",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "03f26fa1eb124282dcf2",
+      "total_tokens": 13461,
+      "api_cost_usd": 0.000794845,
+      "tool_calls": 3,
+      "elapsed_s": 11.701,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-click-atomic-write-close",
+      "corpus": "click",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "5103e56916e2f7bea9e2",
+      "total_tokens": 6279,
+      "api_cost_usd": 0.00068773,
+      "tool_calls": 3,
+      "elapsed_s": 9.116,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-conditional-static-response",
+      "corpus": "starlette",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "3f65b1f25d4f857effc0",
+      "total_tokens": 15951,
+      "api_cost_usd": 0.0006197900000000001,
+      "tool_calls": 5,
+      "elapsed_s": 13.001,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-composed-loaders",
+      "corpus": "jinja",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "203c4cdeca49dc144366",
+      "total_tokens": 3480,
+      "api_cost_usd": 0.0005275750000000001,
+      "tool_calls": 2,
+      "elapsed_s": 6.612,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-memory-endpoint-close",
+      "corpus": "anyio",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "b2152be975228857edd1",
+      "total_tokens": 8331,
+      "api_cost_usd": 0.000873705,
+      "tool_calls": 3,
+      "elapsed_s": 19.736,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-regex-validator",
+      "corpus": "attrs",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "0e2570e17dc426d425fb",
+      "total_tokens": 2971,
+      "api_cost_usd": 0.00045985,
+      "tool_calls": 2,
+      "elapsed_s": 6.904,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-template-selection-fallback",
+      "corpus": "jinja",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "c15d44a4da7bb033a03d",
+      "total_tokens": 5045,
+      "api_cost_usd": 0.000601945,
+      "tool_calls": 3,
+      "elapsed_s": 7.93,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-monitoring-exceptions",
+      "corpus": "pluggy",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "422ec9809ccfb2a63e0e",
+      "total_tokens": 9838,
+      "api_cost_usd": 0.00078037,
+      "tool_calls": 4,
+      "elapsed_s": 9.44,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-jinja-item-attribute-fallbacks",
+      "corpus": "jinja",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "95824874fee10ffbe7b3",
+      "total_tokens": 2150,
+      "api_cost_usd": 0.0003512,
+      "tool_calls": 2,
+      "elapsed_s": 5.618,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-requests-response-chunks",
+      "corpus": "requests",
+      "variant": "luna:baseline@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "e4ee75dee5cd8c3a63b7",
+      "total_tokens": 4461,
+      "api_cost_usd": 0.000491665,
+      "tool_calls": 3,
+      "elapsed_s": 8.088,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-distribution-filenames",
+      "corpus": "packaging",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "47fafa46f7ccab361547",
+      "total_tokens": 13621,
+      "api_cost_usd": 0.000808765,
+      "tool_calls": 3,
+      "elapsed_s": 17.861,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-none-default",
+      "corpus": "attrs",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "38fcbece0eac5b82218a",
+      "total_tokens": 8619,
+      "api_cost_usd": 0.00036827,
+      "tool_calls": 3,
+      "elapsed_s": 8.0,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-subset-live-view",
+      "corpus": "pluggy",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "53041bdd2cfc4a01aae8",
+      "total_tokens": 6508,
+      "api_cost_usd": 0.000656185,
+      "tool_calls": 4,
+      "elapsed_s": 11.436,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-anyio-tls-shutdown-errors",
+      "corpus": "anyio",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "ed111a9482fab08b902d",
+      "total_tokens": 12705,
+      "api_cost_usd": 0.000748505,
+      "tool_calls": 3,
+      "elapsed_s": 16.496,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-template-selection-fallback",
+      "corpus": "jinja",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "bb136366e665e4adfb9e",
+      "total_tokens": 5151,
+      "api_cost_usd": 0.000613165,
+      "tool_calls": 3,
+      "elapsed_s": 8.448,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-click-isolated-filesystem-cleanup",
+      "corpus": "click",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "b426a007696cd726d0fb",
+      "total_tokens": 3346,
+      "api_cost_usd": 0.00048935,
+      "tool_calls": 3,
+      "elapsed_s": 6.389,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-timeout-construction",
+      "corpus": "httpx",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "a73c3e636fe218c21a9e",
+      "total_tokens": 7866,
+      "api_cost_usd": 0.00050493,
+      "tool_calls": 2,
+      "elapsed_s": 7.705,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-exception-display-routing",
+      "corpus": "typer",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "a232e53105deb322a75b",
+      "total_tokens": 9929,
+      "api_cost_usd": 0.000450605,
+      "tool_calls": 3,
+      "elapsed_s": 8.461,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-setter-dataflow",
+      "corpus": "attrs",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "8f980937d708d64a999c",
+      "total_tokens": 8137,
+      "api_cost_usd": 0.000545025,
+      "tool_calls": 2,
+      "elapsed_s": 9.464,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-template-cache-layers",
+      "corpus": "jinja",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "ccdefe29b04ec0a22570",
+      "total_tokens": 14239,
+      "api_cost_usd": 0.000936285,
+      "tool_calls": 6,
+      "elapsed_s": 15.999,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-pluggy-historic-replay",
+      "corpus": "pluggy",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "dd501b479799bfbc23fb",
+      "total_tokens": 35213,
+      "api_cost_usd": 0.001354685,
+      "tool_calls": 6,
+      "elapsed_s": 15.804,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-starlette-exception-handler-precedence",
+      "corpus": "starlette",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "fcafebd04e673d6a22ce",
+      "total_tokens": 10264,
+      "api_cost_usd": 0.000773665,
+      "tool_calls": 4,
+      "elapsed_s": 9.683,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-anyio-tls-shutdown-errors",
+      "corpus": "anyio",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "4e560d149aed1ea1934a",
+      "total_tokens": 13105,
+      "api_cost_usd": 0.0007189750000000001,
+      "tool_calls": 3,
+      "elapsed_s": 10.867,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-buffered-boundary-reads",
+      "corpus": "anyio",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "19220b7e6efab9ece85d",
+      "total_tokens": 7506,
+      "api_cost_usd": 0.000811275,
+      "tool_calls": 3,
+      "elapsed_s": 12.321,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-exception-display-routing",
+      "corpus": "typer",
+      "variant": "luna:baseline@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "bbef1966628b18255cb8",
+      "total_tokens": 15129,
+      "api_cost_usd": 0.000789385,
+      "tool_calls": 6,
+      "elapsed_s": 17.212,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-attrs-regex-validator",
+      "corpus": "attrs",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "e35e8aa19cb2d2b02161",
+      "total_tokens": 13425,
+      "api_cost_usd": 0.000561445,
+      "tool_calls": 4,
+      "elapsed_s": 11.685,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-subapp-help-precedence",
+      "corpus": "typer",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "b18cbfb0439853648ca9",
+      "total_tokens": 9280,
+      "api_cost_usd": 0.000651915,
+      "tool_calls": 4,
+      "elapsed_s": 12.464,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-anyio-buffered-boundary-reads",
+      "corpus": "anyio",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "materially_incorrect",
+      "blind_id": "d50d745f6dbdccc36ef2",
+      "total_tokens": 7281,
+      "api_cost_usd": 0.000511605,
+      "tool_calls": 2,
+      "elapsed_s": 12.61,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-annotated-default-conflicts",
+      "corpus": "typer",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "99592d879ec4f2721d69",
+      "total_tokens": 14190,
+      "api_cost_usd": 0.00091126,
+      "tool_calls": 3,
+      "elapsed_s": 10.93,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-entrypoint-loading",
+      "corpus": "pluggy",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "5394f37bf5118daf5fe4",
+      "total_tokens": 9168,
+      "api_cost_usd": 0.000665835,
+      "tool_calls": 4,
+      "elapsed_s": 9.156,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-click-choice-normalization",
+      "corpus": "click",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "f99742aa856e53fabd12",
+      "total_tokens": 11018,
+      "api_cost_usd": 0.00084722,
+      "tool_calls": 4,
+      "elapsed_s": 7.955,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-collected-errors",
+      "corpus": "packaging",
+      "variant": "luna:baseline@6",
+      "pass": false,
+      "verdict": "materially_incorrect",
+      "blind_id": "9ce4a9dfce79ad0231a0",
+      "total_tokens": 6640,
+      "api_cost_usd": 0.000597005,
+      "tool_calls": 3,
+      "elapsed_s": 8.248,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-subset-live-view",
+      "corpus": "pluggy",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "2bb3b278515ae693697b",
+      "total_tokens": 10980,
+      "api_cost_usd": 0.0007509550000000001,
+      "tool_calls": 5,
+      "elapsed_s": 18.855,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-entrypoint-loading",
+      "corpus": "pluggy",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "f07d4802acafc111f807",
+      "total_tokens": 6426,
+      "api_cost_usd": 0.00030863,
+      "tool_calls": 2,
+      "elapsed_s": 5.916,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-memory-endpoint-close",
+      "corpus": "anyio",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "458c07dbb2ad5490ed09",
+      "total_tokens": 12138,
+      "api_cost_usd": 0.0009134000000000001,
+      "tool_calls": 4,
+      "elapsed_s": 13.441,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-typer-completion-instruction-dispatch",
+      "corpus": "typer",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "d2fb1d086a729ab6fbfd",
+      "total_tokens": 9428,
+      "api_cost_usd": 0.000411985,
+      "tool_calls": 3,
+      "elapsed_s": 7.999,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-requests-environment-precedence",
+      "corpus": "requests",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "26915735f2091653fa5f",
+      "total_tokens": 12626,
+      "api_cost_usd": 0.000536575,
+      "tool_calls": 4,
+      "elapsed_s": 12.317,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-subapp-help-precedence",
+      "corpus": "typer",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "453d5c1ba6390f0543d4",
+      "total_tokens": 9673,
+      "api_cost_usd": 0.000458105,
+      "tool_calls": 3,
+      "elapsed_s": 16.823,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-requests-adapter-certificate-paths",
+      "corpus": "requests",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "ea66ae765d7acc7049bd",
+      "total_tokens": 8788,
+      "api_cost_usd": 0.000603365,
+      "tool_calls": 2,
+      "elapsed_s": 9.281,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-annotated-default-conflicts",
+      "corpus": "typer",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "28ad959766abf20067a6",
+      "total_tokens": 13660,
+      "api_cost_usd": 0.00103559,
+      "tool_calls": 4,
+      "elapsed_s": 11.581,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-attrs-validator-combinators",
+      "corpus": "attrs",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "9d708751a8e25ff942ea",
+      "total_tokens": 6418,
+      "api_cost_usd": 0.00065186,
+      "tool_calls": 4,
+      "elapsed_s": 11.231,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-upload-file-dispatch",
+      "corpus": "starlette",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "b1dd4a7270efa46ab982",
+      "total_tokens": 6903,
+      "api_cost_usd": 0.00037501,
+      "tool_calls": 2,
+      "elapsed_s": 7.393,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-asgi-body-and-failure",
+      "corpus": "httpx",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "a94bd1884fcb93bd3b3a",
+      "total_tokens": 6430,
+      "api_cost_usd": 0.00063501,
+      "tool_calls": 3,
+      "elapsed_s": 8.876,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-regex-validator",
+      "corpus": "attrs",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "48cabd83dccf8024d4c9",
+      "total_tokens": 13728,
+      "api_cost_usd": 0.00057387,
+      "tool_calls": 4,
+      "elapsed_s": 12.776,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-attrs-validator-combinators",
+      "corpus": "attrs",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "461ed8a53683dfc5968d",
+      "total_tokens": 9316,
+      "api_cost_usd": 0.00046908499999999994,
+      "tool_calls": 3,
+      "elapsed_s": 11.129,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-requests-json-codec-fallback",
+      "corpus": "requests",
+      "variant": "luna:baseline@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "3d1bf65c988073e0aa26",
+      "total_tokens": 4917,
+      "api_cost_usd": 0.000550765,
+      "tool_calls": 4,
+      "elapsed_s": 10.279,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-asgi-body-and-failure",
+      "corpus": "httpx",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "81ea8900db94d8d2848b",
+      "total_tokens": 13078,
+      "api_cost_usd": 0.00069618,
+      "tool_calls": 3,
+      "elapsed_s": 9.955,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-regex-validator",
+      "corpus": "attrs",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "bcc27f83d80b9950e793",
+      "total_tokens": 5139,
+      "api_cost_usd": 0.000538875,
+      "tool_calls": 3,
+      "elapsed_s": 7.518,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-direct-url-credentials",
+      "corpus": "packaging",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "386bb1f624fe40d3721c",
+      "total_tokens": 10259,
+      "api_cost_usd": 0.0008073900000000001,
+      "tool_calls": 4,
+      "elapsed_s": 11.169,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-click-isolated-filesystem-cleanup",
+      "corpus": "click",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "03d6ffda51705ba9fe6a",
+      "total_tokens": 6526,
+      "api_cost_usd": 0.00047581500000000004,
+      "tool_calls": 2,
+      "elapsed_s": 7.765,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-websocket-state-machines",
+      "corpus": "starlette",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "5a09a0b8b6969019edea",
+      "total_tokens": 4346,
+      "api_cost_usd": 0.0006816999999999999,
+      "tool_calls": 2,
+      "elapsed_s": 6.581,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-completion-instruction-dispatch",
+      "corpus": "typer",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "0b7caf20a3f58192fa2f",
+      "total_tokens": 4435,
+      "api_cost_usd": 0.00052099,
+      "tool_calls": 2,
+      "elapsed_s": 6.982,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-upload-file-dispatch",
+      "corpus": "starlette",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "ee5523e544c5b0cf2727",
+      "total_tokens": 12634,
+      "api_cost_usd": 0.000529865,
+      "tool_calls": 4,
+      "elapsed_s": 9.893,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-click-option-envvar-shape",
+      "corpus": "click",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "b316fb333bf73667d8be",
+      "total_tokens": 4962,
+      "api_cost_usd": 0.000549735,
+      "tool_calls": 4,
+      "elapsed_s": 8.05,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-requests-cookie-name-collisions",
+      "corpus": "requests",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "093c20d3175b72d338c2",
+      "total_tokens": 11520,
+      "api_cost_usd": 0.000718885,
+      "tool_calls": 5,
+      "elapsed_s": 9.374,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-template-cache-layers",
+      "corpus": "jinja",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "d43c6eecb348f7c34aed",
+      "total_tokens": 7046,
+      "api_cost_usd": 0.0006525150000000001,
+      "tool_calls": 4,
+      "elapsed_s": 12.053,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-packaging-marker-environments",
+      "corpus": "packaging",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "5a5e6f00f1b03ba5418a",
+      "total_tokens": 18877,
+      "api_cost_usd": 0.00083949,
+      "tool_calls": 4,
+      "elapsed_s": 12.623,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-jinja-bytecode-file-cleanup",
+      "corpus": "jinja",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "570332cc4e94e6ade6bc",
+      "total_tokens": 7509,
+      "api_cost_usd": 0.0008093,
+      "tool_calls": 4,
+      "elapsed_s": 18.779,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-stapled-half-close",
+      "corpus": "anyio",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "bbb883f1234b289d5f94",
+      "total_tokens": 3814,
+      "api_cost_usd": 0.000555675,
+      "tool_calls": 2,
+      "elapsed_s": 7.249,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+      "corpus": "pluggy",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "0b2241d298bd6d0e3605",
+      "total_tokens": 5546,
+      "api_cost_usd": 0.0005630050000000001,
+      "tool_calls": 3,
+      "elapsed_s": 8.992,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-dependency-group-resolution",
+      "corpus": "packaging",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "8219d3444913834ec0db",
+      "total_tokens": 8142,
+      "api_cost_usd": 0.0005655250000000001,
+      "tool_calls": 2,
+      "elapsed_s": 10.563,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-stapled-half-close",
+      "corpus": "anyio",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "e39b0c0c259168812d67",
+      "total_tokens": 7541,
+      "api_cost_usd": 0.00047498,
+      "tool_calls": 2,
+      "elapsed_s": 7.523,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-disabled-restoration",
+      "corpus": "attrs",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "96c3b696f236d17afce7",
+      "total_tokens": 8924,
+      "api_cost_usd": 0.00059652,
+      "tool_calls": 4,
+      "elapsed_s": 8.634,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-packaging-dependency-group-resolution",
+      "corpus": "packaging",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "7723267e7a7bfcef7006",
+      "total_tokens": 12287,
+      "api_cost_usd": 0.0006591650000000001,
+      "tool_calls": 3,
+      "elapsed_s": 10.726,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-tls-shutdown-errors",
+      "corpus": "anyio",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "f7ad0c8168eb1e30196a",
+      "total_tokens": 7402,
+      "api_cost_usd": 0.000737855,
+      "tool_calls": 3,
+      "elapsed_s": 8.585,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-click-prompt-retry-confirmation",
+      "corpus": "click",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "1aa3443bae5803573447",
+      "total_tokens": 22359,
+      "api_cost_usd": 0.000824905,
+      "tool_calls": 6,
+      "elapsed_s": 14.425,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-click-isolated-filesystem-cleanup",
+      "corpus": "click",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "ca4953e5932a88862604",
+      "total_tokens": 2764,
+      "api_cost_usd": 0.00040215000000000004,
+      "tool_calls": 2,
+      "elapsed_s": 4.804,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-incremental-text-receive",
+      "corpus": "anyio",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "0ec05b01d53d96842164",
+      "total_tokens": 11250,
+      "api_cost_usd": 0.0005805200000000001,
+      "tool_calls": 3,
+      "elapsed_s": 16.39,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-wsgi-iterator-lifecycle",
+      "corpus": "httpx",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "c7e7a81a81aadc5bbda3",
+      "total_tokens": 4092,
+      "api_cost_usd": 0.000612875,
+      "tool_calls": 2,
+      "elapsed_s": 6.131,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-requests-json-codec-fallback",
+      "corpus": "requests",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "3b7e9e930490555af9c9",
+      "total_tokens": 6319,
+      "api_cost_usd": 0.00034317,
+      "tool_calls": 2,
+      "elapsed_s": 8.66,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-multipart-stream-length",
+      "corpus": "httpx",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "6fc7903c64b76bc7e74c",
+      "total_tokens": 18794,
+      "api_cost_usd": 0.000848805,
+      "tool_calls": 4,
+      "elapsed_s": 10.921,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-click-option-envvar-shape",
+      "corpus": "click",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "8740fe2b03101f88a7df",
+      "total_tokens": 32523,
+      "api_cost_usd": 0.0012481,
+      "tool_calls": 6,
+      "elapsed_s": 15.171,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-httpx-content-framing",
+      "corpus": "httpx",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "4aa24f19d46f547a78a1",
+      "total_tokens": 2615,
+      "api_cost_usd": 0.00042325,
+      "tool_calls": 2,
+      "elapsed_s": 5.947,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-requests-environment-precedence",
+      "corpus": "requests",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "0695f2f3064fc664643f",
+      "total_tokens": 15323,
+      "api_cost_usd": 0.0006902550000000001,
+      "tool_calls": 4,
+      "elapsed_s": 10.611,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-attrs-validator-combinators",
+      "corpus": "attrs",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "800aa8ffa160ec284000",
+      "total_tokens": 2508,
+      "api_cost_usd": 0.0003894,
+      "tool_calls": 2,
+      "elapsed_s": 6.659,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-dependency-group-resolution",
+      "corpus": "packaging",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "5acc51bf125f4c0b2e8c",
+      "total_tokens": 10261,
+      "api_cost_usd": 0.000820085,
+      "tool_calls": 3,
+      "elapsed_s": 9.623,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-collected-errors",
+      "corpus": "packaging",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "materially_incorrect",
+      "blind_id": "eba4a8ed83757ea9a3c7",
+      "total_tokens": 7550,
+      "api_cost_usd": 0.000469715,
+      "tool_calls": 2,
+      "elapsed_s": 7.703,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-item-attribute-fallbacks",
+      "corpus": "jinja",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "ebd0188048debcb7d074",
+      "total_tokens": 11712,
+      "api_cost_usd": 0.00048744,
+      "tool_calls": 4,
+      "elapsed_s": 12.143,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-requests-response-chunks",
+      "corpus": "requests",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "c3823388971b4d40d749",
+      "total_tokens": 7516,
+      "api_cost_usd": 0.00048033500000000003,
+      "tool_calls": 2,
+      "elapsed_s": 7.94,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-multipart-stream-length",
+      "corpus": "httpx",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "2a0e8e1c2f9621842aa0",
+      "total_tokens": 13251,
+      "api_cost_usd": 0.00098439,
+      "tool_calls": 4,
+      "elapsed_s": 8.477,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-typer-annotated-default-conflicts",
+      "corpus": "typer",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "4533aa5e69716a92d06e",
+      "total_tokens": 15047,
+      "api_cost_usd": 0.000677265,
+      "tool_calls": 4,
+      "elapsed_s": 10.012,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-click-choice-normalization",
+      "corpus": "click",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "cb39c3d43c65040e03cf",
+      "total_tokens": 3684,
+      "api_cost_usd": 0.000510375,
+      "tool_calls": 3,
+      "elapsed_s": 6.186,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-marker-environments",
+      "corpus": "packaging",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "3301c2f585cd182a6379",
+      "total_tokens": 23677,
+      "api_cost_usd": 0.00086482,
+      "tool_calls": 6,
+      "elapsed_s": 21.907,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-requests-json-codec-fallback",
+      "corpus": "requests",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "7a9fc549b7168e0bc300",
+      "total_tokens": 6656,
+      "api_cost_usd": 0.000347945,
+      "tool_calls": 2,
+      "elapsed_s": 7.292,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-content-framing",
+      "corpus": "httpx",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "f9da4d69d3177f9227ee",
+      "total_tokens": 7264,
+      "api_cost_usd": 0.00037132500000000004,
+      "tool_calls": 2,
+      "elapsed_s": 6.155,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-monitoring-exceptions",
+      "corpus": "pluggy",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "9c1ff5acd9760970c0b9",
+      "total_tokens": 12815,
+      "api_cost_usd": 0.00055126,
+      "tool_calls": 4,
+      "elapsed_s": 10.98,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-entrypoint-loading",
+      "corpus": "pluggy",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "6bdaa13cb730683f0f93",
+      "total_tokens": 6254,
+      "api_cost_usd": 0.0002964,
+      "tool_calls": 2,
+      "elapsed_s": 6.473,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-background-order-failure",
+      "corpus": "starlette",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "44b0c6790bdb1e8092fc",
+      "total_tokens": 4510,
+      "api_cost_usd": 0.000503465,
+      "tool_calls": 4,
+      "elapsed_s": 9.534,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-requests-response-chunks",
+      "corpus": "requests",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "6e50d0a4d47dc9f8508e",
+      "total_tokens": 4305,
+      "api_cost_usd": 0.000474045,
+      "tool_calls": 3,
+      "elapsed_s": 8.789,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-background-order-failure",
+      "corpus": "starlette",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "2c4c12680a86c17e054a",
+      "total_tokens": 12168,
+      "api_cost_usd": 0.00060133,
+      "tool_calls": 3,
+      "elapsed_s": 11.023,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-click-choice-normalization",
+      "corpus": "click",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "756d4f323bd578bdb599",
+      "total_tokens": 7251,
+      "api_cost_usd": 0.00042066,
+      "tool_calls": 2,
+      "elapsed_s": 6.307,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-callback-adaptation",
+      "corpus": "typer",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "materially_incorrect",
+      "blind_id": "9717feab0dc17534a571",
+      "total_tokens": 22635,
+      "api_cost_usd": 0.0008523599999999999,
+      "tool_calls": 6,
+      "elapsed_s": 13.264,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-click-atomic-write-close",
+      "corpus": "click",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "ef53a5fd501013bc13db",
+      "total_tokens": 3444,
+      "api_cost_usd": 0.000571,
+      "tool_calls": 2,
+      "elapsed_s": 7.628,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-distribution-filenames",
+      "corpus": "packaging",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "d843da2902d6195b07d6",
+      "total_tokens": 15788,
+      "api_cost_usd": 0.001011175,
+      "tool_calls": 5,
+      "elapsed_s": 12.422,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-subapp-help-precedence",
+      "corpus": "typer",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "db0c24d63628cfd5af90",
+      "total_tokens": 5652,
+      "api_cost_usd": 0.000485495,
+      "tool_calls": 3,
+      "elapsed_s": 8.882,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-timeout-construction",
+      "corpus": "httpx",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "ab27a08313a74703950e",
+      "total_tokens": 8043,
+      "api_cost_usd": 0.00055163,
+      "tool_calls": 2,
+      "elapsed_s": 9.0,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-content-framing",
+      "corpus": "httpx",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "2210d87c0176c8558b9d",
+      "total_tokens": 3361,
+      "api_cost_usd": 0.00050975,
+      "tool_calls": 2,
+      "elapsed_s": 5.962,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-disabled-restoration",
+      "corpus": "attrs",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "06def87433f3c4dfe181",
+      "total_tokens": 15553,
+      "api_cost_usd": 0.0009098450000000001,
+      "tool_calls": 6,
+      "elapsed_s": 13.472,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-click-prompt-retry-confirmation",
+      "corpus": "click",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "1d2d49e88c93aa12040f",
+      "total_tokens": 17538,
+      "api_cost_usd": 0.0007768,
+      "tool_calls": 4,
+      "elapsed_s": 10.798,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-jinja-template-cache-layers",
+      "corpus": "jinja",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "ef32335ed286b5b5f24a",
+      "total_tokens": 12090,
+      "api_cost_usd": 0.00073411,
+      "tool_calls": 3,
+      "elapsed_s": 10.676,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-collected-errors",
+      "corpus": "packaging",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "18d5f895092c007e0dec",
+      "total_tokens": 7599,
+      "api_cost_usd": 0.0004949749999999999,
+      "tool_calls": 2,
+      "elapsed_s": 8.355,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-websocket-state-machines",
+      "corpus": "starlette",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "c639f50a76a8550b9e8e",
+      "total_tokens": 4980,
+      "api_cost_usd": 0.0006428849999999999,
+      "tool_calls": 2,
+      "elapsed_s": 6.497,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-requests-adapter-certificate-paths",
+      "corpus": "requests",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "d3bcfa5b961219dfa744",
+      "total_tokens": 2447,
+      "api_cost_usd": 0.000395625,
+      "tool_calls": 2,
+      "elapsed_s": 5.525,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-click-atomic-write-close",
+      "corpus": "click",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "e23b926b92c8de1d574c",
+      "total_tokens": 22000,
+      "api_cost_usd": 0.000898025,
+      "tool_calls": 5,
+      "elapsed_s": 12.397,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-distribution-filenames",
+      "corpus": "packaging",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "9c74b3bc32238993b3c2",
+      "total_tokens": 13919,
+      "api_cost_usd": 0.001005705,
+      "tool_calls": 4,
+      "elapsed_s": 10.741,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-requests-cookie-name-collisions",
+      "corpus": "requests",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "c0db2b8ccda2beec6b80",
+      "total_tokens": 15087,
+      "api_cost_usd": 0.00088095,
+      "tool_calls": 3,
+      "elapsed_s": 8.448,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-wsgi-iterator-lifecycle",
+      "corpus": "httpx",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "4c4ff11355d84004a908",
+      "total_tokens": 7743,
+      "api_cost_usd": 0.00051736,
+      "tool_calls": 2,
+      "elapsed_s": 8.148,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-item-attribute-fallbacks",
+      "corpus": "jinja",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "81a25c8d7bef84cf9a8d",
+      "total_tokens": 11167,
+      "api_cost_usd": 0.000563715,
+      "tool_calls": 3,
+      "elapsed_s": 9.842,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+      "corpus": "pluggy",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "96ddf881bc84ac3e9d7a",
+      "total_tokens": 3840,
+      "api_cost_usd": 0.000557375,
+      "tool_calls": 3,
+      "elapsed_s": 7.669,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-exception-handler-precedence",
+      "corpus": "starlette",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "34ee265c2dcb79ac483a",
+      "total_tokens": 7609,
+      "api_cost_usd": 0.000527845,
+      "tool_calls": 2,
+      "elapsed_s": 8.637,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-requests-json-codec-fallback",
+      "corpus": "requests",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "5b092dd8902e5c627def",
+      "total_tokens": 3756,
+      "api_cost_usd": 0.00044483,
+      "tool_calls": 3,
+      "elapsed_s": 9.92,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-exception-handler-precedence",
+      "corpus": "starlette",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "351dc2751114f662b8db",
+      "total_tokens": 6192,
+      "api_cost_usd": 0.0005982800000000001,
+      "tool_calls": 3,
+      "elapsed_s": 8.447,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-memory-endpoint-close",
+      "corpus": "anyio",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "9963f9388247706870b4",
+      "total_tokens": 7995,
+      "api_cost_usd": 0.00055667,
+      "tool_calls": 2,
+      "elapsed_s": 7.939,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-completion-instruction-dispatch",
+      "corpus": "typer",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "9c10af544fc2b7f344fd",
+      "total_tokens": 9674,
+      "api_cost_usd": 0.000642585,
+      "tool_calls": 4,
+      "elapsed_s": 11.712,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-pluggy-subset-live-view",
+      "corpus": "pluggy",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "aeaee1920e39c529b641",
+      "total_tokens": 8854,
+      "api_cost_usd": 0.000576425,
+      "tool_calls": 2,
+      "elapsed_s": 7.987,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-click-atomic-write-close",
+      "corpus": "click",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "897fb325550cdc44f0f6",
+      "total_tokens": 11693,
+      "api_cost_usd": 0.000670785,
+      "tool_calls": 3,
+      "elapsed_s": 14.276,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-requests-environment-precedence",
+      "corpus": "requests",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "db6dbeba74249f2e9513",
+      "total_tokens": 4408,
+      "api_cost_usd": 0.00051376,
+      "tool_calls": 4,
+      "elapsed_s": 8.093,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-httpx-wsgi-iterator-lifecycle",
+      "corpus": "httpx",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "materially_incorrect",
+      "blind_id": "995a16934326691f2eec",
+      "total_tokens": 7672,
+      "api_cost_usd": 0.00052882,
+      "tool_calls": 2,
+      "elapsed_s": 8.741,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-none-default",
+      "corpus": "attrs",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "1f86acf39f76df5425c4",
+      "total_tokens": 2460,
+      "api_cost_usd": 0.00037227500000000004,
+      "tool_calls": 2,
+      "elapsed_s": 7.039,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-dependency-group-resolution",
+      "corpus": "packaging",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "cc5e4e160d0e551e9e02",
+      "total_tokens": 11701,
+      "api_cost_usd": 0.00083423,
+      "tool_calls": 4,
+      "elapsed_s": 10.089,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-pluggy-entrypoint-loading",
+      "corpus": "pluggy",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "8cf3f2017631e63779ce",
+      "total_tokens": 15915,
+      "api_cost_usd": 0.000975045,
+      "tool_calls": 4,
+      "elapsed_s": 9.214,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-annotated-default-conflicts",
+      "corpus": "typer",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "1ed6c1e3bad5317c6507",
+      "total_tokens": 17475,
+      "api_cost_usd": 0.00105019,
+      "tool_calls": 6,
+      "elapsed_s": 14.148,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-httpx-timeout-construction",
+      "corpus": "httpx",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "d6b6c344baa1d0e54ec0",
+      "total_tokens": 3637,
+      "api_cost_usd": 0.00054595,
+      "tool_calls": 2,
+      "elapsed_s": 5.79,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-stapled-half-close",
+      "corpus": "anyio",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "dd68bdf49def769a4730",
+      "total_tokens": 2875,
+      "api_cost_usd": 0.00043195,
+      "tool_calls": 2,
+      "elapsed_s": 7.429,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-buffered-boundary-reads",
+      "corpus": "anyio",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "17058cf80f48f7aacd72",
+      "total_tokens": 16231,
+      "api_cost_usd": 0.00070744,
+      "tool_calls": 4,
+      "elapsed_s": 10.908,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-requests-adapter-certificate-paths",
+      "corpus": "requests",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "dc274bc13ce08f6041e4",
+      "total_tokens": 2363,
+      "api_cost_usd": 0.000393375,
+      "tool_calls": 2,
+      "elapsed_s": 12.106,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-setter-dataflow",
+      "corpus": "attrs",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "5d0fa7729ca95d0cf982",
+      "total_tokens": 7941,
+      "api_cost_usd": 0.000712625,
+      "tool_calls": 4,
+      "elapsed_s": 10.308,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-starlette-background-order-failure",
+      "corpus": "starlette",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "908e2b12ff07bfd1edb1",
+      "total_tokens": 12369,
+      "api_cost_usd": 0.00063057,
+      "tool_calls": 3,
+      "elapsed_s": 7.982,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-historic-replay",
+      "corpus": "pluggy",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "3bf4b6e06ce8e862c058",
+      "total_tokens": 27486,
+      "api_cost_usd": 0.001549515,
+      "tool_calls": 5,
+      "elapsed_s": 14.236,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-disabled-restoration",
+      "corpus": "attrs",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "7264e56e20482eea5d2a",
+      "total_tokens": 11025,
+      "api_cost_usd": 0.00038257000000000005,
+      "tool_calls": 4,
+      "elapsed_s": 9.207,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-typer-callback-adaptation",
+      "corpus": "typer",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "e2a739df576c22d97559",
+      "total_tokens": 14046,
+      "api_cost_usd": 0.000609355,
+      "tool_calls": 4,
+      "elapsed_s": 9.799,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-requests-cookie-name-collisions",
+      "corpus": "requests",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "bb66bde04fbdde2935b6",
+      "total_tokens": 15408,
+      "api_cost_usd": 0.000643385,
+      "tool_calls": 4,
+      "elapsed_s": 10.973,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-click-option-envvar-shape",
+      "corpus": "click",
+      "variant": "luna:baseline@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "b350377012059f6c59cc",
+      "total_tokens": 17643,
+      "api_cost_usd": 0.00121659,
+      "tool_calls": 6,
+      "elapsed_s": 10.726,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-jinja-template-cache-layers",
+      "corpus": "jinja",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "materially_incorrect",
+      "blind_id": "c3f857c3f0340b7e4ff9",
+      "total_tokens": 19913,
+      "api_cost_usd": 0.0009493500000000001,
+      "tool_calls": 4,
+      "elapsed_s": 13.321,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-starlette-conditional-static-response",
+      "corpus": "starlette",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "65d080c8293ac672d04b",
+      "total_tokens": 14570,
+      "api_cost_usd": 0.00061765,
+      "tool_calls": 4,
+      "elapsed_s": 12.388,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-requests-response-chunks",
+      "corpus": "requests",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "8b9974015fbc2896eadd",
+      "total_tokens": 10274,
+      "api_cost_usd": 0.00050929,
+      "tool_calls": 3,
+      "elapsed_s": 9.978,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-click-isolated-filesystem-cleanup",
+      "corpus": "click",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "ba45f40f0b4c521434e9",
+      "total_tokens": 6481,
+      "api_cost_usd": 0.00030037,
+      "tool_calls": 2,
+      "elapsed_s": 6.476,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-memory-endpoint-close",
+      "corpus": "anyio",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "55e5b8cf921f279f53f1",
+      "total_tokens": 18970,
+      "api_cost_usd": 0.0008960649999999999,
+      "tool_calls": 4,
+      "elapsed_s": 10.674,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-none-default",
+      "corpus": "attrs",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "5bfb2495fe8c958594e4",
+      "total_tokens": 2449,
+      "api_cost_usd": 0.00036987500000000003,
+      "tool_calls": 2,
+      "elapsed_s": 7.066,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-composed-loaders",
+      "corpus": "jinja",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "35daae69cf052a854eb2",
+      "total_tokens": 16003,
+      "api_cost_usd": 0.000708985,
+      "tool_calls": 4,
+      "elapsed_s": 11.053,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-anyio-tls-shutdown-errors",
+      "corpus": "anyio",
+      "variant": "luna:baseline@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "6153039a942d3ff608eb",
+      "total_tokens": 9284,
+      "api_cost_usd": 0.000895485,
+      "tool_calls": 4,
+      "elapsed_s": 10.765,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-item-attribute-fallbacks",
+      "corpus": "jinja",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "b7f02f8e213ecca0b18a",
+      "total_tokens": 2138,
+      "api_cost_usd": 0.00022652000000000002,
+      "tool_calls": 2,
+      "elapsed_s": 5.621,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-click-choice-normalization",
+      "corpus": "click",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "56a13f729517e334886f",
+      "total_tokens": 7086,
+      "api_cost_usd": 0.00038873499999999997,
+      "tool_calls": 2,
+      "elapsed_s": 7.028,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-websocket-state-machines",
+      "corpus": "starlette",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "1ef4060423a8c1c0ff1a",
+      "total_tokens": 7816,
+      "api_cost_usd": 0.00055389,
+      "tool_calls": 2,
+      "elapsed_s": 8.58,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-multipart-stream-length",
+      "corpus": "httpx",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "395951252df21a3718c8",
+      "total_tokens": 21879,
+      "api_cost_usd": 0.00109284,
+      "tool_calls": 6,
+      "elapsed_s": 10.603,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-pluggy-monitoring-exceptions",
+      "corpus": "pluggy",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "578d541844882ce47a28",
+      "total_tokens": 7322,
+      "api_cost_usd": 0.00037863999999999997,
+      "tool_calls": 2,
+      "elapsed_s": 6.904,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-conditional-static-response",
+      "corpus": "starlette",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "8e828776628e24cd0269",
+      "total_tokens": 4642,
+      "api_cost_usd": 0.000541335,
+      "tool_calls": 3,
+      "elapsed_s": 13.29,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-wsgi-iterator-lifecycle",
+      "corpus": "httpx",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "04649e978a89b89d7c32",
+      "total_tokens": 3765,
+      "api_cost_usd": 0.000581,
+      "tool_calls": 2,
+      "elapsed_s": 6.273,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-buffered-boundary-reads",
+      "corpus": "anyio",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "69a1ebf91a8f1915dbc9",
+      "total_tokens": 3899,
+      "api_cost_usd": 0.00059705,
+      "tool_calls": 2,
+      "elapsed_s": 7.868,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-setter-dataflow",
+      "corpus": "attrs",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "6b382d133e1a3ca26372",
+      "total_tokens": 7496,
+      "api_cost_usd": 0.00039585,
+      "tool_calls": 2,
+      "elapsed_s": 8.107,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-template-selection-fallback",
+      "corpus": "jinja",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "32f4038a79d7a2ca9e9f",
+      "total_tokens": 16096,
+      "api_cost_usd": 0.0006167950000000001,
+      "tool_calls": 5,
+      "elapsed_s": 13.637,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-subapp-help-precedence",
+      "corpus": "typer",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "b28551892c2943b3ed25",
+      "total_tokens": 10819,
+      "api_cost_usd": 0.0005814349999999999,
+      "tool_calls": 3,
+      "elapsed_s": 8.438,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-attrs-none-default",
+      "corpus": "attrs",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "b19b36ff5a9530994a7d",
+      "total_tokens": 8951,
+      "api_cost_usd": 0.00038488499999999996,
+      "tool_calls": 3,
+      "elapsed_s": 10.496,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-bytecode-file-cleanup",
+      "corpus": "jinja",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "45fb12aea8f83b7f7a33",
+      "total_tokens": 13165,
+      "api_cost_usd": 0.00057801,
+      "tool_calls": 4,
+      "elapsed_s": 12.744,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-packaging-collected-errors",
+      "corpus": "packaging",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "3697f53ab663b0cdb963",
+      "total_tokens": 6528,
+      "api_cost_usd": 0.000581655,
+      "tool_calls": 3,
+      "elapsed_s": 6.877,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-content-framing",
+      "corpus": "httpx",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "f4a5b21f86399d0ec727",
+      "total_tokens": 7722,
+      "api_cost_usd": 0.00048549000000000004,
+      "tool_calls": 2,
+      "elapsed_s": 6.631,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-marker-environments",
+      "corpus": "packaging",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "91d3f898b4ffeb33b144",
+      "total_tokens": 7950,
+      "api_cost_usd": 0.000648995,
+      "tool_calls": 4,
+      "elapsed_s": 8.579,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-jinja-composed-loaders",
+      "corpus": "jinja",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "bf43da96c40f4f72a7a9",
+      "total_tokens": 3264,
+      "api_cost_usd": 0.0004927,
+      "tool_calls": 2,
+      "elapsed_s": 13.642,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-anyio-incremental-text-receive",
+      "corpus": "anyio",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "8a5e834e8e5037b2a7ae",
+      "total_tokens": 7946,
+      "api_cost_usd": 0.000493425,
+      "tool_calls": 2,
+      "elapsed_s": 8.186,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-httpx-asgi-body-and-failure",
+      "corpus": "httpx",
+      "variant": "luna:pasr@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "2b54026f8d608849e6b1",
+      "total_tokens": 7827,
+      "api_cost_usd": 0.00050072,
+      "tool_calls": 2,
+      "elapsed_s": 6.356,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-click-option-envvar-shape",
+      "corpus": "click",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "439c7584c82a4e83ea24",
+      "total_tokens": 11685,
+      "api_cost_usd": 0.00041144,
+      "tool_calls": 4,
+      "elapsed_s": 9.873,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-click-prompt-retry-confirmation",
+      "corpus": "click",
+      "variant": "luna:baseline@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "5002221f4572bb3c8667",
+      "total_tokens": 6783,
+      "api_cost_usd": 0.00057718,
+      "tool_calls": 3,
+      "elapsed_s": 7.886,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-jinja-bytecode-file-cleanup",
+      "corpus": "jinja",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "5aec116e7be4ae3946a4",
+      "total_tokens": 19385,
+      "api_cost_usd": 0.000837715,
+      "tool_calls": 5,
+      "elapsed_s": 13.808,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-click-prompt-retry-confirmation",
+      "corpus": "click",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "aa16fad3bbb7b4ffdb93",
+      "total_tokens": 6815,
+      "api_cost_usd": 0.00066898,
+      "tool_calls": 4,
+      "elapsed_s": 8.325,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-requests-cookie-name-collisions",
+      "corpus": "requests",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "39e30507959056cf1f78",
+      "total_tokens": 7293,
+      "api_cost_usd": 0.000725235,
+      "tool_calls": 4,
+      "elapsed_s": 7.621,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-packaging-direct-url-credentials",
+      "corpus": "packaging",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "db9d877b9831b22989c4",
+      "total_tokens": 9157,
+      "api_cost_usd": 0.000740755,
+      "tool_calls": 4,
+      "elapsed_s": 8.709,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-httpx-timeout-construction",
+      "corpus": "httpx",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "4f9546d6f6eb8e2462a5",
+      "total_tokens": 3509,
+      "api_cost_usd": 0.000516925,
+      "tool_calls": 2,
+      "elapsed_s": 4.546,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-callback-adaptation",
+      "corpus": "typer",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "materially_incorrect",
+      "blind_id": "54cc98e68b373032044d",
+      "total_tokens": 10298,
+      "api_cost_usd": 0.000808215,
+      "tool_calls": 4,
+      "elapsed_s": 10.63,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-pluggy-historic-replay",
+      "corpus": "pluggy",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "c685b08d76df89d897e6",
+      "total_tokens": 10545,
+      "api_cost_usd": 0.0007466700000000001,
+      "tool_calls": 4,
+      "elapsed_s": 11.566,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-packaging-direct-url-credentials",
+      "corpus": "packaging",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "682d2a792c386d0ce3ef",
+      "total_tokens": 13833,
+      "api_cost_usd": 0.0005921149999999999,
+      "tool_calls": 4,
+      "elapsed_s": 11.904,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-typer-exception-display-routing",
+      "corpus": "typer",
+      "variant": "luna:baseline@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "792933e69d830a2b736b",
+      "total_tokens": 9969,
+      "api_cost_usd": 0.000686525,
+      "tool_calls": 4,
+      "elapsed_s": 9.626,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-anyio-incremental-text-receive",
+      "corpus": "anyio",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "ad34344b3c87b6adacdd",
+      "total_tokens": 4190,
+      "api_cost_usd": 0.000618375,
+      "tool_calls": 2,
+      "elapsed_s": 7.158,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-starlette-upload-file-dispatch",
+      "corpus": "starlette",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "88db51602ae233fe228a",
+      "total_tokens": 2995,
+      "api_cost_usd": 0.0004392,
+      "tool_calls": 2,
+      "elapsed_s": 5.436,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-pluggy-historic-replay",
+      "corpus": "pluggy",
+      "variant": "luna:pasr@4",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "0bf2d0fb4b6f38da82f4",
+      "total_tokens": 14710,
+      "api_cost_usd": 0.000606405,
+      "tool_calls": 4,
+      "elapsed_s": 12.175,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-jinja-composed-loaders",
+      "corpus": "jinja",
+      "variant": "luna:pasr@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "3e86b820fed6d6badde9",
+      "total_tokens": 18190,
+      "api_cost_usd": 0.00065488,
+      "tool_calls": 6,
+      "elapsed_s": 13.614,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-requests-environment-precedence",
+      "corpus": "requests",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "e18c321be953996a83ab",
+      "total_tokens": 10222,
+      "api_cost_usd": 0.00079944,
+      "tool_calls": 6,
+      "elapsed_s": 11.139,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+      "corpus": "pluggy",
+      "variant": "luna:pasr@6",
+      "pass": false,
+      "verdict": "incomplete",
+      "blind_id": "305e6a002a77d1e093ee",
+      "total_tokens": 18984,
+      "api_cost_usd": 0.000667125,
+      "tool_calls": 6,
+      "elapsed_s": 12.745,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-starlette-background-order-failure",
+      "corpus": "starlette",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "54e4bc02e8d67d56ce58",
+      "total_tokens": 5481,
+      "api_cost_usd": 0.00044405,
+      "tool_calls": 3,
+      "elapsed_s": 6.568,
+      "ended_before_call_limit": true
+    },
+    {
+      "case_id": "fresh-packaging-marker-environments",
+      "corpus": "packaging",
+      "variant": "luna:baseline@6",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "3574456667dc0f78d36a",
+      "total_tokens": 15948,
+      "api_cost_usd": 0.00089483,
+      "tool_calls": 6,
+      "elapsed_s": 13.387,
+      "ended_before_call_limit": false
+    },
+    {
+      "case_id": "fresh-jinja-bytecode-file-cleanup",
+      "corpus": "jinja",
+      "variant": "luna:baseline@4",
+      "pass": true,
+      "verdict": "complete_supported",
+      "blind_id": "14daab150d16b9f4cbeb",
+      "total_tokens": 10698,
+      "api_cost_usd": 0.0009096400000000001,
+      "tool_calls": 3,
+      "elapsed_s": 9.262,
+      "ended_before_call_limit": true
+    }
+  ],
+  "diagnosis": {
+    "pilot": "Literal stopword names disappeared from symbol/path lookup; bounded held/remainder state discarded requested scope and could falsely imply whole-file possession. Some failures were missing retrieval, others premature stopping or incorrect synthesis despite available source.",
+    "catalog": {
+      "matched_initial_requests": [
+        {
+          "call_limit": 4,
+          "question_pairs": 50,
+          "first_request_extra_pasr_input_tokens": {
+            "1158": 50
+          },
+          "mean": 1158
+        },
+        {
+          "call_limit": 6,
+          "question_pairs": 50,
+          "first_request_extra_pasr_input_tokens": {
+            "1158": 50
+          },
+          "mean": 1158
+        }
+      ],
+      "interpretation": "Initial system/question and non-tool settings are identical; the measured input-token difference is associated with the different tool catalog. Catalogs recur on later requests, but this does not assign every later token to catalog versus observation/history.",
+      "not_a_counterfactual_accuracy_result": true
+    },
+    "broader_run_kind_filter_observation": {
+      "observations": [
+        {
+          "row": 194,
+          "case_id": "fresh-jinja-composed-loaders",
+          "variant": "luna:pasr@6",
+          "tool_ordinal": 2,
+          "arguments": {
+            "query": "PrefixLoader",
+            "include": [
+              "src/jinja2/loaders.py"
+            ],
+            "kinds": [
+              "class"
+            ]
+          },
+          "kinds_filtered_out": 9,
+          "kinds_available": [
+            "class",
+            "function"
+          ],
+          "matches": []
+        }
+      ],
+      "interpretation": "Recorded kind exclusions are diagnostic, not by themselves proof of alias bugs or caused answer failures."
+    },
+    "interpretation": "At six calls, mean tool calls are similar (3.52 baseline, 3.58 PASR), unlike the small pilot. The larger catalog and repeatedly submitted history are material overhead. Selection payload size alone does not measure end-to-end tokens. This is diagnosis, not a measured compact-catalog counterfactual."
+  },
+  "production_changes": [
+    {
+      "files": [
+        "src/pasr/symbol_search.py",
+        "src/pasr/find_files.py"
+      ],
+      "change": "Preserve standalone literal stopword identifiers and single path components; only blank find_files queries request unranked listing. Preserve prose filtering.",
+      "proof": "Reproduced on actual temporary source workspaces; source regressions and real OpenAI MCP path lookup."
+    },
+    {
+      "files": [
+        "src/pasr/mcp/server.py"
+      ],
+      "change": "Preserve canonical requested ranges in held/remainder metadata; distinguish bounded completion from whole-file possession and leave unread ranges retrievable.",
+      "proof": "Actual MCP before/after reproductions, range-state regressions, and three sequential OpenAI-requested selections."
+    },
+    {
+      "files": [
+        "src/pasr/symbol_search.py"
+      ],
+      "change": "Canonicalize both requested and discovered symbol kinds. Native Python classes are accepted by kinds=[class] and aliases without changing reported native labels.",
+      "proof": "First real API smoke revealed the kind-filter bug; preserved zero-result observation, added Python/Rust alias regression, then confirmed Where class at where.py:1-2 via API."
+    }
+  ],
+  "repair_verification": {
+    "phase_one": "production_repairs.json",
+    "additional_bug": "Kind aliases normalized only the caller filter, so native Python class definitions were excluded by kinds=[class]. Normalize both sides, retain native kind labels.",
+    "initial_api_smoke": {
+      "requests": 8,
+      "successful_transport_scenarios": 3,
+      "semantic_failure_scenarios": [
+        "literal_symbol"
+      ],
+      "preserved_path": "fixed_api_smoke/results.json"
+    },
+    "after_fix_api_confirmation": {
+      "requests": 2,
+      "class_result": {
+        "query": "Where",
+        "files_indexed": 1,
+        "symbol_match_count": 1,
+        "exact_match": true,
+        "matches": [
+          {
+            "name": "Where",
+            "kind": "class",
+            "provenance": "where.py:1-2"
+          }
+        ],
+        "unparsed_extensions": [],
+        "advice": [
+          "Exact definition: where.py:1-2. Read it with select_context(query='Where', files=['where.py:1-2'])."
+        ]
+      },
+      "actor_answer": "The returned symbol is the class `Where`, located at `where.py:1–2`."
+    },
+    "other_production_api_smokes": {
+      "literal_path_ranked": true,
+      "bounded_unseen_contexts": [
+        "[coverage.py:5-10]",
+        "[coverage.py:11-14]",
+        "[coverage.py:20-22]"
+      ],
+      "false_whole_file_claim_absent": true
+    },
+    "final_tests": {
+      "command": "python -m pytest tests/test_symbol_search.py tests/test_find_files.py tests/test_mcp_server.py -q",
+      "result": "97 passed in 3.70s",
+      "ruff": "All checks passed for the three changed production modules and their test modules."
+    },
+    "production_source_sha256": {
+      "src/pasr/symbol_search.py": "7010d7950ecc30261d7f9e64a13ba2a6e79450c11cdadfec3b38badd3cfbb091",
+      "src/pasr/find_files.py": "a65901d4d934ca51204d3f877c63f55c7f86d721a18e96994aea382e84f979b9",
+      "src/pasr/mcp/server.py": "6c326b6f90fb235b6ceb4f07f37fdb6c411b8ee774258146b3fbf906b9bc0699"
+    },
+    "aggregate_fix_accuracy_claim": false
+  },
+  "source_grading": {
+    "answers": 200,
+    "complete": true,
+    "method": "Arm-blind coding-assistant source review, not independent human validation.",
+    "pre_inference_tls_clarification": {
+      "frozen_at": "2026-09-28T16:32:07+0200",
+      "before_any_replication_api_request": true,
+      "protocol_sha256": "5d28d1a9d1af6b76cf97d03446e4b6007bc3da55675ad2f8c2265bf3aa75f082",
+      "grading_cases_sha256": "6d1ca0225c675c181189bd2dd10d403a09ab81862ef8c24dd5c6a1a84a548008",
+      "scope": "Grading only. All 50 actor questions and source workspaces unchanged. Original datasets untouched.",
+      "correction": {
+        "case_id": "fresh-anyio-tls-shutdown-errors",
+        "criterion": "c1",
+        "previous_description": "SSL errors recognized as SSLEOFError or containing UNEXPECTED_EOF_WHILE_READING become BrokenResourceError in standard-compatible mode and EndOfStream otherwise; unrelated SSL errors are re-raised.",
+        "description": "Within the generic SSLError handler, SSLEOFError or UNEXPECTED_EOF_WHILE_READING becomes BrokenResourceError in standard-compatible mode and EndOfStream otherwise; other errors reaching that handler are re-raised. Earlier WantRead/WantWrite and SSLSyscallError handlers take precedence. Their mechanics are optional unless falsely described.",
+        "extra_source_range": "src/anyio/streams/tls.py:182-208"
+      },
+      "standards_sha256": "06bed632b2079bcaf1a25559ce5ece97d72d1a07f1158a250b2705dec915d57f",
+      "source_excerpt_comparisons_before_correction": 255,
+      "verified_source_files": 44
+    },
+    "duplicate_question_answer_verdicts_consistent": true
+  },
+  "verification": {
+    "trajectories": 200,
+    "requests": 866,
+    "completed_trajectories": 200,
+    "generation_failures": {},
+    "new_published_rate_cost_usd": 0.12869897500000005,
+    "combined_pilot_replication_cost_usd": 0.16143018500000006,
+    "usage": {
+      "input_tokens": 1934480,
+      "output_tokens": 74518,
+      "cache_read_tokens": 1286185,
+      "cache_write_tokens": 549945,
+      "reasoning_tokens": 0
+    },
+    "full_usage_and_cost_reconciliation": true,
+    "append_only_histories": true,
+    "unaltered_tool_observations": true,
+    "request_digests_verified": true,
+    "source_harness_and_rubric_hashes_unchanged": true,
+    "credential_scan_artifact_files": 1094,
+    "credential_leaks_found": false,
+    "measured_frozen_production_snapshot_unchanged": true,
+    "local_llm_used": false
+  },
+  "spending": {
+    "stages": {
+      "replication": {
+        "requests": 866,
+        "published_rate_cost_usd": 0.128698975
+      },
+      "repair_smoke": {
+        "requests": 8,
+        "published_rate_cost_usd": 0.0005834000000000001
+      },
+      "class_filter_confirmation": {
+        "requests": 2,
+        "published_rate_cost_usd": 7.420000000000001e-05
+      }
+    },
+    "this_continuation_requests": 876,
+    "this_continuation_trajectories": 204,
+    "this_continuation_published_rate_cost_usd": 0.129356575,
+    "prior_pilot_requests": 193,
+    "prior_pilot_trajectories": 52,
+    "prior_pilot_cost_usd": 0.032731210000000004,
+    "combined_requests": 1069,
+    "combined_trajectories": 256,
+    "combined_published_rate_cost_usd": 0.162087785,
+    "combined_study_cap_usd": 5,
+    "user_stated_credit_usd": 6,
+    "balance_queried": false,
+    "billing_caveat": "Calculated from observed provider token usage and published rates, including cache reads/writes; not an invoice or observed account balance. Excludes unmetered coding-assistant source review and local computation.",
+    "additional_inference_planned_for_this_iteration": false
+  },
+  "limitations": [
+    "Previously used research questions, disjoint from the eight-question OpenAI pilot; not a new research holdout.",
+    "One model configuration, one repetition, ten Python repositories; no universal or cross-language claim.",
+    "Bootstrap intervals are exploratory resampling of this convenience sample, not proof of population equivalence.",
+    "Caching affects recorded dollars; token comparisons include all cumulative input and output independently of cache discounts.",
+    "API dollars computed from usage and published rates, not account balance or invoice; source-review assistant compute excluded.",
+    "Schema/output byte diagnostics are bytes, not provider-token attribution.",
+    "Broad accuracy/token results describe the old snapshot, not the repaired production implementation. Targeted repair smokes establish correctness/compatibility, not aggregate quality gains.",
+    "The first post-fix smoke had successful API transport but exposed a semantic lookup defect. It is retained, not relabeled as a passing lookup.",
+    "Within blind review, optional details were not rigidly required. In particular, explaining CERT_NONE sufficed without enumerating cleared unused CA fields; codec-detection and optional Unicode behavior remained substantive. Review notes preserve these boundaries."
+  ],
+  "next_experiment": "Measure reduced or on-demand tool catalog exposure against baseline@4/@6 on a separately frozen set, retaining all source-quality failures and complete cumulative token accounting. Do not change ranking or force extra calls simultaneously.",
+  "security": {
+    "credential_not_echoed_or_committed": true,
+    "credential_loaded_from_authorized_conversation_only": true,
+    "original_conversation_still_contains_user_pasted_credential": true,
+    "rotate_credential_recommended": true
+  },
+  "artifacts": {
+    "raw_root": "eval/agent_bench/results/openai_replication_20260928",
+    "git_ignored": true,
+    "sha256": {
+      "protocol.json": "5d28d1a9d1af6b76cf97d03446e4b6007bc3da55675ad2f8c2265bf3aa75f082",
+      "grading_cases.json": "6d1ca0225c675c181189bd2dd10d403a09ab81862ef8c24dd5c6a1a84a548008",
+      "grading_addendum.json": "5c4da63104a9e3896944562be807f4a504937930df7c1289a85877c38c5651a6",
+      "run_replication.py": "9f309167f2fa6bd5525607608da2a8fa20428b3a8250e8335dab162c15d57f1d",
+      "audit_replication.py": "950480b8fb6438a1be204d845499b20d8f680ef0c38911b09b1d90c8909a6ec8",
+      "prepare_reviews.py": "04547eaa2fee15dc8478af3d8779142dd884b484d859a114e3202c3b4b9067a2",
+      "summarize_replication.py": "1d86fe77f95ca900fa1bc25c5e02493f460b48d8bc1f82113250ddbd9f7e4859",
+      "smoke_fixed_api.py": "955d086eee2dc5e8aad6eacbd41a1dcd681e22659d7e12e21291e831bfd680f6",
+      "verify_kind_filter_api.py": "e221c13e88f987e9f2a13aaa226f73f80474091c341be5b7a4c0310fb87f1274",
+      "spend_ledger.json": "a844e90164e7698e62cc02915e6358ec6f45b533054f29600622faebd9b69206",
+      "paired/results.json": "42542538a4a6d3e1f3a5daa91aeed0b4edfff8525782f236ccac399a1460ecb4",
+      "paired/manifest.json": "5d28d1a9d1af6b76cf97d03446e4b6007bc3da55675ad2f8c2265bf3aa75f082",
+      "grading/packets.json": "2ca25670ee14b3f9cc4fdebd22fcc48f45c407a71bcd6aec6f79d6aea1a1a917",
+      "grading/identities.json": "bdb85e4d8bced863debfaf560393eb7edb1f42159f8cb99397ceb8946b9af0ce",
+      "source_grades/grades.json": "ef7325f6ab4458c849e1aecb43902c4c5a5f9c58b51472f63c956c94f0be8f55",
+      "source_grades/manifest.json": "b17687693b8654bacce1fde4f450ab5e480bc0dae055e95f2393cbe353e5a7eb",
+      "source_summary.json": "a2503e7e3b4a39bb026f7aa117fe3672d063e7e06521384868e3de61ff657f02",
+      "integrity.json": "9962043efd42d7777a4404ef1b742d374b5d44a9f8011343f636429b1193a012",
+      "pilot_diagnosis.json": "8248871238ce406e59f766924b54180b16dcbca24d9a2d51f158d8b8f4432a04",
+      "catalog_diagnostic.json": "bd97ab4926162347fba644249e8cece0e56c1eec3d5a8f94a7b5a12825f9386b",
+      "kind_filter_observations.json": "49eb152c25bd87369b4beed3f22b7c86c7ffe578264c446e6182062fdd0f7d4e",
+      "production_repairs.json": "6f9489c538934c7c5593a3caa4ffa1fe723fbedcc1ba5ff894442087d313e053",
+      "final_repair_verification.json": "b4c7223a34727c25d96050b480dcbe3aebf0f9db15ff83b5d5c59056b24b332a",
+      "fixed_api_smoke/manifest.json": "7926f618a4a57553a0f33379961a165bf3c7a0a517bd77f058d9e52cdbe5db87",
+      "fixed_api_smoke/spend_ledger.json": "c8b7a6cbe65fa3e5f15f20cfd16a5f7aab914e70065f191f22f4e1ed568a77d7",
+      "fixed_api_smoke/results.json": "5ecda93688a3a12b94aa4a2194d70d359b2d80340e2c8d74563b290b2d2c4026",
+      "fixed_api_smoke/completion.json": "a8ff677733e76e6d26ed9461f597524c4d4277b7589fefd035d6b0ab7c007dc5",
+      "kind_filter_confirmation/manifest.json": "c580fed5856a809e7a757ef016ef16d9268f31b7777bd29fbb7a2fd483c2b622",
+      "kind_filter_confirmation/spend_ledger.json": "94ad1600d00e12e8bbde713ac533e261a881489e09b17a5e2ff40b12ddecac0b",
+      "kind_filter_confirmation/results.json": "dfcb2694fb2500ef5bd8b182d093bb8b932897426cec2d27f2422494f22e60d5",
+      "kind_filter_confirmation/completion.json": "184140de7e1848023a2770c1be33e32591a1469c6308bcdb731ff0db8ea45ea5",
+      "review_anyio.json": "8e1ceba321b1beac664894c9ff0b72a7b1aef9723df6e0d226f71703e594ec28",
+      "review_attrs.json": "a8ccf6f2b9ccdd75ca6df0abebb6d2f56a2db25bac33290d3bd8f800a9386593",
+      "review_click.json": "0dd6087278d5fb76f2354e9be0cadc8311c0441a8ca5aee715c6214554b91171",
+      "review_httpx.json": "0a8770598cbe90eac8d87d08913553993ecb2a92943a1e2d8462bfdf64540a90",
+      "review_jinja.json": "172708d79e269713c0227de903342f5f894675b489e4454710036c387940b11d",
+      "review_packaging.json": "1c6afc9446086094ff1866501028e1844c679bd47c4ce39083f020da1ad0ad2d",
+      "review_pluggy.json": "59f26a9dfeb71c57a678cb93a88f595cae495253cdd5738fd0c8bb2eb502fe8d",
+      "review_requests.json": "ab5dc4749d9ef9fcedf267fac94c429b680220d172b382a253a2bd44b1af9011",
+      "review_starlette.json": "a49cf5eeee042ecb9dd19d5dde2b1e7d82bce2197b3c1fdc32a1aca287441430",
+      "review_typer.json": "20de0970261bff0f1745505351473e13050128bb31da054c57fdd02c30d26400"
+    }
+  }
+}
