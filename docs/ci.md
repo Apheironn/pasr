@@ -120,13 +120,15 @@ From the current PASR checkout root, with Python **3.10+**:
 
 ```bash
 python -m pip install build
-python -m build --outdir dist/0.3.0
-python scripts/smoke_dist.py dist/0.3.0
+python -m build --outdir dist/first-use-source
+python scripts/smoke_dist.py dist/first-use-source
 ```
 
-Use a version-specific, otherwise empty output directory so older artifacts in
-`dist/` are preserved. The smoke deliberately refuses to guess between multiple
-wheels or source distributions.
+Use a new, otherwise empty output directory so existing release artifacts are
+preserved. Do not rebuild over the published `dist/0.3.0` files. The smoke refuses
+to guess between multiple wheels or source distributions. The current script
+checks the unreleased doctor feature: use it with artifacts from this checkout,
+not with the older published 0.3.0 package.
 
 The smoke script creates separate clean virtual environments for the built wheel
 and source distribution. It exercises installed CLI entry points and a real MCP
@@ -134,6 +136,11 @@ stdio connection from outside the source tree, so source-path imports cannot
 stand in for an installed package. Building and installing may download build
 requirements and runtime dependencies; the smoke does not require an answering
 model or hosted-model API credentials.
+
+It also invokes the installed `pasr doctor --json` and compares the inspected
+fixture's files and existing `.pasr/` state before and after. Doctor must exercise
+its own disposable MCP fixture without changing that workspace. Failure/deadline,
+report privacy and invalid-option boundaries are covered by the source tests.
 
 The distribution CI job covers Linux and Windows with Python 3.10 and 3.12.
 This documents the configured checks, not a claim that remote jobs have already

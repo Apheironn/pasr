@@ -108,6 +108,10 @@ The default five-tool catalog is unchanged.
 
 The time windows below are planning targets, not promises. Advance on observed
 results rather than declaring a milestone complete because configuration exists.
+The next iteration is source-only: improve first-use diagnosis and voluntary
+feedback without a new package release, retrieval changes, or edits to frozen
+evaluation records. The release evidence above remains historical evidence for
+0.3.0, not verification of this iteration.
 
 | Milestone | State | Acceptance criterion |
 |---|---|---|
@@ -115,8 +119,10 @@ results rather than declaring a milestone complete because configuration exists.
 | First real client recipe | Verified in a narrow controlled task | Model-selected PASR calls and source-supported relative citations; retain setup failures and the exact client/model/configuration |
 | Public 0.3.0 release | Verified on GitHub and PyPI, with matching artifacts and a fresh PyPI install | Promote exact green-CI artifacts; verify GitHub and PyPI publication separately |
 | MCP Registry listing | Published and verified active | Exact server/package version, stdio transport and required workspace argument in the public registry response |
+| Installed-runtime doctor | Verified locally from source and built wheel/sdist; not in published 0.3.0 | Observe installed-runtime CLI/MCP checks in an isolated fixture, timeout/failure behavior, sanitized reports, and no user-project source or `.pasr/` access |
+| Structured first-use/task feedback | Form and chooser schemas validated; authenticated submission and outside feedback unverified | Offer public-posting warnings, required privacy confirmation, and usable installation/task forms; review actual reports without requiring private material |
 | Independent usage | Pending | Target five outside installations and three users returning to their own tasks within two weeks; record failures and abandonment |
-| Fresh task-level validation | Pending | Freeze new tasks, baselines and decision rules before running; report success, material errors, time, intervention and total provider cost together |
+| Fresh task-level validation | Pending; gated on workflow selection and a frozen protocol | Freeze never-evaluated tasks, baselines, budgets and decision rules before any calls; report quality, errors, time, intervention and complete usage/cost or explicit unknowns together |
 | First paid pilot | Pending | One team pays for a bounded assessment/integration on its own workflow; payment and useful delivery, not interest or stars, establish the milestone |
 
 ### 1. Maintain the public release and reproducible demonstration
@@ -133,33 +139,93 @@ Keep interactive approval as the normal starting point. Preapprove only a known
 server/workspace for unattended use; a host's read-only shell sandbox does not
 sandbox an independently started MCP server.
 
-### 2. Learn from outside users before adding integrations
+### 2. Make first use diagnosable without collecting source
+
+The source iteration implements `pasr doctor`; it is not in published 0.3.0.
+On Windows/Python 3.12, the source suite passed 552 tests with one symlink skip,
+and both built wheel/sdist installations passed the real CLI/MCP/doctor smoke.
+A separate actual sleeping MCP subprocess was terminated on a 1.5-second protocol
+deadline; the failed diagnostic returned after cleanup in about 3.5 seconds.
+The
+[source-only command](install/claude-code.md#optional-diagnostic-for-the-unreleased-source-iteration)
+uses the same installed Python runtime to probe actual MCP initialization, the
+default tool catalog, and a budgeted selection in a disposable fixture. For the
+requested workspace, check only existence and directory type; never inspect or
+write user-project sources or `.pasr/`.
+
+Acceptance requires human-readable and JSON results with runtime versions,
+individual pass/fail/skipped checks and explicit limitations; finite timeout
+handling; and meaningful success, diagnostic-failure and invalid-option exits.
+Reports must omit user absolute paths, source contents, environment values, raw
+stderr and exception messages. No paid model/API request is part of this check.
+Disclose initial dependency setup and possible first-use tokenizer encoding
+downloads rather than promising a fully network-free first run. Client
+registration, GUI approvals, model behavior and real-task quality remain outside
+the diagnostic. A local diagnostic pass is neither adoption nor client acceptance.
+
+Ship two opt-in issue forms:
+[installation trouble](https://github.com/Apheironn/pasr/issues/new?template=installation-trouble.yml)
+and [real-task feedback](https://github.com/Apheironn/pasr/issues/new?template=real-task-feedback.yml).
+Collect known versions, client/OS, install method, approximate time to result or
+abandonment, expected/observed behavior and sanitized errors. Task reports also
+record first/repeat/disabling use, self-assessed outcome and extra manual reads
+or interventions. Do not require private code, repository links, transcripts or
+cost numbers. Published 0.3.0 users can report without doctor. Both forms warn
+that posting is public and require confirmation of no secrets/private source;
+security bugs go to the existing private advisory route. Keep blank issues for
+other legitimate reports.
+
+Review actual reports for recurring setup failures and workflow friction; keep
+unknowns, abandonment and guided demos distinct from independent use. Form
+availability is not proof that outside users have submitted or benefited from
+them. The form and chooser definitions pass JSON Schema validation. Authenticated
+submission and outside-user results remain separate from local runtime checks.
+
+### 3. Learn from outside users before adding integrations
 
 During the first two weeks after release, target roughly ten focused developer
-conversations and five independent installations. Record client/model versions,
-time to first useful result, setup/permission failures, task outcome, extra manual
-reads, repeat use and reasons for disabling PASR. User counts are targets, not
-observed traction. Do not collect private source or transcripts without consent.
+conversations and five independent installations. Use the voluntary forms to
+record client/model versions, time to first useful result, setup/permission
+failures, self-assessed task outcome, extra manual reads, repeat use and reasons
+for disabling PASR. User counts are targets, not observed traction. Public forms
+must not solicit private source or transcripts; private follow-up, if needed,
+requires separate consent and an agreed safe channel.
 
 Prefer teams that control their agent orchestration and already care about source
 selection or task-level cost. Fixed-price IDE subscribers may not benefit
 financially from lower token usage. Choose one recurring workflow from the
 observations rather than broadening the catalog to satisfy hypothetical users.
 
-### 3. Validate that workflow on fresh tasks
+### 4. Validate that workflow on fresh tasks
 
-Use never-evaluated repository tasks, including failures, and freeze comparison
-rules first. Start with competent native search/bounded reads; add Serena when
-the selected workflow overlaps its symbol-navigation capabilities. Prior
-Aider/Repomix component results do not rank complete competing products.
+Do not begin new model calls merely because the diagnostic or forms exist.
+First identify a concrete recurring workflow from outside-user observations.
+Before any evaluation calls, freeze new, never-evaluated repository tasks,
+references/scoring rubrics, baseline configurations, prompts, tool/call/token
+budgets, stopping and retry rules, model versions, and quality/material-error/
+efficiency decision thresholds. Record the protocol revision so later changes
+cannot silently move the gate.
 
-Measure accepted task completion, material errors, complete provider-token/cost
-accounting, wall time and human intervention. Smaller returned context alone is
-not success. Keep interruption accounting and uncertainty visible. Reusing the
-October 3 questions is exploratory, never a fresh holdout. Promote a retrieval
-change only when the relevant task-level quality and efficiency gates pass.
+Start with competent native search/bounded reads; add Serena when the selected
+workflow overlaps its symbol-navigation capabilities. Prior Aider/Repomix
+component results do not rank complete competing products. Do not change
+retrieval behavior or rewrite frozen historical records in this first-use
+iteration.
 
-### 4. Test paid value without building a speculative platform
+Report every attempted task, including failures, interruptions and retries.
+Measure accepted task completion, material errors, wall time, human intervention,
+and complete provider-token/cost accounting together. Include setup and failed
+attempt costs where incurred, state the accounting scope and pricing basis, and
+mark unrecoverable usage as unknown rather than zero. Incomplete totals cannot
+support a total-cost win. Smaller returned context alone is not success.
+
+The October 3 reserved set has been consumed: reusing those questions or tuning
+on their results is exploratory, never a fresh holdout. Preserve the original
+records and failed gates. Promote a retrieval change only after the frozen
+task-level quality and efficiency gates pass; report an inconclusive or failed
+gate as such, not as a broad quality/cost claim.
+
+### 5. Test paid value without building a speculative platform
 
 Offer a tightly scoped assessment/integration: one team, one repository, one
 workflow, an agreed baseline and a source-backed report. Do not guarantee savings
@@ -172,7 +238,7 @@ outreach and pilots, review repeat usage and willingness to pay. If both are wea
 reconsider the target workflow or keep PASR as a focused maintained tool and
 technical case study rather than expanding a subscription platform.
 
-### 5. Turn observed work into reusable public evidence
+### 6. Turn observed work into reusable public evidence
 
 Alongside user learning, publish a concise case study and reproducible demo:
 system boundaries, artifact installation, real client behavior, failed evaluation
