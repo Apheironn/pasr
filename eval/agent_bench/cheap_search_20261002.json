@@ -1,0 +1,94 @@
+{
+  "status": "development_gate_failed_change_reverted",
+  "archive": "results/cheap_search_20261002",
+  "change": "One change against powered_split_20261001: search_code context cap 1,500 -> 1,000 tokens (read_code unchanged; catalog differs only in that number). Reverted after this study: production source is again identical to the powered-study candidate.",
+  "offline_prediction": "Replay of the powered study (168 recorded searches, byte-exact) predicted 0.80x native tokens and ~81/100 supported, holding the model actions fixed.",
+  "design": "Same 100 previously queried questions, three fresh arms, gpt-6-luna, six-call stop, no retries; reserved unseen-20260929-* never loaded. Launched detached; no interruption.",
+  "profiles": {
+    "native": {
+      "n": 100,
+      "supported": 80,
+      "material_errors": 3,
+      "strict_all": 80,
+      "mean_tokens": 9050.56,
+      "median_tokens": 7982.5,
+      "tool_calls": 397,
+      "requests": 497,
+      "generation_failures": 0
+    },
+    "current": {
+      "n": 100,
+      "supported": 76,
+      "material_errors": 1,
+      "strict_all": 76,
+      "mean_tokens": 11149.68,
+      "median_tokens": 9138.5,
+      "tool_calls": 394,
+      "requests": 494,
+      "generation_failures": 0
+    },
+    "split": {
+      "n": 100,
+      "supported": 87,
+      "material_errors": 4,
+      "strict_all": 87,
+      "mean_tokens": 9285.61,
+      "median_tokens": 6868.0,
+      "tool_calls": 303,
+      "requests": 403,
+      "generation_failures": 0
+    }
+  },
+  "development_gate": {
+    "supported_at_least_native": true,
+    "supported_at_least_current": true,
+    "material_errors_no_more_than_native": false,
+    "material_errors_no_more_than_current": false,
+    "tokens_at_most_85pct_native": false,
+    "tokens_below_current": true
+  },
+  "gate_passed": false,
+  "bootstrap_95_question_paired": {
+    "split_minus_native_supported": [
+      -0.02,
+      0.16
+    ],
+    "split_over_native_mean_tokens": [
+      0.8979,
+      1.1731
+    ],
+    "split_minus_current_supported": [
+      0.03,
+      0.19
+    ],
+    "split_over_current_mean_tokens": [
+      0.7251,
+      0.9501
+    ]
+  },
+  "split_vs_native_token_ratio": 1.026,
+  "mechanism": "The model compensated for smaller searches with more calls (303 vs 267; one-call runs 21 -> 12, six-call runs 7 -> 11). Runs cost ~4k tokens when the first search already holds all graded evidence and ~13k when it holds under half; the smaller cap made complete first searches rarer (first-query replay: 1,000 -> 39/200, 1,500 -> 60/200).",
+  "replication": "Native scored 69 then 80 on the same questions and code (run-to-run spread ~11 points). Split scored 85 then 87 and cost 0.970x then 1.026x native tokens; versus the control it was 0.862x and 0.833x.",
+  "next_option_offline": "Capping only the split reader at 4 calls is estimated at 8,347 tokens on the powered run (0.846x that run native) with complete-evidence status unchanged in 99/100 runs; this breaks the equal-stop rule of the gate and was not run.",
+  "limitations": [
+    "Previously queried questions; development evidence.",
+    "One repetition, one model.",
+    "Arm-blind coding-assistant review; 15 of 20 first-wave reviewers were cut off by usage limits and their groups re-run in waves; all 300 reviews passed integrity checks."
+  ],
+  "accounting": {
+    "trajectories": 300,
+    "api_requests": 1394,
+    "charge_bound_usd": 0.22414786,
+    "two_study_total_usd": 0.462309
+  },
+  "hashes": {
+    "protocol.json": "2fd7755f234eb822bf25b652f66971230fba0b643404e29ea4a99941c77fa484",
+    "results.json": "805f020549df4b8bf3427ff1feab58b61bb8b6fcab1a82bc52d4ffbcb3e243af",
+    "cases.json": "2ac72ab8f73ce4e6c1096456b43e8d02044b6b3fdf4904b5811dd5f6c21dc43e",
+    "analysis.json": "97f95e9cbb4057f150fd0f9160a3b68b1aa7df29686dd1fc6acba855bcdf9ed6",
+    "spend_ledger.json": "27225127008c429aac8c666ca3d953528112743aa96f4dd210cc4de20e65ac89",
+    "run_powered.py": "ac792829eef61a185964fec416bf1d1cc19636e02d30602a51f8a65689157bf6",
+    "analyze.py": "73bec7bf42f2df8d41ac5e9f089c4bdbf8b65f327a85e684bf7abb6c49b51345",
+    "prepare_grading.py": "95a771c7cc7c8ae06f2e6d5d9864d733d83918288b2004ca7e2e9f46071f9a0b"
+  }
+}

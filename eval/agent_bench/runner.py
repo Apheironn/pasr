@@ -14,18 +14,17 @@ API_KEY_ENV = "ANTHROPIC_API_KEY"
 MAX_TURNS = 18
 MAX_OUT = 1200
 
-# A client-side stopping policy, on by default and applied to both arms so it handicaps
-# neither. The server can refuse a call but it cannot end a turn: a refused run keeps
-# going, re-issuing refused calls or falling back to the host's own grep and read, and 86%
-# of every token in this benchmark is spent after the answer is already in the transcript.
-# Once the caller has spent this many tool calls the loop stops offering them, so the next
-# reply has to be the answer.
+# A client-side stopping policy shared by both arms and backends. The historical
+# local analysis's "86% after the answer" figure used ground-truth anchor mentions,
+# not a source-grounded sufficiency check or a general semantic-correctness result.
+# The host owns stopping; the stateless server does not know question boundaries.
+# This threshold is checked between model turns: an accepted batch may cross it,
+# then the next request forbids further tools and explicitly requests an answer.
 #
-# Six, read off the holdout against its own no-policy control. There is a cliff between
-# four and six, not a slope, which is what makes six safe to default: at six the run keeps
-# every answer it had (10/12) for 58% fewer tokens, at eight it keeps the same answers and
-# costs 53% more than six, and at four it loses three of them. Set PASR_BENCH_STOP_AFTER
-# to another value, or to 0 to turn the policy off.
+# Six was selected from a historical local keyword-localization comparison:
+# 10/12 proxy passes with 58% fewer tokens than its no-policy control. This is
+# a benchmark policy, not a guarantee of sufficient evidence for a new question.
+# Set PASR_BENCH_STOP_AFTER to another threshold, or 0 to disable it.
 STOP_AFTER_CALLS = int(os.environ.get("PASR_BENCH_STOP_AFTER", "6") or 0)
 STOP_INSTRUCTION = (
     "You have used your tool budget for this question. Do not call any more tools. "
@@ -102,12 +101,18 @@ class Anthropic:
     def run(self, question: str, tools: list[dict], executor) -> dict:
         messages = [{"role": "user", "content": question}]
         tin = tout = calls = turns = 0
+        logical_input = 0
+        stopped = False
         final = ""
         failure = None
         log: list[dict] = []
         t0 = time.perf_counter()
         for _ in range(MAX_TURNS):
             turns += 1
+            stopping = bool(STOP_AFTER_CALLS) and calls >= STOP_AFTER_CALLS
+            if stopping and not stopped:
+                stopped = True
+                messages.append({"role": "user", "content": STOP_INSTRUCTION})
             try:
                 resp = self.client.messages.create(
                     model=self.model,
@@ -115,12 +120,18 @@ class Anthropic:
                     system=SYSTEM_PROMPT,
                     tools=schemas.anthropic(tools),
                     messages=messages,
+                    **({"tool_choice": {"type": "none"}} if stopping else {}),
                 )
             except Exception as exc:
                 final = f"(backend error: {exc})"
                 failure = "backend_error"
                 break
             tin += resp.usage.input_tokens
+            logical_input += (
+                resp.usage.input_tokens
+                + (getattr(resp.usage, "cache_read_input_tokens", 0) or 0)
+                + (getattr(resp.usage, "cache_creation_input_tokens", 0) or 0)
+            )
             tout += resp.usage.output_tokens
             messages.append({"role": "assistant", "content": resp.content})
             uses = [b for b in resp.content if b.type == "tool_use"]
@@ -130,6 +141,10 @@ class Anthropic:
                     failure = "length_truncated"
                 elif not final.strip():
                     failure = "empty_answer"
+                break
+            if stopping:
+                final = "(backend called a tool after tools were forbidden)"
+                failure = "tool_choice_violation"
                 break
             results = []
             for b in uses:
@@ -146,8 +161,10 @@ class Anthropic:
             "answered": failure is None,
             "failure": failure,
             "input_tokens": tin,
+            "logical_input_tokens": logical_input,
             "output_tokens": tout,
             "tool_calls": calls,
+            "stop_after": STOP_AFTER_CALLS,
             "turns": turns,
             "elapsed_s": round(time.perf_counter() - t0, 1),
             "log": log,
@@ -256,8 +273,10 @@ class Local:
             "answered": failure is None,
             "failure": failure,
             "input_tokens": tin,
+            "logical_input_tokens": tin,
             "output_tokens": tout,
             "tool_calls": calls,
+            "stop_after": STOP_AFTER_CALLS,
             "turns": turns,
             "elapsed_s": round(time.perf_counter() - t0, 1),
             "log": log,

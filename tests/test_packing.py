@@ -7,6 +7,7 @@ from pasr.packing import (
     pack_score_only,
     pack_with_active_window,
 )
+from pasr.tokenize import WhitespaceTokenizer
 
 
 def _candidate(
@@ -77,6 +78,36 @@ class EvidencePackingTests(unittest.TestCase):
         self.assertEqual(score_result.covered_query_keywords, ("alpha",))
         self.assertEqual(coverage_result.covered_query_keywords, ("alpha", "beta"))
         self.assertEqual(coverage_result.selected[0].start, 64)
+
+    def test_overlapping_source_is_unioned_once_within_budget(self):
+        source = "alpha = 1\nleft = 2\nshared = 3\nbridge = 4\nright = 5\nbeta = 6\n"
+        lines = source.splitlines(keepends=True)
+        left = _candidate(
+            0,
+            12,
+            "".join(lines[:4]),
+            2.0,
+            source="example.py",
+            metadata={"line_start": 1, "line_end": 4, "provenance": "example.py:1-4"},
+        )
+        for conflicting in (False, True):
+            with self.subTest(conflicting=conflicting):
+                right_text = "".join(lines[2:])
+                if conflicting:
+                    right_text = right_text.replace("shared = 3", "shared = 9")
+                right = _candidate(
+                    6,
+                    18,
+                    right_text,
+                    1.0,
+                    source="example.py",
+                    metadata={"line_start": 3, "line_end": 6, "provenance": "example.py:3-6"},
+                )
+                result = pack_coverage_aware([left, right], "alpha beta", budget_tokens=18)
+
+                self.assertEqual("".join(span.text for span in result.selected), left.text if conflicting else source)
+                self.assertEqual(result.used_tokens, 12 if conflicting else 18)
+                self.assertEqual(result.covered_query_keywords, ("alpha",) if conflicting else ("alpha", "beta"))
 
     def test_dependency_order_places_definition_before_consumer(self):
         consumer = _candidate(
@@ -153,6 +184,24 @@ class EvidencePackingTests(unittest.TestCase):
 
         self.assertEqual([span.start for span in result.selected], [0, 64, 224])
         self.assertEqual(result.skipped_overlap_count, 2)
+
+    def test_exact_active_window_budget_includes_required_context_in_each_proposal(self):
+        tokenizer = WhitespaceTokenizer()
+        prefix = _candidate(0, 2, "header setup", 0.0)
+        tail = _candidate(4, 6, "tail cleanup", 0.0)
+        recalled = _candidate(2, 4, "needle answer", 2.0)
+
+        def measure(spans):
+            text = "# context\n" + "\n\n".join(f"[{span.source}]\n{span.text}" for span in spans)
+            return tokenizer.count(text)
+
+        for strategy in ("score_only", "coverage_aware"):
+            with self.subTest(strategy=strategy):
+                result = pack_with_active_window([prefix], [tail], [recalled], "needle", 10, strategy, measure=measure)
+                self.assertEqual(result.selected, (prefix, tail))
+                self.assertEqual(result.used_tokens, measure(result.selected))
+                self.assertEqual(result.used_tokens, 8)
+                self.assertLessEqual(result.used_tokens, result.budget_tokens)
 
     def test_active_window_rejects_an_impossible_budget(self):
         prefix = _candidate(0, 64, "header", 0.0)

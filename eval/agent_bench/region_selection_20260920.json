@@ -1,0 +1,407 @@
+{
+  "experiment": "Distinct read regions and bounded enclosing-function context",
+  "date": "2026-09-20",
+  "decision": "No production promotion; answer-quality gate failed.",
+  "production_source_changed": false,
+  "question_labels": {
+    "primary_Q1": "Plugin stopping and garbage collection",
+    "primary_Q2": "Ctrl-C propagation and cooperative cancellation",
+    "holdout_Q1": "Recursion-limit enforcement",
+    "holdout_Q2": "Last-command exit-status selection and storage"
+  },
+  "sample": {
+    "reused_questions": 4,
+    "recorded_contexts_per_variant": 13,
+    "scope_ablations_per_variant": 3,
+    "retrieval_variants": 6,
+    "retrieval_calls": 96,
+    "unique_question_contexts_reviewed": 49,
+    "model_calls": 64,
+    "recorded_answers_per_method": 26,
+    "ablation_answers_per_method": 6,
+    "fresh_questions_reserved": 2,
+    "fresh_questions_executed": 0
+  },
+  "protocol": {
+    "goal": "Test distinct bounded read-region quotas in locator retrieval and bounded enclosing-function context in definition retrieval. No production edits before gates.",
+    "variants": {
+      "locator_control": {
+        "root": "control",
+        "method": "locator_hints"
+      },
+      "locator_identifier": {
+        "root": "identifier",
+        "method": "locator_hints"
+      },
+      "locator_dedup": {
+        "root": "locator_dedup",
+        "method": "locator_hints"
+      },
+      "locator_identifier_dedup": {
+        "root": "identifier_dedup",
+        "method": "locator_hints"
+      },
+      "definitions_control": {
+        "root": "definitions_control",
+        "method": "definitions"
+      },
+      "definitions_parent": {
+        "root": "definitions_parent",
+        "method": "definitions"
+      }
+    },
+    "changes": {
+      "dedup": "Within each file, retain the highest line-score/earliest-line representative of each identical _read_lines range BEFORE per_file truncation. Do not merge merely overlapping or different windows, change matching/ranking, or affect find_usages. Test both original and archived identifier-component matching.",
+      "parent": "In archived combined definition retrieval, promote an innermost function hit to its nearest strictly containing function only when that parent spans at most the existing _READ_FUNCTION_LINES=40. Never promote to impl/class/module; retain innermost if parent is larger. Existing region deduplication, exact citations and budget-aware partial fallback remain.",
+      "decomposition": "Definition retrieval already deduplicates owner spans before quotas. There is no meaningful extra definition-dedup variant; do not invent an identical combined arm."
+    },
+    "source_evaluation": {
+      "cases": "Same 13 recorded and 3 separately reported scope ablations; no query tuning. Fresh questions reserved until candidate selected.",
+      "budget": 1800,
+      "hash_seed": "0",
+      "grading": "Five criteria per question, 0 absent, 0.5 meaningful incomplete, 1 all essential causal links. Judge supported facts directly from supplied source. Canonical anchors are examples, not exclusive evidence. Getter signatures/clones can support shared-state types. Names alone cannot establish behavior. Callback-driven I/O cancellation is not atomic-flag polling; it can support an alternative checkpoint partially without establishing the cooperative-limit component.",
+      "blinding": "Group identical context hashes within each question; random IDs hide variant labels and token costs. Source-grounded reviewers grade all variants before method mapping/aggregates.",
+      "model_gate": "Candidate strictly improves recorded-scope equal-question macro semantic-evidence score over locator_control and does not lower any question. At most one candidate proceeds: greatest macro score, then lower mean context tokens, then variant name. Archived control variants are comparators, not eligible candidates. Canonical coverage remains descriptive only."
+    },
+    "model_evaluation": {
+      "protocol": "Same source-only prompt, Qwen3.5-9B Q4_K_M, temperature .2, seeds20260923/20260924, max_output1200, context32768, thinking off, no tools/retries; 64 paired calls for selected candidate vs fresh locator baseline.",
+      "quality_gate": "Strictly greater equal-question macro causal score, no question-score regression, no increase in recorded answers with material false claims. Costs and grounding reported, not hidden.",
+      "fresh_holdout": "Only if quality gate passes: evaluate the two reserved questions with unchanged deterministic queries and two seeds, then actual free-agent workflow. Do not use holdouts to select or tune candidates."
+    },
+    "promotion": "Require successful focused red/green regressions, full suite, no causal/false-answer regression and lower provider tokens on actual paired agent runs before production promotion. Failure at an earlier gate makes later stages ineligible, not unfinished. No general savings claim from small samples.",
+    "no_tuning": "Freeze candidate code hashes before replay. Any discovered implementation bug requires documented amendment and restarting affected comparisons; do not tune parameters from outcomes."
+  },
+  "conditional_agent_protocol": {
+    "status": "Conditional protocol detail fixed before semantic grading, candidate selection or model inference.",
+    "questions": "The two reserved fresh_holdouts.json questions only; full corpus scope. No fresh cases used for tuning.",
+    "arms": "locator_control and the one source/answer-qualified candidate, using their actual MCP tool schemas and handlers with the same shared agent harness.",
+    "runs": "Two paired repetitions per question and arm: eight agent runs total; seeds 20260923 and 20260924, randomized arm/question order.",
+    "generation": "Qwen3.5-9B Q4_K_M, context32768, temperature0.2, thinking disabled, maximum18 model turns, maximum1200 output tokens per turn, no automatic retries.",
+    "grading": "Five frozen criteria per fresh question; method/cost-blinded source-grounded causal grading, false claims and unsupported claims separately.",
+    "promotion_gate": "Full suite passes; no per-question causal-score regression, no increase in materially false answers or turn-limit failures, and strictly lower total provider input+output tokens on the paired agent cohort. Report all raw runs and exploratory small-sample limitations.",
+    "earlier_gate_failure": "Do not run conditional stages when the recorded-scope semantic or answer-quality gate fails."
+  },
+  "protocol_hashes": {
+    "plan.json": "eba7c520c943a926d411d9271664fc449b5192387d4054be48a69b591f6d8790",
+    "fresh_holdouts.json": "4126f4feee43f3fd6583704056fc2bb683cad5a3fd6a1d512ac220aa6d53af33",
+    "semantic_rubrics.json": "cbbbef6a4cc7b173c84d945fce9fea913a4f5c7d2b7fcb1942bea3e800000498",
+    "cases.json": "226fefe219dec69200b1f389b87561dca51563cfea7c23eabf00b4d4b1b78283",
+    "anchors.json": "89b7f810944893786491b08ff4722a8cb88c46e88a7a476d397d7bb3d1149920"
+  },
+  "source_results": {
+    "locator_control": {
+      "by_question": {
+        "primary_Q1": 1.0,
+        "holdout_Q2": 0,
+        "holdout_Q1": 2.0,
+        "primary_Q2": 2
+      },
+      "macro_score": 1.25,
+      "mean_context_tokens": 651.2307692307693,
+      "eligible": false
+    },
+    "locator_identifier": {
+      "by_question": {
+        "primary_Q1": 1.0,
+        "holdout_Q2": 0.08333333333333333,
+        "holdout_Q1": 2.0,
+        "primary_Q2": 2
+      },
+      "macro_score": 1.2708333333333333,
+      "mean_context_tokens": 650.2307692307693,
+      "eligible": false
+    },
+    "locator_dedup": {
+      "by_question": {
+        "primary_Q1": 1.0,
+        "holdout_Q2": 0,
+        "holdout_Q1": 2.0,
+        "primary_Q2": 2
+      },
+      "macro_score": 1.25,
+      "mean_context_tokens": 686.6923076923077,
+      "eligible": false
+    },
+    "locator_identifier_dedup": {
+      "by_question": {
+        "primary_Q1": 1.0,
+        "holdout_Q2": 0.08333333333333333,
+        "holdout_Q1": 2.0,
+        "primary_Q2": 2
+      },
+      "macro_score": 1.2708333333333333,
+      "mean_context_tokens": 696.2307692307693,
+      "eligible": true
+    },
+    "definitions_control": {
+      "by_question": {
+        "primary_Q1": 1.5,
+        "holdout_Q2": 0.16666666666666666,
+        "holdout_Q1": 4.0,
+        "primary_Q2": 2.8333333333333335
+      },
+      "macro_score": 2.125,
+      "mean_context_tokens": 1708.6923076923076,
+      "eligible": false
+    },
+    "definitions_parent": {
+      "by_question": {
+        "primary_Q1": 1.5,
+        "holdout_Q2": 0.16666666666666666,
+        "holdout_Q1": 4.0,
+        "primary_Q2": 2.8333333333333335
+      },
+      "macro_score": 2.125,
+      "mean_context_tokens": 1713.1538461538462,
+      "eligible": true
+    }
+  },
+  "selected_candidate": "definitions_parent",
+  "answer_results": {
+    "locator_control": {
+      "recorded": {
+        "answers": 26,
+        "by_question": {
+          "holdout_Q1": 2.0,
+          "holdout_Q2": 0,
+          "primary_Q1": 0.625,
+          "primary_Q2": 1.5833333333333333
+        },
+        "macro_causal_score": 1.0520833333333333,
+        "answers_with_material_false_claims": 6,
+        "answers_with_unsupported_claims": 11,
+        "fully_correct": 0,
+        "by_rep": {
+          "1": 1.1458333333333333,
+          "2": 0.9583333333333333
+        }
+      },
+      "workspace": {
+        "answers": 6,
+        "by_question": {
+          "holdout_Q2": 0
+        },
+        "macro_causal_score": 0,
+        "answers_with_material_false_claims": 0,
+        "answers_with_unsupported_claims": 0,
+        "fully_correct": 0,
+        "by_rep": {
+          "1": 0,
+          "2": 0
+        }
+      }
+    },
+    "definitions_parent": {
+      "recorded": {
+        "answers": 26,
+        "by_question": {
+          "holdout_Q1": 3.75,
+          "holdout_Q2": 0.125,
+          "primary_Q1": 0.75,
+          "primary_Q2": 2.3333333333333335
+        },
+        "macro_causal_score": 1.7395833333333335,
+        "answers_with_material_false_claims": 13,
+        "answers_with_unsupported_claims": 20,
+        "fully_correct": 0,
+        "by_rep": {
+          "1": 1.625,
+          "2": 1.8541666666666667
+        }
+      },
+      "workspace": {
+        "answers": 6,
+        "by_question": {
+          "holdout_Q2": 0
+        },
+        "macro_causal_score": 0,
+        "answers_with_material_false_claims": 2,
+        "answers_with_unsupported_claims": 2,
+        "fully_correct": 0,
+        "by_rep": {
+          "1": 0,
+          "2": 0
+        }
+      }
+    }
+  },
+  "quality_gate": {
+    "higher_macro_causal_score": true,
+    "no_question_regression": true,
+    "no_increase_in_material_false_answers": false,
+    "passed": false
+  },
+  "costs": {
+    "recorded": {
+      "locator_control": {
+        "answers": 26,
+        "input_tokens": 22108,
+        "output_tokens": 9074,
+        "total_tokens": 31182
+      },
+      "definitions_parent": {
+        "answers": 26,
+        "input_tokens": 53134,
+        "output_tokens": 14279,
+        "total_tokens": 67413
+      }
+    },
+    "workspace": {
+      "locator_control": {
+        "answers": 6,
+        "input_tokens": 5462,
+        "output_tokens": 1385,
+        "total_tokens": 6847
+      },
+      "definitions_parent": {
+        "answers": 6,
+        "input_tokens": 12118,
+        "output_tokens": 2933,
+        "total_tokens": 15051
+      }
+    },
+    "all": {
+      "locator_control": {
+        "answers": 32,
+        "input_tokens": 27570,
+        "output_tokens": 10459,
+        "total_tokens": 38029
+      },
+      "definitions_parent": {
+        "answers": 32,
+        "input_tokens": 65252,
+        "output_tokens": 17212,
+        "total_tokens": 82464
+      }
+    }
+  },
+  "recorded_total_token_ratio": 2.1619203386569175,
+  "raw_material_false_answer_counts": {
+    "locator_control": {
+      "recorded": 7,
+      "workspace": 0,
+      "all": 7
+    },
+    "definitions_parent": {
+      "recorded": 14,
+      "workspace": 2,
+      "all": 16
+    }
+  },
+  "adjudications": [
+    {
+      "id": "A036",
+      "change": "Remove the material-false-claim flag; retain all five zero criterion scores.",
+      "reason": "The complete answer explicitly withholds actual process termination and describes forwarding a signal packet. The earlier phrase about stopping a running plugin is ambiguous between interrupting work and terminating its process. Do not strengthen it into an unequivocal process-kill assertion. This is the same conservative treatment used for identical wording in the previous study.",
+      "original_claims": [
+        {
+          "quote": "mechanisms for stopping a plugin while it is `running` (via signal handling)",
+          "reason": "The shown signal handler forwards PluginInput::Signal actions. On the receiving side, Interrupt triggers the plugin's cooperative Signals state and Reset clears it; this is not the plugin process stop mechanism. The later acknowledgment that actual termination is not shown does not establish the earlier claim that signal handling stops the plugin.",
+          "source": "crates/nu-plugin-engine/src/persistent.rs:313-335; crates/nu-plugin-engine/src/interface/mod.rs:670-674; crates/nu-plugin/src/plugin/interface/mod.rs:352-359"
+        }
+      ]
+    },
+    {
+      "id": "A023",
+      "change": "Remove material-false-claim flag; retain the four-point causal score and the source-precision issue.",
+      "reason": "The comment is misattributed, but the full answer correctly identifies the configurable shell execution limit and explicitly distinguishes it from MessagePack depth. It does not assert a wrong configured value or causal transition. Treat this as a comment/citation precision error rather than a material error in the requested mechanism.",
+      "original_claims": [
+        {
+          "quote": "though a comment mentions \"Picked 50 arbitrarily\" for MessagePack depth, this is distinct from the general recursion limit",
+          "reason": "The quoted comment is in the custom-command execution guard, not the MessagePack implementation. MessagePack independently has MAX_DEPTH = 50, but its constant's comment is merely 'Max recursion depth'. The answer's excerpt-qualified uncertainty about the configured default is not itself a false denial.",
+          "source": "crates/nu-engine/src/eval.rs:360-366; crates/nu-command/src/formats/to/msgpack.rs:12-14"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "focused_regressions": {
+      "locator_dedup": {
+        "before_failed": 2,
+        "before_passed": 1,
+        "after_passed": 15
+      },
+      "identifier_dedup": {
+        "before_failed": 2,
+        "before_passed": 1,
+        "after_passed": 17
+      },
+      "definitions_parent": {
+        "before_failed": 3,
+        "before_passed": 2,
+        "after_passed": 15
+      }
+    },
+    "overlapping_suites_not_unique_test_count": true,
+    "ruff_format_files_unchanged": 9,
+    "ruff_check_passed": true,
+    "replay_source_range_overlap_budget_checks_passed": 96,
+    "control_context_hash_parity": {
+      "locator_control": true,
+      "locator_identifier": true,
+      "definitions_control": true
+    },
+    "accepted_source_citation_audit_passed": true,
+    "answer_quote_audit_passed": 64,
+    "normal_model_completions": 64,
+    "failed_model_calls": 0,
+    "metered_request_and_usage_audit_passed": 64,
+    "full_production_suite_run": false,
+    "free_agent_runs": 0,
+    "source_snapshot_verified_members": 687,
+    "source_evidence_files": 71
+  },
+  "exclusions": [
+    {
+      "artifact": "invalid_pytest_config.json",
+      "reason": "Initial external regression invocations discovered the live repository pytest configuration and imported live source. Excluded; accepted runs pin snapshot configuration, prepend its src path and assert the imported module path."
+    },
+    {
+      "artifact": "invalid_source_reviews/",
+      "reason": "First source-review batch contained cross-context attribution/citation errors. Four context files also had incorrect Unicode decoding and other files had newline byte changes. All initial inputs/reviews retained and excluded before semantic aggregation/selection; all 49 inputs regenerated byte-identically from explicit UTF-8 reads and fully re-reviewed. Accepted source citations and answer quotes validated against their own inputs."
+    }
+  ],
+  "observations": [
+    "Deduplication restores the GC worker region displaced by duplicate next_timeout ranges under identifier matching, while retaining different overlapping windows.",
+    "Bounded parent selection restores the full Signals::check conditional around its nested error helper; coarse semantic scores tie the archived definition control.",
+    "Definition selection already deduplicates whole owner spans; no redundant combined-dedup variant was created.",
+    "All four recorded-question mean causal scores improved, but material false answers increased from 6/26 to 13/26. Raw reviewer flags also fail that gate (7/26 to 14/26).",
+    "Exit-status answers conflate adjacent last-result snapshot or diagnostic mechanisms with the actual status updater.",
+    "No candidate source code, tests or API changes were promoted."
+  ],
+  "limitations": [
+    "Four reused questions and two seeds are exploratory, related observations, not independent evidence of general accuracy or token savings.",
+    "The selected definition candidate inherits identifier matching and budget-aware definition packing. There is no model arm isolating bounded-parent selection from that archived control.",
+    "The cheaper identifier-plus-dedup arm qualified on semantic source evidence but was not model-tested under the frozen one-candidate selection rule.",
+    "Concurrent replay timings share corpus/index resources and are not isolated latency comparisons.",
+    "Different experiments use different model responses/reviewer judgments; scores across studies are not a calibrated longitudinal accuracy series.",
+    "Fresh holdout inference, free-agent evaluation and the full production suite were ineligible after the earlier gate failed."
+  ],
+  "next_recommendation": "The cheaper identifier+region-dedup candidate passed the semantic source gate but was not selected by the frozen highest-score rule. Evaluate it under a separate cost-aware protocol before further definition-payload changes; inspect missing causal links and scope/routing rather than assume more text helps.",
+  "source_archive": {
+    "file": "source_snapshots.zip",
+    "sha256": "094ce46f904e2e2d8c7b89114697f130862fa7acabd8166ebe48543f820fa3d8",
+    "members": 687
+  },
+  "cleanup": {
+    "temporary_root_removed": true,
+    "source_archive_crc_valid": true,
+    "source_archive_verified_members": 687,
+    "source_archive_sha256": "094ce46f904e2e2d8c7b89114697f130862fa7acabd8166ebe48543f820fa3d8",
+    "removed_regression_cache_files": 4,
+    "owned_qwen_instance_unloaded": true,
+    "preexisting_embedding_instance_unchanged": true,
+    "production_source_modified": false
+  },
+  "raw_evidence_directory": "eval/agent_bench/results/region_selection_20260920",
+  "raw_evidence_git_ignored": true,
+  "evidence_archive": {
+    "file": "eval/agent_bench/results/region_selection_20260920/evidence_bundle.zip",
+    "sha256": "ee97973e783ba63d1b55ce25f866bec99c013b641704f7a697bf39d2e8add2b4",
+    "bytes": 2560089,
+    "members": 374,
+    "manifest_sha256": "da80a6cdf13ff60f6b196ba6179de8c1330065aefb8f39908e873e2801b15da4",
+    "crc_and_all_member_hashes_verified": true,
+    "embedded_report": "report.json contains the complete report except this external bundle descriptor, avoiding a self-referential hash."
+  }
+}

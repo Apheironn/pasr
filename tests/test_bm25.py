@@ -62,6 +62,16 @@ class Bm25IndexTests(unittest.TestCase):
         self.assertEqual(index.scores(""), [0.0] * len(SPANS))
         self.assertEqual(index.scores("zzzznonexistent"), [0.0] * len(SPANS))
 
+    def test_identifier_components_match_without_substring_or_stopword_leakage(self):
+        spans = [
+            _span("a.py", 1, "def is_needle_worker(): return 1", 0),
+            _span("b.py", 1, "def is_needless_worker(): return 2", 0),
+        ]
+        index = Bm25Index(spans)
+        self.assertEqual([span.source for span, _ in index.search("needle")], ["a.py"])
+        self.assertEqual(index.search("is_needle_worker")[0][0].source, "a.py")
+        self.assertEqual(index.search("is"), [])
+
 
 class Bm25CandidateTests(unittest.TestCase):
     def test_candidates_carry_raw_span_offsets_and_reason(self):

@@ -2,21 +2,21 @@
 
 from __future__ import annotations
 
-import inspect
 import os
 import re
+import warnings
 from pathlib import Path
 
 import anyio
 
 from pasr.mcp.server import create_server
+from pasr.source_text import physical_lines, read_source
 
 # The repository under test is configuration -- see README.md.
 WORKSPACE = Path(os.environ.get("PASR_BENCH_WORKSPACE", ".")).resolve()
 
 
-# How much a read_file with no end_line hands back. Named so the PASR arm can report the
-# range it really delivered to the session's novelty rule instead of guessing at it.
+# Maximum lines returned when read_file has no explicit end_line.
 READ_FILE_SPAN = 300
 SKIP_DIRS = {".git", "target", "node_modules", ".venv", "venv", "__pycache__", "dist", "build"}
 # The baseline grep used to look at *.rs only, which silently handed the PASR arm every
@@ -43,12 +43,16 @@ def tool_grep(pattern: str, path: str = ".", max_results: int = 40, per_file_cap
         if any(p in SKIP_DIRS for p in fp.parts):
             continue
         try:
-            text = fp.read_text(encoding="utf-8", errors="ignore")
-        except OSError:
+            resolved = fp.resolve()
+            if not resolved.is_relative_to(WORKSPACE):
+                continue
+            text = read_source(resolved).text
+        except (OSError, ValueError) as exc:
+            warnings.warn(f"Skipping source {fp}: {exc}", RuntimeWarning, stacklevel=2)
             continue
         rel = fp.relative_to(WORKSPACE).as_posix()
         n = 0
-        for i, line in enumerate(text.splitlines(), start=1):
+        for i, line in enumerate(physical_lines(text), start=1):
             if regex.search(line):
                 hits.append(f"{rel}:{i}:{line.strip()[:200]}")
                 n += 1
@@ -61,31 +65,27 @@ def tool_grep(pattern: str, path: str = ".", max_results: int = 40, per_file_cap
 
 def tool_read_file(path: str, start_line: int = 1, end_line: int | None = None) -> str:
     try:
-        lines = (WORKSPACE / path).read_text(encoding="utf-8", errors="replace").splitlines()
+        target = (WORKSPACE / path).resolve()
+        if target != WORKSPACE.resolve() and WORKSPACE.resolve() not in target.parents:
+            return "error: path escapes workspace"
+        lines = physical_lines(read_source(target).text)
     except Exception as exc:  # noqa: BLE001
         return f"error: {exc}"
     end = min(end_line or (start_line + READ_FILE_SPAN - 1), len(lines))
     return "\n".join(f"{i + start_line}: {t}" for i, t in enumerate(lines[start_line - 1 : end]))
 
 
-# Each benchmark run owns one production server and therefore one retrieval session.
+# The adapter reuses one stateless production server; the runner owns stopping policy.
 _server = None
 
 
-# Which tools the PASR arm publishes. A catalogue entry is re-sent with every request, so
-# an unused one is paid for on every turn: across 60 runs trace_dependencies,
-# expand_context and explain_selection drew one call between them and cost about 4,100
-# tokens a run. Unset means the whole surface, as a host gets by default.
+# Unset publishes the production default five-tool catalogue.
 EXPOSED = tuple(t.strip() for t in os.environ.get("PASR_BENCH_TOOLS", "").split(",") if t.strip()) or None
 
 
 def reset_session() -> None:
     global _server
-    # The harness is shared across arms while only src/pasr is swapped, so a control
-    # snapshot can predate `expose`. Narrowing is then simply not available for that arm,
-    # which is the honest comparison anyway: full catalogue against trimmed one.
-    supported = "expose" in inspect.signature(create_server).parameters
-    _server = create_server(WORKSPACE, expose=EXPOSED) if (EXPOSED and supported) else create_server(WORKSPACE)
+    _server = create_server(WORKSPACE, expose=EXPOSED)
 
 
 def _session():
@@ -112,24 +112,6 @@ def run_baseline(name: str, inp: dict) -> str:
 
 def run_pasr(name: str, inp: dict) -> str:
     if name in {"grep", "read_file"}:
-        # The PASR arm keeps the host's own file tools, and they used to be free: the
-        # ceiling counted only calls that went through the server, so a refused run
-        # carried on reading and grepping for as many turns as it had left. Charging them
-        # to the same session budget is the client-side half of the rule -- PASR never
-        # sees these calls and cannot count them on its own.
-        provenance = None
-        if name == "read_file" and inp.get("path"):
-            # The range this call will actually return, not the one it asked for: a
-            # read_file with no end_line still hands back 300 lines, and reporting None
-            # for it left the novelty rule blind to exactly the re-reads it exists to
-            # catch -- on a small tree the model reads the same file three or four times.
-            start = max(1, int(inp.get("start_line", 1) or 1))
-            end = int(inp["end_line"]) if inp.get("end_line") else start + READ_FILE_SPAN - 1
-            provenance = f"{inp['path']}:{start}-{end}"
-        try:
-            _session().retrieval_guard.charge_external(name, provenance)
-        except Exception as exc:  # the server's own refusal text, verbatim
-            return str(exc)
         return run_baseline(name, inp)
     try:
         result = anyio.run(lambda: _session().call_tool(name, inp))

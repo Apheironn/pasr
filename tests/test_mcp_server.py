@@ -28,7 +28,13 @@ def test_lists_all_tools_with_schemas(mini_workspace: Path):
     # calls between them while costing ~400 catalogue tokens on every turn.
     assert set(tools) == {"find_files", "find_evidence", "find_symbols", "find_usages", "select_context"}
     everything = {tool.name for tool in anyio.run(create_server(mini_workspace, expose=ALL_TOOLS).list_tools)}
-    assert everything == set(tools) | {"trace_dependencies", "explain_selection", "expand_context", "search_code"}
+    assert everything == set(tools) | {
+        "trace_dependencies",
+        "explain_selection",
+        "expand_context",
+        "search_code",
+        "read_code",
+    }
     props = set(tools["select_context"].input_schema.get("properties", {}))
     # The model-facing surface only. Every property here is re-sent in this tool's schema
     # on every turn, and across 6,176 recorded calls the model never once passed
@@ -37,20 +43,13 @@ def test_lists_all_tools_with_schemas(mini_workspace: Path):
     assert {"query", "files", "include", "budget_tokens", "outline", "advanced"} == props
 
 
-def test_the_catalogue_carries_no_generated_schema_noise(mini_workspace: Path):
-    """A property `title` restates its name and an optional list's `null` branch restates
-    that it is optional; both are re-sent on every request. 419 of 985 schema tokens."""
+def test_select_context_advertises_its_required_query(mini_workspace: Path):
+    """A schema-valid omission used to fail only after the model called the tool."""
     server = create_server(mini_workspace)
-    for tool in anyio.run(server.list_tools):
-        schema = tool.input_schema
-        assert "title" not in schema, tool.name
-        for name, prop in schema["properties"].items():
-            assert "title" not in prop and "anyOf" not in prop, (tool.name, name)
-    select = next(t for t in anyio.run(server.list_tools) if t.name == "select_context").input_schema
-    assert select["properties"]["files"] == {"items": {"type": "string"}, "type": "array"}
-    # still validated against the signature: an explicit null is what it always was
-    result = _call(server, "select_context", {"query": "rate limit", "files": None, "include": ["api/ratelimit.py"]})
-    assert result.is_error is False
+    schema = next(tool.input_schema for tool in anyio.run(server.list_tools) if tool.name == "select_context")
+    assert "query" in schema.get("required", [])
+    with pytest.raises(ToolError, match="query"):
+        _call(server, "select_context", {"files": ["api/ratelimit.py"], "outline": True})
 
 
 def test_find_evidence_spends_its_budget_on_files_not_on_repeat_lines(mini_workspace: Path):
@@ -113,38 +112,6 @@ def test_merging_touching_spans_loses_no_line_and_invents_none(mini_workspace: P
     )
     receipt = json.loads(_call(server, "explain_selection", {"receipt_id": payload["receipt"]["id"]}).content[0].text)
     assert lines({"provenance": label} for label in _labels(payload)) == lines(receipt["kept"])
-
-
-def test_a_question_gets_a_retrieval_budget_and_the_refusal_is_cheap(mini_workspace: Path):
-    """The budget is in calls, next to the one in tokens.
-
-    Over the recorded runs every question held its complete answer within six retrieval
-    calls and then kept retrieving to about twelve. The refusal does not have to make the
-    caller stop to pay off: it has to make continuing cost a few dozen tokens instead of a
-    few thousand. It names no other tool, because a named tool is an instruction.
-    """
-    from pasr.mcp.server import _CallGuard
-
-    server = create_server(mini_workspace)
-    budget = _CallGuard.RETRIEVAL_BUDGET
-
-    for i in range(budget - 1):
-        result = _call(server, "find_files", {"query": f"ratelimit {i}"})
-        assert result.is_error is False, f"call {i + 1} of {budget} should be within budget"
-
-    slice_size = len(
-        _call(server, "select_context", {"query": "rate limit", "include": ["api/ratelimit.py"]}).content[0].text
-    )
-
-    with pytest.raises(Exception, match="retrieval budget") as refusal:
-        _call(server, "find_files", {"query": "ratelimit once more"})
-    text = str(refusal.value)
-    assert len(text) < slice_size, "a refusal must cost less than the slice it replaces"
-    assert not any(t in text for t in ("find_symbols(", "find_files(", "select_context(", "find_evidence("))
-
-    # The budget covers the whole question, not one tool.
-    with pytest.raises(Exception, match="retrieval budget"):
-        _call(server, "select_context", {"query": "rate limit", "include": ["api/ratelimit.py"]})
 
 
 def test_the_wire_says_each_span_once_and_the_receipt_still_says_everything(mini_workspace: Path):
@@ -247,9 +214,14 @@ def test_a_source_file_gets_no_mandatory_head_or_tail(tmp_path: Path):
 
 def test_select_context_is_deterministic(mini_workspace: Path):
     server = create_server(mini_workspace)
-    args = {"query": "compromised account session", "include": ["."], "budget_tokens": 120, "block_size": 30}
+    args = {
+        "query": "compromised account session",
+        "include": ["."],
+        "budget_tokens": 120,
+        "advanced": {"block_size": 30},
+    }
     a = json.loads(_call(server, "select_context", args).content[0].text)
-    b = json.loads(_call(server, "select_context", args).content[0].text)
+    b = json.loads(_call(create_server(mini_workspace), "select_context", args).content[0].text)
     assert a == b
 
 
@@ -405,17 +377,20 @@ def test_select_context_unknown_pack_is_a_clean_error(mini_workspace: Path):
         _call(server, "select_context", {"query": "", "advanced": {"pack": "ghost"}})
 
 
-def test_identical_calls_stay_deterministic_then_stop(mini_workspace: Path):
-    """Repeats return the same bytes (receipts stay reproducible) until the loop rule fires."""
+@pytest.mark.parametrize(
+    "tool,arguments",
+    [
+        ("find_files", {"query": "session", "include": ["auth"]}),
+        ("find_symbols", {"query": "session"}),
+        ("find_evidence", {"query": "session"}),
+        ("find_usages", {"symbol": "session"}),
+    ],
+)
+def test_identical_search_calls_remain_usable(mini_workspace: Path, tool: str, arguments: dict):
     server = create_server(mini_workspace)
-    args = {"query": "session cookie rotation", "include": ["auth"], "budget_tokens": 400}
-
-    first = json.loads(_call(server, "select_context", args).content[0].text)
-    second = json.loads(_call(server, "select_context", args).content[0].text)
-    assert first == second, "identical calls must stay byte-identical while allowed"
-
-    with pytest.raises(Exception, match="cannot add evidence"):
-        _call(server, "select_context", args)
+    first = json.loads(_call(server, tool, arguments).content[0].text)
+    for _ in range(12):
+        assert json.loads(_call(server, tool, arguments).content[0].text) == first
 
 
 def test_find_symbols_returns_definition_provenance(mini_workspace: Path):
@@ -426,46 +401,6 @@ def test_find_symbols_returns_definition_provenance(mini_workspace: Path):
     payload = json.loads(result.content[0].text)
     assert payload["matches"], payload
     assert all(":" in match["provenance"] for match in payload["matches"])
-
-
-def test_reworded_queries_over_the_same_spans_stop_too(mini_workspace: Path):
-    """The expensive loop is the paraphrased one: new wording, same spans, new receipt id."""
-    server = create_server(mini_workspace)
-    base = {"include": ["api/ratelimit.py"], "budget_tokens": 3000}
-
-    first = json.loads(_call(server, "select_context", {"query": "rate limit headers", **base}).content[0].text)
-    assert _labels(first), "fixture should return spans"
-
-    # Different query strings, so the byte-identical guard never fires -- but the same
-    # file fits the budget losslessly, so no call after the first adds any evidence.
-    _call(server, "select_context", {"query": "throttling behaviour on responses", **base})
-    with pytest.raises(Exception, match="Refused") as refusal:
-        _call(server, "select_context", {"query": "how are 429s emitted", **base})
-    # The refusal has to say what the caller already holds, or it is just a wall.
-    assert "line(s) of source across" in str(refusal.value)
-
-
-def test_novel_spans_reset_the_stopping_rule(mini_workspace: Path):
-    server = create_server(mini_workspace)
-    _call(server, "select_context", {"query": "rate limit", "include": ["api/ratelimit.py"], "budget_tokens": 3000})
-    _call(server, "select_context", {"query": "rate limits", "include": ["api/ratelimit.py"], "budget_tokens": 3000})
-
-    # A different file is new evidence: the counter resets instead of refusing.
-    result = _call(
-        server, "select_context", {"query": "session", "include": ["auth/session.py"], "budget_tokens": 3000}
-    )
-    assert result.is_error is False
-
-
-def test_a_mostly_repeated_slice_counts_as_no_progress(mini_workspace: Path):
-    """Re-reading a file at a nudged budget returns a few unseen lines; that is not progress."""
-    server = create_server(mini_workspace)
-    base = {"include": ["api/ratelimit.py"]}
-
-    _call(server, "select_context", {"query": "rate limit headers", "budget_tokens": 2000, **base})
-    _call(server, "select_context", {"query": "throttling responses", "budget_tokens": 2100, **base})
-    with pytest.raises(Exception, match="already"):
-        _call(server, "select_context", {"query": "429 emission", "budget_tokens": 2200, **base})
 
 
 def test_find_evidence_names_the_words_that_appear_nowhere(mini_workspace: Path):
@@ -490,7 +425,7 @@ def locator_surface(request, tmp_path: Path):
             return json.loads(result.content[0].text)
 
     else:
-        # Load a fresh benchmark session so its repetition guard cannot leak between tests.
+        # Load an isolated adapter configured for this workspace.
         path = Path(__file__).parents[1] / "eval" / "agent_bench" / "tools_pasr.py"
         spec = importlib.util.spec_from_file_location("locator_benchmark", path)
         module = importlib.util.module_from_spec(spec)
@@ -547,13 +482,6 @@ def test_read_lines_guidance_preserves_absence_and_truncation_warnings(tmp_path:
     assert evidence["term_file_counts"]["absentmarker"] == 0
     assert any("absentmarker" in note for note in evidence["advice"])
     assert evidence["hits"][0]["read_lines"] == "1-2"
-    # One composed example the caller can copy, rather than a rule to apply per hit -- and
-    # it names the FILE, not this hit's guessed span. Given the right file select_context
-    # keeps 86% of the evidence in a third of the tokens; the span is a +/-8 line guess
-    # around an IDF match and holds the answer 27% of the time. Pointing the caller at the
-    # span was telling it to bypass the one thing PASR is for.
-    assert any('files=["worker.py"]' in note for note in evidence["advice"])
-    assert not any('worker.py:1-2"]' in note for note in evidence["advice"])
 
     usages = locator_surface("find_usages", {"symbol": "checkpoint", "top_k": 1})
     assert usages["truncated"] is True
@@ -561,8 +489,6 @@ def test_read_lines_guidance_preserves_absence_and_truncation_warnings(tmp_path:
     assert usages["usage_count"] == 1
     assert [hit["provenance"] for hit in usages["hits"]] == ["worker.py:1"]
     assert any("top_k" in note for note in usages["advice"])
-    # The read hint lives in the tool description, sent once -- not in every result.
-    assert not any("read_lines" in note for note in usages["advice"])
 
 
 @pytest.mark.parametrize("tool", ["find_evidence", "find_usages"])
@@ -575,82 +501,6 @@ def test_only_the_leading_hits_carry_read_lines(tmp_path: Path, locator_surface,
 
     assert len(hits) == 8
     assert [("read_lines" in hit) for hit in hits] == [True] * 5 + [False] * 3
-
-
-def test_a_reread_inside_lines_already_held_is_caught(mini_workspace: Path):
-    """Overlapping ranges are different strings and almost the same evidence."""
-    server = create_server(mini_workspace)
-    first = json.loads(
-        _call(server, "select_context", {"query": "rate limit", "include": ["."], "budget_tokens": 3000})
-        .content[0]
-        .text
-    )
-    held = _labels(first)
-    assert held, "fixture should return spans"
-
-    # Ask again for lines strictly inside what was already delivered, under new wording and
-    # a new receipt id each time. Counting provenance strings called these wholly new; now
-    # the reply is a few dozen tokens saying so, and a second one is refused.
-    inner = [p.rsplit(":", 1)[0] + ":" + str(int(p.rsplit(":", 1)[1].split("-")[0]) + 1) for p in held[:2]]
-    stub = json.loads(
-        _call(server, "select_context", {"query": "throttle behaviour", "files": inner, "budget_tokens": 3000})
-        .content[0]
-        .text
-    )
-    assert stub["route"] == "held" and stub["context"] == ""
-    with pytest.raises(Exception, match="already hold"):
-        _call(server, "select_context", {"query": "429 emission", "files": inner, "budget_tokens": 3000})
-
-
-def test_a_session_is_told_what_it_holds_before_it_is_refused(mini_workspace: Path):
-    server = create_server(mini_workspace)
-    server_call = lambda q, inc: json.loads(  # noqa: E731
-        _call(server, "select_context", {"query": q, "include": inc, "budget_tokens": 400}).content[0].text
-    )
-    first = server_call("rate limit headers", ["api/ratelimit.py"])
-    # Nothing to boast about after one file.
-    assert not any("You now hold" in note for note in first.get("advice", []))
-
-    second = server_call("session compromise", ["."])
-    assert any("line(s) of source across" in note for note in second.get("advice", []))
-
-
-def test_a_host_can_charge_its_own_reads_to_the_session_ceiling(mini_workspace):
-    """The ceiling only ever saw PASR's own calls, so a refused run kept reading.
-
-    Across four corpora a tighter ceiling moved work to the host's tools rather than
-    ending it -- native calls went from 30% of all calls to 39% -- and one run answered
-    from call 1, was refused at 6, and spent its last twelve turns grepping three files
-    in a circle. PASR cannot see those calls; a host that wants them counted says so.
-    """
-    from pasr.mcp.server import create_server
-
-    server = create_server(mini_workspace)
-    guard = server.retrieval_guard
-
-    for _ in range(guard.RETRIEVAL_BUDGET):
-        guard.charge_external("read_file", None)
-    with pytest.raises(Exception) as refused:
-        guard.charge_external("read_file", None)
-    assert "read_file counts against it" in str(refused.value)
-
-    # and the server's own tools are refused too: it is one budget, not two
-    with pytest.raises(Exception) as also_refused:
-        anyio.run(lambda: server.call_tool("find_evidence", {"query": "alpha"}))
-    assert "retrieval budget" in str(also_refused.value)
-
-
-def test_a_charged_read_is_not_novel_evidence_when_it_comes_back(mini_workspace):
-    """A host read is source the caller holds, so a later selection of the same lines is
-    a re-read. Counting it only against the ceiling would leave check_novelty blind to it.
-    """
-    from pasr.mcp.server import create_server
-
-    guard = create_server(mini_workspace).retrieval_guard
-    guard.charge_external("read_file", "pkg/alpha.py:1-40")
-
-    assert "pkg/alpha.py" in guard.holdings()
-    assert guard._covered["pkg/alpha.py"] == set(range(1, 41))
 
 
 def test_a_host_can_publish_only_the_tools_it_will_use(mini_workspace):
@@ -705,44 +555,47 @@ def test_one_wrong_path_no_longer_sinks_the_right_ones(mini_workspace: Path):
         _call(server, "select_context", {"query": "x", "files": ["api/ratelimit.py", "../secrets.py"]})
 
 
-def test_selecting_a_held_file_again_returns_only_what_was_not_shown(tmp_path: Path):
-    """A second selection of a file used to hand back mostly what the caller already had.
+@pytest.mark.parametrize("scope_key", ["files", "include"])
+def test_independent_questions_receive_source_on_every_call(tmp_path: Path, scope_key: str):
+    from pasr.tokenize import get_tokenizer
 
-    The ranking does not know what the conversation holds, so every re-selection opened with
-    the same top-scoring functions. The conversation keeps them -- nothing is withdrawn -- so
-    the unread remainder is the only thing another selection can add, and once there is none
-    the reply says so in a few dozen tokens.
-    """
-    body = "".join(f"def step_{n}(state):\n    state.retry_count += {n}\n    return state\n\n" for n in range(120))
-    (tmp_path / "engine.py").write_text(body, encoding="utf-8")
+    source = "def calculate(value):\n    return value * 2\n"
+    (tmp_path / "worker.py").write_text(source, encoding="utf-8")
     server = create_server(tmp_path)
+    for question in range(14):
+        args = {"query": f"calculate value question {question}", scope_key: ["worker.py"], "budget_tokens": 100}
+        payload = json.loads(_call(server, "select_context", args).content[0].text)
+        assert payload["route"] == "lossless"
+        assert source.rstrip() in payload["context"]
+        assert payload["token_count"] == get_tokenizer().count(payload["context"]) <= 100
 
-    def select(query: str) -> dict:
-        args = {"query": query, "files": ["engine.py"], "budget_tokens": 900}
-        return json.loads(_call(server, "select_context", args).content[0].text)
 
-    def lines(payload: dict) -> set[int]:
-        held = set()
+def test_repeated_selection_resends_source_after_host_context_loss(tmp_path: Path):
+    source = "def calculate(value):\n    return value * 2\n"
+    (tmp_path / "worker.py").write_text(source, encoding="utf-8")
+    server = create_server(tmp_path)
+    args = {"query": "calculate", "files": ["worker.py"]}
+    for _ in range(14):
+        payload = json.loads(_call(server, "select_context", args).content[0].text)
+        assert source.rstrip() in payload["context"]
+        assert _labels(payload) == ["worker.py:1-2"]
+
+
+@pytest.mark.parametrize("scope", ["engine.py:3-15", "engine.py"])
+def test_overlapping_requests_preserve_the_complete_requested_scope(tmp_path: Path, scope: str):
+    (tmp_path / "engine.py").write_text(
+        "".join(f"VALUE_{number} = {number}\n" for number in range(1, 25)), encoding="utf-8"
+    )
+    server = create_server(tmp_path)
+    _call(server, "select_context", {"query": "values", "files": ["engine.py:3-5", "engine.py:10-12"]})
+    expected = set(range(3, 16)) if ":" in scope else set(range(1, 25))
+    for _ in range(3):
+        payload = json.loads(_call(server, "select_context", {"query": "values", "files": [scope]}).content[0].text)
+        delivered = set()
         for label in _labels(payload):
             start, _, end = label.rsplit(":", 1)[1].partition("-")
-            held.update(range(int(start), int(end or start) + 1))
-        return held
-
-    first, second = select("retry count step"), select("state retry step")
-    assert lines(first) and lines(second)
-    assert not lines(first) & lines(second), "a re-selection must not repeat a delivered line"
-    assert "you have not been shown yet" in second["advice"][0]
-
-    reply = second
-    for n in range(6):
-        if reply["route"] in {"lossless", "held"}:
-            break
-        reply = select(f"retry pass {n}")
-    assert reply["route"] == "held" or any("every line of engine.py" in note for note in reply["advice"])
-    # Asking for it yet again is the loop this exists to end.
-    with pytest.raises(Exception, match="already hold"):
-        select("retry once more")
-        select("retry one last time")
+            delivered.update(range(int(start), int(end or start) + 1))
+        assert delivered == expected
 
 
 def test_a_scope_that_matches_nothing_searches_everything_and_says_so(mini_workspace: Path):
@@ -762,8 +615,7 @@ def test_a_scope_that_matches_nothing_searches_everything_and_says_so(mini_works
 
 
 def test_one_reply_carries_at_most_the_select_budget(tmp_path: Path):
-    """A bounded reply, whatever the caller asks for: the selector front-loads what matters,
-    and a second call on the same file returns only what the first left out."""
+    """The per-response cap includes labels, even after repeated retrieval."""
     from pasr.mcp.server import SELECT_BUDGET
 
     body = "".join(f"def step_{n}(state):\n    state.retry_count += {n}\n    return state\n\n" for n in range(400))
@@ -773,14 +625,15 @@ def test_one_reply_carries_at_most_the_select_budget(tmp_path: Path):
     first = json.loads(_call(server, "select_context", args).content[0].text)
     assert first["route"] == "selected"
     assert first["token_count"] <= SELECT_BUDGET
-    second = json.loads(_call(server, "select_context", {**args, "query": "state step"}).content[0].text)
+    second = json.loads(_call(server, "select_context", args).content[0].text)
     assert second["token_count"] <= SELECT_BUDGET
-    assert not set(_labels(first)) & set(_labels(second))
+    assert second["context"] == first["context"]
 
 
-def test_search_code_reads_the_best_files_and_never_repeats(tmp_path: Path):
-    """One tool, one call: the evidence ranking picks the files, the selector their parts,
-    and a second search does not hand back what the first already delivered."""
+def test_search_code_returns_the_best_source_on_repeated_calls(tmp_path: Path):
+    from pasr.mcp.server import SELECT_BUDGET
+    from pasr.tokenize import get_tokenizer
+
     for n in range(6):
         (tmp_path / f"stage_{n}.py").write_text(
             "".join(f"def retry_budget_{n}_{k}(attempts):\n    return attempts * {k}\n\n" for k in range(40)),
@@ -790,11 +643,465 @@ def test_search_code_reads_the_best_files_and_never_repeats(tmp_path: Path):
     assert [t.name for t in anyio.run(server.list_tools)] == ["search_code"]
 
     def search(query: str) -> dict:
-        return json.loads(_call(server, "search_code", {"query": query}).content[0].text)
+        return _call(server, "search_code", {"query": query}).structured_content
 
     first = search("retry budget attempts")
     labels = _labels(first)
     assert labels and len({label.rsplit(":", 1)[0] for label in labels}) <= 3
     assert any(note.startswith("Also matched:") for note in first["advice"])
-    second = search("retry budget attempts again")
-    assert not set(_labels(second)) & set(labels)
+    for _ in range(12):
+        second = search("retry budget attempts")
+        assert second["context"] == first["context"]
+        assert get_tokenizer().count(second["context"]) <= SELECT_BUDGET
+
+
+def test_read_code_pins_range_pages_despite_unrelated_query(tmp_path: Path, monkeypatch):
+    from pasr.mcp import server as server_module
+    from pasr.tokenize import get_tokenizer
+
+    monkeypatch.setattr(server_module, "SELECT_BUDGET", 70)
+    lines = [f"value_{i} = {i}\n" for i in range(40)]
+    (tmp_path / "target.py").write_text("".join(lines), encoding="utf-8")
+    (tmp_path / "other.py").write_text("distractor = 99\n", encoding="utf-8")
+    server = create_server(tmp_path, expose=["read_code"])
+    pending = ["target.py:3-36"]
+    bodies, fingerprints = [], []
+    for _ in range(40):
+        payload = _call(
+            server,
+            "read_code",
+            {
+                "query": "distractor",
+                "files": pending,
+            },
+        ).structured_content
+        assert len(_labels(payload)) == 1
+        assert _labels(payload)[0].startswith("target.py:")
+        assert "distractor" not in payload["context"]
+        assert get_tokenizer().count(payload["context"]) <= 70
+        bodies.append(payload["context"].partition("\n")[2])
+        fingerprints.append(payload["source_fingerprint"])
+        assert not payload["continuation"]["blocked"]
+        remaining = payload["continuation"]["files"]
+        if not remaining:
+            break
+        assert remaining != pending
+        pending = remaining
+    else:
+        pytest.fail("Range continuation did not reach the requested end")
+
+    assert len(bodies) > 1
+    assert "".join(bodies) == "".join(lines[2:36])
+    assert all(value == fingerprints[0] for value in fingerprints)
+    assert set(fingerprints[0]) == {"target.py"}
+
+
+def test_read_code_whole_file_preserves_guard_and_excludes_other_sources(tmp_path: Path):
+    source = (
+        "def enforce(value, validator):\n"
+        "    if validator is None:\n"
+        "        return value\n"
+        "    validator(value)\n"
+        "    return value\n"
+    )
+    (tmp_path / "hooks.py").write_text(source, encoding="utf-8")
+    (tmp_path / "other.py").write_text("def enforce(value):\n    return 'outside scope'\n", encoding="utf-8")
+    server = create_server(tmp_path, expose=["search_code", "read_code"])
+    payload = _call(
+        server,
+        "read_code",
+        {
+            "query": "enforce",
+            "files": ["hooks.py"],
+        },
+    ).structured_content
+    namespace = {}
+    exec(payload["context"].partition("\n")[2], namespace)
+    enforce = namespace["enforce"]
+    assert enforce(7, None) == 7
+    validated = []
+    assert enforce(7, validated.append) == 7
+    assert validated == [7]
+    assert set(payload["source_fingerprint"]) == {"hooks.py"}
+    assert all(label.startswith("hooks.py:") for label in _labels(payload))
+
+
+@pytest.mark.parametrize("files", [[], None, ["target.py", "missing.py"], ["."], ["../outside.py"]])
+def test_read_code_invalid_scope_never_falls_back_to_discovery(tmp_path: Path, files):
+    (tmp_path / "target.py").write_text("distractor = 99\n", encoding="utf-8")
+    server = create_server(tmp_path, expose=["search_code", "read_code"])
+    with pytest.raises(ToolError):
+        _call(server, "read_code", {"query": "distractor", "files": files})
+
+
+@pytest.mark.parametrize(
+    "scope",
+    [
+        {"files": []},
+        {"files": None},
+        {"files": ["target.py:1-1"]},
+        {"include": ["target.py"]},
+    ],
+)
+def test_search_code_rejects_scope_instead_of_silently_widening(tmp_path: Path, scope):
+    (tmp_path / "target.py").write_text("needle = 42\n", encoding="utf-8")
+    server = create_server(tmp_path, expose=["search_code"])
+    with pytest.raises(ToolError):
+        _call(server, "search_code", {"query": "needle", **scope})
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        {"query": "needle"},
+        {"query": "needle", "files": ["target.py"], "include": ["."]},
+    ],
+)
+def test_read_code_requires_explicit_scope_and_rejects_extra_scope(tmp_path: Path, arguments):
+    (tmp_path / "target.py").write_text("needle = 42\n", encoding="utf-8")
+    server = create_server(tmp_path, expose=["read_code"])
+    with pytest.raises(ToolError):
+        _call(server, "read_code", arguments)
+
+
+@pytest.mark.parametrize(
+    "tool,scope",
+    [
+        ("select_context", {"files": ["worker.py"]}),
+        ("select_context", {"include": ["worker.py"]}),
+        ("search_code", {}),
+        ("read_code", {"files": ["worker.py:1-2"]}),
+    ],
+)
+def test_changed_source_is_returned_on_the_same_server(tmp_path: Path, tool: str, scope: dict):
+    import os
+
+    path = tmp_path / "worker.py"
+    path.write_text("def checkpoint(value):\n    return value * 2\n", encoding="utf-8")
+    server = create_server(tmp_path, expose=ALL_TOOLS)
+    args = {"query": "checkpoint", **scope}
+    first = _call(server, tool, args).structured_content
+    assert "value * 2" in first["context"]
+    original_stat = path.stat()
+    path.write_text("def checkpoint(value):\n    return value * 9\n", encoding="utf-8")
+    os.utime(path, ns=(original_stat.st_atime_ns, original_stat.st_mtime_ns))
+    second = _call(server, tool, args).structured_content
+    assert "value * 9" in second["context"]
+    assert "value * 2" not in second["context"]
+
+
+@pytest.mark.parametrize("invalid", [{"query": ""}, {"budget_tokens": -1}, {"advanced": {"max_files": 0}}])
+def test_previous_success_does_not_bypass_request_validation(tmp_path: Path, invalid: dict):
+    (tmp_path / "worker.py").write_text("VALUE = 42\n", encoding="utf-8")
+    server = create_server(tmp_path)
+    args = {"query": "value", "files": ["worker.py"]}
+    _call(server, "select_context", args)
+    with pytest.raises(ToolError):
+        _call(server, "select_context", {**args, **invalid})
+
+
+def test_include_resends_lines_previously_read_as_explicit_ranges(tmp_path: Path):
+    (tmp_path / "worker.py").write_text("".join(f"VALUE_{n} = {n}\n" for n in range(1, 7)), encoding="utf-8")
+    server = create_server(tmp_path)
+    first = json.loads(_call(server, "select_context", {"query": "value", "files": ["worker.py:1-2"]}).content[0].text)
+    second = json.loads(_call(server, "select_context", {"query": "value", "include": ["*.py"]}).content[0].text)
+    assert _labels(first) == ["worker.py:1-2"]
+    assert _labels(second) == ["worker.py:1-6"]
+    assert "VALUE_1 = 1" in second["context"]
+    assert "VALUE_6 = 6" in second["context"]
+
+
+@pytest.mark.parametrize("budget", [50, 1500])
+def test_mcp_token_count_includes_delivered_provenance_labels(tmp_path: Path, budget: int):
+    from pasr.tokenize import get_tokenizer
+
+    (tmp_path / "worker.py").write_text(
+        "".join(f"def checkpoint_{n}(value):\n    return value * {n}\n\n" for n in range(20)),
+        encoding="utf-8",
+    )
+    payload = json.loads(
+        _call(
+            create_server(tmp_path),
+            "select_context",
+            {"query": "checkpoint value", "files": ["worker.py"], "budget_tokens": budget},
+        )
+        .content[0]
+        .text
+    )
+    assert payload["token_count"] == get_tokenizer().count(payload["context"])
+    assert payload["token_count"] <= budget
+
+
+def test_lossless_source_must_also_fit_its_mcp_labels(tmp_path: Path):
+    from pasr.tokenize import get_tokenizer
+
+    source = "VALUE = 42\n"
+    (tmp_path / "worker.py").write_text(source, encoding="utf-8")
+    budget = get_tokenizer().count(source)
+    payload = json.loads(
+        _call(
+            create_server(tmp_path),
+            "select_context",
+            {"query": "value", "files": ["worker.py"], "budget_tokens": budget},
+        )
+        .content[0]
+        .text
+    )
+    assert payload["token_count"] == get_tokenizer().count(payload["context"])
+    assert payload["token_count"] <= budget
+
+
+@pytest.mark.parametrize("tool", ["select_context", "trace_dependencies"])
+def test_source_read_failure_does_not_poison_later_requests(tmp_path: Path, tool: str):
+    path = tmp_path / "worker.py"
+    path.write_bytes(b"\xff")
+    server = create_server(tmp_path, expose=ALL_TOOLS)
+    args = {"query": "calculate"} if tool == "select_context" else {"symbol": "calculate"}
+    args["files"] = ["worker.py"]
+    for _ in range(12):
+        with pytest.raises(ToolError):
+            _call(server, tool, args)
+    source = "def calculate(value):\n    return value * 2\n"
+    path.write_text(source, encoding="utf-8")
+    result = json.loads(_call(server, tool, args).content[0].text)
+    assert source.rstrip() in result["context"]
+
+
+def test_expansion_returns_prior_source_without_context_retention(tmp_path: Path):
+    from pasr.tokenize import get_tokenizer
+
+    source = "def calculate(value):\n    return value * 2\n"
+    (tmp_path / "worker.py").write_text(source, encoding="utf-8")
+    server = create_server(tmp_path, expose=ALL_TOOLS)
+    first = json.loads(
+        _call(
+            server,
+            "select_context",
+            {
+                "query": "calculate",
+                "files": ["worker.py"],
+                "budget_tokens": 100,
+            },
+        )
+        .content[0]
+        .text
+    )
+    for _ in range(12):
+        result = json.loads(
+            _call(
+                server,
+                "expand_context",
+                {
+                    "receipt_id": first["receipt"]["id"],
+                    "extra_budget": 100,
+                },
+            )
+            .content[0]
+            .text
+        )
+        assert source.rstrip() in result["context"]
+        assert result["token_count"] == get_tokenizer().count(result["context"]) <= 200
+
+
+@pytest.mark.parametrize(
+    "tool,args",
+    [
+        ("find_files", {"include": ["../"]}),
+        ("find_symbols", {"include": ["../"]}),
+        ("find_evidence", {"include": ["../"]}),
+        ("find_usages", {"symbol": "value", "include": ["../"]}),
+        ("select_context", {"query": "value", "files": ["../outside.py"]}),
+        ("trace_dependencies", {"symbol": "value", "files": ["../outside.py"]}),
+        ("explain_selection", {"receipt_id": "../outside"}),
+        ("expand_context", {"receipt_id": "../outside"}),
+    ],
+)
+def test_tool_scopes_cannot_escape_workspace(tmp_path: Path, tool: str, args: dict):
+    with pytest.raises(ToolError):
+        _call(create_server(tmp_path, expose=ALL_TOOLS), tool, args)
+
+
+def test_pack_load_cannot_bypass_current_response_budget(tmp_path: Path):
+    (tmp_path / "worker.py").write_text("def calculate(value):\n    return value * 2\n", encoding="utf-8")
+    server = create_server(tmp_path)
+    _call(
+        server,
+        "select_context",
+        {
+            "query": "calculate",
+            "files": ["worker.py"],
+            "budget_tokens": 100,
+            "advanced": {"save_as": "worker"},
+        },
+    )
+    with pytest.raises(ToolError, match="exceeds"):
+        _call(
+            server,
+            "select_context",
+            {
+                "query": "",
+                "budget_tokens": 1,
+                "advanced": {"pack": "worker"},
+            },
+        )
+    result = json.loads(
+        _call(
+            server,
+            "select_context",
+            {
+                "query": "",
+                "budget_tokens": 100,
+                "advanced": {"pack": "worker"},
+            },
+        )
+        .content[0]
+        .text
+    )
+    assert "return value * 2" in result["context"]
+
+
+@pytest.mark.parametrize("budget", [1, 15, 100])
+def test_trace_response_reports_soft_budget_overrun(tmp_path: Path, budget: int):
+    from pasr.tokenize import get_tokenizer
+
+    (tmp_path / "worker.py").write_text(
+        "def helper(value):\n    return value * 2\n\ndef calculate(value):\n    return helper(value)\n",
+        encoding="utf-8",
+    )
+    server = create_server(tmp_path, expose=ALL_TOOLS)
+    result = json.loads(
+        _call(
+            server,
+            "trace_dependencies",
+            {
+                "symbol": "calculate",
+                "files": ["worker.py"],
+                "budget_tokens": budget,
+            },
+        )
+        .content[0]
+        .text
+    )
+    assert result["token_count"] == get_tokenizer().count(result["context"])
+    assert result["within_budget"] is (result["token_count"] <= budget)
+    assert {span["name"] for span in result["spans"]} == {"calculate", "helper"}
+
+
+def test_large_library_pack_cannot_bypass_mcp_hard_cap(tmp_path: Path):
+    from pasr.schema import validate_select_context_request
+    from pasr.select import save_pack
+    from pasr.tokenize import get_tokenizer
+
+    (tmp_path / "worker.py").write_text(
+        "".join(f"VALUE_{n} = {n}\n" for n in range(500)),
+        encoding="utf-8",
+    )
+    request = validate_select_context_request(
+        {
+            "query": "value",
+            "files": ["worker.py"],
+            "budget_tokens": 6000,
+        },
+        workspace_root=tmp_path,
+    )
+    _, pack = save_pack("large", request)
+    assert get_tokenizer().count(pack["context"]) > 1500
+    with pytest.raises(ToolError, match="1500-token budget"):
+        _call(
+            create_server(tmp_path),
+            "select_context",
+            {
+                "query": "",
+                "budget_tokens": 20000,
+                "advanced": {"pack": "large"},
+            },
+        )
+
+
+def test_combined_search_retains_identifier_hits_in_large_functions(tmp_path: Path):
+    from pasr.tokenize import get_tokenizer
+
+    source = "def needle_worker():\n" + "".join(f"    step_{i} = {i}\n" for i in range(600))
+    (tmp_path / "worker.py").write_text(source, encoding="utf-8")
+    assert get_tokenizer().count(source) > 1500
+    server = create_server(tmp_path, expose=ALL_TOOLS)
+    found = json.loads(_call(server, "find_evidence", {"query": "needle"}).content[0].text)
+    assert found["hits"][0]["provenance"] == "worker.py:1"
+    selected = _call(server, "search_code", {"query": "needle"}).structured_content
+    assert "def needle_worker():" in selected["context"]
+    assert get_tokenizer().count(selected["context"]) <= 1500
+
+
+def _path_fixture(root: Path) -> None:
+    for n in range(4):
+        (root / f"decoy_{n}.py").write_text(
+            "".join(
+                f"def validate_{n}_{k}(value):\n    # assignment hook validate\n    return value\n" for k in range(30)
+            ),
+            encoding="utf-8",
+        )
+    (root / "pkg").mkdir()
+    (root / "pkg" / "setters.py").write_text(
+        "from . import _config\n\n\n"
+        "def guard(instance, attrib, new_value):\n"
+        "    if _config.enabled is False:\n"
+        "        return new_value\n"
+        "    return new_value\n",
+        encoding="utf-8",
+    )
+    (root / "pkg" / "_config.py").write_text("enabled = True\n", encoding="utf-8")
+
+
+@pytest.mark.parametrize("named", ["pkg/setters.py", "setters.py", "./pkg/setters.py"])
+def test_search_code_reads_a_file_the_query_names_by_path(tmp_path: Path, named: str):
+    """Content ranking alone never reaches a file whose lines lack the query's words."""
+    _path_fixture(tmp_path)
+    server = create_server(tmp_path, expose=["find_evidence", "search_code"])
+    query = f"{named} validate assignment hook"
+    found = json.loads(_call(server, "find_evidence", {"query": query}).content[0].text)
+    assert not any(hit["provenance"].startswith("pkg/setters.py") for hit in found["hits"])
+    payload = _call(server, "search_code", {"query": query}).structured_content
+    assert "pkg/setters.py:" in payload["context"]
+    assert "if _config.enabled is False:" in payload["context"]
+
+
+def test_named_paths_require_one_unambiguous_file(tmp_path: Path):
+    from pasr.mcp.server import _named_paths
+
+    _path_fixture(tmp_path)
+    (tmp_path / "other").mkdir()
+    (tmp_path / "other" / "_config.py").write_text("enabled = False\n", encoding="utf-8")
+    assert _named_paths(tmp_path, r"read pkg\setters.py and decoy_1.py") == ["pkg/setters.py", "decoy_1.py"]
+    assert _named_paths(tmp_path, "_config.py flag") == []  # two files have that name
+    assert _named_paths(tmp_path, "pkg/_config.py flag") == ["pkg/_config.py"]
+    assert _named_paths(tmp_path, "setters.guard and os.path.join") == []
+
+
+def test_search_code_does_not_call_a_named_file_absent(tmp_path: Path):
+    _path_fixture(tmp_path)
+    server = create_server(tmp_path, expose=["search_code"])
+    payload = _call(server, "search_code", {"query": "pkg/_config.py enabled flag"}).structured_content
+    assert "pkg/_config.py:" in payload["context"]
+    assert not any("_config.py" in note for note in payload["advice"] if note.startswith("No file here contains"))
+
+
+@pytest.mark.parametrize(
+    "tool,args",
+    [
+        ("search_code", {"query": "guard new_value"}),
+        ("read_code", {"query": "guard", "files": ["pkg/setters.py:1-7"]}),
+    ],
+)
+def test_source_tools_send_source_unescaped_after_a_header(tmp_path: Path, tool: str, args: dict):
+    """The text block is the structured object, with the source as itself."""
+    from pasr.tokenize import get_tokenizer
+
+    _path_fixture(tmp_path)
+    result = _call(create_server(tmp_path, expose=["search_code", "read_code"]), tool, args)
+    payload = result.structured_content
+    header, _, body = result.content[0].text.partition("\n")
+    assert body == payload["context"]
+    assert "if _config.enabled is False:\n        return new_value" in body
+    assert json.loads(header) == {k: v for k, v in payload.items() if k != "context" and v not in ([], None)}
+    as_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    assert get_tokenizer().count(result.content[0].text) < get_tokenizer().count(as_json)

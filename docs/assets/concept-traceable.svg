@@ -23,5 +23,5 @@
   <text x="470" y="134" font-size="12" fill="#484f58">which retrieval signals fired + its score</text>
 
   <line x1="24" y1="152" x2="796" y2="152" stroke="#1c2330"/>
-  <text x="24" y="176" font-size="12.5" fill="#6e7681">All of this — spans kept <tspan fill="#c9d1d9">and dropped</tspan> — is written to a byte-stable receipt on every call.</text>
+  <text x="24" y="176" font-size="12.5" fill="#6e7681">Selection receipts: best-effort persistence, covering only PASR-delivered context.</text>
 </svg>

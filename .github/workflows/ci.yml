@@ -17,8 +17,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev]"
-      - run: ruff check src tests eval
-      - run: ruff format --check src tests eval
+      - run: ruff check src tests eval scripts .github/actions/pasr-context/run.py
+      - run: ruff format --check src tests eval scripts .github/actions/pasr-context/run.py
       - run: pytest -q
       - name: core stays torch-free (and mcp-free)
         run: |
@@ -29,3 +29,30 @@ jobs:
             --budget 4000 --format text --context-file "$RUNNER_TEMP/ctx.txt" --metrics-file "$RUNNER_TEMP/m.json" > /dev/null
           test -s "$RUNNER_TEMP/ctx.txt"
           python -c "import json,sys; m=json.load(open(sys.argv[1])); assert {'tokens_in','tokens_out','route','round_trips_saved'} <= set(m), m; print(m)" "$RUNNER_TEMP/m.json"
+
+  distribution:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install build twine
+      - name: Build wheel and source distribution
+        run: python -m build
+      - name: Validate package descriptions
+        run: python -m twine check --strict dist/*
+      - name: Install artifacts and exercise CLI and MCP stdio
+        run: python scripts/smoke_dist.py dist
+      - name: Retain verified release artifacts
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pasr-dist
+          path: dist/*
+          if-no-files-found: error

@@ -1,0 +1,489 @@
+{
+  "date": "2026-09-28",
+  "request": "Continue with the smallest installed local generative model after Anthropic credits were exhausted.",
+  "decision": "No accuracy/token win established. Keep production retrieval unchanged. This local model/runtime configuration is not adequate for deciding retrieval quality on these tasks.",
+  "model": {
+    "name": "Meta-Llama-3.1-8B-Instruct",
+    "quantization": "Q4_K_M",
+    "file_bytes": 4920739168,
+    "model_sha256": "f2be3e1a239c12c9f3f01a962b11fb2807f8032fdb63b0a5502ea42ddef55e44",
+    "context_tokens": 32768,
+    "gpu_offload": "max",
+    "selection": "Smallest installed generative model by parameter count; embedding-only model is ineligible. No models downloaded.",
+    "backend": "LM Studio OpenAI-compatible localhost:1234"
+  },
+  "new_contract_comparison": {
+    "question_count": 8,
+    "source_repositories": 2,
+    "corpus_labels": 4,
+    "profiles": 16,
+    "scheduled_attempts": 128,
+    "completed_generations": 108,
+    "native_tool_format_failures": 19,
+    "length_truncated_generations": 1,
+    "source_review_verdicts": {
+      "materially_incorrect": 64,
+      "incomplete": 44,
+      "unanswerable_generation": 20
+    },
+    "known_provider_tokens_lower_bound": 812671,
+    "full_cohort_provider_tokens": null,
+    "hosted_rows_pooled": false,
+    "attempted_case_retries": 0,
+    "generation_settings": {
+      "temperature": 0.2,
+      "sampling_seed": 2026092701,
+      "schedule_seed": 2026092701,
+      "max_output_tokens_per_turn": 1200,
+      "reasoning_effort": "none",
+      "history_policy": "full_history"
+    },
+    "profiles_summary": [
+      {
+        "profile": "components_required@3",
+        "attempts": 8,
+        "answered": 7,
+        "usage_complete": 7,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 54666,
+        "mean_complete_usage_tokens": 7142.142857142857,
+        "mean_recorded_elapsed_seconds": 6.3875,
+        "tool_calls": {
+          "select_context": 10,
+          "find_evidence": 4,
+          "read_file": 1,
+          "grep": 3
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "unanswerable_generation": 1,
+          "materially_incorrect": 3,
+          "incomplete": 4
+        }
+      },
+      {
+        "profile": "components_required@4",
+        "attempts": 8,
+        "answered": 7,
+        "usage_complete": 7,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 64108,
+        "mean_complete_usage_tokens": 8146.285714285715,
+        "mean_recorded_elapsed_seconds": 6.8125,
+        "tool_calls": {
+          "grep": 2,
+          "find_evidence": 8,
+          "select_context": 10
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "materially_incorrect": 5,
+          "incomplete": 2,
+          "unanswerable_generation": 1
+        }
+      },
+      {
+        "profile": "components_required@5",
+        "attempts": 8,
+        "answered": 8,
+        "usage_complete": 8,
+        "full_cohort_mean_total_tokens": 9727.75,
+        "known_provider_tokens": 77822,
+        "mean_complete_usage_tokens": 9727.75,
+        "mean_recorded_elapsed_seconds": 7.475,
+        "tool_calls": {
+          "find_evidence": 7,
+          "find_symbols": 1,
+          "select_context": 14
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "materially_incorrect": 6,
+          "incomplete": 2
+        }
+      },
+      {
+        "profile": "components_required@6",
+        "attempts": 8,
+        "answered": 8,
+        "usage_complete": 8,
+        "full_cohort_mean_total_tokens": 9118.625,
+        "known_provider_tokens": 72949,
+        "mean_complete_usage_tokens": 9118.625,
+        "mean_recorded_elapsed_seconds": 6.9125,
+        "tool_calls": {
+          "select_context": 14,
+          "find_evidence": 6
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "materially_incorrect": 6,
+          "incomplete": 2
+        }
+      },
+      {
+        "profile": "frequency_required@3",
+        "attempts": 8,
+        "answered": 8,
+        "usage_complete": 8,
+        "full_cohort_mean_total_tokens": 6690.625,
+        "known_provider_tokens": 53525,
+        "mean_complete_usage_tokens": 6690.625,
+        "mean_recorded_elapsed_seconds": 5.2375,
+        "tool_calls": {
+          "find_evidence": 5,
+          "select_context": 9,
+          "grep": 2
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "materially_incorrect": 4,
+          "incomplete": 4
+        }
+      },
+      {
+        "profile": "frequency_required@4",
+        "attempts": 8,
+        "answered": 7,
+        "usage_complete": 7,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 61339,
+        "mean_complete_usage_tokens": 8105.428571428572,
+        "mean_recorded_elapsed_seconds": 5.9875,
+        "tool_calls": {
+          "select_context": 13,
+          "find_evidence": 3,
+          "grep": 4
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "materially_incorrect": 4,
+          "unanswerable_generation": 1,
+          "incomplete": 3
+        }
+      },
+      {
+        "profile": "frequency_required@5",
+        "attempts": 8,
+        "answered": 6,
+        "usage_complete": 7,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 65240,
+        "mean_complete_usage_tokens": 8342.714285714286,
+        "mean_recorded_elapsed_seconds": 7.8375,
+        "tool_calls": {
+          "select_context": 12,
+          "find_evidence": 6,
+          "grep": 1
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "incomplete": 2,
+          "materially_incorrect": 4,
+          "unanswerable_generation": 2
+        }
+      },
+      {
+        "profile": "frequency_required@6",
+        "attempts": 8,
+        "answered": 7,
+        "usage_complete": 7,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 67501,
+        "mean_complete_usage_tokens": 8975.714285714286,
+        "mean_recorded_elapsed_seconds": 6.15,
+        "tool_calls": {
+          "find_evidence": 4,
+          "select_context": 11,
+          "read_file": 1,
+          "grep": 4
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "materially_incorrect": 6,
+          "unanswerable_generation": 1,
+          "incomplete": 1
+        }
+      },
+      {
+        "profile": "grep@3",
+        "attempts": 8,
+        "answered": 6,
+        "usage_complete": 6,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 10747,
+        "mean_complete_usage_tokens": 1791.1666666666667,
+        "mean_recorded_elapsed_seconds": 4.0,
+        "tool_calls": {
+          "grep": 8,
+          "read_file": 2
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "unanswerable_generation": 2,
+          "materially_incorrect": 3,
+          "incomplete": 3
+        }
+      },
+      {
+        "profile": "grep@4",
+        "attempts": 8,
+        "answered": 5,
+        "usage_complete": 5,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 14624,
+        "mean_complete_usage_tokens": 2151,
+        "mean_recorded_elapsed_seconds": 5.0125,
+        "tool_calls": {
+          "grep": 10,
+          "read_file": 6
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "incomplete": 3,
+          "unanswerable_generation": 3,
+          "materially_incorrect": 2
+        }
+      },
+      {
+        "profile": "grep@5",
+        "attempts": 8,
+        "answered": 5,
+        "usage_complete": 5,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 13341,
+        "mean_complete_usage_tokens": 2272.8,
+        "mean_recorded_elapsed_seconds": 4.6375,
+        "tool_calls": {
+          "grep": 13,
+          "read_file": 1
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "incomplete": 3,
+          "unanswerable_generation": 3,
+          "materially_incorrect": 2
+        }
+      },
+      {
+        "profile": "grep@6",
+        "attempts": 8,
+        "answered": 7,
+        "usage_complete": 7,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 17861,
+        "mean_complete_usage_tokens": 2551.5714285714284,
+        "mean_recorded_elapsed_seconds": 5.4125000000000005,
+        "tool_calls": {
+          "grep": 11,
+          "read_file": 7
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "incomplete": 3,
+          "materially_incorrect": 4,
+          "unanswerable_generation": 1
+        }
+      },
+      {
+        "profile": "required@3",
+        "attempts": 8,
+        "answered": 7,
+        "usage_complete": 7,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 49187,
+        "mean_complete_usage_tokens": 6369.428571428572,
+        "mean_recorded_elapsed_seconds": 5.9875,
+        "tool_calls": {
+          "select_context": 7,
+          "find_evidence": 7
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "unanswerable_generation": 1,
+          "materially_incorrect": 4,
+          "incomplete": 3
+        }
+      },
+      {
+        "profile": "required@4",
+        "attempts": 8,
+        "answered": 7,
+        "usage_complete": 7,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 61138,
+        "mean_complete_usage_tokens": 8066.714285714285,
+        "mean_recorded_elapsed_seconds": 7.7375,
+        "tool_calls": {
+          "find_evidence": 3,
+          "select_context": 13,
+          "grep": 4
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "materially_incorrect": 4,
+          "unanswerable_generation": 1,
+          "incomplete": 3
+        }
+      },
+      {
+        "profile": "required@5",
+        "attempts": 8,
+        "answered": 7,
+        "usage_complete": 7,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 71299,
+        "mean_complete_usage_tokens": 9174.857142857143,
+        "mean_recorded_elapsed_seconds": 6.5375,
+        "tool_calls": {
+          "find_evidence": 4,
+          "select_context": 14,
+          "grep": 4
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "materially_incorrect": 3,
+          "unanswerable_generation": 1,
+          "incomplete": 4
+        }
+      },
+      {
+        "profile": "required@6",
+        "attempts": 8,
+        "answered": 6,
+        "usage_complete": 6,
+        "full_cohort_mean_total_tokens": null,
+        "known_provider_tokens": 57324,
+        "mean_complete_usage_tokens": 7635.333333333333,
+        "mean_recorded_elapsed_seconds": 6.225,
+        "tool_calls": {
+          "select_context": 10,
+          "find_evidence": 6,
+          "grep": 1
+        },
+        "source_reviewed_full_answer_passes": 0,
+        "verdict_counts": {
+          "materially_incorrect": 4,
+          "incomplete": 2,
+          "unanswerable_generation": 2
+        }
+      }
+    ]
+  },
+  "retained_fresh_validation": {
+    "date": "2026-09-27",
+    "newly_rerun": false,
+    "questions": 50,
+    "repositories": 10,
+    "trajectories": 300,
+    "completed_generations": 138,
+    "native_tool_format_failures": 162,
+    "source_reviewed_full_answer_passes": 0,
+    "full_cohort_provider_tokens": null,
+    "reason_for_reuse": "Identical 8B Q4_K_M weights verified by SHA-256. Existing frozen six-profile 32768-context validation is retained, not mislabeled as a new run.",
+    "profiles": [
+      {
+        "variant": "components@3",
+        "trajectories": 50,
+        "semantic_passes": 0,
+        "usage_complete_rows": 27,
+        "generation_failures": 23
+      },
+      {
+        "variant": "components@4",
+        "trajectories": 50,
+        "semantic_passes": 0,
+        "usage_complete_rows": 17,
+        "generation_failures": 33
+      },
+      {
+        "variant": "current@6",
+        "trajectories": 50,
+        "semantic_passes": 0,
+        "usage_complete_rows": 20,
+        "generation_failures": 30
+      },
+      {
+        "variant": "frequency@5",
+        "trajectories": 50,
+        "semantic_passes": 0,
+        "usage_complete_rows": 22,
+        "generation_failures": 28
+      },
+      {
+        "variant": "grep@4",
+        "trajectories": 50,
+        "semantic_passes": 0,
+        "usage_complete_rows": 27,
+        "generation_failures": 23
+      },
+      {
+        "variant": "grep@6",
+        "trajectories": 50,
+        "semantic_passes": 0,
+        "usage_complete_rows": 25,
+        "generation_failures": 25
+      }
+    ]
+  },
+  "interpretation": {
+    "accuracy": "All 16 new profiles scored 0/8 full-answer passes. A zero-quality tie does not establish useful equivalence.",
+    "tokens": "All four native baseline budgets have missing usage. Three PASR candidate profiles have complete costs, but no complete baseline comparison and no correct full answers. Complete-usage subset averages are not savings claims.",
+    "failures": "Native-format rejections and truncation are counted as answer failures, not silently retried or dropped. Earlier successful request usage from failed trajectories is retained as a lower bound.",
+    "generalization": "This is a local substitute, not hosted validation. Eight development questions are reused; the 300-case validation is historical evidence. One decoding seed/repetition, no population-equivalence claim.",
+    "grading": "Arm-blind coding-assistant source review with frozen source evidence, exact quote and identity checks; not independent human validation.",
+    "grader_state_isolation": "Reviewers reported shared Eval globals; assigned on-disk partitions were verified canonical, disjoint and exhaustive. Reviewers reloaded isolated state; merged grades passed exact identity, quote, generation-status and duplicate-verdict checks."
+  },
+  "verification": {
+    "actual_native_tool_smoke": "Passed, 197 provider input+output tokens, excluded from benchmark rows.",
+    "actual_benchmark": "128 scheduled attempts completed, production MCP tools exercised through frozen runner.",
+    "frozen_source_files_checked": 19,
+    "source_and_harness_hashes_unchanged": true,
+    "recorded_request_histories_append_only": true,
+    "recorded_usage_sums_reconciled": true,
+    "threshold_overshoots": 0,
+    "source_grades_validated": 128,
+    "production_code_changes": false,
+    "tests_rerun": false,
+    "study_model_unloaded": true,
+    "retained_evidence_unchanged": true
+  },
+  "hosted_status": {
+    "preflight_http_status": 400,
+    "error": "Insufficient Anthropic credits.",
+    "hosted_generation_after_local_fallback": false,
+    "unattempted_hosted_contract_cases": 96,
+    "fresh_hosted_validation": "Still unavailable; local evidence does not complete it."
+  },
+  "artifacts": {
+    "raw_root": "eval/agent_bench/results/local_continuation_20260928",
+    "raw_evidence_git_ignored": true,
+    "sha256": {
+      "protocol.json": "a33182f3687cbfa2c00460d3debca7510751be3c4f33c98aadf09f35b8420881",
+      "local_inventory.json": "c764ec5aa6d5489ed58e8e6066892344d88e4167b87e52d88ec0199f55a040e7",
+      "tool_smoke.json": "261945867adbaee5ef5bd212cd1a14860eaed66f4465b6dc346b224825ffec7f",
+      "llama_query_contract_plan.json": "cfbb111f15863b7c5f09e464020d23e5992f9333fe6c22254d5aa771359279ad",
+      "llama_query_contract/manifest.json": "81d945aa29299dcd4b995fb90d9894b5a181a6ec74f2561402fab09ad91757ed",
+      "llama_query_contract/continuation_manifest.json": "fe090cb882d3973496cf74664f9ce93ebefa671751f046c1569f54617366c98c",
+      "llama_query_contract/results.json": "874cd29c4a608025555579bd96b548fe2693c56670f5119a8db07467136cae7a",
+      "grading/manifest.json": "83c97efb70d3ff22c8256a6015d07df05b10a35e2b6ca87077447f6ccb5c8483",
+      "grading/packets.json": "6c58f8022d6f29b68f49984b055a843aaf000a17bf4b524a9affddc6d78c3115",
+      "grading/identities.json": "9f3efd70c646a2f154562bef7601c4235ab06af48ebce7bf17f60d0f13211e35",
+      "source_grades/manifest.json": "570cf9d827a0622f5266a199c0be0bd80a42ce69126b019bd3bd8be00f589b07",
+      "source_grades/grades.json": "53d1255a04ecd556d1d7d6faac9718b30dfcb732e2f738a6963a9161e7fb00f2",
+      "integrity.json": "70242e134894c5c708a967d15cfb8207ba03da7a6204ad7c60d334eb04e4bc0d",
+      "source_integrity.json": "2cd35045b317d18c3444e846b4505fff86f1905c8fd14b17d29752b72441df24",
+      "usage_summary.json": "6b2a4102a2da1b5212b79d0082a907611dab0e6787c16b8345811d2e5172e0dd",
+      "final_environment.json": "01c606da4a3f1189ab24a80ca584b2576aa07945843a6a1acc63cb1b7ae4948d",
+      "source_review_1.json": "4b3b71f61bf3ac599fa861d4e8c2fd802f3cb10db16291f74c366caa476ea80b",
+      "source_review_2.json": "c24b3381d4979538646daef0a716b6af531def39b95a90afe48271c1332ee857",
+      "source_review_3.json": "92354a69d950bf918efd66eb10da502b97903f40aa4a6038f1648130f9724275",
+      "source_review_4.json": "f430cb71e1c31dc37e1c79db0aba60529d520bd053351240e96456323c52c123",
+      "source_review_5.json": "aa3fcdb3b9599de617bff7ef4346a4b24c83d003ad1a3ea231b8199810234101",
+      "source_review_6.json": "cf11b72ee3dc2f34efcc113259743879ad30fc78f4a74b80935222d7131f26e8",
+      "source_review_7.json": "09fb2409ba46fc392e293253300575c30ea783066886fc011f9e83ee8e928f61",
+      "source_review_8.json": "718a129ac4b9edb9fe0f4aca634d930ceeae83d475d02bb8a9f9fef5e1a713d5"
+    }
+  },
+  "next_decision": "Use a model/runtime that reliably executes tools and answers these questions before further retrieval tuning. Qwen3.5-9B is the next-smallest installed generative model and already has usable source-graded results; its prior study did not establish the requested win either."
+}

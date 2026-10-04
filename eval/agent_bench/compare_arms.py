@@ -31,8 +31,8 @@ ARMS = {
     "RAG-dense": ("rag_dense", 6, None),
     "symbol-nav": ("pasr", 6, "find_symbols,find_usages"),
     "Aider-map": ("aider_map", 6, None),
-    "PASR-lite": ("pasr", 6, "search_code"),
-    "PASR-lite@4calls": ("pasr", 4, "search_code"),
+    "PASR-lite": ("pasr", 6, "search_code,read_code"),
+    "PASR-lite@4calls": ("pasr", 4, "search_code,read_code"),
 }
 
 

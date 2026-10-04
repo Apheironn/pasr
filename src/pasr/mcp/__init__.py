@@ -1,2 +1,2 @@
-"""MCP server package. Importing this pulls in the ``mcp`` SDK; the pure-logic core
-(``pasr.pipeline`` etc.) does not."""
+"""MCP namespace. Importing ``pasr.mcp.server`` loads the MCP SDK; importing this
+package alone, or the pure-logic core (``pasr.pipeline`` etc.), does not."""

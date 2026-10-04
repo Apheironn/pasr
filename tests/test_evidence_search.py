@@ -181,3 +181,27 @@ def test_a_plain_word_reaches_the_identifier_that_contains_it(tmp_path):
     (tmp_path / "other.py").write_text("# nothing about the last status here\n", encoding="utf-8")
     hits = find_evidence(tmp_path, query="last exit status", top_k=5, per_file=2)["hits"]
     assert any("LAST_EXIT_CODE" in hit["text"] for hit in hits)
+
+
+@pytest.mark.parametrize("scorer_name", ["", "none"])
+def test_disabling_similarity_still_returns_rare_evidence(workspace: Path, monkeypatch, scorer_name: str):
+    import pasr.symbol_search as search
+
+    monkeypatch.setattr(search, "_SCORER_NAME", scorer_name)
+    search._semantic_scorer.cache_clear()
+    try:
+        result = search.find_evidence(workspace, "server work reindexing")
+    finally:
+        search._semantic_scorer.cache_clear()
+
+    assert result["hits"][0]["provenance"] == "src/state.rs:1"
+    assert "reindexing" in result["hits"][0]["text"]
+
+
+def test_acronym_identifier_parts_are_searchable_as_plain_words(tmp_path: Path):
+    (tmp_path / "transport.py").write_text("class HTTPRequest:\n    pass\n", encoding="utf-8")
+
+    result = find_evidence(tmp_path, "request")
+
+    assert result["term_file_counts"] == {"request": 1}
+    assert [(hit["provenance"], hit["text"]) for hit in result["hits"]] == [("transport.py:1", "class HTTPRequest:")]

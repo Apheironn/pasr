@@ -1,0 +1,92 @@
+{
+  "status": "development_gate_failed_on_material_errors_only",
+  "archive": "results/split_cap4_20261002",
+  "change": "No source change. Split reader byte-identical to powered_split_20261001 candidate; the host stops it after 4 tool calls while native and the control keep 6 (deliberate, disclosed asymmetry). Gate unchanged.",
+  "profiles": {
+    "native": {
+      "n": 100,
+      "supported": 73,
+      "material_errors": 1,
+      "strict_all": 73,
+      "mean_tokens": 9711.59,
+      "median_tokens": 8041.5,
+      "tool_calls": 393,
+      "requests": 493,
+      "generation_failures": 0
+    },
+    "current": {
+      "n": 100,
+      "supported": 66,
+      "material_errors": 5,
+      "strict_all": 66,
+      "mean_tokens": 11184.14,
+      "median_tokens": 9991.0,
+      "tool_calls": 398,
+      "requests": 498,
+      "generation_failures": 0
+    },
+    "split": {
+      "n": 100,
+      "supported": 79,
+      "material_errors": 7,
+      "strict_all": 79,
+      "mean_tokens": 8133.03,
+      "median_tokens": 5907.0,
+      "tool_calls": 245,
+      "requests": 345,
+      "generation_failures": 0
+    }
+  },
+  "development_gate": {
+    "supported_at_least_native": true,
+    "supported_at_least_current": true,
+    "material_errors_no_more_than_native": false,
+    "material_errors_no_more_than_current": false,
+    "tokens_at_most_85pct_native": true,
+    "tokens_below_current": true
+  },
+  "gate_passed": false,
+  "bootstrap_95_question_paired": {
+    "split_minus_native_supported": [
+      -0.03,
+      0.15
+    ],
+    "split_over_native_mean_tokens": [
+      0.7334,
+      0.956
+    ],
+    "split_minus_current_supported": [
+      0.04,
+      0.22
+    ],
+    "split_over_current_mean_tokens": [
+      0.6536,
+      0.8063
+    ]
+  },
+  "split_vs_native_token_ratio": 0.8375,
+  "result": "Token conditions pass: 0.8375x native [0.733, 0.956] and 0.727x control. Supported answers 79 vs native 73 (+6 [-3,+15]) and control 66 (+13 [+4,+22]). Fails only \"no more material errors than either control\": split 7, native 1, control 5.",
+  "material_error_analysis": "4 of 7 split errors are in uncapped 2-call runs on questions that draw errors from every arm across studies (requote_uri, distribution filenames, collected errors, WSGI). 3 are in the 23 runs cut off at 4 calls (13% material there vs 5% in uncapped runs). Questions where only split erred vs only native: 4:4 and 4:3 in the two uncapped studies, 6:0 here; pooled 14:7 (sign test p~0.19). The cap makes the forced final answer assert unverified details.",
+  "limitations": [
+    "Previously queried questions; development evidence.",
+    "One repetition, one model.",
+    "Asymmetric stop policy: answers whether PASR needs fewer calls, not a same-budget comparison.",
+    "Arm-blind coding-assistant review; 4 reviewers of wave 3 were cut off by usage limits after writing their files; all 300 reviews passed integrity checks."
+  ],
+  "accounting": {
+    "trajectories": 300,
+    "api_requests": 1336,
+    "charge_bound_usd": 0.226623545,
+    "three_study_total_usd": 0.688932
+  },
+  "hashes": {
+    "protocol.json": "75ea48565feec2e95d86fe5967410b4108f50e7eed369607689ed2c575e6a9bf",
+    "results.json": "744eeb247bb36540d3afbee464e1af05b214504c653840d248f746747d7edb06",
+    "cases.json": "dac394ad66214864cefb460798a37cc4c2703cb0223511248fdcfc5fd5755850",
+    "analysis.json": "f3c20e4389f8f5a1539ebf227b3239ea5650ce265af69ddbf630e8af6e21161b",
+    "spend_ledger.json": "6f71282f515a73c205a37d8bd7672e99baad02bec573bd8356e02b782e958d7e",
+    "run_powered.py": "c685ea86efc4c1c60a2cc0073c163b5736e129ac4ec48dabd708c4794fc33e21",
+    "analyze.py": "73bec7bf42f2df8d41ac5e9f089c4bdbf8b65f327a85e684bf7abb6c49b51345",
+    "prepare_grading.py": "95a771c7cc7c8ae06f2e6d5d9864d733d83918288b2004ca7e2e9f46071f9a0b"
+  }
+}

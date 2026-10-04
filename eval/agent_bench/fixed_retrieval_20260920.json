@@ -1,0 +1,381 @@
+{
+  "experiment": "fixed_query_fixed_context_retrieval",
+  "date": "2026-09-20",
+  "decision": "Reject archived definition candidate; production retrieval unchanged. All four preregistered component gates failed.",
+  "corpus": {
+    "repository": "nushell/nushell",
+    "head_at_archive": "76ba59d425c25b74ac5c9257ccfb36ddc0d352ed",
+    "source_evidence_files": 57,
+    "note": "Full corpus is not bundled; retrieved, anchor and reviewer source files and hashes are preserved. HEAD is provenance, not a clean-worktree assertion."
+  },
+  "protocol": {
+    "hypothesis": "Separate source retrieval units from tool routing by replaying every recorded find_evidence query, then answer from fixed source-only contexts with no tools.",
+    "queries": {
+      "recorded": 13,
+      "workspace_scope_ablations": 3,
+      "total_cases": 16,
+      "selection": "All distinct find_evidence inputs from the previous 36 runs; no favorable-case selection."
+    },
+    "methods": {
+      "locator_hints": "Frozen current find_evidence; materialize only its supplied first-five read_lines hints, merge overlapping ranges, preserve first-hit order, greedily include whole merged spans under the common budget. This is a deterministic replay adapter, not the full production agent.",
+      "definitions": "Archived find_evidence_context at budget_tokens=1800, then render its returned source spans in the same source-only format. No reranking or post-result tuning."
+    },
+    "context": {
+      "budget_tokens": 1800,
+      "tokenizer": "PASR cl100k_base",
+      "format": "Identical source-excerpt disclaimer and file:start-end citations for both methods; source bytes preserved. No selection diagnostics, labels, scores, query metadata or oracle anchors shown to Qwen.",
+      "budget_note": "Same ceiling, not identical token consumption. The definition method also spends its original budget on its native metadata before normalization; unused budget is not topped up."
+    },
+    "model": {
+      "name": "qwen/qwen3.5-9b",
+      "quantization": "Q4_K_M",
+      "context_length": 32768,
+      "temperature": 0.2,
+      "reasoning_effort": "none",
+      "max_output": 1200,
+      "repetitions": 2,
+      "sampling_seed_base": 20260923,
+      "sampling_seed_rule": "base+rep-1, shared across all cases and methods",
+      "schedule_seed": 20260923,
+      "requests": 64,
+      "tools": false,
+      "calls_per_answer": 1,
+      "retry_policy": "No automatic retries; retain failed and truncated answers."
+    },
+    "coverage": "Exact delivered-line coverage of independently frozen source anchors; complete criterion requires every anchor. This is a narrow reference-coverage diagnostic, not semantic correctness.",
+    "quality": "Reuse five-criterion 0/0.5/1 causal scoring and material false claims; failed generations score zero. Grade answers against source, with method labels and token costs hidden.",
+    "analysis": "Primary comparison uses all 13 recorded-scope queries, macro-averaged equally over the four questions. Three scope ablations are reported separately, never pooled to inflate the primary result. Seeds are paired; no best-of selection.",
+    "decision_rule": [
+      "A component follow-on requires at least +0.10 absolute macro-average anchor-line coverage, strictly better macro causal score, no lower causal score on any question, and no more answers with material false claims.",
+      "Even a positive fixed-context result cannot promote production behavior; routing and free-agent end-to-end behavior remain untested."
+    ],
+    "known_limitations": [
+      "Questions and queries are reused, not unseen generalization tasks.",
+      "The locator-hint adapter is not an optimal reader or the full select_context tool.",
+      "Canonical source anchors can miss equivalent evidence; assess semantic answers separately.",
+      "This is a one-shot fixed-context study, not cumulative agent trajectory token savings."
+    ]
+  },
+  "population": {
+    "recorded_inputs": 13,
+    "scope_ablations": 3,
+    "methods": 2,
+    "seeds": 2,
+    "contexts": 32,
+    "answers": 64,
+    "primary_comparison_answers": 52,
+    "scope_ablation_answers": 12,
+    "distinct_questions": 4
+  },
+  "methods": {
+    "locator_hints": "Frozen control find_evidence; materialize first-five read hints, merge overlaps, greedily retain whole hinted spans under the common ceiling. Not the full production agent or select_context.",
+    "definitions": "Archived find_evidence_context under 1800 native response tokens, then normalize selected source spans. Native metadata already consumes some of this ceiling; no top-up."
+  },
+  "rendering": "Same source-only path/range/text format and 1800 cl100k_base token ceiling, not equal consumed tokens. Queries, arm labels, rankings and anchors are not supplied to Qwen.",
+  "coverage": {
+    "meaning": "Fraction of frozen canonical source lines supplied, averaged over five criteria then equally over four questions; not semantic accuracy.",
+    "recorded_question_macro": {
+      "locator_hints": 0.12197112133141545,
+      "definitions": 0.10245045045045045
+    },
+    "recorded_by_question": {
+      "primary_Q1": {
+        "locator_hints": 0.0768924218335983,
+        "definitions": 0.1598018018018018
+      },
+      "holdout_Q1": {
+        "locator_hints": 0.1609920634920635,
+        "definitions": 0.0
+      },
+      "primary_Q2": {
+        "locator_hints": 0.25,
+        "definitions": 0.25
+      },
+      "holdout_Q2": {
+        "locator_hints": 0.0,
+        "definitions": 0.0
+      }
+    },
+    "scope_ablation": "All three scoped/workspace pairs have zero canonical anchor-line coverage in both methods."
+  },
+  "quality": {
+    "locator_hints": {
+      "by_question": {
+        "primary_Q1": 0.625,
+        "holdout_Q1": 2.0,
+        "primary_Q2": 2.3333333333333335,
+        "holdout_Q2": 0
+      },
+      "question_macro_score": 1.2395833333333335,
+      "recorded_answers_with_material_false_claims": 2,
+      "recorded_fully_correct": 0,
+      "all_answers_with_material_false_claims": 2
+    },
+    "definitions": {
+      "by_question": {
+        "primary_Q1": 0.875,
+        "holdout_Q1": 0,
+        "primary_Q2": 2.3333333333333335,
+        "holdout_Q2": 0.25
+      },
+      "question_macro_score": 0.8645833333333334,
+      "recorded_answers_with_material_false_claims": 7,
+      "recorded_fully_correct": 0,
+      "all_answers_with_material_false_claims": 7
+    }
+  },
+  "quality_method": "Four question-specific label/cost-blinded model reviewers checked actual source before context support. Scores are subjective causal-criterion judgments, not accuracy probabilities or independent human validation. Raw reviews and two contradiction-rule score adjudications are preserved.",
+  "scope_ablation_quality": [
+    {
+      "query_id": "Q11",
+      "scope": "recorded",
+      "method": "locator_hints",
+      "mean_score": 0,
+      "answers_with_material_false_claims": 0
+    },
+    {
+      "query_id": "Q11",
+      "scope": "workspace",
+      "method": "locator_hints",
+      "mean_score": 0,
+      "answers_with_material_false_claims": 0
+    },
+    {
+      "query_id": "Q11",
+      "scope": "recorded",
+      "method": "definitions",
+      "mean_score": 0,
+      "answers_with_material_false_claims": 0
+    },
+    {
+      "query_id": "Q11",
+      "scope": "workspace",
+      "method": "definitions",
+      "mean_score": 0,
+      "answers_with_material_false_claims": 0
+    },
+    {
+      "query_id": "Q12",
+      "scope": "recorded",
+      "method": "locator_hints",
+      "mean_score": 0,
+      "answers_with_material_false_claims": 0
+    },
+    {
+      "query_id": "Q12",
+      "scope": "workspace",
+      "method": "locator_hints",
+      "mean_score": 0,
+      "answers_with_material_false_claims": 0
+    },
+    {
+      "query_id": "Q12",
+      "scope": "recorded",
+      "method": "definitions",
+      "mean_score": 0,
+      "answers_with_material_false_claims": 0
+    },
+    {
+      "query_id": "Q12",
+      "scope": "workspace",
+      "method": "definitions",
+      "mean_score": 0.25,
+      "answers_with_material_false_claims": 0
+    },
+    {
+      "query_id": "Q13",
+      "scope": "recorded",
+      "method": "locator_hints",
+      "mean_score": 0,
+      "answers_with_material_false_claims": 0
+    },
+    {
+      "query_id": "Q13",
+      "scope": "workspace",
+      "method": "locator_hints",
+      "mean_score": 0,
+      "answers_with_material_false_claims": 0
+    },
+    {
+      "query_id": "Q13",
+      "scope": "recorded",
+      "method": "definitions",
+      "mean_score": 1,
+      "answers_with_material_false_claims": 2
+    },
+    {
+      "query_id": "Q13",
+      "scope": "workspace",
+      "method": "definitions",
+      "mean_score": 0,
+      "answers_with_material_false_claims": 0
+    }
+  ],
+  "costs": {
+    "recorded": {
+      "locator_hints": {
+        "answers": 26,
+        "produced": 26,
+        "total_tokens": 31629,
+        "input_tokens": 22108,
+        "output_tokens": 9521,
+        "mean_context_tokens": 651.2307692307693,
+        "unique_question_contexts": 12
+      },
+      "definitions": {
+        "answers": 26,
+        "produced": 26,
+        "total_tokens": 66905,
+        "input_tokens": 53832,
+        "output_tokens": 13073,
+        "mean_context_tokens": 1730.5384615384614,
+        "unique_question_contexts": 13
+      }
+    },
+    "workspace": {
+      "locator_hints": {
+        "answers": 6,
+        "produced": 6,
+        "total_tokens": 6891,
+        "input_tokens": 5462,
+        "output_tokens": 1429,
+        "mean_context_tokens": 712.3333333333334,
+        "unique_question_contexts": 3
+      },
+      "definitions": {
+        "answers": 6,
+        "produced": 6,
+        "total_tokens": 14242,
+        "input_tokens": 12328,
+        "output_tokens": 1914,
+        "mean_context_tokens": 1732.3333333333333,
+        "unique_question_contexts": 3
+      }
+    },
+    "all": {
+      "locator_hints": {
+        "answers": 32,
+        "produced": 32,
+        "total_tokens": 38520,
+        "input_tokens": 27570,
+        "output_tokens": 10950,
+        "mean_context_tokens": 662.6875,
+        "unique_question_contexts": 15
+      },
+      "definitions": {
+        "answers": 32,
+        "produced": 32,
+        "total_tokens": 81147,
+        "input_tokens": 66160,
+        "output_tokens": 14987,
+        "mean_context_tokens": 1730.875,
+        "unique_question_contexts": 16
+      }
+    }
+  },
+  "recorded_question_macro_mean_tokens": {
+    "locator_hints": 1232.7708333333333,
+    "definitions": 2594.645833333333
+  },
+  "gates": {
+    "anchor_coverage_improves_by_at_least_0_10": false,
+    "macro_causal_score_strictly_improves": false,
+    "no_question_level_causal_regression": false,
+    "no_more_materially_false_answers": false
+  },
+  "diagnosis": [
+    {
+      "finding": "Identifier-component mismatch",
+      "evidence": "For Q12_workspace, both methods reach stack.rs but query terms exit/status/last_exit match none of the actual LAST_EXIT_CODE, set_last_exit_code, external_exit_code or exit_code lines with the current whole-word matcher. An illustrative underscore-boundary diagnostic matches those lines.",
+      "limit": "Diagnostic only; no modified retrieval algorithm was run or promoted. Wider scopes still do not deliver set_last_error."
+    },
+    {
+      "finding": "Relevant definitions starved by earlier bodies",
+      "evidence": "Q10 includes eval.rs among locator hits and in candidate output, but the candidate selects its small helpers rather than eval_call. Earlier MessagePack bodies consume 1250 source tokens; eval_call alone is 1232. The policy does not shorten a definition that fits alone merely to fit the remaining budget.",
+      "limit": "This establishes the observed packing obstacle, not a claim that one ranking patch would solve end-to-end routing."
+    },
+    {
+      "finding": "Scope widening is insufficient",
+      "evidence": "Workspace ablations sometimes move stack.rs to ranks 1-2, but still miss the setter and precedence branches. Q12 definitions gains only 0.25/5 mean partial credit; Q13 widening loses its callsite-only 1/5 and removes two false claims.",
+      "limit": "Ablations remain separate from the recorded-query main comparison."
+    }
+  ],
+  "limitations": [
+    "Four reused questions on one Rust repository; recorded queries are correlated, not independent task samples.",
+    "Two requested decoding seeds do not guarantee deterministic GPU execution. One identical prompt/seed pair produced different answers; all duplicates were retained.",
+    "Canonical line anchors can miss equivalent or callsite evidence; semantic grades are reported separately.",
+    "Equal ceiling is not equal supplied context: recorded-query means are 651.23 versus 1730.54 cl100k_base tokens.",
+    "No native-tool arm, tool routing or free-agent search; no end-to-end token-saving claim in this experiment.",
+    "No answer met all five causal criteria. Completed one-shot text, including partial abstention, is not a correct answer.",
+    "No post-result tuning, retries or best-of selection. Source snapshots and preregistered inputs remained unchanged."
+  ],
+  "verification": {
+    "pre_inference_files_unchanged": 7,
+    "snapshot_files_unchanged": 239,
+    "preserved_corpus_files": 57,
+    "actual_retrieval_calls": 32,
+    "actual_model_completions": 64,
+    "failed_model_completions": 0,
+    "request_audit": "request_audit.json",
+    "model_unloaded": true,
+    "preexisting_embedding_left_loaded": true
+  },
+  "artifacts_directory": "eval/agent_bench/results/fixed_queries_20260920",
+  "next_target": "Test identifier-aware evidence matching and relevance/budget allocation before returning larger bodies; retain these frozen queries for regression measurement. Any improved component still needs separate free-agent verification.",
+  "replay": {
+    "source_archive": "source_snapshots.zip",
+    "extract_into": "Directory containing the experiment scripts, preserving control/, candidate/ and shared_harness/.",
+    "retrieval_commands": [
+      [
+        "python",
+        "replay_worker.py",
+        "--source-root",
+        "control",
+        "--workspace",
+        "D:/kodlama/bench_repos/nushell",
+        "--cases",
+        "cases.json",
+        "--method",
+        "locator_hints",
+        "--out",
+        "locator_hints_replay.json"
+      ],
+      [
+        "python",
+        "replay_worker.py",
+        "--source-root",
+        "candidate",
+        "--workspace",
+        "D:/kodlama/bench_repos/nushell",
+        "--cases",
+        "cases.json",
+        "--method",
+        "definitions",
+        "--out",
+        "definitions_replay.json"
+      ]
+    ],
+    "answer_command": [
+      "python",
+      "answer_contexts.py",
+      "--source-root",
+      "control",
+      "--harness-root",
+      "shared_harness",
+      "--inputs",
+      "locator_hints_replay.json",
+      "definitions_replay.json",
+      "--out",
+      "answers_replay.json"
+    ],
+    "requirements": "Python 3.12 and archived project dependencies; original full corpus for retrieval; local Qwen3.5-9B Q4_K_M loaded at 32768 with flash attention. For answer-only replay, use preserved locator_hints.json and definitions.json instead of *_replay.json."
+  },
+  "evidence_archive": {
+    "path": "eval/agent_bench/results/fixed_queries_20260920/evidence_bundle.zip",
+    "sha256": "f4ba70f6033d6d54c14e4915d11d958d3c7d89b61eab5d2959c3e55a93355331",
+    "bytes": 1142865,
+    "members": 154,
+    "manifest_sha256": "2a29387c39fcdc6d80dbaa3d93debcb06042858d12623b18241b9c5cc28e209f",
+    "source_snapshot_sha256": "0fe48b294c4e16967cf842a7f2a1c8e0c2ebc4097568327828f4c46ba8490e22"
+  }
+}

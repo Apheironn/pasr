@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from pasr.symbol_search import find_symbols, find_usages
+from pasr.symbol_search import find_evidence, find_symbols, find_usages
 
 _RUST = """\
 //! A tiny module.
@@ -58,11 +58,76 @@ def test_exact_name_match_is_returned_alone(rust_workspace: Path):
     assert result["exact_match"] is True
 
 
+@pytest.mark.parametrize("name", ["needle_worker", "_needle_worker"])
+def test_literal_identifier_does_not_promote_its_components(tmp_path: Path, name: str):
+    (tmp_path / "worker.py").write_text(
+        f"def {name}():\n    return 1\n"
+        "def needle():\n    return 2\n"
+        "def worker():\n    return 3\n"
+        "def needle_worker_extra():\n    return 4\n",
+        encoding="utf-8",
+    )
+
+    result = find_symbols(tmp_path, name)
+    assert result["matches"] == [{"name": name, "kind": "function", "provenance": "worker.py:1-2"}]
+    assert result["symbol_match_count"] == 1
+    assert result["exact_match"] is True
+
+    fallback = find_symbols(tmp_path, "worker_missing")
+    assert fallback["exact_match"] is False
+    assert {match["name"] for match in fallback["matches"]} == {name, "worker", "needle_worker_extra"}
+
+
 def test_stopword_parts_do_not_drag_in_namesakes(rust_workspace: Path):
     """``is_quiescent`` must not match ``is_verbose`` on the strength of "is"."""
     result = find_symbols(rust_workspace, query="quiescent")
 
     assert [m["name"] for m in result["matches"]] == ["is_quiescent"]
+
+
+@pytest.mark.parametrize("name", ["Where", "When", "Who", "Is"])
+def test_stopword_identifier_lookup_preserves_exact_names(tmp_path: Path, name: str):
+    (tmp_path / "filters").mkdir()
+    (tmp_path / "filters" / "literal.rs").write_text(
+        f"pub struct {name} {{}}\nimpl {name} {{}}\npub struct {name}Else {{}}\n", encoding="utf-8"
+    )
+    (tmp_path / "outside.rs").write_text(f"pub struct {name} {{}}\n", encoding="utf-8")
+
+    result = find_symbols(tmp_path, f" {name} ", include=["filters"], kinds=["struct", "function", "impl"])
+
+    assert result["exact_match"] is True
+    assert [(match["kind"], match["name"]) for match in result["matches"]] == [
+        ("struct", name),
+        ("impl", name),
+    ]
+    assert all(match["provenance"].startswith("filters/literal.rs:") for match in result["matches"])
+
+
+@pytest.mark.parametrize("query, first", [("Who", ("struct", "Who")), ("who", ("function", "who"))])
+def test_stopword_identifier_lookup_preserves_case_and_kind_selection(tmp_path: Path, query: str, first: tuple):
+    (tmp_path / "literal.rs").write_text("pub struct Who {}\nimpl Who {}\npub fn who() {}\n", encoding="utf-8")
+
+    matches = find_symbols(tmp_path, query)["matches"]
+    assert [(match["kind"], match["name"]) for match in matches][0] == first
+    assert {match["kind"] for match in matches} == {"struct", "impl", "function"}
+
+    only_function = find_symbols(tmp_path, query, kinds=["fn"])
+    assert [(match["kind"], match["name"]) for match in only_function["matches"]] == [("function", "who")]
+
+    filtered = find_symbols(tmp_path, query, kinds=["trait"])
+    assert filtered["matches"] == []
+    assert filtered["kinds_available"] == ["function", "impl", "struct"]
+    assert filtered["kinds_filtered_out"] == 3
+
+
+def test_stopword_in_prose_does_not_become_an_exact_symbol_match(tmp_path: Path):
+    (tmp_path / "literal.rs").write_text(
+        "pub struct Where {}\npub fn is_quiescent() {}\npub fn is_verbose() {}\n", encoding="utf-8"
+    )
+
+    result = find_symbols(tmp_path, "where is quiescent")
+    assert [match["name"] for match in result["matches"]] == ["is_quiescent"]
+    assert result["exact_match"] is False
 
 
 def test_kind_filter_and_rust_struct_trait_enum(rust_workspace: Path):
@@ -90,6 +155,17 @@ def test_kind_aliases_are_accepted(rust_workspace: Path):
         assert [m["name"] for m in find_symbols(rust_workspace, query="is_quiescent", kinds=[alias])["matches"]] == [
             "is_quiescent"
         ]
+
+
+@pytest.mark.parametrize("kind", ["class", "struct", "CLASS"])
+def test_kind_aliases_match_native_python_and_rust_types(tmp_path: Path, kind: str):
+    (tmp_path / "where.py").write_text("class Where:\n    pass\n", encoding="utf-8")
+    (tmp_path / "where.rs").write_text("pub struct Where {}\npub fn Where() {}\n", encoding="utf-8")
+
+    matches = find_symbols(tmp_path, "Where", kinds=[kind])["matches"]
+
+    assert {(match["kind"], match["name"]) for match in matches} == {("class", "Where"), ("struct", "Where")}
+    assert {match["kind"] for match in find_symbols(tmp_path, "Where", kinds=["function"])["matches"]} == {"function"}
 
 
 def test_a_kind_filter_that_hides_a_real_match_says_so(rust_workspace: Path):
@@ -246,3 +322,57 @@ def test_a_name_that_matches_as_written_is_not_rewritten(tmp_path: Path):
     # a name with no qualifier and no match stays empty rather than inventing a retry
     missing = find_usages(root, "Nonexistent")
     assert missing["hits"] == [] and "searched" not in missing
+
+
+@pytest.mark.parametrize("locate", [find_symbols, find_evidence, find_usages])
+@pytest.mark.parametrize(
+    "bad_source",
+    [b'needle = "\xff"\n', "needle = 1\n".encode("utf-16"), b"needle = 1\x00\n"],
+    ids=["invalid-utf8", "utf16", "nul"],
+)
+def test_workspace_search_skips_unsupported_sources_with_diagnostics(tmp_path: Path, locate, bad_source: bytes):
+    (tmp_path / "bad.py").write_bytes(bad_source)
+    (tmp_path / "good.py").write_bytes(b"\xef\xbb\xbfdef needle():\r\n    return 1\r\n")
+
+    with pytest.warns(RuntimeWarning, match="Skipping source bad.py"):
+        result = locate(tmp_path, "needle")
+
+    rows = result["matches"] if locate is find_symbols else result["hits"]
+    assert [row["provenance"] for row in rows] == ["good.py:1-2" if locate is find_symbols else "good.py:1"]
+    assert result["files_indexed" if locate is find_symbols else "files_scanned"] == 1
+
+
+@pytest.mark.parametrize(
+    ("query", "source", "definition"),
+    [
+        ("hooks.enforce", "src/hooks.py", "def enforce(value):\n    return value\n"),
+        ("Hooks.enforce", "src/runtime.py", "class Hooks:\n    def enforce(self, value):\n        return value\n"),
+        ("pkg.enforce", "pkg/__init__.py", "def enforce(value):\n    return value\n"),
+        ("Engine::enforce", "src/runtime.rs", "struct Engine;\nimpl Engine {\n    fn enforce() {}\n}\n"),
+        ("__init__::enforce", "src/__init__.rs", "pub fn enforce() {}\n"),
+    ],
+)
+def test_qualified_definition_precedes_mentions_and_unrelated_namesakes(
+    tmp_path: Path, query: str, source: str, definition: str
+):
+    target = tmp_path / source
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(definition + "\n" * 400, encoding="utf-8")
+    for i in range(4):
+        (tmp_path / f"caller_{i}.py").write_text(
+            f"# {query}\ndef use():\n    return {query.replace('::', '.')}()\n",
+            encoding="utf-8",
+        )
+    # A matching class and a same-named function elsewhere in the file do not qualify.
+    qualifier = query.split(".")[0].split("::")[0]
+    (tmp_path / "unrelated.py").write_text(
+        f"class {qualifier}:\n    pass\n\ndef enforce(value):\n    return value\n# {query}\n",
+        encoding="utf-8",
+    )
+
+    result = find_evidence(tmp_path, query, top_k=1, per_file=1)
+    assert result["hits"][0]["provenance"].rsplit(":", 1)[0] == source
+
+    # The boost cannot bring an excluded definition back into an explicit scope.
+    scoped = find_evidence(tmp_path, query, include=["caller_0.py"], top_k=1)
+    assert scoped["hits"][0]["provenance"].startswith("caller_0.py:")

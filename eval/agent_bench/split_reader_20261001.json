@@ -1,0 +1,3166 @@
+{
+  "status": "development_gate_failed_validation_not_run",
+  "archive": "results/split_reader_20261001",
+  "target_achieved": false,
+  "candidate_promoted": false,
+  "default_tool_catalog_changed": false,
+  "change": "Only the opt-in discovery/read interface in pasr/mcp/server.py: search_code(query) plus read_code(query, required nonempty files). No native tools in the candidate. Ranking, selection and context budgets unchanged.",
+  "comparison": "Four fresh arms, ten reused development questions, three paired repetitions. Native/current controls exact; prior_reader is the ninth-study combined search/native-reader source and a diagnostic only. All120 trajectories retained.",
+  "summary": {
+    "stage": "dev",
+    "profiles": {
+      "native@6": {
+        "runs": 30,
+        "passes": 27,
+        "failed": 3,
+        "materially_incorrect": 1,
+        "incomplete": 2,
+        "completed": 30,
+        "generation_failures": {},
+        "strict_all_criteria_passes": 27,
+        "total_provider_tokens": 230162,
+        "mean_total_tokens": 7672.066666666667,
+        "mean_tool_calls": 3.466666666666667,
+        "mean_api_requests": 4.466666666666667,
+        "published_rate_cost_bound_usd": 0.019870655,
+        "tool_counts": {
+          "grep": 42,
+          "read_file": 62
+        },
+        "selection_options": {},
+        "continuation_usage": {}
+      },
+      "current@6": {
+        "runs": 30,
+        "passes": 29,
+        "failed": 1,
+        "materially_incorrect": 0,
+        "incomplete": 1,
+        "completed": 30,
+        "generation_failures": {},
+        "strict_all_criteria_passes": 28,
+        "total_provider_tokens": 252527,
+        "mean_total_tokens": 8417.566666666668,
+        "mean_tool_calls": 3.3333333333333335,
+        "mean_api_requests": 4.333333333333333,
+        "published_rate_cost_bound_usd": 0.02059178,
+        "tool_counts": {
+          "find_evidence": 27,
+          "read_file": 52,
+          "find_symbols": 4,
+          "select_context": 3,
+          "grep": 14
+        },
+        "selection_options": {
+          "query": 3,
+          "files": 3,
+          "budget_tokens": 3
+        },
+        "continuation_usage": {
+          "responses": 3,
+          "partial": 0,
+          "blocked": 0
+        }
+      },
+      "prior_reader@6": {
+        "runs": 30,
+        "passes": 26,
+        "failed": 4,
+        "materially_incorrect": 1,
+        "incomplete": 3,
+        "completed": 30,
+        "generation_failures": {},
+        "strict_all_criteria_passes": 26,
+        "total_provider_tokens": 238029,
+        "mean_total_tokens": 7934.3,
+        "mean_tool_calls": 2.566666666666667,
+        "mean_api_requests": 3.566666666666667,
+        "published_rate_cost_bound_usd": 0.019145245,
+        "tool_counts": {
+          "search_code": 62,
+          "read_file": 15
+        },
+        "selection_options": {},
+        "continuation_usage": {}
+      },
+      "search_reader@6": {
+        "runs": 30,
+        "passes": 27,
+        "failed": 3,
+        "materially_incorrect": 0,
+        "incomplete": 3,
+        "completed": 30,
+        "generation_failures": {},
+        "strict_all_criteria_passes": 27,
+        "total_provider_tokens": 243158,
+        "mean_total_tokens": 8105.266666666666,
+        "mean_tool_calls": 2.1666666666666665,
+        "mean_api_requests": 3.1666666666666665,
+        "published_rate_cost_bound_usd": 0.020903935,
+        "tool_counts": {
+          "search_code": 46,
+          "read_code": 19
+        },
+        "selection_options": {},
+        "continuation_usage": {
+          "responses": 13,
+          "partial": 2,
+          "blocked": 0
+        }
+      }
+    },
+    "comparisons": {
+      "current@6 vs native@6": {
+        "questions": 10,
+        "paired_observations": 30,
+        "resampling_unit": "original_question",
+        "question_cluster_sizes": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "repository_clusters": 10,
+        "bootstrap_draws": 10000,
+        "bootstrap_seed": 2026092901,
+        "accuracy_difference": 0.06666666666666667,
+        "accuracy_difference_ci95": [
+          0,
+          0.16666666666666666
+        ],
+        "token_ratio": 1.0971706884715984,
+        "token_ratio_ci95": [
+          0.899725119939902,
+          1.3292467002897306
+        ],
+        "repository_cluster_accuracy_ci95": [
+          0,
+          0.16666666666666666
+        ],
+        "repository_cluster_token_ratio_ci95": [
+          0.8995582869214519,
+          1.3227455571913798
+        ],
+        "candidate_only_correct": [
+          "fresh-anyio-buffered-boundary-reads::r3",
+          "fresh-attrs-disabled-restoration::r1",
+          "fresh-click-atomic-write-close::r1"
+        ],
+        "control_only_correct": [
+          "fresh-attrs-disabled-restoration::r2"
+        ]
+      },
+      "search_reader@6 vs native@6": {
+        "questions": 10,
+        "paired_observations": 30,
+        "resampling_unit": "original_question",
+        "question_cluster_sizes": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "repository_clusters": 10,
+        "bootstrap_draws": 10000,
+        "bootstrap_seed": 2026092901,
+        "accuracy_difference": 0,
+        "accuracy_difference_ci95": [
+          -0.1,
+          0.1
+        ],
+        "token_ratio": 1.0564645771239387,
+        "token_ratio_ci95": [
+          0.7194656572937072,
+          1.4840227081324262
+        ],
+        "repository_cluster_accuracy_ci95": [
+          -0.1,
+          0.1
+        ],
+        "repository_cluster_token_ratio_ci95": [
+          0.7140588036498817,
+          1.485866060372989
+        ],
+        "candidate_only_correct": [
+          "fresh-anyio-buffered-boundary-reads::r3",
+          "fresh-attrs-disabled-restoration::r1",
+          "fresh-click-atomic-write-close::r1"
+        ],
+        "control_only_correct": [
+          "fresh-attrs-disabled-restoration::r2",
+          "fresh-attrs-disabled-restoration::r3",
+          "fresh-click-atomic-write-close::r2"
+        ]
+      },
+      "search_reader@6 vs current@6": {
+        "questions": 10,
+        "paired_observations": 30,
+        "resampling_unit": "original_question",
+        "question_cluster_sizes": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "repository_clusters": 10,
+        "bootstrap_draws": 10000,
+        "bootstrap_seed": 2026092901,
+        "accuracy_difference": -0.06666666666666667,
+        "accuracy_difference_ci95": [
+          -0.16666666666666666,
+          0
+        ],
+        "token_ratio": 0.9628990167388042,
+        "token_ratio_ci95": [
+          0.640814461864262,
+          1.2942459567884577
+        ],
+        "repository_cluster_accuracy_ci95": [
+          -0.16666666666666666,
+          0
+        ],
+        "repository_cluster_token_ratio_ci95": [
+          0.6415669037842423,
+          1.299458010614945
+        ],
+        "candidate_only_correct": [],
+        "control_only_correct": [
+          "fresh-attrs-disabled-restoration::r3",
+          "fresh-click-atomic-write-close::r2"
+        ]
+      },
+      "search_reader@6 vs prior_reader@6": {
+        "questions": 10,
+        "paired_observations": 30,
+        "resampling_unit": "original_question",
+        "question_cluster_sizes": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "repository_clusters": 10,
+        "bootstrap_draws": 10000,
+        "bootstrap_seed": 2026092901,
+        "accuracy_difference": 0.03333333333333333,
+        "accuracy_difference_ci95": [
+          -0.06666666666666667,
+          0.13333333333333333
+        ],
+        "token_ratio": 1.0215477945964568,
+        "token_ratio_ci95": [
+          0.6935371955153566,
+          1.50175937156235
+        ],
+        "repository_cluster_accuracy_ci95": [
+          -0.06666666666666667,
+          0.13333333333333333
+        ],
+        "repository_cluster_token_ratio_ci95": [
+          0.6916466283324622,
+          1.506255435159547
+        ],
+        "candidate_only_correct": [
+          "fresh-packaging-collected-errors::r3",
+          "fresh-typer-annotated-default-conflicts::r2"
+        ],
+        "control_only_correct": [
+          "fresh-click-atomic-write-close::r2"
+        ]
+      }
+    },
+    "per_repetition": {
+      "1": {
+        "profiles": {
+          "native@6": {
+            "runs": 10,
+            "passes": 8,
+            "failed": 2,
+            "materially_incorrect": 0,
+            "incomplete": 2,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 8,
+            "total_provider_tokens": 64261,
+            "mean_total_tokens": 6426.1,
+            "mean_tool_calls": 3,
+            "mean_api_requests": 4,
+            "published_rate_cost_bound_usd": 0.006452335,
+            "tool_counts": {
+              "grep": 13,
+              "read_file": 17
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "current@6": {
+            "runs": 10,
+            "passes": 10,
+            "failed": 0,
+            "materially_incorrect": 0,
+            "incomplete": 0,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 10,
+            "total_provider_tokens": 82094,
+            "mean_total_tokens": 8209.4,
+            "mean_tool_calls": 3.3,
+            "mean_api_requests": 4.3,
+            "published_rate_cost_bound_usd": 0.006849235,
+            "tool_counts": {
+              "find_evidence": 8,
+              "read_file": 18,
+              "find_symbols": 3,
+              "select_context": 2,
+              "grep": 2
+            },
+            "selection_options": {
+              "query": 2,
+              "files": 2,
+              "budget_tokens": 2
+            },
+            "continuation_usage": {
+              "responses": 2,
+              "partial": 0,
+              "blocked": 0
+            }
+          },
+          "prior_reader@6": {
+            "runs": 10,
+            "passes": 10,
+            "failed": 0,
+            "materially_incorrect": 0,
+            "incomplete": 0,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 10,
+            "total_provider_tokens": 60927,
+            "mean_total_tokens": 6092.7,
+            "mean_tool_calls": 2.3,
+            "mean_api_requests": 3.3,
+            "published_rate_cost_bound_usd": 0.006183125,
+            "tool_counts": {
+              "search_code": 18,
+              "read_file": 5
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "search_reader@6": {
+            "runs": 10,
+            "passes": 10,
+            "failed": 0,
+            "materially_incorrect": 0,
+            "incomplete": 0,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 10,
+            "total_provider_tokens": 78599,
+            "mean_total_tokens": 7859.9,
+            "mean_tool_calls": 2.2,
+            "mean_api_requests": 3.2,
+            "published_rate_cost_bound_usd": 0.00713615,
+            "tool_counts": {
+              "search_code": 14,
+              "read_code": 8
+            },
+            "selection_options": {},
+            "continuation_usage": {
+              "responses": 5,
+              "partial": 0,
+              "blocked": 0
+            }
+          }
+        },
+        "comparisons": {
+          "current@6 vs native@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0.2,
+            "accuracy_difference_ci95": [
+              0,
+              0.5
+            ],
+            "token_ratio": 1.2775089089805636,
+            "token_ratio_ci95": [
+              0.9835889531798772,
+              1.6440815736709957
+            ],
+            "repository_cluster_accuracy_ci95": [
+              0,
+              0.5
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.9795680093403386,
+              1.6414071088310735
+            ],
+            "candidate_only_correct": [
+              "fresh-attrs-disabled-restoration::r1",
+              "fresh-click-atomic-write-close::r1"
+            ],
+            "control_only_correct": []
+          },
+          "search_reader@6 vs native@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0.2,
+            "accuracy_difference_ci95": [
+              0,
+              0.5
+            ],
+            "token_ratio": 1.2231213333125845,
+            "token_ratio_ci95": [
+              0.9136746669633173,
+              1.613942683195482
+            ],
+            "repository_cluster_accuracy_ci95": [
+              0,
+              0.5
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.9144993036013758,
+              1.6204111346067183
+            ],
+            "candidate_only_correct": [
+              "fresh-attrs-disabled-restoration::r1",
+              "fresh-click-atomic-write-close::r1"
+            ],
+            "control_only_correct": []
+          },
+          "search_reader@6 vs current@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              0,
+              0
+            ],
+            "token_ratio": 0.9574268521451019,
+            "token_ratio_ci95": [
+              0.6569686083669249,
+              1.3180266945190007
+            ],
+            "repository_cluster_accuracy_ci95": [
+              0,
+              0
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.6583692356789532,
+              1.3282368694321474
+            ],
+            "candidate_only_correct": [],
+            "control_only_correct": []
+          },
+          "search_reader@6 vs prior_reader@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              0,
+              0
+            ],
+            "token_ratio": 1.2900520294778999,
+            "token_ratio_ci95": [
+              0.9036000777194881,
+              1.8456201056273902
+            ],
+            "repository_cluster_accuracy_ci95": [
+              0,
+              0
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.9083673306135509,
+              1.845914808159814
+            ],
+            "candidate_only_correct": [],
+            "control_only_correct": []
+          }
+        },
+        "same_gate_diagnostic": false
+      },
+      "2": {
+        "profiles": {
+          "native@6": {
+            "runs": 10,
+            "passes": 10,
+            "failed": 0,
+            "materially_incorrect": 0,
+            "incomplete": 0,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 10,
+            "total_provider_tokens": 87957,
+            "mean_total_tokens": 8795.7,
+            "mean_tool_calls": 3.7,
+            "mean_api_requests": 4.7,
+            "published_rate_cost_bound_usd": 0.00674301,
+            "tool_counts": {
+              "grep": 15,
+              "read_file": 22
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "current@6": {
+            "runs": 10,
+            "passes": 9,
+            "failed": 1,
+            "materially_incorrect": 0,
+            "incomplete": 1,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 9,
+            "total_provider_tokens": 89604,
+            "mean_total_tokens": 8960.4,
+            "mean_tool_calls": 3.5,
+            "mean_api_requests": 4.5,
+            "published_rate_cost_bound_usd": 0.00690123,
+            "tool_counts": {
+              "find_evidence": 8,
+              "read_file": 18,
+              "grep": 9
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "prior_reader@6": {
+            "runs": 10,
+            "passes": 8,
+            "failed": 2,
+            "materially_incorrect": 1,
+            "incomplete": 1,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 8,
+            "total_provider_tokens": 76629,
+            "mean_total_tokens": 7662.9,
+            "mean_tool_calls": 2.4,
+            "mean_api_requests": 3.4,
+            "published_rate_cost_bound_usd": 0.0059276450000000005,
+            "tool_counts": {
+              "search_code": 20,
+              "read_file": 4
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "search_reader@6": {
+            "runs": 10,
+            "passes": 8,
+            "failed": 2,
+            "materially_incorrect": 0,
+            "incomplete": 2,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 8,
+            "total_provider_tokens": 94774,
+            "mean_total_tokens": 9477.4,
+            "mean_tool_calls": 2.4,
+            "mean_api_requests": 3.4,
+            "published_rate_cost_bound_usd": 0.007706385,
+            "tool_counts": {
+              "search_code": 17,
+              "read_code": 7
+            },
+            "selection_options": {},
+            "continuation_usage": {
+              "responses": 5,
+              "partial": 1,
+              "blocked": 0
+            }
+          }
+        },
+        "comparisons": {
+          "current@6 vs native@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": -0.1,
+            "accuracy_difference_ci95": [
+              -0.3,
+              0
+            ],
+            "token_ratio": 1.0187250588355674,
+            "token_ratio_ci95": [
+              0.8427743789813221,
+              1.3866576932783714
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.3,
+              0
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.8419823792130032,
+              1.3695233509870004
+            ],
+            "candidate_only_correct": [],
+            "control_only_correct": [
+              "fresh-attrs-disabled-restoration::r2"
+            ]
+          },
+          "search_reader@6 vs native@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": -0.2,
+            "accuracy_difference_ci95": [
+              -0.5,
+              0
+            ],
+            "token_ratio": 1.0775037802562615,
+            "token_ratio_ci95": [
+              0.6610102070179597,
+              1.5787774214666948
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.5,
+              0
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.6582521628652671,
+              1.5780703154740707
+            ],
+            "candidate_only_correct": [],
+            "control_only_correct": [
+              "fresh-attrs-disabled-restoration::r2",
+              "fresh-click-atomic-write-close::r2"
+            ]
+          },
+          "search_reader@6 vs current@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": -0.1,
+            "accuracy_difference_ci95": [
+              -0.3,
+              0
+            ],
+            "token_ratio": 1.0576983170394179,
+            "token_ratio_ci95": [
+              0.6186625041481791,
+              1.5369019090444007
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.3,
+              0
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.630593418697508,
+              1.547061413163108
+            ],
+            "candidate_only_correct": [],
+            "control_only_correct": [
+              "fresh-click-atomic-write-close::r2"
+            ]
+          },
+          "search_reader@6 vs prior_reader@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              -0.3,
+              0.3
+            ],
+            "token_ratio": 1.236790249122395,
+            "token_ratio_ci95": [
+              0.6453394728364884,
+              2.480240379859531
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.3,
+              0.3
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.6454510224086443,
+              2.4931211498973305
+            ],
+            "candidate_only_correct": [
+              "fresh-typer-annotated-default-conflicts::r2"
+            ],
+            "control_only_correct": [
+              "fresh-click-atomic-write-close::r2"
+            ]
+          }
+        },
+        "same_gate_diagnostic": false
+      },
+      "3": {
+        "profiles": {
+          "native@6": {
+            "runs": 10,
+            "passes": 9,
+            "failed": 1,
+            "materially_incorrect": 1,
+            "incomplete": 0,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 9,
+            "total_provider_tokens": 77944,
+            "mean_total_tokens": 7794.4,
+            "mean_tool_calls": 3.7,
+            "mean_api_requests": 4.7,
+            "published_rate_cost_bound_usd": 0.00667531,
+            "tool_counts": {
+              "grep": 14,
+              "read_file": 23
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "current@6": {
+            "runs": 10,
+            "passes": 10,
+            "failed": 0,
+            "materially_incorrect": 0,
+            "incomplete": 0,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 9,
+            "total_provider_tokens": 80829,
+            "mean_total_tokens": 8082.9,
+            "mean_tool_calls": 3.2,
+            "mean_api_requests": 4.2,
+            "published_rate_cost_bound_usd": 0.006841315,
+            "tool_counts": {
+              "find_evidence": 11,
+              "read_file": 16,
+              "find_symbols": 1,
+              "grep": 3,
+              "select_context": 1
+            },
+            "selection_options": {
+              "query": 1,
+              "files": 1,
+              "budget_tokens": 1
+            },
+            "continuation_usage": {
+              "responses": 1,
+              "partial": 0,
+              "blocked": 0
+            }
+          },
+          "prior_reader@6": {
+            "runs": 10,
+            "passes": 8,
+            "failed": 2,
+            "materially_incorrect": 0,
+            "incomplete": 2,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 8,
+            "total_provider_tokens": 100473,
+            "mean_total_tokens": 10047.3,
+            "mean_tool_calls": 3,
+            "mean_api_requests": 4,
+            "published_rate_cost_bound_usd": 0.007034475,
+            "tool_counts": {
+              "search_code": 24,
+              "read_file": 6
+            },
+            "selection_options": {},
+            "continuation_usage": {}
+          },
+          "search_reader@6": {
+            "runs": 10,
+            "passes": 9,
+            "failed": 1,
+            "materially_incorrect": 0,
+            "incomplete": 1,
+            "completed": 10,
+            "generation_failures": {},
+            "strict_all_criteria_passes": 9,
+            "total_provider_tokens": 69785,
+            "mean_total_tokens": 6978.5,
+            "mean_tool_calls": 1.9,
+            "mean_api_requests": 2.9,
+            "published_rate_cost_bound_usd": 0.0060614,
+            "tool_counts": {
+              "search_code": 15,
+              "read_code": 4
+            },
+            "selection_options": {},
+            "continuation_usage": {
+              "responses": 3,
+              "partial": 1,
+              "blocked": 0
+            }
+          }
+        },
+        "comparisons": {
+          "current@6 vs native@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0.1,
+            "accuracy_difference_ci95": [
+              0,
+              0.3
+            ],
+            "token_ratio": 1.0370137534640254,
+            "token_ratio_ci95": [
+              0.7120530740403119,
+              1.4445840516611634
+            ],
+            "repository_cluster_accuracy_ci95": [
+              0,
+              0.3
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.7176582691834135,
+              1.431218455123985
+            ],
+            "candidate_only_correct": [
+              "fresh-anyio-buffered-boundary-reads::r3"
+            ],
+            "control_only_correct": []
+          },
+          "search_reader@6 vs native@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0,
+            "accuracy_difference_ci95": [
+              -0.3,
+              0.3
+            ],
+            "token_ratio": 0.8953222826644771,
+            "token_ratio_ci95": [
+              0.4784532331885929,
+              1.5017796398691867
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.3,
+              0.3
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.48243432842040923,
+              1.4843442681788817
+            ],
+            "candidate_only_correct": [
+              "fresh-anyio-buffered-boundary-reads::r3"
+            ],
+            "control_only_correct": [
+              "fresh-attrs-disabled-restoration::r3"
+            ]
+          },
+          "search_reader@6 vs current@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": -0.1,
+            "accuracy_difference_ci95": [
+              -0.3,
+              0
+            ],
+            "token_ratio": 0.8633658711601034,
+            "token_ratio_ci95": [
+              0.5568787536159527,
+              1.1460551892188502
+            ],
+            "repository_cluster_accuracy_ci95": [
+              -0.3,
+              0
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.5555447928486426,
+              1.1431977999025273
+            ],
+            "candidate_only_correct": [],
+            "control_only_correct": [
+              "fresh-attrs-disabled-restoration::r3"
+            ]
+          },
+          "search_reader@6 vs prior_reader@6": {
+            "questions": 10,
+            "paired_observations": 10,
+            "resampling_unit": "original_question",
+            "question_cluster_sizes": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "repository_clusters": 10,
+            "bootstrap_draws": 10000,
+            "bootstrap_seed": 2026092901,
+            "accuracy_difference": 0.1,
+            "accuracy_difference_ci95": [
+              0,
+              0.3
+            ],
+            "token_ratio": 0.6945647089267764,
+            "token_ratio_ci95": [
+              0.4821337819602895,
+              1.0272486438753627
+            ],
+            "repository_cluster_accuracy_ci95": [
+              0,
+              0.3
+            ],
+            "repository_cluster_token_ratio_ci95": [
+              0.47711418431036595,
+              1.018563663614858
+            ],
+            "candidate_only_correct": [
+              "fresh-packaging-collected-errors::r3"
+            ],
+            "control_only_correct": []
+          }
+        },
+        "same_gate_diagnostic": false
+      }
+    },
+    "prespecified_diagnostics": [
+      "search_reader@6 vs prior_reader@6; descriptive only, never a gate"
+    ],
+    "dev_eligibility_passed": false,
+    "validation_gate_passed": null,
+    "api_requests_reconciled": 466,
+    "accounting": {
+      "api_requests_reconciled": 466,
+      "all_study_requests_reconciled": 466,
+      "stage_cost_bound_usd": 0.08051161499999998,
+      "study_cost_bound_usd": 0.080511615,
+      "prior_cost_bound_usd": 0.37036107500000004,
+      "aggregate_cost_bound_usd": 0.45087269,
+      "prior_requests_reconciled": 2328,
+      "prior_trajectories_reconciled": 540,
+      "prior_ledgers_reconciled": 9,
+      "exact_published_rate_requests": 466,
+      "all_costs_exact": true
+    },
+    "per_case": {
+      "native@6": {
+        "fresh-jinja-bytecode-file-cleanup::r1": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 10736,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r1": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2333,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r1": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 3406,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r1": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 1,
+          "passed": 0,
+          "tokens": 6139,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "The wrapper targets the destination's resolved real path (os.path.realpath), not merely an unspecified destination path."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r1": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 4034,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r1": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 6609,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r1": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 1,
+          "passed": 0,
+          "tokens": 11178,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "The assignment hook invokes validation only if the attribute has a validator; an enabled flag alone does not bypass the no-validator return."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r1": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 11834,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r1": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 4515,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r1": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 3477,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r2": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 10560,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r2": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 3740,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r2": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 9860,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r2": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 7717,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r2": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 3465,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r2": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 3620,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r2": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 15260,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r2": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 21103,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r2": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 6188,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r2": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 6444,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r3": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 10590,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r3": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 7599,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r3": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 11292,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r3": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 8476,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r3": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 3,
+          "passed": 0,
+          "tokens": 4021,
+          "verdict": "materially_incorrect",
+          "material_errors": [
+            {
+              "quote": "then after each append moves the search offset back by `delimiter_size - 1` bytes",
+              "reason": "buffered.py:153-154 sets offset = max(len(self._buffer) - delimiter_size + 1, 0) before extending the buffer. Using the post-append end would not reliably recheck a delimiter prefix from the previous chunk and could skip a match, contradicting the answer's claimed mechanism."
+            }
+          ],
+          "missing": [
+            "Correct pre-append, old-buffer-relative overlap calculation for detecting a delimiter split across chunks."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r3": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 6599,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r3": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 8646,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r3": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 9960,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r3": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 4597,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r3": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 6164,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        }
+      },
+      "current@6": {
+        "fresh-jinja-bytecode-file-cleanup::r1": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 5600,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r1": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 3683,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r1": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 4881,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r1": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 8729,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r1": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 6377,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r1": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 7694,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r1": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 13673,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r1": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 15004,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r1": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 11977,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r1": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 4476,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r2": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 8262,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r2": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 12372,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r2": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 8682,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r2": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 7936,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r2": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 5672,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r2": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 4516,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r2": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 2,
+          "passed": 0,
+          "tokens": 14928,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "The assignment hook invokes validation only if the attribute has a validator; an enabled flag alone does not bypass the no-validator return."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r2": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 15763,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r2": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 6741,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r2": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 4732,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r3": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 5513,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r3": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 3624,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r3": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 4629,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r3": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 7904,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r3": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 8163,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r3": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 7792,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r3": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 17446,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r3": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 12124,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r3": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 8896,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r3": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 4738,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        }
+      },
+      "prior_reader@6": {
+        "fresh-jinja-bytecode-file-cleanup::r1": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2612,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r1": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 5367,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r1": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 6596,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r1": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2645,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r1": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 3211,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r1": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 6320,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r1": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 9248,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r1": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 16037,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r1": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 5695,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r1": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 3196,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r2": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 3174,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r2": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 2558,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r2": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 14352,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r2": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 2648,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r2": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 3304,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r2": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 10112,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r2": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 2,
+          "passed": 0,
+          "tokens": 6601,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "The assignment hook invokes validation only if the attribute has a validator; an enabled flag alone does not bypass the no-validator return."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r2": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 2,
+          "passed": 0,
+          "tokens": 24890,
+          "verdict": "materially_incorrect",
+          "material_errors": [
+            {
+              "quote": "`get_params_from_function()` first extracts Typer `ParameterInfo` objects from `Annotated` metadata and requires exactly one",
+              "reason": "typer/utils.py:94–104 can return an empty list of Typer metadata, and lines 115–119 reject only more than one, then conditionally process nonempty lists. With zero Typer annotations, processing continues through the ordinary parameter path (lines 163–185); exactly one is not required."
+            }
+          ],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r2": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 5755,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r2": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 3235,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r3": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 2585,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r3": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 2987,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r3": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 20391,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r3": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 2595,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r3": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 3247,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r3": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 3,
+          "passed": 0,
+          "tokens": 2566,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "Explain that finalize raises an ExceptionGroup containing the accumulated errors."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r3": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 3,
+          "passed": 0,
+          "tokens": 27731,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "The assignment hook invokes validation only if the attribute has a validator; an enabled flag alone does not bypass the no-validator return."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r3": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 26568,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r3": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 5753,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r3": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 6050,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        }
+      },
+      "search_reader@6": {
+        "fresh-jinja-bytecode-file-cleanup::r1": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 11092,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r1": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 5516,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r1": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 10436,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r1": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2740,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r1": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2844,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r1": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 6288,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r1": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 19057,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r1": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 11430,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r1": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 6496,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r1": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 1,
+          "passed": 1,
+          "tokens": 2700,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r2": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 9897,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r2": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 5534,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r2": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 15516,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r2": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 2,
+          "passed": 0,
+          "tokens": 2769,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "The wrapper targets the destination's resolved real path (os.path.realpath), not merely an unspecified destination path."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r2": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 2872,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r2": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 2668,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r2": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 2,
+          "passed": 0,
+          "tokens": 33688,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "How the assignment validation hook reads the global validator-running flag, skips validation when disabled or no validator exists, and invokes an existing validator after the inner exit re-enables validation."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r2": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 12654,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r2": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 6460,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r2": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 2,
+          "passed": 1,
+          "tokens": 2716,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-jinja-bytecode-file-cleanup::r3": {
+          "base_case_id": "fresh-jinja-bytecode-file-cleanup",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 2719,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-requests-adapter-certificate-paths::r3": {
+          "base_case_id": "fresh-requests-adapter-certificate-paths",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 2715,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-pluggy-blocked-plugin-lifecycle::r3": {
+          "base_case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 6636,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-click-atomic-write-close::r3": {
+          "base_case_id": "fresh-click-atomic-write-close",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 2761,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-anyio-buffered-boundary-reads::r3": {
+          "base_case_id": "fresh-anyio-buffered-boundary-reads",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 2797,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-packaging-collected-errors::r3": {
+          "base_case_id": "fresh-packaging-collected-errors",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 5812,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-attrs-disabled-restoration::r3": {
+          "base_case_id": "fresh-attrs-disabled-restoration",
+          "repetition": 3,
+          "passed": 0,
+          "tokens": 25709,
+          "verdict": "incomplete",
+          "material_errors": [],
+          "missing": [
+            "The assignment hook invokes validation only if the attribute has a validator; an enabled flag alone does not bypass the no-validator return."
+          ],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-typer-annotated-default-conflicts::r3": {
+          "base_case_id": "fresh-typer-annotated-default-conflicts",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 11718,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-starlette-background-order-failure::r3": {
+          "base_case_id": "fresh-starlette-background-order-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 6207,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        },
+        "fresh-httpx-asgi-body-and-failure::r3": {
+          "base_case_id": "fresh-httpx-asgi-body-and-failure",
+          "repetition": 3,
+          "passed": 1,
+          "tokens": 2711,
+          "verdict": "complete_supported",
+          "material_errors": [],
+          "missing": [],
+          "answered": true,
+          "failure": null
+        }
+      }
+    },
+    "grading": "Arm-blind coding-assistant source review; not independent human validation.",
+    "scope": "Ten reused development questions, three paired repetitions each, not thirty independent questions. All repetitions included; original-question bootstrap and repository-cluster sensitivity. Candidate versus prior_reader isolates the split-tool interface and is diagnostic, not an extra gate. Validation retains the original forty reserved questions and unchanged gate. Reused Python repositories, one model, no universal product claim.",
+    "analyzer_sha256": "57886068b94f918d7234ed9905487f1cfabea2243b00905c3d396ed1e955fac7",
+    "results_sha256": "0ac2d8954212764f2aba57b9f38a8b2d811578f2eb24285d26a0629f06ed9a6e",
+    "analysis_execution_binding": "analysis_execution_binding.json",
+    "analysis_amendment": "analysis_amendment.json",
+    "grading_scope_sha256": "f7275cd6b5564a9b975daebf75e076e82c5ae159fb8f02f940fbb43eaf164830"
+  },
+  "gate_components": {
+    "supported_at_least_native": true,
+    "supported_at_least_current": false,
+    "material_errors_no_more_than_native": true,
+    "material_errors_no_more_than_current": true,
+    "provider_tokens_at_most_85pct_native": false,
+    "provider_tokens_below_current": true
+  },
+  "diagnostics": {
+    "api_requests": 466,
+    "trajectories": 120,
+    "charge_bound_usd": 0.080511615,
+    "unresolved_usage": 0,
+    "profiles": {
+      "native@6": {
+        "runs": 30,
+        "generation_failures": 0,
+        "provider_input_tokens": 218845,
+        "provider_output_tokens": 11317,
+        "provider_total_tokens": 230162,
+        "mean_total_tokens": 7672.066666666667,
+        "requests": 134,
+        "tool_counts": {
+          "grep": 42,
+          "read_file": 62
+        },
+        "tool_errors": {},
+        "continuation": {},
+        "per_repetition": {
+          "1": {
+            "tokens": 64261,
+            "requests": 40
+          },
+          "2": {
+            "tokens": 87957,
+            "requests": 47
+          },
+          "3": {
+            "tokens": 77944,
+            "requests": 47
+          }
+        }
+      },
+      "current@6": {
+        "runs": 30,
+        "generation_failures": 0,
+        "provider_input_tokens": 241060,
+        "provider_output_tokens": 11467,
+        "provider_total_tokens": 252527,
+        "mean_total_tokens": 8417.566666666668,
+        "requests": 130,
+        "tool_counts": {
+          "find_evidence": 27,
+          "read_file": 52,
+          "find_symbols": 4,
+          "select_context": 3,
+          "grep": 14
+        },
+        "tool_errors": {},
+        "continuation": {
+          "responses": 3,
+          "partial": 0,
+          "blocked": 0
+        },
+        "per_repetition": {
+          "1": {
+            "tokens": 82094,
+            "requests": 43
+          },
+          "2": {
+            "tokens": 89604,
+            "requests": 45
+          },
+          "3": {
+            "tokens": 80829,
+            "requests": 42
+          }
+        }
+      },
+      "prior_reader@6": {
+        "runs": 30,
+        "generation_failures": 0,
+        "provider_input_tokens": 228020,
+        "provider_output_tokens": 10009,
+        "provider_total_tokens": 238029,
+        "mean_total_tokens": 7934.3,
+        "requests": 107,
+        "tool_counts": {
+          "search_code": 62,
+          "read_file": 15
+        },
+        "tool_errors": {
+          "search_code": 13
+        },
+        "continuation": {},
+        "per_repetition": {
+          "1": {
+            "tokens": 60927,
+            "requests": 33
+          },
+          "2": {
+            "tokens": 76629,
+            "requests": 34
+          },
+          "3": {
+            "tokens": 100473,
+            "requests": 40
+          }
+        }
+      },
+      "search_reader@6": {
+        "runs": 30,
+        "generation_failures": 0,
+        "provider_input_tokens": 232746,
+        "provider_output_tokens": 10412,
+        "provider_total_tokens": 243158,
+        "mean_total_tokens": 8105.266666666666,
+        "requests": 95,
+        "tool_counts": {
+          "search_code": 46,
+          "read_code": 19
+        },
+        "tool_errors": {},
+        "continuation": {
+          "responses": 13,
+          "partial": 2,
+          "blocked": 0
+        },
+        "per_repetition": {
+          "1": {
+            "tokens": 78599,
+            "requests": 32
+          },
+          "2": {
+            "tokens": 94774,
+            "requests": 34
+          },
+          "3": {
+            "tokens": 69785,
+            "requests": 29
+          }
+        }
+      }
+    },
+    "tool_errors": [
+      {
+        "schedule_ordinal": 8,
+        "case_id": "fresh-pluggy-blocked-plugin-lifecycle::r1",
+        "variant": "prior_reader@6",
+        "tool_index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "blocked plugin name unregister_blocked register_blocked unblocked hook implementations",
+          "files": []
+        },
+        "delivered": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      },
+      {
+        "schedule_ordinal": 18,
+        "case_id": "fresh-anyio-buffered-boundary-reads::r1",
+        "variant": "prior_reader@6",
+        "tool_index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "receive_exactly receive_until",
+          "files": []
+        },
+        "delivered": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      },
+      {
+        "schedule_ordinal": 34,
+        "case_id": "fresh-starlette-background-order-failure::r1",
+        "variant": "prior_reader@6",
+        "tool_index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "BackgroundTasks __call__ Response background run_in_threadpool",
+          "files": []
+        },
+        "delivered": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      },
+      {
+        "schedule_ordinal": 37,
+        "case_id": "fresh-httpx-asgi-body-and-failure::r1",
+        "variant": "prior_reader@6",
+        "tool_index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "ASGI receive send raise_app_exceptions HEAD response body",
+          "files": []
+        },
+        "delivered": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      },
+      {
+        "schedule_ordinal": 41,
+        "case_id": "fresh-jinja-bytecode-file-cleanup::r2",
+        "variant": "prior_reader@6",
+        "tool_index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "BytecodeCache filesystem temporary file replace error cache miss",
+          "files": []
+        },
+        "delivered": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      },
+      {
+        "schedule_ordinal": 57,
+        "case_id": "fresh-anyio-buffered-boundary-reads::r2",
+        "variant": "prior_reader@6",
+        "tool_index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "receive_exactly receive_until",
+          "files": []
+        },
+        "delivered": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      },
+      {
+        "schedule_ordinal": 76,
+        "case_id": "fresh-httpx-asgi-body-and-failure::r2",
+        "variant": "prior_reader@6",
+        "tool_index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "ASGITransport handle_async_request receive send HEAD raise_app_exceptions",
+          "files": []
+        },
+        "delivered": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      },
+      {
+        "schedule_ordinal": 87,
+        "case_id": "fresh-requests-adapter-certificate-paths::r3",
+        "variant": "prior_reader@6",
+        "tool_index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "def cert_verify",
+          "files": [
+            "requests/adapters.py"
+          ]
+        },
+        "delivered": "Error executing tool search_code: file does not exist: requests/adapters.py If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      },
+      {
+        "schedule_ordinal": 90,
+        "case_id": "fresh-pluggy-blocked-plugin-lifecycle::r3",
+        "variant": "prior_reader@6",
+        "tool_index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "blocked plugin name block unblock unregister name blocked_plugins",
+          "files": []
+        },
+        "delivered": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      },
+      {
+        "schedule_ordinal": 96,
+        "case_id": "fresh-anyio-buffered-boundary-reads::r3",
+        "variant": "prior_reader@6",
+        "tool_index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "receive_exactly receive_until",
+          "files": []
+        },
+        "delivered": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      },
+      {
+        "schedule_ordinal": 106,
+        "case_id": "fresh-attrs-disabled-restoration::r3",
+        "variant": "prior_reader@6",
+        "tool_index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "disabled() validator state nested context assignment validation hook",
+          "files": []
+        },
+        "delivered": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      },
+      {
+        "schedule_ordinal": 106,
+        "case_id": "fresh-attrs-disabled-restoration::r3",
+        "variant": "prior_reader@6",
+        "tool_index": 4,
+        "name": "search_code",
+        "input": {
+          "query": "on_setattr=attr.setters.validate test assignment disabled context state",
+          "files": [
+            "tests/test_validators.py",
+            "tests/test_setters.py",
+            "src/attr/setters.py"
+          ]
+        },
+        "delivered": "Error executing tool search_code: file does not exist: tests/test_setters.py If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      },
+      {
+        "schedule_ordinal": 119,
+        "case_id": "fresh-httpx-asgi-body-and-failure::r3",
+        "variant": "prior_reader@6",
+        "tool_index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "ASGI receive send HEAD raise_app_exceptions",
+          "files": []
+        },
+        "delivered": "Error executing tool search_code: files must be a non-empty list when provided. If a path is unknown, call search_code with a non-empty query and omit files to discover paths."
+      }
+    ],
+    "attrs_reader_hook_delivery": [
+      {
+        "variant": "prior_reader@6",
+        "case_id": "fresh-attrs-disabled-restoration::r1",
+        "schedule_ordinal": 24,
+        "complete_hook_delivered_in_one_reply": true,
+        "deliveries": [
+          {
+            "tool_index": 2,
+            "name": "search_code",
+            "input": {
+              "query": "get_run_validators on_setattr validators assignment",
+              "files": [
+                "src/attr/_make.py",
+                "src/attr/_config.py",
+                "src/attr/setters.py"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "variant": "prior_reader@6",
+        "case_id": "fresh-attrs-disabled-restoration::r2",
+        "schedule_ordinal": 67,
+        "complete_hook_delivered_in_one_reply": true,
+        "deliveries": [
+          {
+            "tool_index": 1,
+            "name": "search_code",
+            "input": {
+              "query": "def get_run_validators set_run_validators _run_validators",
+              "files": [
+                "src/attr/_config.py",
+                "src/attr/validators.py",
+                "src/attr/setters.py",
+                "src/attr/_make.py"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "variant": "prior_reader@6",
+        "case_id": "fresh-attrs-disabled-restoration::r3",
+        "schedule_ordinal": 106,
+        "complete_hook_delivered_in_one_reply": true,
+        "deliveries": [
+          {
+            "tool_index": 3,
+            "name": "search_code",
+            "input": {
+              "query": "setters.validate _setattr hook validates assignment assignment validation",
+              "files": [
+                "src/attr/setters.py",
+                "src/attr/_make.py",
+                "tests/test_validators.py"
+              ]
+            }
+          },
+          {
+            "tool_index": 5,
+            "name": "search_code",
+            "input": {
+              "query": "on_setattr validate disabled assignment test",
+              "files": [
+                "tests/test_validators.py",
+                "src/attr/setters.py"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "variant": "search_reader@6",
+        "case_id": "fresh-attrs-disabled-restoration::r1",
+        "schedule_ordinal": 25,
+        "complete_hook_delivered_in_one_reply": true,
+        "deliveries": [
+          {
+            "tool_index": 3,
+            "name": "search_code",
+            "input": {
+              "query": "setters.validate function calls _config._run_validators or _make.validate assignment on_setattr"
+            }
+          }
+        ]
+      },
+      {
+        "variant": "search_reader@6",
+        "case_id": "fresh-attrs-disabled-restoration::r2",
+        "schedule_ordinal": 64,
+        "complete_hook_delivered_in_one_reply": false,
+        "deliveries": []
+      },
+      {
+        "variant": "search_reader@6",
+        "case_id": "fresh-attrs-disabled-restoration::r3",
+        "schedule_ordinal": 107,
+        "complete_hook_delivered_in_one_reply": true,
+        "deliveries": [
+          {
+            "tool_index": 4,
+            "name": "search_code",
+            "input": {
+              "query": "setters.validate function call get_run_validators _config._run_validators"
+            }
+          }
+        ]
+      }
+    ],
+    "hook_definition": "Exact source lines38-53 of attrs/src/attr/setters.py, including global flag bypass, absent/falsy validator guard, invocation and return; native line-number prefixes removed only for comparison. Presence proves delivery, not attention or answer correctness.",
+    "results_sha256": "0ac2d8954212764f2aba57b9f38a8b2d811578f2eb24285d26a0629f06ed9a6e",
+    "ledger_sha256": "f6759943aedaebf3be4aa7274eba8f1f63b5651673e1b6644115320cc5b4c734"
+  },
+  "attrs_discovery_gap": {
+    "case_id": "fresh-attrs-disabled-restoration::r2",
+    "variant": "search_reader@6",
+    "schedule_ordinal": 64,
+    "provider_total_tokens": 33688,
+    "tool_calls": [
+      {
+        "index": 0,
+        "name": "search_code",
+        "input": {
+          "query": "disabled() context manager validator state nested context exit assignment validation hook _setattr validation disabled attrs validators"
+        },
+        "returned_ranges": [
+          "[src/attr/validators.pyi:29]",
+          "[src/attr/validators.py:74-88]",
+          "[src/attr/_make.py:1879-1883]",
+          "[src/attr/_make.py:2580-2592]",
+          "[src/attr/_make.py:1164-1223]",
+          "[src/attr/_make.py:1898-1945]"
+        ],
+        "continuation": null
+      },
+      {
+        "index": 1,
+        "name": "search_code",
+        "input": {
+          "query": "assignment validation hook set_run_validators get_run_validators validate assignment validators disabled flag _config.py setters validate"
+        },
+        "returned_ranges": [
+          "[src/attr/_config.py:1-31]",
+          "[src/attr/validators.py:1-89]",
+          "[src/attr/validators.py:401-418]",
+          "[tests/test_config.py:1-44]",
+          "[src/attr/validators.py:213-231]",
+          "[src/attr/validators.py:684-685]"
+        ],
+        "continuation": null
+      },
+      {
+        "index": 2,
+        "name": "read_code",
+        "input": {
+          "query": "Confirm assignment validation hook invokes validator only if global flag and what assignment hook is; tests documenting nested disabled/exception behavior if present.",
+          "files": [
+            "src/attr/_make.py:2490-2525",
+            "tests/test_validators.py:1-100",
+            "src/attr/validators.py:56-89"
+          ]
+        },
+        "returned_ranges": [
+          "[src/attr/_make.py:2490-2525]",
+          "[tests/test_validators.py:1-100]",
+          "[src/attr/validators.py:56-89]"
+        ],
+        "continuation": {
+          "files": [],
+          "blocked": false
+        }
+      },
+      {
+        "index": 3,
+        "name": "search_code",
+        "input": {
+          "query": "_config.get_run_validators assignment hook validate(instance attribute value) _setattr on_setattr validate function generated"
+        },
+        "returned_ranges": [
+          "[src/attr/__init__.pyi:312]",
+          "[src/attr/_config.py:1-31]",
+          "[src/attr/__init__.pyi:63]",
+          "[src/attr/__init__.pyi:129-168]",
+          "[src/attr/__init__.pyi:373-388]",
+          "[tests/test_config.py:1-44]",
+          "[src/attr/__init__.pyi:357-365]",
+          "[src/attr/__init__.pyi:110-116]",
+          "[src/attr/__init__.pyi:311]",
+          "[src/attr/__init__.pyi:20]"
+        ],
+        "continuation": null
+      },
+      {
+        "index": 4,
+        "name": "search_code",
+        "input": {
+          "query": "src/attr/setters.py validate(instance, attribute, value) get_run_validators assignment validation hook"
+        },
+        "returned_ranges": [
+          "[src/attr/__init__.pyi:373-388]",
+          "[src/attr/__init__.pyi:312]",
+          "[src/attr/_make.py:1774-1789]",
+          "[src/attr/__init__.py:1-82]",
+          "[src/attr/_make.py:1898-1945]",
+          "[src/attr/_make.py:2956-2960]",
+          "[src/attr/__init__.py:83-103]"
+        ],
+        "continuation": null
+      },
+      {
+        "index": 5,
+        "name": "search_code",
+        "input": {
+          "query": "attr/setters.py validate assignment validator get_run_validators on_setattr"
+        },
+        "returned_ranges": [
+          "[src/attr/__init__.pyi:373-388]",
+          "[src/attr/__init__.pyi:312]",
+          "[src/attr/__init__.py:1-82]",
+          "[src/attr/_config.py:1-31]",
+          "[src/attr/__init__.pyi:169-213]",
+          "[src/attr/__init__.pyi:19]",
+          "[src/attr/__init__.pyi:20]"
+        ],
+        "continuation": null
+      }
+    ],
+    "observation": "Five discoveries and one scoped read delivered no range from src/attr/setters.py before the six-call stop. Two late queries named that path but still returned other files. The actual assignment-hook definition was not delivered, even across fragments. This is an observed discovery/interaction gap, not merely a failed whole-function substring match.",
+    "not_a_grade": true,
+    "no_post_outcome_source_changes": true,
+    "results_sha256": "0ac2d8954212764f2aba57b9f38a8b2d811578f2eb24285d26a0629f06ed9a6e"
+  },
+  "accounting": {
+    "new_trajectories": 120,
+    "new_requests": 466,
+    "new_published_rate_charge_bound_usd": 0.080511615,
+    "aggregate_trajectories": 660,
+    "aggregate_requests": 2794,
+    "aggregate_published_rate_charge_bound_usd": 0.45087269,
+    "aggregate_ceiling_usd": 2.0,
+    "remaining_bound_usd": 1.54912731,
+    "pricing_source": "https://developers.openai.com/api/docs/pricing",
+    "caveat": "Published-rate accounting, not a provider invoice; previous studies retain their original uncertainty."
+  },
+  "verification": {
+    "production_tests": {
+      "passed": 523,
+      "subtests_passed": 58,
+      "skipped": 1
+    },
+    "production_proof": "split_tools_20261001.json",
+    "frozen_dispatch_smoke_passed": true,
+    "analysis_synthetic_smoke_passed": true,
+    "real_os_lock_and_fail_closed_continuation_passed": true,
+    "actual_bound_review_preparation_and_analysis_passed": true,
+    "all120_reviews_first_analysis_passed": true,
+    "review_execution_audit": "results/split_reader_20261001/dev/review_execution_audit.json",
+    "review_method": "Arm-blind coding-assistant source review, not independent human validation; no Eval/shell/shared-kernel or cross-packet calls observed. One own-output draft edit disclosed."
+  },
+  "harness_corrections": {
+    "pre_freeze": "results/split_reader_20261001/local_gate/pre_freeze_corrections.json",
+    "post_freeze_metadata_binding": "results/split_reader_20261001/analysis_execution_binding.json",
+    "disclosure": "The primary freeze correctly bound the analyzer, but a secondary amendment retained its draft hash. The separately authorized execution revision changes only that assertion and a summary provenance pointer. Every other analyzer byte is identical; all frozen files remain unchanged. No grading, generation, accounting or gate change; no regrading."
+  },
+  "limitations": [
+    "Ten repeatedly reused development questions, not thirty independent questions; one model and reused Python repositories.",
+    "All repetitions reported, with original-question cluster bootstrap and repository sensitivity; no best-run selection.",
+    "The candidate matched native supported count but trailed current PASR and used5.65% more provider tokens than native; fewer requests and zero tool errors do not establish the target.",
+    "The current reserved40 remain unqueried and unauthorized. Their questions differ from the earlier fourth-study validation set and from all660 completed trajectories; reserved_lock.json records that check. No promotion."
+  ],
+  "artifacts": {
+    "results/split_reader_20261001/reserved_lock.json": "bbab1f95d2a27d91a7a8f2ccec86993ce1ba79cb7f12173973560ac45dfbf8b9",
+    "results/continuation_20260929/spend_ledger.json": "6057954bea17bf210c201d44c2e8615d282d3cd8f2a4072c382c6c9fde81d6de",
+    "results/evidence_reader_20260929/spend_ledger.json": "a28347f7a7d62780c89a031861231c3a21515d96dc8c1f22f20da51789ab8d9f",
+    "results/interaction_repeats_20260930/spend_ledger.json": "6fff0b95c6a83fbe857b7f4e343911e2bb07da5db7ad559f0b03d358e329f041",
+    "results/locator_companion_20260929/spend_ledger.json": "89de4f5fed25b1c6ca70dd0c887c8b87d6890a42575110daa750e95288f5650d",
+    "results/precision_reader_20260930/spend_ledger.json": "cd27b0a7708168071f10022a9d0edd4d5c7473cd8e677d658fecd2673e484cfa",
+    "results/qualified_repeats_20260930/spend_ledger.json": "06ba9817ea170b97472cf50f47d5d974d1b2cfbd52c468193ea313a3e329cb6c",
+    "results/scoped_locators_20260929/spend_ledger.json": "edde3deceee9fe864043f05fa52d232d5026ee46c9b0b9f263e027a82323ad7a",
+    "results/search_reader_20260930/spend_ledger.json": "925fb8733003f7dfc4c5c1b91050764f2b84756632dda2031b03cfc46769b494",
+    "results/symbol_companion_20260929/spend_ledger.json": "e9477c32c727312de31ca8fd5658ef249b0085d2c5d5a0ce465d62da42b73cb0",
+    "results/split_reader_20261001/analysis_amendment.json": "499067f7a217fff8bb6d22eb0baa23d44a7f2d185d7e24c5be167b8abf73eb60",
+    "results/split_reader_20261001/analysis_binding_incident.json": "d0f6b47d8ac8a26947c9623d235139a938e1eecb02c8554faa77552d51646352",
+    "results/split_reader_20261001/analysis_execution_binding.json": "c6d4dfb90944cde4fc4bc4641981f525d3bb7ecc14a3303cbccf7aedba0463a9",
+    "results/split_reader_20261001/analysis_provenance.json": "13afc7824ab5960f6aacde021ae9bd400089ba2669e4d362f6772052e168c724",
+    "results/split_reader_20261001/analysis_smoke.json": "b1410679ddec662f3a484f9057c14d9fb6027cf67b219bccc229e9e4024ce42b",
+    "results/split_reader_20261001/analyze_question_scope.py": "8098c06fc748f2f1c0778649199920501fd667e36811622c417822fbab954ddc",
+    "results/split_reader_20261001/analyze_question_scope_bound.py": "57886068b94f918d7234ed9905487f1cfabea2243b00905c3d396ed1e955fac7",
+    "results/split_reader_20261001/candidate_commitment.json": "fc43ad5870534977637db3ca69d1530af21638602a08a435acb626416f6a2ec9",
+    "results/split_reader_20261001/cases.json": "01a872bb7b71fe1c9317de865ef51e391243dcaf8ff49daceca6b8abfc88bb98",
+    "results/split_reader_20261001/commands.json": "22cbb2d42d0ddb5dbb427e353f02d23dad9a1c04b54908c7100f14905b67dab9",
+    "results/split_reader_20261001/control_provenance.json": "b6ab0dde22ba54850b7b5e56a94e2ad158bf688c99b90b5a7824f0cb279fc176",
+    "results/split_reader_20261001/dev/attrs_discovery_gap.json": "810d4e4eee2482e9e04becc12335627e89f7534f4d3be9a662683af5050b9a7d",
+    "results/split_reader_20261001/dev/generation_diagnostics.json": "1ef9e43180f190df3a7695fe7ddb11dec3827d6c2b1964f9ecb5b06543bd592c",
+    "results/split_reader_20261001/dev/grading/identities.json": "67dc0084676a1e7df8a05a734b234b2bfbb102399cd1f22cab5fbc760c51ca6b",
+    "results/split_reader_20261001/dev/grading/preparation.json": "2ab07e5f444816baf9da99f3ff2e4097331c4e6d2861879e9baf8fbc79a7a60d",
+    "results/split_reader_20261001/dev/results.json": "0ac2d8954212764f2aba57b9f38a8b2d811578f2eb24285d26a0629f06ed9a6e",
+    "results/split_reader_20261001/dev/review_execution_audit.json": "7ef55a524ce621fba0c8aa016c914cf90032d286392d70dc82dac34e0a75b808",
+    "results/split_reader_20261001/dev/review_inputs/00.json": "ce58ba6981d7aa97e18d255f4267434474b3c87c0e04fe149433ec4b8b093030",
+    "results/split_reader_20261001/dev/review_inputs/01.json": "684a4afe896949a30c0bd6de29fe0d8a2a5ab67106e9459de3ef7648ff530e09",
+    "results/split_reader_20261001/dev/review_inputs/02.json": "830a93c52ccd9cfc6d965bb47db3d16de68cd812607dd2bb7b0233775dc39fc0",
+    "results/split_reader_20261001/dev/review_inputs/03.json": "8a8fd382def99789d4046b3704da8288bc5806b92dfe563b3a9bc1d9fa1bde64",
+    "results/split_reader_20261001/dev/review_inputs/04.json": "9a02773c3c75aaf7be75600be9aebf9792c8ed0f70474fd95f7c1e8624b66187",
+    "results/split_reader_20261001/dev/review_inputs/05.json": "3ad04716a6db85b1edf449a84596c1748bfef548abbc5a1733bfe80904f527e9",
+    "results/split_reader_20261001/dev/review_inputs/06.json": "eba69501c104414365baac5e85bbe372eeba9097ed545615d96e0f98853751bb",
+    "results/split_reader_20261001/dev/review_inputs/07.json": "5dce9aed9632b1c28c9d91fe4a4e0f3912cb8bb38eee2196aafa5cee195a0fad",
+    "results/split_reader_20261001/dev/review_inputs/08.json": "7e9143f8c52131b295eaf824fa73f1e348ef461de5ba35270a2bac0b43aea503",
+    "results/split_reader_20261001/dev/review_inputs/09.json": "22c4ea28c7e974c62f4e446b69db450957f35dd936da41e3eb309783734b1372",
+    "results/split_reader_20261001/dev/reviews/00.json": "dac991129ab984d5698b2576e5e192c7f6abe9d1bfc8080c3e030f139a2dc5ad",
+    "results/split_reader_20261001/dev/reviews/01.json": "b4702341d4b15c2c0c505cc0e48f60a3a6118b530bd96270913b0944fb8b7547",
+    "results/split_reader_20261001/dev/reviews/02.json": "0f32d73627aab717c82f46931e5466655037ac255a78c1ea322bbd7d261d16b1",
+    "results/split_reader_20261001/dev/reviews/03.json": "b852428332a5256594c38f18098b0f8dc79ac7c5b610e3417a271d2f115c0241",
+    "results/split_reader_20261001/dev/reviews/04.json": "799d29347be629ec010aec931c9e868b1cd7f6147e3affb53add423c405928bb",
+    "results/split_reader_20261001/dev/reviews/05.json": "7805ef8aaec1e9d66b71e0834242d31fe532b625ed739149212017eb56eac84e",
+    "results/split_reader_20261001/dev/reviews/06.json": "2c8c0e550f1fc956e8838d3a39add274c41197350029468bbba1ff64377a2d37",
+    "results/split_reader_20261001/dev/reviews/07.json": "41b5bd2d7f9d27b2c04ba3d5448cc556ca9d3c9400ce70397cd06930637a4a62",
+    "results/split_reader_20261001/dev/reviews/08.json": "afeb046a46ba5297719347810fb17c64a3261c79b99f85e0b0fdcc5d6d9d24cd",
+    "results/split_reader_20261001/dev/reviews/09.json": "60bbacf13f20cd4851834adfdac3c60c13919f918f9e92fc6b846a3c918a4623",
+    "results/split_reader_20261001/dev/state.json": "f6e5bccad1caf59e49ac5909b36a4d0b11dfc876386f56ea3e6a4e0b2a1c2399",
+    "results/split_reader_20261001/dev/summary.json": "ed0162feb2b08321bb1d6ad0a326740acbd603cf969d033862208d46c761f0eb",
+    "results/split_reader_20261001/dev/validation_gate.json": "ed6e7765f483e03f9a66cb5681ffbbca44397af5f0d00e79ee3d0bc6d435ddef",
+    "results/split_reader_20261001/dev_approval.json": "c369205a289325ded7e3964b883974f7aa20863545fa060f03f053671f61f8ec",
+    "results/split_reader_20261001/freeze_approval.json": "5a4ae396ba5ec0870fd67046cac3888e4edde096a35518fb8a3e46fe06927dc2",
+    "results/split_reader_20261001/freeze_attempt.json": "a6fa95e2dc03999ebcb46f79299fb89989aab9467395b12d82f76a73da8a3df9",
+    "results/split_reader_20261001/frozen_smoke.json": "d64e9d8188e2ad4e2f87665851256b25b610793b2bdc08014afde8e9bf7c6140",
+    "results/split_reader_20261001/grading_protocol/grade_packets.py": "1aa86329e9baa07ff78de9d6d2ebd1a72e9a51d5f4659ec071a29140a83e3a4a",
+    "results/split_reader_20261001/grading_protocol/grading_clarifications.json": "132ecdeb118ff4dcc0cb6f01dabdd2ab58299d7a566466520b666e1e636140fc",
+    "results/split_reader_20261001/grading_protocol/grading_standards.json": "06bed632b2079bcaf1a25559ce5ece97d72d1a07f1158a250b2705dec915d57f",
+    "results/split_reader_20261001/grading_protocol/prior_grading_decisions.json": "872131304b01f1565d1c0f009b1a3a341af46146d76cddaf74891477f250c0e6",
+    "results/split_reader_20261001/grading_protocol/reviewer_guidance.json": "cc4f96bfe95c45647f9eebb0ee4ea10151f9f6db072ea61cd31e504a1ffc2895",
+    "results/split_reader_20261001/grading_scope.json": "f7275cd6b5564a9b975daebf75e076e82c5ae159fb8f02f940fbb43eaf164830",
+    "results/split_reader_20261001/input_cases.json": "f339938667796359119b63100d94394b7ca76f10b2f9ae9dd0d544fc1d0cfcd0",
+    "results/split_reader_20261001/local_gate/accepted_verification.json": "aaf7b616d36a9d458096df36320ad0901d627b654ddc722d368365d36a504be3",
+    "results/split_reader_20261001/local_gate/durability.json": "af6011f499976111e18327ef5a5849c9cfde3a8532ce8b82aa48f2c1597ee3e3",
+    "results/split_reader_20261001/local_gate/durability_lock.json": "3caad3d43339c3f594316a570109b3856c87cdb417c94b943c676cec2b8b6fe5",
+    "results/split_reader_20261001/local_gate/pre_freeze_corrections.json": "2d0001a68f7ee879f308fb9f8952a2f66dda70e5d98a70c86138a036a5454b42",
+    "results/split_reader_20261001/local_gate/presets.json": "2ef071ec43cc03d2f01d33479785dfd03e0fc62c2392290f29da078f41b77492",
+    "results/split_reader_20261001/local_gate/pytest.xml": "719578cd576126093f60ce1ed7fe44a700c66baf9a6237f21fb0ed16b8039085",
+    "results/split_reader_20261001/local_gate/review_execution.json": "ed21e1ea1468d1d1b98b2f4a2896c89483e621574af927df215046c93e44446d",
+    "results/split_reader_20261001/local_gate/stdio_boundaries.json": "8a7f9236a8be0a6896471c12f27a51fb1f9ff3070b51ccd1276cff42db1c2042",
+    "results/split_reader_20261001/local_gate/stdio_replay.json": "6d4223aee8a50ff668c0146bc9110694cee46e7f4a5808d012205b15d1edfd56",
+    "results/split_reader_20261001/local_gate/verification.json": "c7ab56cce8f7acf1146dfb1171829f7d731725e0b40b93bc9941f17c2ec66445",
+    "results/split_reader_20261001/local_gate/verify_durability.py": "b1d79e66fad5d802f3dbb0e0d9fcc744aec0294024d05ae4eb2f95f7b0be9abb",
+    "results/split_reader_20261001/preparation.json": "c1bc7388fec9a8fbd5b34fb4d99f2a93c2e45c8304ade0f5c3788187a23d5efc",
+    "results/split_reader_20261001/preparation_smoke.json": "c147eff31d1b7498a5a3252e7ac7e7efec988434694b969b7bdc15e24dd76afe",
+    "results/split_reader_20261001/protocol.json": "df664525fe787611e5162dd9ee2271db9973d3c082fc99a7de067530e34cf612",
+    "results/split_reader_20261001/publication_baseline.json": "f905cc1c46ca71e2ec13480a5f747dce962311ce29f1cafe4f02a3fe2ef24337",
+    "results/split_reader_20261001/repeated_case_mapping.json": "9f556f1589c7b90934765e38e2e6331e25b9832723be83790fbefc0091be83bc",
+    "results/split_reader_20261001/run_study.py": "6d280c2c0a867c1547ad877ef84d7b9bd3c480c05a1d1800e75ca3f2c1584027",
+    "results/split_reader_20261001/schedules.json": "2345a62af5f847ea173b116bff31fe4d1d6bdd8adb73e608063c6680d65c8d3a",
+    "results/split_reader_20261001/schemas.json": "0341f34d072d2db607d4d683e09b420af86c461dcc4f9550a72ee66b8e3daf6b",
+    "results/split_reader_20261001/sixth_driver.py": "d7a730e13f52c95ba8291e090acf8a1d46ac3a38cabd41792504c334a22d2c95",
+    "results/split_reader_20261001/smoke_analysis.py": "5663657847f48baf57239660a92f2c15266c71a9b76a9ec1adc7df328e323840",
+    "results/split_reader_20261001/source_provenance.json": "bff6c900e4647a4c882665c3816545f15d24e607f0db98a9e9f4e527fa805875",
+    "results/split_reader_20261001/spend_ledger.json": "f6759943aedaebf3be4aa7274eba8f1f63b5651673e1b6644115320cc5b4c734"
+  }
+}

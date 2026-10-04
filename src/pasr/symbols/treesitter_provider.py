@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from functools import lru_cache
 
+from pasr.source_text import normalize_source, physical_lines
 from pasr.symbols.base import FileSymbols, SymbolDef
 
 _JS_DEF_NODES = frozenset(
@@ -93,6 +94,7 @@ _CONFIGS: dict[str, LanguageConfig] = {
         ident_nodes=_JS_IDENT_NODES,
         import_nodes=frozenset({"import_statement"}),
         grammar="tree_sitter_typescript:language_typescript",
+        kind_by_node={"type_alias_declaration": "type", "enum_declaration": "enum"},
     ),
     "tsx": LanguageConfig(
         language="tsx",
@@ -101,6 +103,7 @@ _CONFIGS: dict[str, LanguageConfig] = {
         ident_nodes=_JS_IDENT_NODES,
         import_nodes=frozenset({"import_statement"}),
         grammar="tree_sitter_typescript:language_tsx",
+        kind_by_node={"type_alias_declaration": "type", "enum_declaration": "enum"},
     ),
     "rust": LanguageConfig(
         language="rust",
@@ -146,7 +149,7 @@ class TreeSitterProvider:
     def parse(self, source: str, text: str) -> FileSymbols:
         config = _CONFIGS[self._key]
         try:
-            tree = _parser(self._key).parse(text.encode("utf-8"))
+            tree = _parser(self._key).parse(normalize_source(text).encode("utf-8"))
         except Exception:
             return FileSymbols(source=source, language=self.language, definitions=(), imports=())
 
@@ -262,10 +265,14 @@ def _walk(node):
 
 
 def _byte_to_char_map(text: str) -> list[int]:
+    # The parser sees LF; map its bytes back into the unchanged caller's text.
     mapping: list[int] = []
     char_index = 0
-    for char in text:
-        mapping.extend([char_index] * len(char.encode("utf-8")))
-        char_index += 1
+    for line in physical_lines(text, keepends=True):
+        for char in line:
+            mapping.extend([char_index] * len(char.encode("utf-8")))
+            char_index += 1
+        if line.endswith("\r\n"):
+            mapping.pop()
     mapping.append(char_index)
     return mapping

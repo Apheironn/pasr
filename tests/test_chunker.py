@@ -67,6 +67,16 @@ class ChunkerTests(unittest.TestCase):
         additive = spans[-1].token_end
         self.assertLessEqual(abs(whole - additive), max(5, round(0.05 * whole)))
 
+    def test_only_physical_newlines_split_source_spans(self):
+        lines = ['label = "a\u2028b\fc"', "def target():", '    return "café"']
+        for newline in ("\n", "\r\n", "\r"):
+            with self.subTest(newline=newline):
+                text = newline.join(lines) + newline
+                spans = chunk_text("m.py", text, WhitespaceTokenizer(), block_size=1)
+                self.assertEqual([(s.line_start, s.line_end) for s in spans], [(1, 1), (2, 2), (3, 3)])
+                self.assertEqual([s.text for s in spans], [line + newline for line in lines])
+                self.assertEqual([text[s.char_start : s.char_end] for s in spans], [s.text for s in spans])
+
 
 if __name__ == "__main__":
     unittest.main()

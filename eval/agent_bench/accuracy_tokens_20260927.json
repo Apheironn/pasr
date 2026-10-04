@@ -1,0 +1,5131 @@
+{
+  "study": "accuracy_tokens_20260927",
+  "written_at_utc": "2026-09-27T08:56:04.774383+00:00",
+  "goal": "PASR at least grep+read full-answer accuracy with strictly fewer cumulative provider input plus output tokens.",
+  "decision": "Goal not established. Keep existing production retrieval and host policy; retain only query-contract and reporting correctness improvements.",
+  "completion": "All reachable local experiments, fresh validation, source review and production verification completed. Remaining hosted contract/fresh work blocked by account credits.",
+  "primary_fresh": {
+    "model": "Qwen3.5-9B Q4_K_M",
+    "questions": 50,
+    "repositories": 10,
+    "repetitions": 1,
+    "attempts": 300,
+    "usage_complete_attempts": 300,
+    "backend_failures": 0,
+    "threshold_overshoots": 3,
+    "profiles": [
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@3",
+        "trajectories": 50,
+        "unique_questions": 50,
+        "semantic_passes": 13,
+        "semantic_accuracy": 0.26,
+        "verdict_counts": {
+          "materially_incorrect": 22,
+          "complete_supported": 13,
+          "incomplete": 15
+        },
+        "usage_complete_rows": 50,
+        "mean_total_tokens": 12482.64,
+        "median_total_tokens": 13689.5,
+        "mean_tool_calls": 3.02,
+        "mean_turns": 3.88,
+        "mean_elapsed_s": 8.716,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 35,
+          "select_context": 73,
+          "find_symbols": 32,
+          "find_usages": 2,
+          "read_file": 4,
+          "find_files": 4,
+          "grep": 1
+        },
+        "call_cap_overshoots": 2,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@4",
+        "trajectories": 50,
+        "unique_questions": 50,
+        "semantic_passes": 18,
+        "semantic_accuracy": 0.36,
+        "verdict_counts": {
+          "complete_supported": 18,
+          "materially_incorrect": 24,
+          "incomplete": 8
+        },
+        "usage_complete_rows": 50,
+        "mean_total_tokens": 17787.62,
+        "median_total_tokens": 17476.0,
+        "mean_tool_calls": 3.74,
+        "mean_turns": 4.56,
+        "mean_elapsed_s": 9.842,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 37,
+          "select_context": 103,
+          "find_symbols": 36,
+          "read_file": 6,
+          "find_files": 4,
+          "find_usages": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "current@6",
+        "trajectories": 50,
+        "unique_questions": 50,
+        "semantic_passes": 20,
+        "semantic_accuracy": 0.4,
+        "verdict_counts": {
+          "complete_supported": 20,
+          "incomplete": 5,
+          "materially_incorrect": 25
+        },
+        "usage_complete_rows": 50,
+        "mean_total_tokens": 25931.16,
+        "median_total_tokens": 25650.5,
+        "mean_tool_calls": 4.6,
+        "mean_turns": 5.44,
+        "mean_elapsed_s": 11.256,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 38,
+          "select_context": 142,
+          "read_file": 12,
+          "find_symbols": 34,
+          "find_usages": 1,
+          "find_files": 3
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@5",
+        "trajectories": 50,
+        "unique_questions": 50,
+        "semantic_passes": 14,
+        "semantic_accuracy": 0.28,
+        "verdict_counts": {
+          "complete_supported": 14,
+          "incomplete": 9,
+          "materially_incorrect": 27
+        },
+        "usage_complete_rows": 50,
+        "mean_total_tokens": 23008.4,
+        "median_total_tokens": 24193.0,
+        "mean_tool_calls": 4.32,
+        "mean_turns": 5.16,
+        "mean_elapsed_s": 10.786,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 36,
+          "select_context": 138,
+          "read_file": 7,
+          "find_symbols": 31,
+          "find_files": 3,
+          "grep": 1
+        },
+        "call_cap_overshoots": 1,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "trajectories": 50,
+        "unique_questions": 50,
+        "semantic_passes": 18,
+        "semantic_accuracy": 0.36,
+        "verdict_counts": {
+          "complete_supported": 18,
+          "materially_incorrect": 19,
+          "incomplete": 13
+        },
+        "usage_complete_rows": 50,
+        "mean_total_tokens": 9763.84,
+        "median_total_tokens": 8515.5,
+        "mean_tool_calls": 3.62,
+        "mean_turns": 4.52,
+        "mean_elapsed_s": 8.514,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "grep": 87,
+          "read_file": 94
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "trajectories": 50,
+        "unique_questions": 50,
+        "semantic_passes": 16,
+        "semantic_accuracy": 0.32,
+        "verdict_counts": {
+          "incomplete": 9,
+          "materially_incorrect": 25,
+          "complete_supported": 16
+        },
+        "usage_complete_rows": 50,
+        "mean_total_tokens": 16729.84,
+        "median_total_tokens": 15022.5,
+        "mean_tool_calls": 4.88,
+        "mean_turns": 5.76,
+        "mean_elapsed_s": 9.648,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "grep": 109,
+          "read_file": 135
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      }
+    ],
+    "paired_question_comparisons": [
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@4",
+        "variant": "components@3",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.1,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.28,
+          0.08
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 0.27845601730466707,
+        "token_change_question_bootstrap_95": [
+          0.1282294928791381,
+          0.46843165709866735
+        ],
+        "candidate_only_correct": 8,
+        "baseline_only_correct": 13,
+        "both_correct": 5,
+        "both_wrong": 24,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@6",
+        "variant": "components@3",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.06,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.24,
+          0.1
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.25386973216719344,
+        "token_change_question_bootstrap_95": [
+          -0.3493055615709734,
+          -0.12873283646352507
+        ],
+        "candidate_only_correct": 8,
+        "baseline_only_correct": 11,
+        "both_correct": 5,
+        "both_wrong": 26,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "current@6",
+        "variant": "components@3",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.14,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.3,
+          0.02
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.5186239258097208,
+        "token_change_question_bootstrap_95": [
+          -0.5703055971766721,
+          -0.4541314413516728
+        ],
+        "candidate_only_correct": 5,
+        "baseline_only_correct": 12,
+        "both_correct": 8,
+        "both_wrong": 25,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@4",
+        "variant": "components@4",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": 0.0,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.18,
+          0.18
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 0.821785281200839,
+        "token_change_question_bootstrap_95": [
+          0.6001020861231351,
+          1.0898168977542106
+        ],
+        "candidate_only_correct": 10,
+        "baseline_only_correct": 10,
+        "both_correct": 8,
+        "both_wrong": 22,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@6",
+        "variant": "components@4",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": 0.04,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.14,
+          0.22
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 0.06322714383401151,
+        "token_change_question_bootstrap_95": [
+          -0.07240394749238721,
+          0.23800566015527466
+        ],
+        "candidate_only_correct": 11,
+        "baseline_only_correct": 9,
+        "both_correct": 7,
+        "both_wrong": 23,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "current@6",
+        "variant": "components@4",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.04,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.18,
+          0.1
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.3140445703161756,
+        "token_change_question_bootstrap_95": [
+          -0.3728724712010153,
+          -0.24102565682997124
+        ],
+        "candidate_only_correct": 6,
+        "baseline_only_correct": 8,
+        "both_correct": 12,
+        "both_wrong": 24,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@4",
+        "variant": "current@6",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": 0.04,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.12,
+          0.2
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 1.655836228369166,
+        "token_change_question_bootstrap_95": [
+          1.2940031050692844,
+          2.065281105921889
+        ],
+        "candidate_only_correct": 10,
+        "baseline_only_correct": 8,
+        "both_correct": 10,
+        "both_wrong": 22,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@6",
+        "variant": "current@6",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": 0.08,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.06,
+          0.22
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 0.5499945008440008,
+        "token_change_question_bootstrap_95": [
+          0.34496897339133603,
+          0.7895313134830648
+        ],
+        "candidate_only_correct": 8,
+        "baseline_only_correct": 4,
+        "both_correct": 12,
+        "both_wrong": 26,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@4",
+        "variant": "frequency@5",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.08,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.24,
+          0.08
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 1.3564908888306242,
+        "token_change_question_bootstrap_95": [
+          1.0508230239868395,
+          1.7236116241545099
+        ],
+        "candidate_only_correct": 7,
+        "baseline_only_correct": 11,
+        "both_correct": 7,
+        "both_wrong": 25,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@6",
+        "variant": "frequency@5",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.04,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.2,
+          0.12
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 0.3752910966273437,
+        "token_change_question_bootstrap_95": [
+          0.19142174648426052,
+          0.6085643335117674
+        ],
+        "candidate_only_correct": 8,
+        "baseline_only_correct": 10,
+        "both_correct": 6,
+        "both_wrong": 26,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "current@6",
+        "variant": "frequency@5",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.12,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.28,
+          0.04
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.11271227357356939,
+        "token_change_question_bootstrap_95": [
+          -0.1877320779118901,
+          -0.021614974911837958
+        ],
+        "candidate_only_correct": 6,
+        "baseline_only_correct": 12,
+        "both_correct": 8,
+        "both_wrong": 24,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@6",
+        "variant": "grep@4",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": 0.04,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.08,
+          0.16
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.41638174662758276,
+        "token_change_question_bootstrap_95": [
+          -0.46831069879637216,
+          -0.3580776628899054
+        ],
+        "candidate_only_correct": 6,
+        "baseline_only_correct": 4,
+        "both_correct": 12,
+        "both_wrong": 28,
+        "observed_no_lower_accuracy_and_fewer_tokens": true,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "current@6",
+        "variant": "grep@4",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.04,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.2,
+          0.12
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.6234707587319657,
+        "token_change_question_bootstrap_95": [
+          -0.6737656460679486,
+          -0.5640807990518638
+        ],
+        "candidate_only_correct": 8,
+        "baseline_only_correct": 10,
+        "both_correct": 10,
+        "both_wrong": 22,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@4",
+        "variant": "grep@6",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.04,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.16,
+          0.08
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 0.7134488070267435,
+        "token_change_question_bootstrap_95": [
+          0.5578208487183401,
+          0.8807976721427085
+        ],
+        "candidate_only_correct": 4,
+        "baseline_only_correct": 6,
+        "both_correct": 12,
+        "both_wrong": 28,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "current@6",
+        "variant": "grep@6",
+        "paired_trajectories": 50,
+        "paired_questions": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.08,
+        "accuracy_difference_question_bootstrap_95": [
+          -0.22,
+          0.06
+        ],
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.3548364207386018,
+        "token_change_question_bootstrap_95": [
+          -0.44119446626204817,
+          -0.25648842469358185
+        ],
+        "candidate_only_correct": 4,
+        "baseline_only_correct": 8,
+        "both_correct": 12,
+        "both_wrong": 26,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive question-resampling intervals, not proof of population equivalence. All-tie samples can give degenerate intervals; questions within one repository may remain correlated."
+      }
+    ],
+    "repository_slices": [
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@3",
+        "corpus": "anyio",
+        "questions": 5,
+        "source_review_passes": 0,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 10496.8,
+        "case_ids": [
+          "fresh-anyio-stapled-half-close",
+          "fresh-anyio-buffered-boundary-reads",
+          "fresh-anyio-tls-shutdown-errors",
+          "fresh-anyio-memory-endpoint-close",
+          "fresh-anyio-incremental-text-receive"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@3",
+        "corpus": "attrs",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 10328.6,
+        "case_ids": [
+          "fresh-attrs-none-default",
+          "fresh-attrs-validator-combinators",
+          "fresh-attrs-regex-validator",
+          "fresh-attrs-disabled-restoration",
+          "fresh-attrs-setter-dataflow"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@3",
+        "corpus": "click",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 12085.2,
+        "case_ids": [
+          "fresh-click-atomic-write-close",
+          "fresh-click-option-envvar-shape",
+          "fresh-click-prompt-retry-confirmation",
+          "fresh-click-choice-normalization",
+          "fresh-click-isolated-filesystem-cleanup"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@3",
+        "corpus": "httpx",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 13537.2,
+        "case_ids": [
+          "fresh-httpx-wsgi-iterator-lifecycle",
+          "fresh-httpx-content-framing",
+          "fresh-httpx-multipart-stream-length",
+          "fresh-httpx-asgi-body-and-failure",
+          "fresh-httpx-timeout-construction"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@3",
+        "corpus": "jinja",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 9995.4,
+        "case_ids": [
+          "fresh-jinja-item-attribute-fallbacks",
+          "fresh-jinja-bytecode-file-cleanup",
+          "fresh-jinja-composed-loaders",
+          "fresh-jinja-template-selection-fallback",
+          "fresh-jinja-template-cache-layers"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@3",
+        "corpus": "packaging",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 13079.8,
+        "case_ids": [
+          "fresh-packaging-collected-errors",
+          "fresh-packaging-direct-url-credentials",
+          "fresh-packaging-distribution-filenames",
+          "fresh-packaging-dependency-group-resolution",
+          "fresh-packaging-marker-environments"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@3",
+        "corpus": "pluggy",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 15319.8,
+        "case_ids": [
+          "fresh-pluggy-blocked-plugin-lifecycle",
+          "fresh-pluggy-subset-live-view",
+          "fresh-pluggy-entrypoint-loading",
+          "fresh-pluggy-historic-replay",
+          "fresh-pluggy-monitoring-exceptions"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@3",
+        "corpus": "requests",
+        "questions": 5,
+        "source_review_passes": 0,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 11586.8,
+        "case_ids": [
+          "fresh-requests-environment-precedence",
+          "fresh-requests-adapter-certificate-paths",
+          "fresh-requests-response-chunks",
+          "fresh-requests-json-codec-fallback",
+          "fresh-requests-cookie-name-collisions"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@3",
+        "corpus": "starlette",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 14383.4,
+        "case_ids": [
+          "fresh-starlette-background-order-failure",
+          "fresh-starlette-websocket-state-machines",
+          "fresh-starlette-upload-file-dispatch",
+          "fresh-starlette-conditional-static-response",
+          "fresh-starlette-exception-handler-precedence"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@3",
+        "corpus": "typer",
+        "questions": 5,
+        "source_review_passes": 0,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 14013.4,
+        "case_ids": [
+          "fresh-typer-completion-instruction-dispatch",
+          "fresh-typer-annotated-default-conflicts",
+          "fresh-typer-callback-adaptation",
+          "fresh-typer-subapp-help-precedence",
+          "fresh-typer-exception-display-routing"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@4",
+        "corpus": "anyio",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 14862.6,
+        "case_ids": [
+          "fresh-anyio-tls-shutdown-errors",
+          "fresh-anyio-memory-endpoint-close",
+          "fresh-anyio-stapled-half-close",
+          "fresh-anyio-buffered-boundary-reads",
+          "fresh-anyio-incremental-text-receive"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@4",
+        "corpus": "attrs",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 13701.4,
+        "case_ids": [
+          "fresh-attrs-setter-dataflow",
+          "fresh-attrs-validator-combinators",
+          "fresh-attrs-none-default",
+          "fresh-attrs-regex-validator",
+          "fresh-attrs-disabled-restoration"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@4",
+        "corpus": "click",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 18991.2,
+        "case_ids": [
+          "fresh-click-prompt-retry-confirmation",
+          "fresh-click-isolated-filesystem-cleanup",
+          "fresh-click-option-envvar-shape",
+          "fresh-click-atomic-write-close",
+          "fresh-click-choice-normalization"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@4",
+        "corpus": "httpx",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 18172.6,
+        "case_ids": [
+          "fresh-httpx-asgi-body-and-failure",
+          "fresh-httpx-wsgi-iterator-lifecycle",
+          "fresh-httpx-content-framing",
+          "fresh-httpx-multipart-stream-length",
+          "fresh-httpx-timeout-construction"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@4",
+        "corpus": "jinja",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 15000.6,
+        "case_ids": [
+          "fresh-jinja-bytecode-file-cleanup",
+          "fresh-jinja-template-selection-fallback",
+          "fresh-jinja-template-cache-layers",
+          "fresh-jinja-composed-loaders",
+          "fresh-jinja-item-attribute-fallbacks"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@4",
+        "corpus": "packaging",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 16805.6,
+        "case_ids": [
+          "fresh-packaging-distribution-filenames",
+          "fresh-packaging-dependency-group-resolution",
+          "fresh-packaging-direct-url-credentials",
+          "fresh-packaging-collected-errors",
+          "fresh-packaging-marker-environments"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@4",
+        "corpus": "pluggy",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 22258.8,
+        "case_ids": [
+          "fresh-pluggy-entrypoint-loading",
+          "fresh-pluggy-blocked-plugin-lifecycle",
+          "fresh-pluggy-historic-replay",
+          "fresh-pluggy-subset-live-view",
+          "fresh-pluggy-monitoring-exceptions"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@4",
+        "corpus": "requests",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 16125.6,
+        "case_ids": [
+          "fresh-requests-cookie-name-collisions",
+          "fresh-requests-response-chunks",
+          "fresh-requests-environment-precedence",
+          "fresh-requests-adapter-certificate-paths",
+          "fresh-requests-json-codec-fallback"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@4",
+        "corpus": "starlette",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 19791,
+        "case_ids": [
+          "fresh-starlette-exception-handler-precedence",
+          "fresh-starlette-conditional-static-response",
+          "fresh-starlette-background-order-failure",
+          "fresh-starlette-websocket-state-machines",
+          "fresh-starlette-upload-file-dispatch"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "components@4",
+        "corpus": "typer",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 22166.8,
+        "case_ids": [
+          "fresh-typer-exception-display-routing",
+          "fresh-typer-callback-adaptation",
+          "fresh-typer-completion-instruction-dispatch",
+          "fresh-typer-annotated-default-conflicts",
+          "fresh-typer-subapp-help-precedence"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "current@6",
+        "corpus": "anyio",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 20457,
+        "case_ids": [
+          "fresh-anyio-tls-shutdown-errors",
+          "fresh-anyio-buffered-boundary-reads",
+          "fresh-anyio-memory-endpoint-close",
+          "fresh-anyio-incremental-text-receive",
+          "fresh-anyio-stapled-half-close"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "current@6",
+        "corpus": "attrs",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 22120.8,
+        "case_ids": [
+          "fresh-attrs-disabled-restoration",
+          "fresh-attrs-setter-dataflow",
+          "fresh-attrs-none-default",
+          "fresh-attrs-regex-validator",
+          "fresh-attrs-validator-combinators"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "current@6",
+        "corpus": "click",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 29592.6,
+        "case_ids": [
+          "fresh-click-atomic-write-close",
+          "fresh-click-choice-normalization",
+          "fresh-click-option-envvar-shape",
+          "fresh-click-prompt-retry-confirmation",
+          "fresh-click-isolated-filesystem-cleanup"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "current@6",
+        "corpus": "httpx",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 21824.8,
+        "case_ids": [
+          "fresh-httpx-multipart-stream-length",
+          "fresh-httpx-asgi-body-and-failure",
+          "fresh-httpx-content-framing",
+          "fresh-httpx-timeout-construction",
+          "fresh-httpx-wsgi-iterator-lifecycle"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "current@6",
+        "corpus": "jinja",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 19513.6,
+        "case_ids": [
+          "fresh-jinja-item-attribute-fallbacks",
+          "fresh-jinja-bytecode-file-cleanup",
+          "fresh-jinja-template-cache-layers",
+          "fresh-jinja-composed-loaders",
+          "fresh-jinja-template-selection-fallback"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "current@6",
+        "corpus": "packaging",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 25994.6,
+        "case_ids": [
+          "fresh-packaging-marker-environments",
+          "fresh-packaging-direct-url-credentials",
+          "fresh-packaging-distribution-filenames",
+          "fresh-packaging-collected-errors",
+          "fresh-packaging-dependency-group-resolution"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "current@6",
+        "corpus": "pluggy",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 28988.4,
+        "case_ids": [
+          "fresh-pluggy-entrypoint-loading",
+          "fresh-pluggy-monitoring-exceptions",
+          "fresh-pluggy-subset-live-view",
+          "fresh-pluggy-historic-replay",
+          "fresh-pluggy-blocked-plugin-lifecycle"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "current@6",
+        "corpus": "requests",
+        "questions": 5,
+        "source_review_passes": 0,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 24590.2,
+        "case_ids": [
+          "fresh-requests-environment-precedence",
+          "fresh-requests-cookie-name-collisions",
+          "fresh-requests-adapter-certificate-paths",
+          "fresh-requests-response-chunks",
+          "fresh-requests-json-codec-fallback"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "current@6",
+        "corpus": "starlette",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 25211.6,
+        "case_ids": [
+          "fresh-starlette-background-order-failure",
+          "fresh-starlette-exception-handler-precedence",
+          "fresh-starlette-upload-file-dispatch",
+          "fresh-starlette-websocket-state-machines",
+          "fresh-starlette-conditional-static-response"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "current@6",
+        "corpus": "typer",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 41018,
+        "case_ids": [
+          "fresh-typer-exception-display-routing",
+          "fresh-typer-subapp-help-precedence",
+          "fresh-typer-callback-adaptation",
+          "fresh-typer-annotated-default-conflicts",
+          "fresh-typer-completion-instruction-dispatch"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@5",
+        "corpus": "anyio",
+        "questions": 5,
+        "source_review_passes": 0,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 17763.8,
+        "case_ids": [
+          "fresh-anyio-tls-shutdown-errors",
+          "fresh-anyio-incremental-text-receive",
+          "fresh-anyio-buffered-boundary-reads",
+          "fresh-anyio-stapled-half-close",
+          "fresh-anyio-memory-endpoint-close"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@5",
+        "corpus": "attrs",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 19862.6,
+        "case_ids": [
+          "fresh-attrs-setter-dataflow",
+          "fresh-attrs-validator-combinators",
+          "fresh-attrs-none-default",
+          "fresh-attrs-disabled-restoration",
+          "fresh-attrs-regex-validator"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@5",
+        "corpus": "click",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 24238.6,
+        "case_ids": [
+          "fresh-click-option-envvar-shape",
+          "fresh-click-choice-normalization",
+          "fresh-click-isolated-filesystem-cleanup",
+          "fresh-click-atomic-write-close",
+          "fresh-click-prompt-retry-confirmation"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@5",
+        "corpus": "httpx",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 22445.4,
+        "case_ids": [
+          "fresh-httpx-content-framing",
+          "fresh-httpx-asgi-body-and-failure",
+          "fresh-httpx-multipart-stream-length",
+          "fresh-httpx-wsgi-iterator-lifecycle",
+          "fresh-httpx-timeout-construction"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@5",
+        "corpus": "jinja",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 20627.8,
+        "case_ids": [
+          "fresh-jinja-template-selection-fallback",
+          "fresh-jinja-item-attribute-fallbacks",
+          "fresh-jinja-template-cache-layers",
+          "fresh-jinja-bytecode-file-cleanup",
+          "fresh-jinja-composed-loaders"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@5",
+        "corpus": "packaging",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 20952.2,
+        "case_ids": [
+          "fresh-packaging-distribution-filenames",
+          "fresh-packaging-direct-url-credentials",
+          "fresh-packaging-collected-errors",
+          "fresh-packaging-marker-environments",
+          "fresh-packaging-dependency-group-resolution"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@5",
+        "corpus": "pluggy",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 29377.8,
+        "case_ids": [
+          "fresh-pluggy-historic-replay",
+          "fresh-pluggy-monitoring-exceptions",
+          "fresh-pluggy-subset-live-view",
+          "fresh-pluggy-entrypoint-loading",
+          "fresh-pluggy-blocked-plugin-lifecycle"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@5",
+        "corpus": "requests",
+        "questions": 5,
+        "source_review_passes": 0,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 22207.8,
+        "case_ids": [
+          "fresh-requests-json-codec-fallback",
+          "fresh-requests-response-chunks",
+          "fresh-requests-adapter-certificate-paths",
+          "fresh-requests-cookie-name-collisions",
+          "fresh-requests-environment-precedence"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@5",
+        "corpus": "starlette",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 23380,
+        "case_ids": [
+          "fresh-starlette-websocket-state-machines",
+          "fresh-starlette-upload-file-dispatch",
+          "fresh-starlette-exception-handler-precedence",
+          "fresh-starlette-background-order-failure",
+          "fresh-starlette-conditional-static-response"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@5",
+        "corpus": "typer",
+        "questions": 5,
+        "source_review_passes": 0,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 29228,
+        "case_ids": [
+          "fresh-typer-exception-display-routing",
+          "fresh-typer-subapp-help-precedence",
+          "fresh-typer-annotated-default-conflicts",
+          "fresh-typer-completion-instruction-dispatch",
+          "fresh-typer-callback-adaptation"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "corpus": "anyio",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 6656,
+        "case_ids": [
+          "fresh-anyio-buffered-boundary-reads",
+          "fresh-anyio-stapled-half-close",
+          "fresh-anyio-incremental-text-receive",
+          "fresh-anyio-memory-endpoint-close",
+          "fresh-anyio-tls-shutdown-errors"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "corpus": "attrs",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 5906.8,
+        "case_ids": [
+          "fresh-attrs-setter-dataflow",
+          "fresh-attrs-disabled-restoration",
+          "fresh-attrs-validator-combinators",
+          "fresh-attrs-none-default",
+          "fresh-attrs-regex-validator"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "corpus": "click",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 9599,
+        "case_ids": [
+          "fresh-click-choice-normalization",
+          "fresh-click-prompt-retry-confirmation",
+          "fresh-click-isolated-filesystem-cleanup",
+          "fresh-click-option-envvar-shape",
+          "fresh-click-atomic-write-close"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "corpus": "httpx",
+        "questions": 5,
+        "source_review_passes": 0,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 6086,
+        "case_ids": [
+          "fresh-httpx-timeout-construction",
+          "fresh-httpx-wsgi-iterator-lifecycle",
+          "fresh-httpx-asgi-body-and-failure",
+          "fresh-httpx-content-framing",
+          "fresh-httpx-multipart-stream-length"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "corpus": "jinja",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 8807,
+        "case_ids": [
+          "fresh-jinja-template-selection-fallback",
+          "fresh-jinja-template-cache-layers",
+          "fresh-jinja-bytecode-file-cleanup",
+          "fresh-jinja-item-attribute-fallbacks",
+          "fresh-jinja-composed-loaders"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "corpus": "packaging",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 16698.6,
+        "case_ids": [
+          "fresh-packaging-distribution-filenames",
+          "fresh-packaging-marker-environments",
+          "fresh-packaging-direct-url-credentials",
+          "fresh-packaging-dependency-group-resolution",
+          "fresh-packaging-collected-errors"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "corpus": "pluggy",
+        "questions": 5,
+        "source_review_passes": 4,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 8553.8,
+        "case_ids": [
+          "fresh-pluggy-monitoring-exceptions",
+          "fresh-pluggy-blocked-plugin-lifecycle",
+          "fresh-pluggy-subset-live-view",
+          "fresh-pluggy-entrypoint-loading",
+          "fresh-pluggy-historic-replay"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "corpus": "requests",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 10123.6,
+        "case_ids": [
+          "fresh-requests-json-codec-fallback",
+          "fresh-requests-response-chunks",
+          "fresh-requests-environment-precedence",
+          "fresh-requests-adapter-certificate-paths",
+          "fresh-requests-cookie-name-collisions"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "corpus": "starlette",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 8769.8,
+        "case_ids": [
+          "fresh-starlette-websocket-state-machines",
+          "fresh-starlette-conditional-static-response",
+          "fresh-starlette-upload-file-dispatch",
+          "fresh-starlette-exception-handler-precedence",
+          "fresh-starlette-background-order-failure"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "corpus": "typer",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 16437.8,
+        "case_ids": [
+          "fresh-typer-annotated-default-conflicts",
+          "fresh-typer-callback-adaptation",
+          "fresh-typer-completion-instruction-dispatch",
+          "fresh-typer-exception-display-routing",
+          "fresh-typer-subapp-help-precedence"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "corpus": "anyio",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 8978,
+        "case_ids": [
+          "fresh-anyio-tls-shutdown-errors",
+          "fresh-anyio-incremental-text-receive",
+          "fresh-anyio-stapled-half-close",
+          "fresh-anyio-memory-endpoint-close",
+          "fresh-anyio-buffered-boundary-reads"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "corpus": "attrs",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 11787.2,
+        "case_ids": [
+          "fresh-attrs-none-default",
+          "fresh-attrs-validator-combinators",
+          "fresh-attrs-disabled-restoration",
+          "fresh-attrs-setter-dataflow",
+          "fresh-attrs-regex-validator"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "corpus": "click",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 13791.8,
+        "case_ids": [
+          "fresh-click-prompt-retry-confirmation",
+          "fresh-click-isolated-filesystem-cleanup",
+          "fresh-click-atomic-write-close",
+          "fresh-click-choice-normalization",
+          "fresh-click-option-envvar-shape"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "corpus": "httpx",
+        "questions": 5,
+        "source_review_passes": 0,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 9501.2,
+        "case_ids": [
+          "fresh-httpx-wsgi-iterator-lifecycle",
+          "fresh-httpx-content-framing",
+          "fresh-httpx-multipart-stream-length",
+          "fresh-httpx-asgi-body-and-failure",
+          "fresh-httpx-timeout-construction"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "corpus": "jinja",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 15531.8,
+        "case_ids": [
+          "fresh-jinja-template-cache-layers",
+          "fresh-jinja-composed-loaders",
+          "fresh-jinja-template-selection-fallback",
+          "fresh-jinja-bytecode-file-cleanup",
+          "fresh-jinja-item-attribute-fallbacks"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "corpus": "packaging",
+        "questions": 5,
+        "source_review_passes": 2,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 27132,
+        "case_ids": [
+          "fresh-packaging-direct-url-credentials",
+          "fresh-packaging-collected-errors",
+          "fresh-packaging-distribution-filenames",
+          "fresh-packaging-dependency-group-resolution",
+          "fresh-packaging-marker-environments"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "corpus": "pluggy",
+        "questions": 5,
+        "source_review_passes": 3,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 18364.2,
+        "case_ids": [
+          "fresh-pluggy-entrypoint-loading",
+          "fresh-pluggy-monitoring-exceptions",
+          "fresh-pluggy-historic-replay",
+          "fresh-pluggy-subset-live-view",
+          "fresh-pluggy-blocked-plugin-lifecycle"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "corpus": "requests",
+        "questions": 5,
+        "source_review_passes": 0,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 17488.4,
+        "case_ids": [
+          "fresh-requests-adapter-certificate-paths",
+          "fresh-requests-json-codec-fallback",
+          "fresh-requests-response-chunks",
+          "fresh-requests-cookie-name-collisions",
+          "fresh-requests-environment-precedence"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "corpus": "starlette",
+        "questions": 5,
+        "source_review_passes": 1,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 14731.8,
+        "case_ids": [
+          "fresh-starlette-upload-file-dispatch",
+          "fresh-starlette-conditional-static-response",
+          "fresh-starlette-background-order-failure",
+          "fresh-starlette-websocket-state-machines",
+          "fresh-starlette-exception-handler-precedence"
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "corpus": "typer",
+        "questions": 5,
+        "source_review_passes": 0,
+        "usage_complete_rows": 5,
+        "mean_total_tokens": 29992,
+        "case_ids": [
+          "fresh-typer-completion-instruction-dispatch",
+          "fresh-typer-exception-display-routing",
+          "fresh-typer-callback-adaptation",
+          "fresh-typer-annotated-default-conflicts",
+          "fresh-typer-subapp-help-precedence"
+        ]
+      }
+    ],
+    "paired_repository_comparisons": [
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@4",
+        "variant": "components@3",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.1,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 0.27845601730466707,
+        "candidate_only_correct": 8,
+        "baseline_only_correct": 13,
+        "both_correct": 5,
+        "both_wrong": 24,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.22,
+          0.04
+        ],
+        "token_change_repository_bootstrap_95": [
+          0.03961037430041354,
+          0.6094031605981345
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-stapled-half-close"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [
+              "fresh-attrs-validator-combinators",
+              "fresh-attrs-regex-validator"
+            ],
+            "gained_cases": [
+              "fresh-attrs-disabled-restoration"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [
+              "fresh-click-isolated-filesystem-cleanup"
+            ],
+            "gained_cases": [
+              "fresh-click-choice-normalization"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-httpx-timeout-construction",
+              "fresh-httpx-multipart-stream-length"
+            ],
+            "pass_count_difference": 2
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [
+              "fresh-jinja-composed-loaders"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-distribution-filenames",
+              "fresh-packaging-dependency-group-resolution"
+            ],
+            "gained_cases": [
+              "fresh-packaging-direct-url-credentials",
+              "fresh-packaging-collected-errors"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-blocked-plugin-lifecycle",
+              "fresh-pluggy-subset-live-view",
+              "fresh-pluggy-historic-replay"
+            ],
+            "gained_cases": [
+              "fresh-pluggy-monitoring-exceptions"
+            ],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [
+              "fresh-requests-adapter-certificate-paths"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [
+              "fresh-starlette-websocket-state-machines"
+            ],
+            "gained_cases": [
+              "fresh-starlette-upload-file-dispatch"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [
+              "fresh-typer-subapp-help-precedence"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@6",
+        "variant": "components@3",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.06,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.25386973216719344,
+        "candidate_only_correct": 8,
+        "baseline_only_correct": 11,
+        "both_correct": 5,
+        "both_wrong": 26,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.22,
+          0.1
+        ],
+        "token_change_repository_bootstrap_95": [
+          -0.39392268888358367,
+          -0.054639218579521046
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-incremental-text-receive",
+              "fresh-anyio-stapled-half-close"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [
+              "fresh-attrs-validator-combinators",
+              "fresh-attrs-regex-validator"
+            ],
+            "gained_cases": [
+              "fresh-attrs-disabled-restoration"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [
+              "fresh-click-prompt-retry-confirmation",
+              "fresh-click-isolated-filesystem-cleanup"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-httpx-multipart-stream-length",
+              "fresh-httpx-timeout-construction"
+            ],
+            "pass_count_difference": 2
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [
+              "fresh-jinja-composed-loaders"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-distribution-filenames",
+              "fresh-packaging-dependency-group-resolution"
+            ],
+            "gained_cases": [
+              "fresh-packaging-direct-url-credentials",
+              "fresh-packaging-collected-errors",
+              "fresh-packaging-marker-environments"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-historic-replay",
+              "fresh-pluggy-blocked-plugin-lifecycle"
+            ],
+            "gained_cases": [
+              "fresh-pluggy-monitoring-exceptions"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-starlette-background-order-failure"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "current@6",
+        "variant": "components@3",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.14,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.5186239258097208,
+        "candidate_only_correct": 5,
+        "baseline_only_correct": 12,
+        "both_correct": 8,
+        "both_wrong": 25,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.26,
+          -0.02
+        ],
+        "token_change_repository_bootstrap_95": [
+          -0.5731305008675422,
+          -0.4635662713514866
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-buffered-boundary-reads",
+              "fresh-anyio-incremental-text-receive"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [
+              "fresh-attrs-regex-validator",
+              "fresh-attrs-validator-combinators"
+            ],
+            "gained_cases": [
+              "fresh-attrs-disabled-restoration"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [
+              "fresh-click-isolated-filesystem-cleanup"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [
+              "fresh-httpx-asgi-body-and-failure",
+              "fresh-httpx-content-framing"
+            ],
+            "gained_cases": [
+              "fresh-httpx-timeout-construction"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [
+              "fresh-jinja-template-cache-layers",
+              "fresh-jinja-composed-loaders"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-dependency-group-resolution"
+            ],
+            "gained_cases": [
+              "fresh-packaging-marker-environments",
+              "fresh-packaging-collected-errors"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-historic-replay"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-starlette-background-order-failure"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [
+              "fresh-typer-subapp-help-precedence"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@4",
+        "variant": "components@4",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": 0.0,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 0.8217852812008393,
+        "candidate_only_correct": 10,
+        "baseline_only_correct": 10,
+        "both_correct": 8,
+        "both_wrong": 22,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.14,
+          0.16
+        ],
+        "token_change_repository_bootstrap_95": [
+          0.4776980733676412,
+          1.2672124916863656
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [
+              "fresh-attrs-validator-combinators"
+            ],
+            "gained_cases": [
+              "fresh-attrs-setter-dataflow"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [
+              "fresh-click-isolated-filesystem-cleanup"
+            ],
+            "gained_cases": [
+              "fresh-click-choice-normalization"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-httpx-timeout-construction",
+              "fresh-httpx-asgi-body-and-failure",
+              "fresh-httpx-content-framing"
+            ],
+            "pass_count_difference": 3
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [
+              "fresh-jinja-composed-loaders"
+            ],
+            "gained_cases": [
+              "fresh-jinja-template-cache-layers"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-distribution-filenames",
+              "fresh-packaging-marker-environments"
+            ],
+            "gained_cases": [
+              "fresh-packaging-direct-url-credentials",
+              "fresh-packaging-collected-errors"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-blocked-plugin-lifecycle",
+              "fresh-pluggy-subset-live-view",
+              "fresh-pluggy-historic-replay"
+            ],
+            "gained_cases": [
+              "fresh-pluggy-monitoring-exceptions"
+            ],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [
+              "fresh-starlette-websocket-state-machines",
+              "fresh-starlette-background-order-failure"
+            ],
+            "gained_cases": [
+              "fresh-starlette-conditional-static-response"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@6",
+        "variant": "components@4",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": 0.04,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 0.06322714383401173,
+        "candidate_only_correct": 11,
+        "baseline_only_correct": 9,
+        "both_correct": 7,
+        "both_wrong": 23,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.12000000000000001,
+          0.22
+        ],
+        "token_change_repository_bootstrap_95": [
+          -0.13369983571848518,
+          0.33401964819462476
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-incremental-text-receive"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [
+              "fresh-attrs-validator-combinators"
+            ],
+            "gained_cases": [
+              "fresh-attrs-setter-dataflow"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [
+              "fresh-click-prompt-retry-confirmation",
+              "fresh-click-isolated-filesystem-cleanup"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-httpx-content-framing",
+              "fresh-httpx-asgi-body-and-failure",
+              "fresh-httpx-timeout-construction"
+            ],
+            "pass_count_difference": 3
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [
+              "fresh-jinja-composed-loaders"
+            ],
+            "gained_cases": [
+              "fresh-jinja-template-cache-layers"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-distribution-filenames"
+            ],
+            "gained_cases": [
+              "fresh-packaging-direct-url-credentials",
+              "fresh-packaging-collected-errors"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-historic-replay",
+              "fresh-pluggy-blocked-plugin-lifecycle"
+            ],
+            "gained_cases": [
+              "fresh-pluggy-monitoring-exceptions"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-requests-adapter-certificate-paths"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [
+              "fresh-starlette-upload-file-dispatch"
+            ],
+            "gained_cases": [
+              "fresh-starlette-conditional-static-response"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-typer-subapp-help-precedence"
+            ],
+            "pass_count_difference": 1
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "current@6",
+        "variant": "components@4",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.04,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.3140445703161756,
+        "candidate_only_correct": 6,
+        "baseline_only_correct": 8,
+        "both_correct": 12,
+        "both_wrong": 24,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.12000000000000001,
+          0.060000000000000005
+        ],
+        "token_change_repository_bootstrap_95": [
+          -0.3736465327628908,
+          -0.25171377763365715
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-buffered-boundary-reads",
+              "fresh-anyio-incremental-text-receive"
+            ],
+            "gained_cases": [
+              "fresh-anyio-stapled-half-close"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [
+              "fresh-attrs-validator-combinators"
+            ],
+            "gained_cases": [
+              "fresh-attrs-setter-dataflow"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [
+              "fresh-click-isolated-filesystem-cleanup"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [
+              "fresh-httpx-multipart-stream-length"
+            ],
+            "gained_cases": [
+              "fresh-httpx-timeout-construction"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [
+              "fresh-jinja-composed-loaders"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-packaging-collected-errors"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-historic-replay"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-requests-adapter-certificate-paths"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [
+              "fresh-starlette-upload-file-dispatch"
+            ],
+            "gained_cases": [
+              "fresh-starlette-conditional-static-response"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@4",
+        "variant": "current@6",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": 0.04,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 1.6558362283691666,
+        "candidate_only_correct": 10,
+        "baseline_only_correct": 8,
+        "both_correct": 10,
+        "both_wrong": 22,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.1,
+          0.2
+        ],
+        "token_change_repository_bootstrap_95": [
+          1.227491903477582,
+          2.1337705082455427
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-stapled-half-close"
+            ],
+            "gained_cases": [
+              "fresh-anyio-buffered-boundary-reads",
+              "fresh-anyio-incremental-text-receive"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-click-choice-normalization"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-httpx-asgi-body-and-failure",
+              "fresh-httpx-content-framing",
+              "fresh-httpx-multipart-stream-length"
+            ],
+            "pass_count_difference": 3
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-jinja-template-cache-layers"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-distribution-filenames",
+              "fresh-packaging-marker-environments"
+            ],
+            "gained_cases": [
+              "fresh-packaging-direct-url-credentials"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-blocked-plugin-lifecycle",
+              "fresh-pluggy-subset-live-view"
+            ],
+            "gained_cases": [
+              "fresh-pluggy-monitoring-exceptions"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [
+              "fresh-requests-adapter-certificate-paths"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [
+              "fresh-starlette-websocket-state-machines",
+              "fresh-starlette-background-order-failure"
+            ],
+            "gained_cases": [
+              "fresh-starlette-upload-file-dispatch"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@6",
+        "variant": "current@6",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": 0.08,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 0.549994500844001,
+        "candidate_only_correct": 8,
+        "baseline_only_correct": 4,
+        "both_correct": 12,
+        "both_wrong": 26,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.02,
+          0.22
+        ],
+        "token_change_repository_bootstrap_95": [
+          0.3143775821515187,
+          0.8525634058941576
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-stapled-half-close"
+            ],
+            "gained_cases": [
+              "fresh-anyio-buffered-boundary-reads"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [
+              "fresh-click-prompt-retry-confirmation"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-httpx-content-framing",
+              "fresh-httpx-multipart-stream-length",
+              "fresh-httpx-asgi-body-and-failure"
+            ],
+            "pass_count_difference": 3
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-jinja-template-cache-layers"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-distribution-filenames"
+            ],
+            "gained_cases": [
+              "fresh-packaging-direct-url-credentials"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-blocked-plugin-lifecycle"
+            ],
+            "gained_cases": [
+              "fresh-pluggy-monitoring-exceptions"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-typer-subapp-help-precedence"
+            ],
+            "pass_count_difference": 1
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@4",
+        "variant": "frequency@5",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.08,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 1.3564908888306242,
+        "candidate_only_correct": 7,
+        "baseline_only_correct": 11,
+        "both_correct": 7,
+        "both_wrong": 25,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.22,
+          0.08
+        ],
+        "token_change_repository_bootstrap_95": [
+          0.9094773428067602,
+          1.92534738365636
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-stapled-half-close"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [
+              "fresh-attrs-validator-combinators",
+              "fresh-attrs-none-default",
+              "fresh-attrs-regex-validator"
+            ],
+            "gained_cases": [
+              "fresh-attrs-disabled-restoration"
+            ],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-click-choice-normalization"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-httpx-timeout-construction",
+              "fresh-httpx-content-framing"
+            ],
+            "pass_count_difference": 2
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-jinja-template-selection-fallback"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-distribution-filenames",
+              "fresh-packaging-marker-environments",
+              "fresh-packaging-dependency-group-resolution"
+            ],
+            "gained_cases": [
+              "fresh-packaging-direct-url-credentials"
+            ],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-subset-live-view",
+              "fresh-pluggy-historic-replay"
+            ],
+            "gained_cases": [
+              "fresh-pluggy-monitoring-exceptions"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [
+              "fresh-requests-adapter-certificate-paths"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [
+              "fresh-typer-subapp-help-precedence"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@6",
+        "variant": "frequency@5",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.04,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 0.3752910966273437,
+        "candidate_only_correct": 8,
+        "baseline_only_correct": 10,
+        "both_correct": 6,
+        "both_wrong": 26,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.2,
+          0.12000000000000001
+        ],
+        "token_change_repository_bootstrap_95": [
+          0.12487100596556011,
+          0.7069256839314632
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-incremental-text-receive",
+              "fresh-anyio-stapled-half-close"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [
+              "fresh-attrs-none-default",
+              "fresh-attrs-validator-combinators",
+              "fresh-attrs-regex-validator"
+            ],
+            "gained_cases": [
+              "fresh-attrs-disabled-restoration"
+            ],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [
+              "fresh-click-prompt-retry-confirmation"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-httpx-content-framing",
+              "fresh-httpx-timeout-construction"
+            ],
+            "pass_count_difference": 2
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-jinja-template-selection-fallback"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-distribution-filenames",
+              "fresh-packaging-dependency-group-resolution"
+            ],
+            "gained_cases": [
+              "fresh-packaging-direct-url-credentials"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-historic-replay"
+            ],
+            "gained_cases": [
+              "fresh-pluggy-monitoring-exceptions"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [
+              "fresh-starlette-upload-file-dispatch"
+            ],
+            "gained_cases": [
+              "fresh-starlette-background-order-failure",
+              "fresh-starlette-websocket-state-machines"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "current@6",
+        "variant": "frequency@5",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.12,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.11271227357356939,
+        "candidate_only_correct": 6,
+        "baseline_only_correct": 12,
+        "both_correct": 8,
+        "both_wrong": 24,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.24000000000000002,
+          0.0
+        ],
+        "token_change_repository_bootstrap_95": [
+          -0.1830697954792678,
+          -0.0383108629241173
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-buffered-boundary-reads",
+              "fresh-anyio-incremental-text-receive"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [
+              "fresh-attrs-none-default",
+              "fresh-attrs-regex-validator",
+              "fresh-attrs-validator-combinators"
+            ],
+            "gained_cases": [
+              "fresh-attrs-disabled-restoration"
+            ],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [
+              "fresh-httpx-multipart-stream-length",
+              "fresh-httpx-asgi-body-and-failure"
+            ],
+            "gained_cases": [
+              "fresh-httpx-timeout-construction"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [
+              "fresh-jinja-template-cache-layers"
+            ],
+            "gained_cases": [
+              "fresh-jinja-template-selection-fallback"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-dependency-group-resolution"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-historic-replay"
+            ],
+            "gained_cases": [
+              "fresh-pluggy-blocked-plugin-lifecycle"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [
+              "fresh-starlette-upload-file-dispatch"
+            ],
+            "gained_cases": [
+              "fresh-starlette-background-order-failure",
+              "fresh-starlette-websocket-state-machines"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [
+              "fresh-typer-subapp-help-precedence"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@6",
+        "variant": "grep@4",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": 0.04,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.41638174662758287,
+        "candidate_only_correct": 6,
+        "baseline_only_correct": 4,
+        "both_correct": 12,
+        "both_wrong": 28,
+        "observed_no_lower_accuracy_and_fewer_tokens": true,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.1,
+          0.14
+        ],
+        "token_change_repository_bootstrap_95": [
+          -0.4559966050541213,
+          -0.3720225047431174
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-incremental-text-receive"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [
+              "fresh-click-prompt-retry-confirmation",
+              "fresh-click-choice-normalization"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -2
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-packaging-marker-environments"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-pluggy-subset-live-view"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-requests-adapter-certificate-paths"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [
+              "fresh-starlette-upload-file-dispatch"
+            ],
+            "gained_cases": [
+              "fresh-starlette-background-order-failure",
+              "fresh-starlette-websocket-state-machines"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-typer-subapp-help-precedence"
+            ],
+            "pass_count_difference": 1
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "current@6",
+        "variant": "grep@4",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.04,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.6234707587319657,
+        "candidate_only_correct": 8,
+        "baseline_only_correct": 10,
+        "both_correct": 10,
+        "both_wrong": 22,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.2,
+          0.1
+        ],
+        "token_change_repository_bootstrap_95": [
+          -0.68089558652094,
+          -0.5510645859237728
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-buffered-boundary-reads",
+              "fresh-anyio-incremental-text-receive"
+            ],
+            "gained_cases": [
+              "fresh-anyio-stapled-half-close"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [
+              "fresh-click-choice-normalization"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [
+              "fresh-httpx-multipart-stream-length",
+              "fresh-httpx-asgi-body-and-failure",
+              "fresh-httpx-content-framing"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -3
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [
+              "fresh-jinja-template-cache-layers"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-direct-url-credentials"
+            ],
+            "gained_cases": [
+              "fresh-packaging-marker-environments",
+              "fresh-packaging-distribution-filenames"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-monitoring-exceptions"
+            ],
+            "gained_cases": [
+              "fresh-pluggy-subset-live-view",
+              "fresh-pluggy-blocked-plugin-lifecycle"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-requests-adapter-certificate-paths"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [
+              "fresh-starlette-upload-file-dispatch"
+            ],
+            "gained_cases": [
+              "fresh-starlette-background-order-failure",
+              "fresh-starlette-websocket-state-machines"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "grep@4",
+        "variant": "grep@6",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.04,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": 0.7134488070267435,
+        "candidate_only_correct": 4,
+        "baseline_only_correct": 6,
+        "both_correct": 12,
+        "both_wrong": 28,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.14,
+          0.1
+        ],
+        "token_change_repository_bootstrap_95": [
+          0.5924137545664689,
+          0.8382238250000807
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-anyio-incremental-text-receive"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-click-choice-normalization",
+              "fresh-click-prompt-retry-confirmation"
+            ],
+            "pass_count_difference": 2
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-marker-environments"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-subset-live-view"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [
+              "fresh-requests-adapter-certificate-paths"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [
+              "fresh-starlette-websocket-state-machines",
+              "fresh-starlette-background-order-failure"
+            ],
+            "gained_cases": [
+              "fresh-starlette-upload-file-dispatch"
+            ],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [
+              "fresh-typer-subapp-help-precedence"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          }
+        ]
+      },
+      {
+        "study": "qwen_fresh",
+        "model": "pasr-study-qwen",
+        "baseline": "current@6",
+        "variant": "grep@6",
+        "paired_trajectories": 50,
+        "missing_baseline_or_candidate": 0,
+        "accuracy_difference": -0.08,
+        "cost_eligible_pairs": 50,
+        "mean_token_change": -0.3548364207386018,
+        "candidate_only_correct": 4,
+        "baseline_only_correct": 8,
+        "both_correct": 12,
+        "both_wrong": 26,
+        "observed_no_lower_accuracy_and_fewer_tokens": false,
+        "interval_interpretation": "Descriptive repository-resampling intervals: 10,000 draws of whole repository clusters. Only ten purposively selected repositories; not proof of population equivalence. No cross-model tokenizer pooling or multiple-comparison adjustment.",
+        "paired_repositories": 10,
+        "accuracy_difference_repository_bootstrap_95": [
+          -0.22,
+          0.02
+        ],
+        "token_change_repository_bootstrap_95": [
+          -0.4602074094638934,
+          -0.23918361543941635
+        ],
+        "repository_differences": [
+          {
+            "corpus": "anyio",
+            "lost_cases": [
+              "fresh-anyio-buffered-boundary-reads"
+            ],
+            "gained_cases": [
+              "fresh-anyio-stapled-half-close"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "attrs",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "click",
+            "lost_cases": [],
+            "gained_cases": [
+              "fresh-click-prompt-retry-confirmation"
+            ],
+            "pass_count_difference": 1
+          },
+          {
+            "corpus": "httpx",
+            "lost_cases": [
+              "fresh-httpx-multipart-stream-length",
+              "fresh-httpx-asgi-body-and-failure",
+              "fresh-httpx-content-framing"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -3
+          },
+          {
+            "corpus": "jinja",
+            "lost_cases": [
+              "fresh-jinja-template-cache-layers"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          },
+          {
+            "corpus": "packaging",
+            "lost_cases": [
+              "fresh-packaging-direct-url-credentials"
+            ],
+            "gained_cases": [
+              "fresh-packaging-distribution-filenames"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "pluggy",
+            "lost_cases": [
+              "fresh-pluggy-monitoring-exceptions"
+            ],
+            "gained_cases": [
+              "fresh-pluggy-blocked-plugin-lifecycle"
+            ],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "requests",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "starlette",
+            "lost_cases": [],
+            "gained_cases": [],
+            "pass_count_difference": 0
+          },
+          {
+            "corpus": "typer",
+            "lost_cases": [
+              "fresh-typer-subapp-help-precedence"
+            ],
+            "gained_cases": [],
+            "pass_count_difference": -1
+          }
+        ]
+      }
+    ],
+    "all_pasr_vs_native_observed_gates_failed": true,
+    "measured_first_request_pasr_catalogue_increment_tokens": 1472,
+    "cleanup_wording_sensitivity": {
+      "primary_grades_unchanged": true,
+      "ambiguity": "Three otherwise complete bytecode-cache answers describe cleanup as preventing leftover partial temporary files. Source remove_silent suppresses removal OSError. Strict review treats these as false outcome guarantees; an ordinary-intent reading of the prose would accept them.",
+      "source": "D:/kodlama/pasr/.eval-checkouts/jinja/src/jinja2/bccache.py:279-315",
+      "blind_ids": [
+        "5a017754d205176b4be0",
+        "4b19c60391b553366b59",
+        "4e3282eae79b23a09473"
+      ],
+      "relaxed_passes_by_variant": {
+        "components@3": 14,
+        "components@4": 18,
+        "current@6": 21,
+        "frequency@5": 15,
+        "grep@4": 18,
+        "grep@6": 16
+      },
+      "primary_passes_by_variant": {
+        "components@3": 13,
+        "components@4": 18,
+        "current@6": 20,
+        "frequency@5": 14,
+        "grep@4": 18,
+        "grep@6": 16
+      },
+      "token_totals_unchanged": true
+    }
+  },
+  "independent_family": {
+    "model": "Meta-Llama-3.1-8B-Instruct Q4_K_M",
+    "same_frozen_questions_and_profiles": true,
+    "attempts": 300,
+    "complete_usage_trajectories": 138,
+    "native_format_backend_failures": 162,
+    "full_cohort_token_totals": "Unknown for every profile; initialization zeros and partial returned usage are not full cost.",
+    "source_review_passes": 0,
+    "interpretation": "No fully correct answers in this runtime/configuration, including the 138 completed generations. This accuracy floor and missing usage make retrieval ranking/cost conclusions uninformative; not a general claim about the model family.",
+    "continuation": "After the first parser rejection, each remaining originally scheduled case was attempted once by the unchanged worker. No retry, prompt change, runtime tuning, or dropped failure.",
+    "failure_message": "The model produced output that does not match the expected peg-native format",
+    "failure_cause": "The rejection is observed; why the model/runtime produced an invalid native format is not established.",
+    "recording_limits": "Failed calls have no usage/request snapshot. Three invalid typed native-read calls generated error observations outside tool_outputs; they were reconciled from log/request snapshots. No missing source was silently declared preserved.",
+    "profiles": [
+      {
+        "variant": "components@3",
+        "attempts": 50,
+        "source_review_passes": 0,
+        "complete_usage_trajectories": 27,
+        "failed_generations": 23,
+        "full_cohort_total_tokens": null,
+        "full_cohort_mean_total_tokens": null,
+        "known_returned_usage_subtotal": 189272,
+        "complete_trajectory_only_mean_tokens_not_comparable_as_full_cost": 7010.074074074074
+      },
+      {
+        "variant": "components@4",
+        "attempts": 50,
+        "source_review_passes": 0,
+        "complete_usage_trajectories": 17,
+        "failed_generations": 33,
+        "full_cohort_total_tokens": null,
+        "full_cohort_mean_total_tokens": null,
+        "known_returned_usage_subtotal": 151408,
+        "complete_trajectory_only_mean_tokens_not_comparable_as_full_cost": 7978.117647058823
+      },
+      {
+        "variant": "current@6",
+        "attempts": 50,
+        "source_review_passes": 0,
+        "complete_usage_trajectories": 20,
+        "failed_generations": 30,
+        "full_cohort_total_tokens": null,
+        "full_cohort_mean_total_tokens": null,
+        "known_returned_usage_subtotal": 186978,
+        "complete_trajectory_only_mean_tokens_not_comparable_as_full_cost": 9125.65
+      },
+      {
+        "variant": "frequency@5",
+        "attempts": 50,
+        "source_review_passes": 0,
+        "complete_usage_trajectories": 22,
+        "failed_generations": 28,
+        "full_cohort_total_tokens": null,
+        "full_cohort_mean_total_tokens": null,
+        "known_returned_usage_subtotal": 207711,
+        "complete_trajectory_only_mean_tokens_not_comparable_as_full_cost": 8705.59090909091
+      },
+      {
+        "variant": "grep@4",
+        "attempts": 50,
+        "source_review_passes": 0,
+        "complete_usage_trajectories": 27,
+        "failed_generations": 23,
+        "full_cohort_total_tokens": null,
+        "full_cohort_mean_total_tokens": null,
+        "known_returned_usage_subtotal": 61453,
+        "complete_trajectory_only_mean_tokens_not_comparable_as_full_cost": 2194.8888888888887
+      },
+      {
+        "variant": "grep@6",
+        "attempts": 50,
+        "source_review_passes": 0,
+        "complete_usage_trajectories": 25,
+        "failed_generations": 25,
+        "full_cohort_total_tokens": null,
+        "full_cohort_mean_total_tokens": null,
+        "known_returned_usage_subtotal": 59377,
+        "complete_trajectory_only_mean_tokens_not_comparable_as_full_cost": 2150.48
+      }
+    ]
+  },
+  "development": {
+    "questions": 8,
+    "repositories": 2,
+    "held_out": false,
+    "repetitions_in_main_curves": 3,
+    "cohort_note": "The initial search-fix sweep and later candidate curve are separate cohorts with matched tasks/settings, not one interleaved causal contrast. The combined table is descriptive; fresh validation pairs every frozen profile within one interleaved schedule.",
+    "qwen_combined_main_profiles": [
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "BM25@6",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 14,
+        "semantic_accuracy": 0.5833333333333334,
+        "verdict_counts": {
+          "complete_supported": 14,
+          "incomplete": 6,
+          "materially_incorrect": 4
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 33050.5,
+        "median_total_tokens": 36335.0,
+        "mean_tool_calls": 5.416666666666667,
+        "mean_turns": 6.333333333333333,
+        "mean_elapsed_s": 11.216666666666667,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "search_code": 82,
+          "read_file": 48
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "components@3",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 2,
+        "semantic_accuracy": 0.08333333333333333,
+        "verdict_counts": {
+          "complete_supported": 2,
+          "incomplete": 9,
+          "materially_incorrect": 13
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 14589.083333333334,
+        "median_total_tokens": 14735.0,
+        "mean_tool_calls": 3,
+        "mean_turns": 4,
+        "mean_elapsed_s": 10.966666666666667,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 31,
+          "select_context": 29,
+          "read_file": 10,
+          "find_symbols": 1,
+          "find_usages": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "components@4",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 8,
+        "semantic_accuracy": 0.3333333333333333,
+        "verdict_counts": {
+          "materially_incorrect": 9,
+          "complete_supported": 8,
+          "incomplete": 7
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 21558.333333333332,
+        "median_total_tokens": 23354.5,
+        "mean_tool_calls": 3.8333333333333335,
+        "mean_turns": 4.833333333333333,
+        "mean_elapsed_s": 12.516666666666667,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 30,
+          "find_symbols": 4,
+          "select_context": 46,
+          "find_usages": 4,
+          "read_file": 7,
+          "grep": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "components@5",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 5,
+        "semantic_accuracy": 0.20833333333333334,
+        "verdict_counts": {
+          "materially_incorrect": 13,
+          "incomplete": 6,
+          "complete_supported": 5
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 26501.333333333332,
+        "median_total_tokens": 26973.5,
+        "mean_tool_calls": 4.583333333333333,
+        "mean_turns": 5.583333333333333,
+        "mean_elapsed_s": 13.133333333333333,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 36,
+          "select_context": 50,
+          "grep": 2,
+          "find_symbols": 7,
+          "find_usages": 5,
+          "read_file": 7,
+          "find_files": 3
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "components@6",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 8,
+        "semantic_accuracy": 0.3333333333333333,
+        "verdict_counts": {
+          "incomplete": 9,
+          "complete_supported": 8,
+          "materially_incorrect": 7
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 36468.083333333336,
+        "median_total_tokens": 38233.0,
+        "mean_tool_calls": 5.375,
+        "mean_turns": 6.375,
+        "mean_elapsed_s": 14.6875,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 32,
+          "select_context": 58,
+          "find_usages": 9,
+          "read_file": 25,
+          "grep": 4,
+          "find_files": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@3",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.041666666666666664,
+        "verdict_counts": {
+          "materially_incorrect": 12,
+          "incomplete": 11,
+          "complete_supported": 1
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 14554.375,
+        "median_total_tokens": 14841.5,
+        "mean_tool_calls": 3,
+        "mean_turns": 4,
+        "mean_elapsed_s": 10.825,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 32,
+          "select_context": 29,
+          "find_usages": 3,
+          "read_file": 7,
+          "find_symbols": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@4",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 5,
+        "semantic_accuracy": 0.20833333333333334,
+        "verdict_counts": {
+          "materially_incorrect": 10,
+          "incomplete": 9,
+          "complete_supported": 5
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 20595.541666666668,
+        "median_total_tokens": 22196.0,
+        "mean_tool_calls": 3.8333333333333335,
+        "mean_turns": 4.833333333333333,
+        "mean_elapsed_s": 12.358333333333334,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 34,
+          "select_context": 40,
+          "read_file": 9,
+          "find_files": 3,
+          "find_symbols": 3,
+          "find_usages": 3
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@5",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 11,
+        "semantic_accuracy": 0.4583333333333333,
+        "verdict_counts": {
+          "complete_supported": 11,
+          "incomplete": 4,
+          "materially_incorrect": 9
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 28962.875,
+        "median_total_tokens": 30006.5,
+        "mean_tool_calls": 4.75,
+        "mean_turns": 5.75,
+        "mean_elapsed_s": 13.808333333333334,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 32,
+          "select_context": 55,
+          "read_file": 18,
+          "find_symbols": 5,
+          "find_usages": 4
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "frequency@6",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 7,
+        "semantic_accuracy": 0.2916666666666667,
+        "verdict_counts": {
+          "complete_supported": 7,
+          "materially_incorrect": 10,
+          "incomplete": 7
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 37110.125,
+        "median_total_tokens": 38134.5,
+        "mean_tool_calls": 5.708333333333333,
+        "mean_turns": 6.708333333333333,
+        "mean_elapsed_s": 15.1125,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 32,
+          "select_context": 69,
+          "find_files": 4,
+          "find_symbols": 7,
+          "read_file": 14,
+          "grep": 6,
+          "find_usages": 5
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "grep@3",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 3,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "incomplete": 12,
+          "materially_incorrect": 9,
+          "complete_supported": 3
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 8050.25,
+        "median_total_tokens": 6667.0,
+        "mean_tool_calls": 3,
+        "mean_turns": 4,
+        "mean_elapsed_s": 7.779166666666667,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "grep": 47,
+          "read_file": 25
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 9,
+        "semantic_accuracy": 0.375,
+        "verdict_counts": {
+          "complete_supported": 9,
+          "materially_incorrect": 8,
+          "incomplete": 7
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 12023.75,
+        "median_total_tokens": 9015.0,
+        "mean_tool_calls": 4,
+        "mean_turns": 5,
+        "mean_elapsed_s": 8.704166666666667,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "grep": 59,
+          "read_file": 37
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "grep@5",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 7,
+        "semantic_accuracy": 0.2916666666666667,
+        "verdict_counts": {
+          "materially_incorrect": 9,
+          "incomplete": 8,
+          "complete_supported": 7
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 17836.625,
+        "median_total_tokens": 15024.5,
+        "mean_tool_calls": 4.958333333333333,
+        "mean_turns": 5.958333333333333,
+        "mean_elapsed_s": 10.079166666666667,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "grep": 65,
+          "read_file": 54
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 7,
+        "semantic_accuracy": 0.2916666666666667,
+        "verdict_counts": {
+          "materially_incorrect": 14,
+          "incomplete": 3,
+          "complete_supported": 7
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 22098.708333333332,
+        "median_total_tokens": 18698.0,
+        "mean_tool_calls": 5.833333333333333,
+        "mean_turns": 6.833333333333333,
+        "mean_elapsed_s": 10.858333333333333,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "grep": 79,
+          "read_file": 61
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "old@4",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 3,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "incomplete": 9,
+          "materially_incorrect": 12,
+          "complete_supported": 3
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 21823.333333333332,
+        "median_total_tokens": 22217.5,
+        "mean_tool_calls": 4,
+        "mean_turns": 5,
+        "mean_elapsed_s": 11.4125,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 31,
+          "select_context": 37,
+          "find_usages": 5,
+          "find_symbols": 4,
+          "read_file": 17,
+          "grep": 1,
+          "find_files": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "old@6",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 10,
+        "semantic_accuracy": 0.4166666666666667,
+        "verdict_counts": {
+          "materially_incorrect": 11,
+          "complete_supported": 10,
+          "incomplete": 3
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 34629.916666666664,
+        "median_total_tokens": 34674.5,
+        "mean_tool_calls": 5.416666666666667,
+        "mean_turns": 6.416666666666667,
+        "mean_elapsed_s": 14.241666666666667,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 33,
+          "select_context": 60,
+          "find_usages": 9,
+          "grep": 8,
+          "find_symbols": 1,
+          "find_files": 2,
+          "read_file": 17
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "split@4",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 5,
+        "semantic_accuracy": 0.20833333333333334,
+        "verdict_counts": {
+          "complete_supported": 5,
+          "incomplete": 10,
+          "materially_incorrect": 9
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 21115.666666666668,
+        "median_total_tokens": 21497.0,
+        "mean_tool_calls": 3.8333333333333335,
+        "mean_turns": 4.833333333333333,
+        "mean_elapsed_s": 12.408333333333333,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 36,
+          "select_context": 41,
+          "find_usages": 4,
+          "read_file": 9,
+          "grep": 1,
+          "find_symbols": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_development",
+        "model": "pasr-study-qwen",
+        "variant": "split@6",
+        "trajectories": 24,
+        "unique_questions": 8,
+        "semantic_passes": 11,
+        "semantic_accuracy": 0.4583333333333333,
+        "verdict_counts": {
+          "incomplete": 4,
+          "materially_incorrect": 9,
+          "complete_supported": 11
+        },
+        "usage_complete_rows": 24,
+        "mean_total_tokens": 33500.458333333336,
+        "median_total_tokens": 33073.0,
+        "mean_tool_calls": 5.416666666666667,
+        "mean_turns": 6.416666666666667,
+        "mean_elapsed_s": 14.416666666666666,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 38,
+          "find_files": 5,
+          "read_file": 12,
+          "select_context": 63,
+          "find_symbols": 7,
+          "grep": 1,
+          "find_usages": 4
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      }
+    ],
+    "qwen_required_query_profiles": [
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "components_required@3",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 2,
+        "semantic_accuracy": 0.25,
+        "verdict_counts": {
+          "complete_supported": 2,
+          "materially_incorrect": 4,
+          "incomplete": 2
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 15162.25,
+        "median_total_tokens": 15341.5,
+        "mean_tool_calls": 3,
+        "mean_turns": 4,
+        "mean_elapsed_s": 11.35,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 10,
+          "select_context": 13,
+          "find_usages": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "components_required@4",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 3,
+        "semantic_accuracy": 0.375,
+        "verdict_counts": {
+          "incomplete": 4,
+          "complete_supported": 3,
+          "materially_incorrect": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 20963.375,
+        "median_total_tokens": 23095.5,
+        "mean_tool_calls": 3.625,
+        "mean_turns": 4.625,
+        "mean_elapsed_s": 12.1,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 9,
+          "select_context": 18,
+          "find_usages": 2
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "components_required@5",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "materially_incorrect": 6,
+          "complete_supported": 1,
+          "incomplete": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 33218,
+        "median_total_tokens": 33168.5,
+        "mean_tool_calls": 5,
+        "mean_turns": 6,
+        "mean_elapsed_s": 14.5125,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 10,
+          "select_context": 26,
+          "read_file": 1,
+          "find_usages": 2,
+          "grep": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "components_required@6",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 3,
+        "semantic_accuracy": 0.375,
+        "verdict_counts": {
+          "incomplete": 2,
+          "materially_incorrect": 3,
+          "complete_supported": 3
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 35923.125,
+        "median_total_tokens": 39321.5,
+        "mean_tool_calls": 5.25,
+        "mean_turns": 6.25,
+        "mean_elapsed_s": 14.3375,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 11,
+          "select_context": 24,
+          "read_file": 2,
+          "grep": 4,
+          "find_usages": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "frequency_required@3",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "incomplete": 2,
+          "materially_incorrect": 5,
+          "complete_supported": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 15431.5,
+        "median_total_tokens": 15611.0,
+        "mean_tool_calls": 3,
+        "mean_turns": 4,
+        "mean_elapsed_s": 11.6125,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 10,
+          "select_context": 13,
+          "find_usages": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "frequency_required@4",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "incomplete": 2,
+          "materially_incorrect": 5,
+          "complete_supported": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 21244.375,
+        "median_total_tokens": 20750.0,
+        "mean_tool_calls": 3.75,
+        "mean_turns": 4.75,
+        "mean_elapsed_s": 12.6875,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 12,
+          "select_context": 16,
+          "find_usages": 1,
+          "find_symbols": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "frequency_required@5",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 3,
+        "semantic_accuracy": 0.375,
+        "verdict_counts": {
+          "materially_incorrect": 1,
+          "complete_supported": 3,
+          "incomplete": 4
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 27961.125,
+        "median_total_tokens": 28584.5,
+        "mean_tool_calls": 4.5,
+        "mean_turns": 5.5,
+        "mean_elapsed_s": 13.325000000000001,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 10,
+          "select_context": 21,
+          "read_file": 3,
+          "find_usages": 1,
+          "grep": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "frequency_required@6",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "incomplete": 2,
+          "materially_incorrect": 5,
+          "complete_supported": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 34723.375,
+        "median_total_tokens": 36357.0,
+        "mean_tool_calls": 5.125,
+        "mean_turns": 6.125,
+        "mean_elapsed_s": 13.9625,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 10,
+          "select_context": 25,
+          "find_usages": 4,
+          "grep": 1,
+          "find_files": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "grep@3",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "materially_incorrect": 1,
+          "incomplete": 6,
+          "complete_supported": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 6955,
+        "median_total_tokens": 5971.5,
+        "mean_tool_calls": 3,
+        "mean_turns": 4,
+        "mean_elapsed_s": 7.7,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "grep": 17,
+          "read_file": 7
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "grep@4",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "complete_supported": 1,
+          "materially_incorrect": 5,
+          "incomplete": 2
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 11636,
+        "median_total_tokens": 9494.5,
+        "mean_tool_calls": 4,
+        "mean_turns": 5,
+        "mean_elapsed_s": 8.887500000000001,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "grep": 20,
+          "read_file": 12
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "grep@5",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 2,
+        "semantic_accuracy": 0.25,
+        "verdict_counts": {
+          "complete_supported": 2,
+          "incomplete": 3,
+          "materially_incorrect": 3
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 15916.75,
+        "median_total_tokens": 13277.5,
+        "mean_tool_calls": 4.875,
+        "mean_turns": 5.875,
+        "mean_elapsed_s": 9.7875,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "grep": 21,
+          "read_file": 18
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "grep@6",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 2,
+        "semantic_accuracy": 0.25,
+        "verdict_counts": {
+          "materially_incorrect": 5,
+          "complete_supported": 2,
+          "incomplete": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 20629.375,
+        "median_total_tokens": 18129.5,
+        "mean_tool_calls": 5.75,
+        "mean_turns": 6.75,
+        "mean_elapsed_s": 10.425,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "grep": 26,
+          "read_file": 20
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "required@3",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "materially_incorrect": 3,
+          "incomplete": 4,
+          "complete_supported": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 14916.625,
+        "median_total_tokens": 15256.5,
+        "mean_tool_calls": 3,
+        "mean_turns": 4,
+        "mean_elapsed_s": 10.975,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 10,
+          "select_context": 14
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "required@4",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "materially_incorrect": 5,
+          "incomplete": 2,
+          "complete_supported": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 20945.5,
+        "median_total_tokens": 23397.0,
+        "mean_tool_calls": 3.625,
+        "mean_turns": 4.625,
+        "mean_elapsed_s": 12.15,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 9,
+          "select_context": 18,
+          "find_usages": 2
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "required@5",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 2,
+        "semantic_accuracy": 0.25,
+        "verdict_counts": {
+          "materially_incorrect": 4,
+          "complete_supported": 2,
+          "incomplete": 2
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 30468.75,
+        "median_total_tokens": 31945.0,
+        "mean_tool_calls": 4.75,
+        "mean_turns": 5.75,
+        "mean_elapsed_s": 14.0875,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 11,
+          "select_context": 23,
+          "read_file": 1,
+          "find_usages": 3
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "qwen_query_contract",
+        "model": "pasr-study-qwen",
+        "variant": "required@6",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 2,
+        "semantic_accuracy": 0.25,
+        "verdict_counts": {
+          "materially_incorrect": 3,
+          "incomplete": 3,
+          "complete_supported": 2
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 34267.75,
+        "median_total_tokens": 35092.0,
+        "mean_tool_calls": 5.25,
+        "mean_turns": 6.25,
+        "mean_elapsed_s": 14.125,
+        "observed_cost_usd": null,
+        "tool_name_counts": {
+          "find_evidence": 10,
+          "select_context": 23,
+          "find_usages": 4,
+          "read_file": 3,
+          "grep": 1,
+          "find_files": 1
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      }
+    ],
+    "hosted_development_profiles": [
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "BM25@6",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 6,
+        "semantic_accuracy": 0.75,
+        "verdict_counts": {
+          "complete_supported": 6,
+          "materially_incorrect": 1,
+          "incomplete": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 32310.875,
+        "median_total_tokens": 32140.5,
+        "mean_tool_calls": 5.75,
+        "mean_turns": 4.375,
+        "mean_elapsed_s": 12.1875,
+        "observed_cost_usd": 0.1718403,
+        "tool_name_counts": {
+          "search_code": 27,
+          "read_file": 15,
+          "grep": 4
+        },
+        "call_cap_overshoots": 1,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "components@3",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "complete_supported": 1,
+          "incomplete": 6,
+          "materially_incorrect": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 12057.5,
+        "median_total_tokens": 12964.0,
+        "mean_tool_calls": 3.25,
+        "mean_turns": 2.75,
+        "mean_elapsed_s": 13.2375,
+        "observed_cost_usd": 0.09994315,
+        "tool_name_counts": {
+          "find_evidence": 17,
+          "grep": 1,
+          "find_files": 1,
+          "select_context": 6,
+          "find_symbols": 1
+        },
+        "call_cap_overshoots": 2,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "components@4",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "complete_supported": 1,
+          "materially_incorrect": 2,
+          "incomplete": 5
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 17402.25,
+        "median_total_tokens": 16765.0,
+        "mean_tool_calls": 4.375,
+        "mean_turns": 3.375,
+        "mean_elapsed_s": 15.3,
+        "observed_cost_usd": 0.12687245,
+        "tool_name_counts": {
+          "find_evidence": 19,
+          "find_files": 1,
+          "select_context": 7,
+          "read_file": 3,
+          "find_symbols": 3,
+          "grep": 2
+        },
+        "call_cap_overshoots": 2,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "components@5",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 5,
+        "semantic_accuracy": 0.625,
+        "verdict_counts": {
+          "incomplete": 2,
+          "complete_supported": 5,
+          "materially_incorrect": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 23055,
+        "median_total_tokens": 21925.0,
+        "mean_tool_calls": 5.5,
+        "mean_turns": 4,
+        "mean_elapsed_s": 16.875,
+        "observed_cost_usd": 0.1400185,
+        "tool_name_counts": {
+          "find_evidence": 21,
+          "grep": 1,
+          "select_context": 12,
+          "find_symbols": 4,
+          "read_file": 6
+        },
+        "call_cap_overshoots": 4,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "components@6",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 3,
+        "semantic_accuracy": 0.375,
+        "verdict_counts": {
+          "materially_incorrect": 2,
+          "complete_supported": 3,
+          "incomplete": 3
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 35075.5,
+        "median_total_tokens": 34130.5,
+        "mean_tool_calls": 6.125,
+        "mean_turns": 5.125,
+        "mean_elapsed_s": 17.8625,
+        "observed_cost_usd": 0.1660277,
+        "tool_name_counts": {
+          "find_evidence": 16,
+          "find_symbols": 7,
+          "select_context": 12,
+          "read_file": 13,
+          "grep": 1
+        },
+        "call_cap_overshoots": 1,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "frequency@3",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 0,
+        "semantic_accuracy": 0,
+        "verdict_counts": {
+          "incomplete": 6,
+          "materially_incorrect": 2
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 13013.875,
+        "median_total_tokens": 13329.0,
+        "mean_tool_calls": 3.5,
+        "mean_turns": 2.875,
+        "mean_elapsed_s": 13.4125,
+        "observed_cost_usd": 0.1000216,
+        "tool_name_counts": {
+          "find_evidence": 17,
+          "select_context": 7,
+          "find_symbols": 3,
+          "grep": 1
+        },
+        "call_cap_overshoots": 4,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "frequency@4",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 2,
+        "semantic_accuracy": 0.25,
+        "verdict_counts": {
+          "incomplete": 5,
+          "complete_supported": 2,
+          "materially_incorrect": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 15682.75,
+        "median_total_tokens": 15397.5,
+        "mean_tool_calls": 4.25,
+        "mean_turns": 3.25,
+        "mean_elapsed_s": 14.45,
+        "observed_cost_usd": 0.123812,
+        "tool_name_counts": {
+          "find_evidence": 16,
+          "select_context": 9,
+          "find_symbols": 4,
+          "read_file": 2,
+          "find_files": 1,
+          "grep": 1,
+          "find_usages": 1
+        },
+        "call_cap_overshoots": 1,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "frequency@5",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 4,
+        "semantic_accuracy": 0.5,
+        "verdict_counts": {
+          "complete_supported": 4,
+          "incomplete": 4
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 24095.625,
+        "median_total_tokens": 25100.0,
+        "mean_tool_calls": 5.375,
+        "mean_turns": 4.375,
+        "mean_elapsed_s": 16.8875,
+        "observed_cost_usd": 0.13264055,
+        "tool_name_counts": {
+          "find_evidence": 17,
+          "grep": 4,
+          "select_context": 12,
+          "find_symbols": 4,
+          "read_file": 6
+        },
+        "call_cap_overshoots": 3,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "frequency@6",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 4,
+        "semantic_accuracy": 0.5,
+        "verdict_counts": {
+          "incomplete": 2,
+          "materially_incorrect": 2,
+          "complete_supported": 4
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 33104.5,
+        "median_total_tokens": 33209.5,
+        "mean_tool_calls": 6.25,
+        "mean_turns": 4.625,
+        "mean_elapsed_s": 18.4875,
+        "observed_cost_usd": 0.18811595,
+        "tool_name_counts": {
+          "find_evidence": 20,
+          "grep": 3,
+          "select_context": 9,
+          "find_symbols": 4,
+          "read_file": 13,
+          "find_usages": 1
+        },
+        "call_cap_overshoots": 2,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "grep@3",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "complete_supported": 1,
+          "incomplete": 7
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 7993,
+        "median_total_tokens": 7809.0,
+        "mean_tool_calls": 3.625,
+        "mean_turns": 2.625,
+        "mean_elapsed_s": 8.75,
+        "observed_cost_usd": 0.09311225000000001,
+        "tool_name_counts": {
+          "grep": 22,
+          "read_file": 7
+        },
+        "call_cap_overshoots": 4,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "grep@4",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "incomplete": 6,
+          "materially_incorrect": 1,
+          "complete_supported": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 9809,
+        "median_total_tokens": 9577.5,
+        "mean_tool_calls": 4.125,
+        "mean_turns": 3.125,
+        "mean_elapsed_s": 9.6125,
+        "observed_cost_usd": 0.10623715,
+        "tool_name_counts": {
+          "grep": 26,
+          "read_file": 7
+        },
+        "call_cap_overshoots": 1,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "grep@5",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 4,
+        "semantic_accuracy": 0.5,
+        "verdict_counts": {
+          "incomplete": 4,
+          "complete_supported": 4
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 15918.375,
+        "median_total_tokens": 15911.0,
+        "mean_tool_calls": 5,
+        "mean_turns": 3.75,
+        "mean_elapsed_s": 11.075,
+        "observed_cost_usd": 0.1385829,
+        "tool_name_counts": {
+          "grep": 25,
+          "read_file": 15
+        },
+        "call_cap_overshoots": 0,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "grep@6",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 4,
+        "semantic_accuracy": 0.5,
+        "verdict_counts": {
+          "complete_supported": 4,
+          "incomplete": 3,
+          "materially_incorrect": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 22309,
+        "median_total_tokens": 22561.5,
+        "mean_tool_calls": 6.125,
+        "mean_turns": 4.5,
+        "mean_elapsed_s": 12.6,
+        "observed_cost_usd": 0.16166845,
+        "tool_name_counts": {
+          "grep": 33,
+          "read_file": 16
+        },
+        "call_cap_overshoots": 1,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "split@4",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 1,
+        "semantic_accuracy": 0.125,
+        "verdict_counts": {
+          "incomplete": 5,
+          "materially_incorrect": 2,
+          "complete_supported": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 17899.625,
+        "median_total_tokens": 16993.5,
+        "mean_tool_calls": 4.25,
+        "mean_turns": 3.5,
+        "mean_elapsed_s": 14.787500000000001,
+        "observed_cost_usd": 0.11477035000000001,
+        "tool_name_counts": {
+          "find_evidence": 17,
+          "select_context": 10,
+          "find_symbols": 2,
+          "read_file": 3,
+          "find_files": 1,
+          "grep": 1
+        },
+        "call_cap_overshoots": 2,
+        "generation_failures": 0
+      },
+      {
+        "study": "hosted_development",
+        "model": "claude-haiku-4-5-20251001",
+        "variant": "split@6",
+        "trajectories": 8,
+        "unique_questions": 8,
+        "semantic_passes": 5,
+        "semantic_accuracy": 0.625,
+        "verdict_counts": {
+          "complete_supported": 5,
+          "materially_incorrect": 2,
+          "incomplete": 1
+        },
+        "usage_complete_rows": 8,
+        "mean_total_tokens": 31797.75,
+        "median_total_tokens": 32328.5,
+        "mean_tool_calls": 6.25,
+        "mean_turns": 5,
+        "mean_elapsed_s": 17.7625,
+        "observed_cost_usd": 0.16086755,
+        "tool_name_counts": {
+          "find_evidence": 17,
+          "select_context": 13,
+          "read_file": 10,
+          "grep": 4,
+          "find_symbols": 5,
+          "find_usages": 1
+        },
+        "call_cap_overshoots": 2,
+        "generation_failures": 0
+      }
+    ],
+    "search_fix_comparison": "Existing identifier-search fix was measured against pre-fix source at four and six calls; small quality/token changes do not establish the requested overall win.",
+    "candidate_implementation": "Seven retrieval source files and four focused test files per isolated candidate: identifier terms throughout selection, then occurrence-preserving document term frequency as a separate ablation. Public diagnostic extract_keywords behavior retained.",
+    "packing": "48 packing probes supplied no demonstrated query-required evidence-loss case; no speculative residual packer. All 764 replayed selected blocks passed exact contiguous-source provenance checks.",
+    "budget_curve": [
+      3,
+      4,
+      5,
+      6
+    ]
+  },
+  "host_policy": {
+    "decision": "Do not promote batching or discovery masking into production. Use full history for every frozen fresh profile.",
+    "local_source_preservation": {
+      "trajectories": 64,
+      "read_selection_observations_retained": 132,
+      "discovery_observations_masked": 42,
+      "violations": 0,
+      "threshold_overshoots": 1
+    },
+    "hosted_source_preservation": {
+      "trajectories": 64,
+      "read_selection_observations_retained": 125,
+      "discovery_observations_masked": 47,
+      "violations": 0
+    },
+    "evidence": [
+      "qwen_policy_retention_invariants.json",
+      "hosted_policy_retention_invariants.json",
+      "qwen_policy_source_summary.json",
+      "hosted_policy_source_summary.json"
+    ],
+    "rationale": [
+      "Small single-repetition development cohorts produce unstable quality changes; no reliable token/accuracy win over the optimized native control.",
+      "Logical token reductions and published-rate dollar reductions differ because hosted prompt-cache write/read charges differ.",
+      "Safe repeated-search unmasking currently depends on in-process retrieval-guard coordination. The experiment does not establish an external MCP host lifecycle protocol.",
+      "Batching reuses existing independent calls; thresholds apply between turns and whole batches can overshoot. No new multi-query production API was justified."
+    ],
+    "source_grade_method": "Arm-blind coding-assistant source review; not human validation."
+  },
+  "query_contract": {
+    "observed_old_hosted_selection_errors": {
+      "missing_query": 66,
+      "selection_calls": 97
+    },
+    "corrected_partial_hosted_selection_calls": 31,
+    "corrected_partial_hosted_missing_query_errors": 0,
+    "corrected_local_selection_calls": 234,
+    "corrected_local_missing_query_errors": 0,
+    "promotion": "Correctness only: query required in MCP schema, explicit empty query still accepted for saved-pack loading. No matched accuracy/token improvement claim from the incomplete hosted cohort."
+  },
+  "hosted_limit": {
+    "model": "claude-haiku-4-5-20251001",
+    "completed_actor_trajectories_including_smokes": 219,
+    "contract_sweep_completed": 31,
+    "contract_sweep_credit_failure": 1,
+    "contract_sweep_unrun": 96,
+    "fresh_hosted_validation": "Not run: Anthropic HTTP 400 insufficient account credits. No purchase or retry. No other configured native tool-calling provider credential was found.",
+    "alternate_helper": "The evaluation completion helper is stateless and has no tools/history interface; it was not substituted for the native tool-calling benchmark."
+  },
+  "grading": {
+    "method": "Arm-blind coding-assistant source reviews, not independent human validation. Every answer checked against actual source; complete answers need all substantive requested facts and no material false mechanism.",
+    "keyword_proxy": "Not answer accuracy; never used for the primary promotion decision.",
+    "api_grader": "Grouped API grades retained as diagnostic only after source audits exposed cross-answer attribution errors and excessive rubric strictness.",
+    "consistency": {
+      "graded_rows": 1416,
+      "unique_question_answer_pairs": 1251,
+      "exact_duplicate_groups": 82,
+      "verdict_conflicts": 0
+    },
+    "corrections": "Preserved original reviews. Reversible UTF-8/cp1252 repairs changed no verdicts. Development recursion omissions were adjudicated consistently with the original substantive standard, improving ten pass verdicts (including native baselines). Duplicate tracker categories normalized without pass changes. Final authoritative grade-folder mapping is in all_source_grade_consistency.json.",
+    "fresh_reviews": "20 independent repository/model slices; exact quote containment, criterion IDs and completion invariants validated on merge.",
+    "ambiguity": "Primary cleanup-guarantee decisions retained; a separately reported three-answer ordinary-intent sensitivity does not change the Qwen gate failure."
+  },
+  "limitations": [
+    "Fifty purposively authored fresh questions, all ten fresh repositories Python; not a random sample of coding tasks.",
+    "One fresh repetition per profile. Requested seeds do not ensure byte-identical local generations.",
+    "Development question reuse and finalist selection make development results exploratory. All finalists were frozen before fresh actors.",
+    "Question- and repository-clustered bootstrap intervals are descriptive; ten repositories, no multiple-comparison adjustment, no equivalence claim from nonsignificance.",
+    "Never pool raw token counts across model tokenizers.",
+    "A stopping threshold is checked between turns; all calls in a returned batch execute and count.",
+    "Native baseline is the existing harness regex grep plus line reader, not every possible shell/search workflow.",
+    "Tool/host integration failures and unavailable hosted fresh validation limit cross-model conclusions.",
+    "Source review remains fallible; it is not independent human validation."
+  ],
+  "spend": {
+    "known_anthropic_api_published_rate_cost_usd": 5.70788205,
+    "additional_reported_tool_judge_cost_usd": 0.5131300000000001,
+    "metered_external_ceiling_usd": 12,
+    "records": [
+      {
+        "study": "hosted_smoke_v2",
+        "kind": "acting",
+        "published_rate_cost_usd": 0.048749150000000005
+      },
+      {
+        "study": "hosted_development",
+        "kind": "acting",
+        "published_rate_cost_usd": 1.68659855
+      },
+      {
+        "study": "hosted_baseline_curve",
+        "kind": "acting",
+        "published_rate_cost_usd": 0.3379323
+      },
+      {
+        "study": "hosted_policy_smoke",
+        "kind": "acting",
+        "published_rate_cost_usd": 0.05091625
+      },
+      {
+        "study": "hosted_policy",
+        "kind": "acting",
+        "published_rate_cost_usd": 1.2223785
+      },
+      {
+        "study": "grading_smoke",
+        "kind": "diagnostic_grading",
+        "published_rate_cost_usd": 0.21735975000000002
+      },
+      {
+        "study": "grading_smoke_v2",
+        "kind": "diagnostic_grading",
+        "published_rate_cost_usd": 0.21825975
+      },
+      {
+        "study": "search_fix_grades",
+        "kind": "diagnostic_grading",
+        "published_rate_cost_usd": 0.900312
+      },
+      {
+        "study": "hosted_development_grades",
+        "kind": "diagnostic_grading",
+        "published_rate_cost_usd": 0.48553275
+      },
+      {
+        "study": "hosted_query_contract",
+        "kind": "acting_partial",
+        "published_rate_cost_usd": 0.53980905
+      },
+      {
+        "study": "hosted_preflight",
+        "kind": "availability_probe",
+        "published_rate_cost_usd": 3.4e-05
+      }
+    ],
+    "completed_actor_trajectories": 219,
+    "unknown_usage_attempts": [
+      {
+        "path": "hosted_query_contract/rows/0031.json",
+        "reason": "HTTP 400 insufficient credits; no usage returned; do not interpret the row initialization value of zero as observed usage."
+      }
+    ],
+    "billing_complete": false,
+    "notes": "Published-rate cost from observed usage, not an invoice; excludes taxes/discounts and unmetered coding-assistant/source-review compute. No further grouped API grading planned because source audits found unreliable cross-answer attribution.",
+    "blocker": "Account credits exhausted before the study spending ceiling. No retries or purchases. Fresh hosted validation unavailable.",
+    "known_combined_metered_cost_usd": 6.221012050000001
+  },
+  "verification": {
+    "production_suite": {
+      "command": "python -m pytest",
+      "passed": 327,
+      "skipped": 1,
+      "skip_reason": "Optional sentence-transformers dependency not installed.",
+      "phase": "After production decision, before final report-label-only edits."
+    },
+    "final_report_checks": {
+      "command": "python -m ruff check src tests eval/agent_bench/report.py && python -m pytest tests/test_eval_harness.py",
+      "ruff": "passed",
+      "tests_passed": 24
+    },
+    "isolated_candidate_invariants": {
+      "selector_components": 36,
+      "selector_frequency": 38,
+      "command": "python -m pytest tests/test_bm25.py tests/test_packing.py tests/test_symbols.py tests/test_evidence.py",
+      "each_run_cwd": "The respective frozen candidate root, confirmed by pytest rootdir."
+    },
+    "actual_production_smoke": "final_production_mcp_smoke.json",
+    "actual_report_cli": {
+      "command": "python eval/agent_bench/report.py eval/agent_bench/results/accuracy_tokens_20260927/qwen_fresh/results.json --md",
+      "trajectories": 300,
+      "completed": true,
+      "warnings": 0,
+      "scope": "Component estimates and provider totals; keyword proxy explicitly labeled, not used as answer accuracy."
+    },
+    "resolved_verification_issues": [
+      "One report.py E501 line was split without changing the emitted string.",
+      "The first in-process smoke invocation used anyio.run in an already-running Eval async loop; rerun with top-level await succeeded. No model request was involved."
+    ],
+    "production_file_sha256": {
+      "src/pasr/mcp/server.py": "5fc0b56ee739680d7d674d8e5464b3a42233b0bbd547345a3340c85420761f2e",
+      "eval/agent_bench/report.py": "3faee9df8b26ac41530d365dc11e1cff3cfaa55a069a7821caf1aaa08520da8b",
+      "tests/test_mcp_server.py": "6006c28b659d4eba50caf63154c526fabcea1eae9c9c48a78d65a4515891b8f3",
+      "tests/test_eval_harness.py": "3c765867d4dbe9dd6142301911f03ea2ac6bec1c7970f667814a11800920cbb1"
+    }
+  },
+  "cleanup": {
+    "study_owned_models_unloaded": [
+      "pasr-study-qwen",
+      "pasr-study-llama"
+    ],
+    "downloaded_weights_retained": true,
+    "temporary_mcp_workspace_removed": true,
+    "commits_or_pushes": false,
+    "existing_user_experiment_records_not_overwritten": true
+  },
+  "reproduction": {
+    "evidence_root": "eval/agent_bench/results/accuracy_tokens_20260927",
+    "status": "Retained locally in git-ignored results; not published as an external archive.",
+    "actors": "run_host_policy_study.py --plan qwen_fresh_plan.json|llama_fresh_plan.json --out NEW_DIRECTORY; llama_fresh/continuation_manifest.json documents the no-retry continuation.",
+    "grading": "grade_packets.py, raw fresh_A_* / fresh_B_* source reviews, merge_reviews.py.",
+    "analysis": "summarize.py and fresh_repository_analysis.py; fresh_integrity.py checks frozen hashes and distinguishes missing usage/request evidence.",
+    "environment": "final_environment.json records installed dependency versions, CLI commit, requested context/GPU settings and the exact study-script hashes.",
+    "warning": "Re-running exposed questions is replication, not a new held-out validation. Preserve frozen source trees, model weights and runtime configuration.",
+    "artifacts_sha256": {
+      "final_environment.json": "ac8f67a99c968d68c01361d57d4389750f30a687894c9c82cf93192f0c2665c9",
+      "selector_candidates_manifest.json": "b7a6c86b7058f8e08ec68db8c8f01c83ef8f10955efcc957b553c35f3061b423",
+      "selector_candidate_smoke.json": "76ab02a3b01e106e0bce64b46c86d9a0a1d30b739a4e74cec9e4852b2f7930b3",
+      "replay_provenance.json": "b4baf72ba3c070dad7330c497e062e43e07121163c2ef4331a2e48ea65abf6b2",
+      "protocol.json": "d9c14e51a630bbb59583c65d9be3f1ca1c71b2c0c300ba61fb522dbaaa9e0f2c",
+      "fresh_validation_freeze.json": "78c8dfa10d9693b4368855da56b79aeae02acf535f996bc118f1b4ff80dfc867",
+      "model_asset_integrity.json": "697cd66df00450a14c212a85ea095253b972b5ce7a7a52d044c19ed5572c69a2",
+      "grading_standards.json": "06bed632b2079bcaf1a25559ce5ece97d72d1a07f1158a250b2705dec915d57f",
+      "grading_method_decision.json": "acac52c530227f8beafc0c959d9e771c659e9952129976f488118250a27c5efc",
+      "source_consistency_final.json": "d02d2871ec8aec38f600d9c4dac78291e5a90b46009d5e94adc2be031ce31927",
+      "source_review_encoding_repairs.json": "22eb4f1a9726f2630836b25ce9b385065ae62ba46179b32ca79c1b7fbc4576ab",
+      "all_source_grade_consistency.json": "4c64077537899707e5dee5b336235972193cb72c58cb5ae926de0b2ae3247243",
+      "qwen_development_final_summary.json": "1a5b73d15b3561fc5137c84c1c1175af4ea680a5dde213fb7b5f12c64b4894f6",
+      "qwen_query_final_summary.json": "e3868b213115cea22113014e2b33407cf43b6cf4e59c2596b972344426a4688d",
+      "qwen_policy_source_summary.json": "b30f258cbfa35ec5af61c1c41f2496ade750cbf0c2c6304b6230cff61118048b",
+      "hosted_development_source_summary.json": "17b78a1072863af2792f14c508839d43cb200248b61fb2299db0c8bb02040e98",
+      "hosted_policy_source_summary.json": "47cb62bbca818033d1f86ac673c20086d38f5b54e338223304e9a0e7b2c25514",
+      "query_contract_promotion_decision.json": "51138f7dfae671d38c152d4cfe09e4d166af5acb5484a6a08a52f9bde60386e6",
+      "host_policy_final_decision.json": "60467d506659592f9183210f42913cc9d95c8c69cfbc572abfb368dc7fa25357",
+      "production_decision.json": "d10df5829b88f2c60f9fb3e6040015e8afb0f47cf9993b2c5289e8aa1cf52d02",
+      "final_verification.json": "f30a35beb1a32c5bf3ce1e571557c799027b3ff0a355d19c026d3288b6243058",
+      "final_production_mcp_smoke.json": "58569fc720aa71a58903e6e68f1b331e810cbb8bc502e53fe10bf80ffa88f1a5",
+      "qwen_fresh_source_summary.json": "ce34af1caacffce165b4ee32d902914054dcd3135fee812c1b655bc4fec22b86",
+      "qwen_fresh_repository_analysis.json": "54dab9b1f05b1a6848f2ab808c288be829b258fd8889f8ab7e8a64e6b68fed67",
+      "qwen_fresh_integrity.json": "d01a3b0afdbb7a14ffc1a45dda8001ba43c1497304fef8af47290eb5d91c14fd",
+      "qwen_fresh_input_audit.json": "e8efa2666ae96eb553c0e83c5d803eb29da0ede082c025f866403d52493ba6ee",
+      "qwen_fresh_cleanup_wording_sensitivity.json": "0a2eb52a300a6be1b3d84fc3c718b1ba272de92cf1eec479021e764cde10661d",
+      "llama_fresh_source_summary.json": "ac52e5f3b5bb652174b25ce830cadea025abf9532f1f369964f810e5acec9046",
+      "llama_fresh_repository_analysis.json": "869aadd0940d3baee7c0f951119a102f3a454cc46e44aac2e5f30e68b778372e",
+      "llama_fresh_integrity.json": "0c20b8e1de3604272295d5cb1386e1c2d69b8757ad84aec8b5f9b5e1e1f47570",
+      "llama_tool_dispatch_diagnostics.json": "69a39f01b799dc62bab5fc084cf0e80196660f0d37d0944409fcd14f287a511c",
+      "llama_fresh/continuation_manifest.json": "ede7da44f122c473a1d4b84f23f1eb01758e18d8ff0838452d2f2562eb379404",
+      "spend_at_hosted_block.json": "842cef02bf4568d3c601bde1e17e691f0282b5a92e6d39d479cfb8f5f260be67",
+      "qwen_fresh/results.json": "40de094536d4daaf4a1f80cab79396ef895a904c32d59f14b8f003d075811661",
+      "llama_fresh/results.json": "486978031954e56725274df061d95ec8c7b27573556082879c06fda041d688bb"
+    }
+  }
+}

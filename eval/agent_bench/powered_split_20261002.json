@@ -1,0 +1,165 @@
+{
+  "status": "development_gate_failed_not_promoted",
+  "archive": "results/powered_split_20261001",
+  "change": "Opt-in split reader (search_code/read_code) plus two server changes: files a query names by unique path are read first; search_code/read_code send source unescaped after a one-line JSON header. Selection, budgets and catalogs unchanged.",
+  "design": "100 previously queried questions with graded criteria (50 fresh-*, 50 holdout-*), one trajectory per question and arm, three arms (native grep/read, frozen PASR control, split reader), gpt-6-luna effort none, six-call stop, no retries. Reserved unseen-20260929-* never loaded.",
+  "profiles": {
+    "native": {
+      "n": 100,
+      "supported": 69,
+      "material_errors": 5,
+      "strict_all": 69,
+      "mean_tokens": 9871.05,
+      "median_tokens": 8242.5,
+      "tool_calls": 400,
+      "requests": 499,
+      "generation_failures": 1
+    },
+    "current": {
+      "n": 100,
+      "supported": 80,
+      "material_errors": 2,
+      "strict_all": 80,
+      "mean_tokens": 11108.71,
+      "median_tokens": 10184.5,
+      "tool_calls": 391,
+      "requests": 491,
+      "generation_failures": 0
+    },
+    "split": {
+      "n": 100,
+      "supported": 85,
+      "material_errors": 5,
+      "strict_all": 85,
+      "mean_tokens": 9573.02,
+      "median_tokens": 7466.0,
+      "tool_calls": 267,
+      "requests": 367,
+      "generation_failures": 0
+    }
+  },
+  "development_gate": {
+    "supported_at_least_native": true,
+    "supported_at_least_current": true,
+    "material_errors_no_more_than_native": true,
+    "material_errors_no_more_than_current": false,
+    "tokens_at_most_85pct_native": false,
+    "tokens_below_current": true
+  },
+  "gate_passed": false,
+  "bootstrap_95_question_paired": {
+    "split_minus_native_supported": [
+      0.07,
+      0.25
+    ],
+    "split_over_native_mean_tokens": [
+      0.8391,
+      1.1204
+    ],
+    "split_minus_current_supported": [
+      -0.04,
+      0.14
+    ],
+    "split_over_current_mean_tokens": [
+      0.7458,
+      0.9912
+    ]
+  },
+  "split_vs_native_token_ratio": 0.9698,
+  "split_vs_native_geometric_per_question_ratio": 0.9296,
+  "interruption_sensitivity": {
+    "rule": "Gate must pass with row 181 counted as a native failure AND with its question removed from all arms (decided before grading).",
+    "removed_question": {
+      "native": "69/99, 5 material, 9,967 tokens",
+      "current": "79/99, 2 material, 11,031",
+      "split": "85/99, 5 material, 9,479 (0.951 x native)"
+    },
+    "verdict": "Fails under both treatments on the same two components."
+  },
+  "breakdown": {
+    "set=fresh": {
+      "native": "35/50 @ 9044",
+      "current": "40/50 @ 9256",
+      "split": "43/50 @ 7888"
+    },
+    "set=holdout": {
+      "native": "34/50 @ 10698",
+      "current": "40/50 @ 12962",
+      "split": "42/50 @ 11258"
+    },
+    "corpus=anyio": {
+      "native": "8/10 @ 6884",
+      "current": "9/10 @ 9777",
+      "split": "10/10 @ 8421"
+    },
+    "corpus=attrs": {
+      "native": "7/10 @ 10198",
+      "current": "9/10 @ 11930",
+      "split": "8/10 @ 12130"
+    },
+    "corpus=click": {
+      "native": "7/10 @ 10032",
+      "current": "6/10 @ 10797",
+      "split": "10/10 @ 9847"
+    },
+    "corpus=httpx": {
+      "native": "7/10 @ 11068",
+      "current": "9/10 @ 11257",
+      "split": "7/10 @ 9531"
+    },
+    "corpus=jinja": {
+      "native": "8/10 @ 7131",
+      "current": "9/10 @ 9192",
+      "split": "10/10 @ 7925"
+    },
+    "corpus=packaging": {
+      "native": "7/10 @ 12494",
+      "current": "8/10 @ 14047",
+      "split": "8/10 @ 10702"
+    },
+    "corpus=pluggy": {
+      "native": "7/10 @ 11589",
+      "current": "9/10 @ 10438",
+      "split": "9/10 @ 12159"
+    },
+    "corpus=requests": {
+      "native": "5/10 @ 9987",
+      "current": "5/10 @ 10184",
+      "split": "6/10 @ 7525"
+    },
+    "corpus=starlette": {
+      "native": "10/10 @ 5619",
+      "current": "10/10 @ 7047",
+      "split": "10/10 @ 6578"
+    },
+    "corpus=typer": {
+      "native": "3/10 @ 13709",
+      "current": "6/10 @ 16417",
+      "split": "7/10 @ 10912"
+    }
+  },
+  "interpretation": "Split reader answers significantly more questions than native (+16 points, 95% interval +7 to +25) at statistically indistinguishable cumulative tokens (0.970 x, interval 0.839-1.120), and uses 14% fewer tokens than the PASR control (interval 0.746-0.991) at similar accuracy. It fails the frozen gate on tokens (needs <= 0.85 x native) and on material errors versus the control (5 vs 2). Tokens per supported answer (not a gate metric, computed after the fact): native 14,306, control 13,886, split 11,262.",
+  "limitations": [
+    "Questions were previously queried; development evidence, not a held-out claim.",
+    "One repetition per question; one model.",
+    "Arm-blind coding-assistant source review, not independent human validation. 14 of 20 reviewer agents were cut off by a usage limit after writing their files; 3 groups with no file were re-run from scratch; all 300 reviews passed identity, quote-containment, criterion and duplicate-consistency checks.",
+    "Row 181 (native) interrupted by the coding assistant background time limit; not replayed."
+  ],
+  "accounting": {
+    "trajectories": 300,
+    "api_requests": 1359,
+    "charge_bound_usd": 0.23816068,
+    "pricing": "published gpt-6-luna rates in the driver; not a provider invoice"
+  },
+  "hashes": {
+    "protocol.json": "fc9deab4ae516342cfea48ecc0a8997687c15008403e1e6417d4c64c2eeb8e75",
+    "results.json": "1cb451f0d0252713a4e8b028837760e6aadc74d2df061fa19d8465b29eb04d58",
+    "cases.json": "7106cc800ddb2016ecc99e71d3ca36ec830bb8a7900047065c9e3ec25296a9c7",
+    "analysis.json": "1e0dc06551aad85603410e62bb3030fbb58c08a2e4921df9acf5fb2ddcd479b5",
+    "interruption.json": "3a54f59fb2ce455ff4f60338aabdff01d08650757b0760b01245104e9e0150ad",
+    "spend_ledger.json": "57991574e31b617a534ccd5b7065570e4a6bb17cfeb8f3ea2584f52e0a0ceb53",
+    "run_powered.py": "822c10b34d53383e3f3b77ce5b49df18748f6c10ef48bc4a07c874ee3f54b7f9",
+    "analyze.py": "73bec7bf42f2df8d41ac5e9f089c4bdbf8b65f327a85e684bf7abb6c49b51345",
+    "prepare_grading.py": "95a771c7cc7c8ae06f2e6d5d9864d733d83918288b2004ca7e2e9f46071f9a0b"
+  }
+}

@@ -1,17 +1,22 @@
 """Safe workspace file discovery for context-broker callers.
 
-The workspace-escape guard is load-bearing. ``.gitignore`` / ``.git/info/exclude``
-are honoured by default (via ``pathspec``); if ``pathspec`` is missing the discoverer
-degrades to the static exclude list with a warning.
+The workspace-escape guard is load-bearing. Root and nested ``.gitignore`` files
+and ``.git/info/exclude`` follow Git precedence via ``pathspec``. Ignored directories
+and directory links are never traversed.
 """
 
 from __future__ import annotations
 
+import os
+import stat
 import warnings
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
+
+from pasr.source_text import physical_lines, read_source
 
 DEFAULT_ALLOWED_EXTENSIONS = frozenset(
     {
@@ -42,6 +47,8 @@ DEFAULT_ALLOWED_EXTENSIONS = frozenset(
         ".cjs",
         ".ts",
         ".tsx",
+        ".mts",
+        ".cts",
         ".vue",
         ".svelte",
         ".html",
@@ -135,12 +142,12 @@ def discover_workspace_files(
     cfg = config or FileDiscoveryConfig()
     root = workspace_root.resolve()
     excludes = tuple(cfg.exclude_patterns) + tuple(extra_exclude_patterns or [])
-    ignore_spec = _load_ignore_spec(root) if cfg.respect_gitignore else None
+    ignore_rules = GitIgnoreRules(lambda path: _read_ignore(root, path)) if cfg.respect_gitignore else None
     files_by_relative_path: dict[str, DiscoveredFile] = {}
 
     for raw_pattern in include_patterns:
-        for candidate in _iter_candidates(root, raw_pattern):
-            discovered = _to_discovered_file(candidate, root, cfg, excludes, ignore_spec)
+        for candidate in _iter_candidates(root, raw_pattern, cfg, excludes, ignore_rules):
+            discovered = _to_discovered_file(candidate, root, cfg, excludes, ignore_rules)
             if discovered is not None:
                 files_by_relative_path[discovered.relative_path] = discovered
 
@@ -152,43 +159,134 @@ def relative_file_paths(files: list[DiscoveredFile]) -> list[str]:
     return [file.relative_path for file in files]
 
 
-def _load_ignore_spec(workspace_root: Path) -> Any | None:
-    """Build a gitignore matcher from root .gitignore and .git/info/exclude."""
-    lines: list[str] = []
-    for relative in (".gitignore", ".git/info/exclude"):
-        candidate = workspace_root / relative
-        if candidate.is_file():
-            lines.extend(candidate.read_text(encoding="utf-8", errors="ignore").splitlines())
-    if not lines:
-        return None
-    try:
-        import pathspec
-    except ImportError:
-        warnings.warn(
-            "pathspec not installed; .gitignore rules are not applied. Install with: pip install pathspec",
-            RuntimeWarning,
-            stacklevel=3,
-        )
-        return None
-    for factory in ("gitignore", "gitwildmatch"):
+class GitIgnoreRules:
+    """Scoped pathspec rules, loaded only through traversable parent directories.
+
+    The loader receives workspace-relative ignore-file paths and returns text or
+    ``None``. This also lets revision review apply the same policy to pinned blobs.
+    """
+
+    def __init__(self, read_ignore: Callable[[str], str | None]) -> None:
+        self._read_ignore = read_ignore
+        self._specs: dict[str, Any] = {}
         try:
-            return pathspec.PathSpec.from_lines(factory, lines)
-        except (KeyError, ValueError):
-            continue
-    return None
+            from pathspec import GitIgnoreSpec
+        except ImportError:
+            warnings.warn(
+                "pathspec not installed; .gitignore rules are not applied. Install with: pip install pathspec",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            self._factory = None
+        else:
+            self._factory = GitIgnoreSpec
+
+    def _spec(self, path: str) -> Any:
+        if path not in self._specs:
+            text = self._read_ignore(path)
+            self._specs[path] = self._factory.from_lines(physical_lines(text)) if text else None
+        return self._specs[path]
+
+    def is_ignored(self, relative_path: str, *, is_directory: bool = False) -> bool:
+        if self._factory is None:
+            return False
+        scopes = [("", self._spec(".git/info/exclude")), ("", self._spec(".gitignore"))]
+        parts = relative_path.rstrip("/").split("/")
+        for depth in range(1, len(parts) + 1):
+            current = "/".join(parts[:depth])
+            directory = depth < len(parts) or is_directory
+            ignored = False
+            for base, spec in scopes:
+                if spec is None:
+                    continue
+                path = current[len(base) :] + ("/" if directory else "")
+                decision = spec.check_file(path).include
+                if decision is not None:
+                    ignored = decision
+            if ignored:
+                return True
+            if directory and depth < len(parts):
+                scopes.append((current + "/", self._spec(current + "/.gitignore")))
+        return False
 
 
-def _iter_candidates(workspace_root: Path, raw_pattern: str) -> list[Path]:
-    """Expand one safe include pattern into candidate paths."""
+def _read_ignore(workspace_root: Path, relative_path: str) -> str | None:
+    candidate = workspace_root / relative_path
+    try:
+        if not candidate.is_file():
+            return None
+        _ensure_inside_workspace(candidate.resolve(), workspace_root, relative_path)
+        return read_source(candidate).text
+    except (OSError, ValueError) as exc:
+        warnings.warn(f"Skipping ignore file {relative_path}: {exc}", RuntimeWarning, stacklevel=3)
+        return None
+
+
+def _iter_candidates(
+    workspace_root: Path,
+    raw_pattern: str,
+    config: FileDiscoveryConfig,
+    excludes: tuple[str, ...],
+    ignore_rules: GitIgnoreRules | None,
+) -> Iterator[Path]:
+    """Expand includes without entering ignored or linked directories."""
     pattern = _normalize_pattern(raw_pattern)
-    if _has_glob(pattern):
-        return list(workspace_root.glob(pattern))
+    parts = tuple(part for part in pattern.split("/") if part not in ("", "."))
+    first_glob = next((i for i, part in enumerate(parts) if _has_glob(part)), len(parts))
+    start = workspace_root.joinpath(*parts[:first_glob])
+    _ensure_inside_workspace(start.resolve(), workspace_root, raw_pattern)
+    if first_glob == len(parts) and not start.is_dir():
+        yield start
+        return
+    if not start.is_dir():
+        return
+    if start != workspace_root and not _directory_allowed(start, workspace_root, config, excludes, ignore_rules):
+        return
+    pending = [start]
+    while pending:
+        directory = pending.pop()
+        try:
+            with os.scandir(directory) as entries:
+                for entry in entries:
+                    candidate = Path(entry.path)
+                    if entry.is_dir():
+                        if _directory_allowed(candidate, workspace_root, config, excludes, ignore_rules):
+                            pending.append(candidate)
+                    elif first_glob == len(parts) or _matches_glob(candidate.relative_to(workspace_root).parts, parts):
+                        yield candidate
+        except OSError as exc:
+            warnings.warn(f"Skipping directory {directory}: {exc}", RuntimeWarning, stacklevel=3)
 
-    candidate = (workspace_root / pattern).resolve()
-    _ensure_inside_workspace(candidate, workspace_root, raw_pattern)
-    if candidate.is_dir():
-        return list(candidate.rglob("*"))
-    return [candidate]
+
+def _directory_allowed(
+    candidate: Path,
+    workspace_root: Path,
+    config: FileDiscoveryConfig,
+    excludes: tuple[str, ...],
+    ignore_rules: GitIgnoreRules | None,
+) -> bool:
+    relative = candidate.relative_to(workspace_root).as_posix()
+    try:
+        _ensure_inside_workspace(candidate.resolve(), workspace_root, relative)
+        info = candidate.lstat()
+    except (OSError, ValueError) as exc:
+        warnings.warn(f"Skipping directory {relative}: {exc}", RuntimeWarning, stacklevel=3)
+        return False
+    if candidate.is_symlink() or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT:
+        return False
+    return (
+        (config.include_hidden or not _has_hidden_part(relative))
+        and not _is_excluded(relative + "/", excludes)
+        and not (ignore_rules is not None and ignore_rules.is_ignored(relative, is_directory=True))
+    )
+
+
+def _matches_glob(path: tuple[str, ...], pattern: tuple[str, ...]) -> bool:
+    if not pattern:
+        return not path
+    if pattern[0] == "**":
+        return _matches_glob(path, pattern[1:]) or bool(path and _matches_glob(path[1:], pattern))
+    return bool(path and fnmatch(path[0], pattern[0]) and _matches_glob(path[1:], pattern[1:]))
 
 
 def _to_discovered_file(
@@ -196,20 +294,24 @@ def _to_discovered_file(
     workspace_root: Path,
     config: FileDiscoveryConfig,
     exclude_patterns: tuple[str, ...],
-    ignore_spec: Any | None,
+    ignore_rules: GitIgnoreRules | None,
 ) -> DiscoveredFile | None:
     """Validate and convert one candidate path."""
     resolved = candidate.resolve()
-    _ensure_inside_workspace(resolved, workspace_root, str(candidate))
+    try:
+        _ensure_inside_workspace(resolved, workspace_root, str(candidate))
+    except ValueError as exc:
+        warnings.warn(f"Skipping source {candidate}: {exc}", RuntimeWarning, stacklevel=3)
+        return None
     if not resolved.is_file():
         return None
 
-    relative_path = resolved.relative_to(workspace_root).as_posix()
+    relative_path = candidate.relative_to(workspace_root).as_posix()
     if not config.include_hidden and _has_hidden_part(relative_path):
         return None
     if _is_excluded(relative_path, exclude_patterns):
         return None
-    if ignore_spec is not None and ignore_spec.match_file(relative_path):
+    if ignore_rules is not None and ignore_rules.is_ignored(relative_path):
         return None
     if config.allowed_extensions is not None and resolved.suffix.lower() not in config.allowed_extensions:
         return None
@@ -228,7 +330,7 @@ def _normalize_pattern(raw_pattern: str) -> str:
 
     pattern = raw_pattern.strip().replace("\\", "/")
     path = Path(pattern)
-    if path.is_absolute() or any(part == ".." for part in pattern.split("/")):
+    if path.is_absolute() or PureWindowsPath(pattern).drive or any(part == ".." for part in pattern.split("/")):
         raise ValueError(f"include pattern must stay inside workspace: {raw_pattern}")
     return pattern
 

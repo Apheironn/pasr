@@ -1,0 +1,415 @@
+{
+  "experiment": "Cost-aware identifier-component matching plus distinct read-region quotas",
+  "date": "2026-09-20",
+  "decision": "No production promotion: plugin-lifetime causal regression; one extra timed-out request; complete-cohort cost unknown.",
+  "production_source_changed": false,
+  "protocol": {
+    "candidate": "locator_identifier_dedup",
+    "baseline": "locator_control",
+    "source_selection": "Fixed before new inference; reuse the prior byte-verified contexts and source qualification, not a new ranking contest. No candidate or query tuning.",
+    "contexts": "13 recorded contexts from four reused questions plus three separate workspace ablations per method. No source replays needed: archived validated contexts are the treatment.",
+    "generation": {
+      "model": "qwen/qwen3.5-9b",
+      "quantization": "Q4_K_M",
+      "context_length": 32768,
+      "temperature": 0.2,
+      "seeds": [
+        20260928,
+        20260929
+      ],
+      "schedule_seed": 20260928,
+      "max_output": 1200,
+      "thinking": "none",
+      "tools": false,
+      "automatic_retries": 0
+    },
+    "recorded_gate": {
+      "strictly_greater_equal_question_causal_score": true,
+      "no_per_question_regression": true,
+      "no_increase_in_material_false_answers": true,
+      "max_total_provider_token_ratio": 1.1,
+      "no_increase_in_failed_answers": true
+    },
+    "grading": "Reuse the five source-grounded 0/.5/1 criteria per question. Random IDs; reviewers do not see method, costs, prior grades or comparisons. Material false claims and unsupported claims are separate. Exact answer-quote audit, source check and any adjudications precede method aggregation. Ambiguous wording alone is not a material false claim; an unambiguously wrong mechanism is.",
+    "conditional_fresh_gate": "Only after recorded gate: two reserved questions, deterministic frozen queries, two seeds per method. No per-question causal regression, no extra materially false answers or failed answers, total provider-token ratio <=1.10. No tuning or fallback selection.",
+    "conditional_agent_gate": "Only after both prior gates: actual MCP schemas/handlers, same two fresh questions and two seeds per arm (eight runs), 18 turns, 1200 output tokens, no retries, thinking off. Full suite passes; no per-question causal-score regression, no increase in false answers or turn-limit failures; strictly lower provider input+output tokens. Otherwise no promotion.",
+    "interpretation": "Exploratory paired study. Four reused questions are not a generalization claim. Candidate combines identifier matching and deduplication; this model comparison does not isolate their effects.",
+    "source_archive_sha256": "094ce46f904e2e2d8c7b89114697f130862fa7acabd8166ebe48543f820fa3d8"
+  },
+  "protocol_hashes": {
+    "plan.json": "d42723cb88b6c7359f91842e64b8ca15bcbd1a532c5830b4e03aa84df07f47c0",
+    "semantic_rubrics.json": "cbbbef6a4cc7b173c84d945fce9fea913a4f5c7d2b7fcb1942bea3e800000498",
+    "fresh_holdouts.json": "4126f4feee43f3fd6583704056fc2bb683cad5a3fd6a1d512ac220aa6d53af33",
+    "cases.json": "226fefe219dec69200b1f389b87561dca51563cfea7c23eabf00b4d4b1b78283",
+    "anchors.json": "89b7f810944893786491b08ff4722a8cb88c46e88a7a476d397d7bb3d1149920",
+    "answer_contexts.py": "d8ffd8969aeea9b9788132ecac53c61d97c981df1a3c208f8255d944df7fabeb",
+    "model_locator_control.json": "e0d477db918acc2920c8292918e8eec2133475f05cc53df8de1ca0d49e0e3460",
+    "model_locator_identifier_dedup.json": "2a084ceffe9609e4521b763357875d43dc65d9d4c596a76944d2ab862d00b63a",
+    "grading_contract.json": "d75d597521fd46a069ac817f6ec2aa2daa5755177944b8117324b11bd274cd3a",
+    "source_evidence_manifest.json": "45bffc4d83c2881aa2dc4bf62078f9678b392376c3d42bc234c697c3fc609031",
+    "conditional_fresh_cases.json": "f027e553392d8a0dbab76b766a81ebd6bf54589b8148f528ac48df02468730b6",
+    "conditional_agent_questions.json": "779b5271388263c0834d90b6ff255e2279f3527d64dd1a4ccae8ef827d23ecaf",
+    "replay_worker.py": "9906ac420355b4933ac75eb7a8ad91ca0a3c054721904a107a68c5a31df7b3e6"
+  },
+  "question_labels": {
+    "primary_Q1": "Plugin stopping and garbage collection",
+    "primary_Q2": "Ctrl-C propagation and cooperative cancellation",
+    "holdout_Q1": "Recursion-limit enforcement",
+    "holdout_Q2": "Last-command exit-status selection and storage"
+  },
+  "sample": {
+    "reused_questions": 4,
+    "recorded_contexts_per_method": 13,
+    "scope_ablations_per_method": 3,
+    "new_retrieval_calls": 0,
+    "frozen_context_records": 32,
+    "scheduled_inference_attempts": 64,
+    "normal_responses": 63,
+    "timed_out_requests": 1,
+    "recorded_attempts_per_method": 26,
+    "ablation_attempts_per_method": 6,
+    "fresh_questions_reserved": 2,
+    "fresh_questions_executed": 0
+  },
+  "source_qualification": {
+    "origin_experiment": "region_selection_20260920",
+    "origin_evidence_archive_sha256": "ee97973e783ba63d1b55ce25f866bec99c013b641704f7a697bf39d2e8add2b4",
+    "baseline": {
+      "by_question": {
+        "primary_Q1": 1.0,
+        "holdout_Q2": 0,
+        "holdout_Q1": 2.0,
+        "primary_Q2": 2
+      },
+      "macro_score": 1.25,
+      "mean_context_tokens": 651.2307692307693,
+      "eligible": false
+    },
+    "candidate": {
+      "by_question": {
+        "primary_Q1": 1.0,
+        "holdout_Q2": 0.08333333333333333,
+        "holdout_Q1": 2.0,
+        "primary_Q2": 2
+      },
+      "macro_score": 1.2708333333333333,
+      "mean_context_tokens": 696.2307692307693,
+      "eligible": true
+    },
+    "note": "Previously validated contexts and unchanged candidate source reused. Prior regression, replay, lint and integration proof retained in inherited_evidence; not newly rerun."
+  },
+  "results": {
+    "locator_control": {
+      "recorded": {
+        "answers": 26,
+        "by_question": {
+          "holdout_Q1": 1.75,
+          "holdout_Q2": 0,
+          "primary_Q1": 0.75,
+          "primary_Q2": 1.8333333333333333
+        },
+        "macro_causal_score": 1.0833333333333333,
+        "answers_with_material_false_claims": 4,
+        "answers_with_unsupported_claims": 9,
+        "fully_correct": 0,
+        "failed_answers": 0,
+        "usage_complete": true,
+        "missing_usage_answers": 0,
+        "provider_input_tokens": 22108,
+        "provider_output_tokens": 9938,
+        "provider_total_tokens": 32046,
+        "observed_input_tokens": 22108,
+        "observed_output_tokens": 9938,
+        "observed_total_tokens": 32046
+      },
+      "workspace": {
+        "answers": 6,
+        "by_question": {
+          "holdout_Q2": 0
+        },
+        "macro_causal_score": 0,
+        "answers_with_material_false_claims": 1,
+        "answers_with_unsupported_claims": 1,
+        "fully_correct": 0,
+        "failed_answers": 0,
+        "usage_complete": true,
+        "missing_usage_answers": 0,
+        "provider_input_tokens": 5462,
+        "provider_output_tokens": 1506,
+        "provider_total_tokens": 6968,
+        "observed_input_tokens": 5462,
+        "observed_output_tokens": 1506,
+        "observed_total_tokens": 6968
+      },
+      "all": {
+        "answers": 32,
+        "by_question": {
+          "holdout_Q1": 1.75,
+          "holdout_Q2": 0,
+          "primary_Q1": 0.75,
+          "primary_Q2": 1.8333333333333333
+        },
+        "macro_causal_score": 1.0833333333333333,
+        "answers_with_material_false_claims": 5,
+        "answers_with_unsupported_claims": 10,
+        "fully_correct": 0,
+        "failed_answers": 0,
+        "usage_complete": true,
+        "missing_usage_answers": 0,
+        "provider_input_tokens": 27570,
+        "provider_output_tokens": 11444,
+        "provider_total_tokens": 39014,
+        "observed_input_tokens": 27570,
+        "observed_output_tokens": 11444,
+        "observed_total_tokens": 39014
+      }
+    },
+    "locator_identifier_dedup": {
+      "recorded": {
+        "answers": 26,
+        "by_question": {
+          "holdout_Q1": 1.75,
+          "holdout_Q2": 0.08333333333333333,
+          "primary_Q1": 0.5,
+          "primary_Q2": 2.25
+        },
+        "macro_causal_score": 1.1458333333333333,
+        "answers_with_material_false_claims": 3,
+        "answers_with_unsupported_claims": 11,
+        "fully_correct": 0,
+        "failed_answers": 1,
+        "usage_complete": false,
+        "missing_usage_answers": 1,
+        "provider_input_tokens": null,
+        "provider_output_tokens": null,
+        "provider_total_tokens": null,
+        "observed_input_tokens": 22655,
+        "observed_output_tokens": 10423,
+        "observed_total_tokens": 33078
+      },
+      "workspace": {
+        "answers": 6,
+        "by_question": {
+          "holdout_Q2": 0.16666666666666666
+        },
+        "macro_causal_score": 0.16666666666666666,
+        "answers_with_material_false_claims": 3,
+        "answers_with_unsupported_claims": 3,
+        "fully_correct": 0,
+        "failed_answers": 0,
+        "usage_complete": true,
+        "missing_usage_answers": 0,
+        "provider_input_tokens": 5944,
+        "provider_output_tokens": 1983,
+        "provider_total_tokens": 7927,
+        "observed_input_tokens": 5944,
+        "observed_output_tokens": 1983,
+        "observed_total_tokens": 7927
+      },
+      "all": {
+        "answers": 32,
+        "by_question": {
+          "holdout_Q1": 1.75,
+          "holdout_Q2": 0.1111111111111111,
+          "primary_Q1": 0.5,
+          "primary_Q2": 2.25
+        },
+        "macro_causal_score": 1.1527777777777777,
+        "answers_with_material_false_claims": 6,
+        "answers_with_unsupported_claims": 14,
+        "fully_correct": 0,
+        "failed_answers": 1,
+        "usage_complete": false,
+        "missing_usage_answers": 1,
+        "provider_input_tokens": null,
+        "provider_output_tokens": null,
+        "provider_total_tokens": null,
+        "observed_input_tokens": 28599,
+        "observed_output_tokens": 12406,
+        "observed_total_tokens": 41005
+      }
+    }
+  },
+  "gate": {
+    "strictly_higher_macro_causal_score": true,
+    "no_per_question_regression": false,
+    "no_extra_material_false_answers": true,
+    "within_10_percent_provider_token_ceiling": null,
+    "no_extra_failed_answers": false,
+    "passed": false
+  },
+  "full_recorded_provider_token_ratio": null,
+  "candidate_observed_recorded_token_subtotal": 33078,
+  "candidate_recorded_total_lower_bound_ratio": 1.0322037071709418,
+  "complete_pair_sensitivity": {
+    "diagnostic_only_not_replacement_gate": true,
+    "matched_complete_recorded_pairs": 25,
+    "summary": {
+      "locator_control": {
+        "answers": 25,
+        "by_question": {
+          "holdout_Q1": 1.75,
+          "holdout_Q2": 0,
+          "primary_Q1": 1.0,
+          "primary_Q2": 1.8333333333333333
+        },
+        "macro_causal_score": 1.1458333333333333,
+        "answers_with_material_false_claims": 4,
+        "answers_with_unsupported_claims": 8,
+        "fully_correct": 0,
+        "failed_answers": 0,
+        "usage_complete": true,
+        "missing_usage_answers": 0,
+        "provider_input_tokens": 21323,
+        "provider_output_tokens": 9658,
+        "provider_total_tokens": 30981,
+        "observed_input_tokens": 21323,
+        "observed_output_tokens": 9658,
+        "observed_total_tokens": 30981
+      },
+      "locator_identifier_dedup": {
+        "answers": 25,
+        "by_question": {
+          "holdout_Q1": 1.75,
+          "holdout_Q2": 0.08333333333333333,
+          "primary_Q1": 0.6666666666666666,
+          "primary_Q2": 2.25
+        },
+        "macro_causal_score": 1.1875,
+        "answers_with_material_false_claims": 3,
+        "answers_with_unsupported_claims": 11,
+        "fully_correct": 0,
+        "failed_answers": 0,
+        "usage_complete": true,
+        "missing_usage_answers": 0,
+        "provider_input_tokens": 22655,
+        "provider_output_tokens": 10423,
+        "provider_total_tokens": 33078,
+        "observed_input_tokens": 22655,
+        "observed_output_tokens": 10423,
+        "observed_total_tokens": 33078
+      }
+    },
+    "provider_token_ratio": 1.067686646654401
+  },
+  "failure_accounting": {
+    "case_id": "Q03_recorded",
+    "method": "locator_identifier_dedup",
+    "rep": 1,
+    "failure": "backend_error:APITimeoutError:Request timed out.",
+    "elapsed_seconds": 120.81300000002375,
+    "returned_api_turns": 0,
+    "returned_usage": null,
+    "retried": false,
+    "retained_in_primary_cohort": true,
+    "cause": "Unknown; no attribution to retrieval or cold-start readiness without evidence.",
+    "cost_policy": "Missing usage remains null. Observed subtotals are not full totals. The primary cost ceiling is unknown, not passed.",
+    "sensitivity_policy": "Remove both sides of the single incomplete recorded pair for a diagnostic comparison only. This does not replace the frozen gate."
+  },
+  "review": {
+    "method_and_cost_blinded_reviewers": 4,
+    "answers_scored": 64,
+    "exact_quote_audits_passed": 64,
+    "byte_verified_answer_context_packets": 64,
+    "materiality_checks": {
+      "adjudications": [],
+      "all_raw_scores_and_flags_retained": true,
+      "checks": [
+        {
+          "ids": [
+            "B003",
+            "B022",
+            "B059"
+          ],
+          "result": "Confirmed timeout-versus-message control flow and remaining-duration arithmetic against gc.rs:113-127,169-213."
+        },
+        {
+          "ids": [
+            "B035",
+            "B064"
+          ],
+          "result": "Read full-answer qualifiers. Retained general EngineInterface access-path conflation and callback-registry state-access claims; the registry stores callbacks and IDs, not the interrupt atomic."
+        },
+        {
+          "ids": [
+            "B034"
+          ],
+          "result": "Full conclusion claims population from environment OR test helper. Retained bypass claim: the setter writes the environment and the subsequent snapshot still reads it."
+        },
+        {
+          "ids": [
+            "B032"
+          ],
+          "result": "Full answer explicitly places exit-code population between printing and warning flush; retained incorrect snapshot timing."
+        },
+        {
+          "ids": [
+            "B057"
+          ],
+          "result": "Retained platform conflation after reading exec.rs:25-31,99-125. Public documentation explicitly distinguishes Unix replacement from Windows spawn/wait/exit; this is not simply matching generic command documentation."
+        }
+      ],
+      "recursion_path_criterion": "The current reviewer consistently requires actual distinction between evaluation paths; merely citing eval.rs does not establish that distinction. No score adjustment. Cross-study absolute scores are not treated as calibrated."
+    },
+    "all_raw_scores_and_flags_retained": true
+  },
+  "verification": {
+    "protocol_inputs_unchanged": true,
+    "executed_script_hash_matches": true,
+    "inference_input_hashes_match": true,
+    "executed_shared_harness_hashes_match": true,
+    "frozen_source_archive_members": 233,
+    "frozen_source_archive_sha256": "9149673f32159e750e79cec93213d0f015610111614fe7ed60261cd2a9ec91c7",
+    "source_contexts_reused_without_new_replay": true,
+    "reference_source_hashes_verified": 71,
+    "attempt_context_and_message_checks_passed": 64,
+    "normal_response_generation_and_usage_checks_passed": 63,
+    "candidate_source_code_changes": 0,
+    "new_focused_test_runs": 0,
+    "inherited_identifier_dedup_focused_test_passes": 17,
+    "full_production_suite_run": false,
+    "conditional_holdout_calls": 0,
+    "free_agent_runs": 0
+  },
+  "execution": {
+    "driver_exit_code": 0,
+    "driver_wall_seconds": 556.88,
+    "model_load_seconds": 21.732,
+    "automatic_retries": 0,
+    "pre_inference_launch_error": "Unquoted Windows backslashes caused command-not-found before Python started. Corrected path syntax; zero model requests from that attempt. Frozen inference inputs unchanged."
+  },
+  "limitations": [
+    "Four reused questions and two seeds are exploratory, correlated observations, not independent evidence of general quality or savings.",
+    "The candidate combines identifier-component matching and region deduplication; their isolated effects are not measured by this two-arm model study.",
+    "Full-cohort provider cost is unavailable for the timed-out request. The matched-complete-pair result is diagnostic only.",
+    "The plugin regression persists on complete pairs, but the small sample does not establish a general causal effect of retrieval on answer quality.",
+    "Scope ablations are reported separately, not mixed into the recorded-scope gate.",
+    "Reviewer interpretation and generated answers differ across experiments; absolute scores across studies are not calibrated.",
+    "No fresh holdout, free-agent or full-suite claims: those stages were ineligible."
+  ],
+  "next_recommendation": "Stop tuning locator heuristics from these small source-only cohorts. Diagnose actual production-agent navigation/read waste on the four reused development questions, retaining the two fresh questions for a later promotion check. Investigate first-request readiness separately before another inference cohort; do not attribute the timeout to retrieval without evidence.",
+  "source_archive": {
+    "file": "source_snapshots.zip",
+    "sha256": "9149673f32159e750e79cec93213d0f015610111614fe7ed60261cd2a9ec91c7",
+    "members": 233
+  },
+  "cleanup": {
+    "temporary_roots_removed": true,
+    "source_archive_verified_members": 233,
+    "source_archive_sha256": "9149673f32159e750e79cec93213d0f015610111614fe7ed60261cd2a9ec91c7",
+    "owned_qwen_instance_unloaded": true,
+    "preexisting_embedding_instance_unchanged": true,
+    "production_source_modified": false
+  },
+  "raw_evidence_directory": "eval/agent_bench/results/cost_aware_locator_20260920",
+  "raw_evidence_git_ignored": true,
+  "evidence_archive": {
+    "file": "eval/agent_bench/results/cost_aware_locator_20260920/evidence_bundle.zip",
+    "sha256": "612241d17f26cc932b5ac1321e0e9f536c326e8b949f4a245889ee0cd8f3a432",
+    "bytes": 1154119,
+    "members": 250,
+    "manifest_sha256": "1c4e564718ca597dba7edcedf49e6ff48881ae716b02f100f5fc51075f86c43a",
+    "crc_and_all_member_hashes_verified": true,
+    "embedded_report": "report.json includes the report except this external bundle descriptor, avoiding a self-referential hash."
+  }
+}

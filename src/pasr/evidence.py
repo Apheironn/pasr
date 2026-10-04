@@ -185,11 +185,15 @@ def account_query_evidence(
 
 @lru_cache(maxsize=8192)
 def extract_keywords(text: str) -> list[str]:
-    """Extract candidate-match terms, including dotted/hyphenated components."""
+    """Extract exact terms and dotted, hyphenated, or snake-case components."""
     expanded = []
     for keyword in _keywords(text):
-        for term in (keyword, *re.split(r"[.-]+", keyword)):
-            if term and term not in expanded:
+        components = re.split(r"[.-]+", keyword)
+        terms = [keyword, *components]
+        for component in components:
+            terms.extend(component.split("_"))
+        for term in terms:
+            if term and term not in _STOPWORDS and term not in expanded:
                 expanded.append(term)
     return expanded
 
@@ -198,9 +202,8 @@ def extract_keywords(text: str) -> list[str]:
 def path_keywords(source: str) -> list[str]:
     """Extract query-matchable terms from a source path's components.
 
-    Splits on every non-alphanumeric character (``/``, ``_``, ``-``, ``.``), unlike
-    :func:`_keywords`/:func:`extract_keywords` which treat ``_`` as part of a token --
-    a filename like ``stale_socket_gc.py`` must yield ``stale`` and ``socket``
+    Splits on every non-alphanumeric character (``/``, ``_``, ``-``, ``.``).
+    A filename like ``stale_socket_gc.py`` must yield ``stale`` and ``socket``
     separately to count as evidence for those query terms.
     """
     keywords = []

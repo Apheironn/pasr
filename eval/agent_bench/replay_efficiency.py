@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import efficiency
+import runner
 import schemas
 
 
@@ -21,19 +22,26 @@ def count_history(client, report: dict, row: dict, compact: bool) -> dict:
     messages = [{"role": "user", "content": report["config"]["questions"][row["question"]]}]
     counts = []
     output_index = 0
+    stopped = False
+    stop_after = row.get("stop_after") or 0
     for turn in row["api_turns"]:
+        stopping = bool(stop_after) and output_index >= stop_after
+        if stopping and not stopped:
+            stopped = True
+            messages.append({"role": "user", "content": runner.STOP_INSTRUCTION})
         counts.append(
             client.messages.count_tokens(
                 model=report["config"]["model"],
                 system=report["config"]["system_prompt"],
                 tools=schemas.anthropic(report["config"]["schemas"][row["arm"]]),
                 messages=messages,
+                **({"tool_choice": {"type": "none"}} if stopping else {}),
             ).input_tokens
         )
         content = turn["content"]
         messages.append({"role": "assistant", "content": content})
         uses = [block for block in content if block["type"] == "tool_use"]
-        if not uses:
+        if not uses or stopping:
             break
         results = []
         for block in uses:

@@ -114,3 +114,17 @@ def test_read_lines_use_innermost_function_not_outer_class(tmp_path: Path, locat
     hit = locate(tmp_path, "checkpoint")["hits"][0]
 
     assert hit["read_lines"] == "2-4"
+
+
+@pytest.mark.parametrize("locate", [find_evidence, find_usages])
+@pytest.mark.parametrize("newline", ["\n", "\r\n", "\r"])
+def test_search_provenance_uses_physical_lines(tmp_path: Path, locate, newline: str):
+    lines = ['label = "a\u2028b\fc"', "def target():", '    return "checkpoint café"']
+    (tmp_path / "m.py").write_bytes((newline.join(lines) + newline).encode("utf-8-sig"))
+
+    (hit,) = locate(tmp_path, "checkpoint")["hits"]
+
+    assert hit["provenance"] == "m.py:3"
+    assert hit["in"] == "function target"
+    assert hit["text"] == 'return "checkpoint café"'
+    assert hit["read_lines"] == "2-3"

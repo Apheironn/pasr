@@ -1,12 +1,11 @@
 """Deterministic dependency-closure tracing for a target symbol.
 
-Given a symbol name and a set of source files, follow definition -> reference edges
-breadth-first and return the boundary-complete set of definitions the symbol
-transitively needs, in source order, at a fraction of the tokens of the full index.
-With ``direction="callers"`` the edges are reversed: the closure is every definition
-that transitively *references* the symbol -- impact analysis ("what breaks if I change
-this"). Unlike ``select_context`` the token budget here is a soft target: a trace never
-drops a needed definition (it reports ``over_budget`` instead).
+Given a symbol name and source files, follow parser-derived, unqualified-name
+reference edges breadth-first. This is a depth-bounded static approximation, not
+semantic dependency resolution: same-named definitions can be conflated, unsupported
+or unparseable files contribute no definitions, and dynamic references may be missed.
+With ``direction="callers"`` the edges are reversed. The token budget is a soft
+target: definitions reached within ``max_depth`` are retained even when over budget.
 """
 
 from __future__ import annotations
@@ -22,7 +21,7 @@ from pasr.tokenize import Tokenizer, get_tokenizer
 
 @dataclass(frozen=True)
 class TraceResult:
-    """The transitive definition closure for one symbol."""
+    """A depth-bounded static definition trace for one symbol."""
 
     symbol: str
     found: bool
@@ -89,12 +88,12 @@ def trace_dependencies(
     budget_tokens: int = 4000,
     direction: str = "dependencies",
 ) -> TraceResult:
-    """Trace ``symbol``'s transitive definition closure across ``files``.
+    """Trace ``symbol``'s parser-derived reference graph across ``files``.
 
     ``files`` maps a source identifier (usually a workspace-relative path) to its text.
-    ``direction="dependencies"`` (default) follows what ``symbol`` needs;
-    ``direction="callers"`` reverses the edges -- every definition that transitively
-    references ``symbol`` (impact analysis).
+    ``direction="dependencies"`` (default) follows referenced names;
+    ``direction="callers"`` reverses those edges. A false ``truncated_by_depth``
+    means the parsed name graph was exhausted, not that runtime dependencies are complete.
     """
     if max_depth < 0:
         raise ValueError("max_depth must be non-negative.")
@@ -126,7 +125,8 @@ def trace_dependencies(
         defs.sort(key=lambda d: d.key)
 
     unique_defs = {d.key: d for d in all_defs}
-    total_index_tokens = sum(len(tok.encode(d.text)) for d in unique_defs.values())
+    index_text = "\n".join(d.text for d in sorted(unique_defs.values(), key=lambda d: (d.source, d.line_start, d.name)))
+    total_index_tokens = tok.count(index_text)
 
     seed = by_name.get(symbol, [])
     if not seed:
@@ -165,11 +165,11 @@ def trace_dependencies(
             for neighbour in edges:
                 if neighbour.key not in visited:
                     next_frontier.append(neighbour)
-        frontier = next_frontier
+        frontier = list({d.key: d for d in next_frontier if d.key not in visited}.values())
 
     collected.sort(key=lambda d: (d.source, d.line_start, d.name))
     text = "\n".join(definition.text for definition in collected)
-    token_count = sum(len(tok.encode(definition.text)) for definition in collected)
+    token_count = tok.count(text)
     truncated_by_depth = bool(frontier)
 
     return TraceResult(

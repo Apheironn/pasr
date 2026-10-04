@@ -13,6 +13,7 @@ coverage, just pointed at the path instead of the body text.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -43,18 +44,23 @@ def find_files(
     records = discover_workspace_files(Path(workspace_root), include or ["."], config=config)
     paths = relative_file_paths(records)
 
-    query_terms = extract_keywords(query)
-    if not query_terms:
+    if not query.strip():
         chosen = sorted(paths)[:top_k]
         return {
             "query": query,
             "total_candidates": len(paths),
             "matches": [{"path": p, "match_score": None, "matched_keywords": []} for p in chosen],
         }
+    # A single identifier/path is literal, not prose: "where" and "where.rs"
+    # must retain the same path components on both sides of the comparison.
+    literal_path = re.fullmatch(r"[A-Za-z0-9_./\\:-]+", query.strip()) is not None
+    query_terms = (
+        list(dict.fromkeys(re.findall(r"[A-Za-z0-9]+", query.casefold()))) if literal_path else extract_keywords(query)
+    )
 
     scored: list[tuple[float, str, list[str]]] = []
     for p in paths:
-        path_terms = set(path_keywords(p))
+        path_terms = set(re.findall(r"[A-Za-z0-9]+", p.casefold())) if literal_path else set(path_keywords(p))
         matched = [term for term in query_terms if term in path_terms]
         if matched:
             scored.append((len(matched) / len(query_terms), p, matched))

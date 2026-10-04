@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "status": "precise_followups_implemented_and_verified",
+  "target_established": false,
+  "model_requests": 0,
+  "production_default_tools_changed": false,
+  "change": {
+    "api": "search_code(query, files=None)",
+    "discovery": "Only when files is None; existing query-only behavior retained.",
+    "explicit_scope": "Shared workspace/range validator and selection engine; no discovery fallback for empty, missing, malformed or escaping scopes.",
+    "range_only": "Sequential whole-line prefixes with continuation and same-read source_fingerprint; no skipping blocked first lines.",
+    "plain_or_mixed_files": "Query-ranked selection, not guaranteed sequential full-file reading."
+  },
+  "before": {
+    "schema_properties": [
+      "query"
+    ],
+    "requested_files": [
+      "target.py:1-2"
+    ],
+    "actual_context": "[other.py:1-2]\ndef distractor():\n    return 99",
+    "scope_supported": false
+  },
+  "runtime": {
+    "passed": true,
+    "transport": "actual child-process MCP stdio",
+    "api_requests": 0,
+    "tool_calls": 8,
+    "range_pages": [
+      {
+        "files": [
+          "target.py:3-116"
+        ],
+        "context_tokens": 1489,
+        "continuation": {
+          "files": [
+            "target.py:60-116"
+          ],
+          "blocked": false
+        }
+      },
+      {
+        "files": [
+          "target.py:60-116"
+        ],
+        "context_tokens": 1489,
+        "continuation": {
+          "files": [],
+          "blocked": false
+        }
+      }
+    ],
+    "requested_lines": 114,
+    "exact_once_source_delivery": true,
+    "same_size_same_mtime_change_detected": true,
+    "invalid_scope_never_widened": true,
+    "oversized_first_line_not_skipped": true
+  },
+  "fixed_read_replay": {
+    "model_requests": 0,
+    "reads": 8,
+    "complete_equivalent_source": true,
+    "tokenizer": "o200k_base",
+    "totals": {
+      "native": {
+        "calls": 8,
+        "wire_tokens": 6258
+      },
+      "search_code": {
+        "calls": 8,
+        "wire_tokens": 6296
+      },
+      "select_context": {
+        "calls": 8,
+        "wire_tokens": 6843
+      }
+    },
+    "rows": [
+      {
+        "case_id": "fresh-pluggy-blocked-plugin-lifecycle",
+        "files": [
+          "src/pluggy/_manager.py:195-265"
+        ],
+        "native": {
+          "calls": 1,
+          "wire_tokens": 739
+        },
+        "search_code": {
+          "calls": 1,
+          "wire_tokens": 766
+        },
+        "select_context": {
+          "calls": 1,
+          "wire_tokens": 833
+        }
+      },
+      {
+        "case_id": "fresh-click-atomic-write-close",
+        "files": [
+          "src/click/_compat.py:379-474"
+        ],
+        "native": {
+          "calls": 1,
+          "wire_tokens": 1000
+        },
+        "search_code": {
+          "calls": 1,
+          "wire_tokens": 975
+        },
+        "select_context": {
+          "calls": 1,
+          "wire_tokens": 1039
+        }
+      },
+      {
+        "case_id": "fresh-anyio-buffered-boundary-reads",
+        "files": [
+          "src/anyio/streams/buffered.py:1-160"
+        ],
+        "native": {
+          "calls": 1,
+          "wire_tokens": 1510
+        },
+        "search_code": {
+          "calls": 1,
+          "wire_tokens": 1419
+        },
+        "select_context": {
+          "calls": 1,
+          "wire_tokens": 1497
+        }
+      },
+      {
+        "case_id": "fresh-packaging-collected-errors",
+        "files": [
+          "src/packaging/errors.py:1-94"
+        ],
+        "native": {
+          "calls": 1,
+          "wire_tokens": 785
+        },
+        "search_code": {
+          "calls": 1,
+          "wire_tokens": 781
+        },
+        "select_context": {
+          "calls": 1,
+          "wire_tokens": 852
+        }
+      },
+      {
+        "case_id": "fresh-attrs-disabled-restoration",
+        "files": [
+          "src/attr/_config.py:1-31"
+        ],
+        "native": {
+          "calls": 1,
+          "wire_tokens": 278
+        },
+        "search_code": {
+          "calls": 1,
+          "wire_tokens": 351
+        },
+        "select_context": {
+          "calls": 1,
+          "wire_tokens": 418
+        }
+      },
+      {
+        "case_id": "fresh-attrs-disabled-restoration",
+        "files": [
+          "src/attr/validators.py:40-90"
+        ],
+        "native": {
+          "calls": 1,
+          "wire_tokens": 322
+        },
+        "search_code": {
+          "calls": 1,
+          "wire_tokens": 365
+        },
+        "select_context": {
+          "calls": 1,
+          "wire_tokens": 433
+        }
+      },
+      {
+        "case_id": "fresh-typer-annotated-default-conflicts",
+        "files": [
+          "typer/utils.py:90-190"
+        ],
+        "native": {
+          "calls": 1,
+          "wire_tokens": 1026
+        },
+        "search_code": {
+          "calls": 1,
+          "wire_tokens": 1021
+        },
+        "select_context": {
+          "calls": 1,
+          "wire_tokens": 1085
+        }
+      },
+      {
+        "case_id": "fresh-httpx-asgi-body-and-failure",
+        "files": [
+          "httpx/_transports/asgi.py:117-187"
+        ],
+        "native": {
+          "calls": 1,
+          "wire_tokens": 598
+        },
+        "search_code": {
+          "calls": 1,
+          "wire_tokens": 618
+        },
+        "select_context": {
+          "calls": 1,
+          "wire_tokens": 686
+        }
+      }
+    ],
+    "limit": "Fixed delivered-range replay, including every continuation page. Tool observation tokens only, not adaptive provider tokens or answer accuracy."
+  },
+  "verification": {
+    "pytest_passed": 499,
+    "subtests_passed": 56,
+    "skipped": 1,
+    "skip_reason": "Source symlinks unavailable on Windows",
+    "ruff": "passed",
+    "stdio_source": "Live src selected explicitly with PYTHONPATH, not the separately installed package."
+  },
+  "source_sha256": {
+    "src/pasr/mcp/server.py": "a487d3f1806983d15d5c6e3fc538fa259e53e3b00706f4a06985402742359688",
+    "tests/test_mcp_server.py": "e1f0f178e540fc08a25a7ea44bcab92070aa3835b618815f1fb628d348cd390d"
+  },
+  "decision": "Retain scoped-followup functionality. No new paid comparison: complete local observations are 8.0% smaller than select_context but 0.6% larger than native reading. This does not establish cumulative provider-token or answer-quality gains. Initial discovery precision remains unresolved.",
+  "prior_api_results": "api_pipeline_20260929.json; frozen comparisons predate this API expansion."
+}

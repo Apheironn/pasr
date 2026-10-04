@@ -220,19 +220,15 @@ def run_one(
             "score": runner.score(question, result["answer"], answered=result["answered"]),
             "api_turns": turns,
             "tool_outputs": outputs,
-            "total_tokens": result["input_tokens"] + result["output_tokens"],
             "cache_read_tokens": sum(t["usage"].get("cache_read_input_tokens", 0) or 0 for t in turns),
             "cache_write_tokens": sum(t["usage"].get("cache_creation_input_tokens", 0) or 0 for t in turns),
         }
     )
-    # API input_tokens excludes cache reads/writes; count all logical input tokens.
-    result["logical_input_tokens"] = result["input_tokens"] + result["cache_read_tokens"] + result["cache_write_tokens"]
     if backend_name == "local":
         # OpenAI-compatible prompt_tokens already includes cached prompt tokens.
         result["cache_read_tokens"] = sum(
             (t["usage"].get("prompt_tokens_details") or {}).get("cached_tokens", 0) or 0 for t in turns
         )
-        result["logical_input_tokens"] = result["input_tokens"]
     result["total_tokens"] = result["logical_input_tokens"] + result["output_tokens"]
     return result
 

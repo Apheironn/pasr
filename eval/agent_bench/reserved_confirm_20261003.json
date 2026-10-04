@@ -1,0 +1,112 @@
+{
+  "validation_problems": [],
+  "questions": 40,
+  "totals": {
+    "native": {
+      "tokens": 536087,
+      "supported": 28,
+      "material": 3
+    },
+    "split": {
+      "tokens": 400251,
+      "supported": 28,
+      "material": 7
+    }
+  },
+  "mean_tokens": {
+    "native": 13402.2,
+    "split": 10006.3
+  },
+  "split_over_native_tokens": 0.7466,
+  "geometric_per_question_ratio": 0.7431,
+  "bootstrap_95": {
+    "accuracy_difference": [
+      -0.175,
+      0.175
+    ],
+    "token_ratio": [
+      0.618,
+      0.89
+    ]
+  },
+  "validation_gate": {
+    "no_net_pass_loss": true,
+    "no_extra_material_errors": false,
+    "accuracy_difference_lower_ge_-0.05": false,
+    "token_ratio_upper_lt_1.0": true,
+    "mean_token_ratio_le_0.85": true
+  },
+  "validation_gate_passed": false,
+  "replication_check": {
+    "token_ratio_le_0.90": true,
+    "supported_split_ge_native": true
+  },
+  "replication_held": true,
+  "material_error_pairs": {
+    "only_split": 6,
+    "only_native": 2
+  },
+  "by_corpus_supported": {
+    "anyio": {
+      "native": "3/4",
+      "split": "4/4"
+    },
+    "attrs": {
+      "native": "2/4",
+      "split": "2/4"
+    },
+    "click": {
+      "native": "3/4",
+      "split": "3/4"
+    },
+    "httpx": {
+      "native": "2/4",
+      "split": "3/4"
+    },
+    "jinja": {
+      "native": "4/4",
+      "split": "3/4"
+    },
+    "packaging": {
+      "native": "2/4",
+      "split": "1/4"
+    },
+    "pluggy": {
+      "native": "3/4",
+      "split": "2/4"
+    },
+    "requests": {
+      "native": "1/4",
+      "split": "3/4"
+    },
+    "starlette": {
+      "native": "4/4",
+      "split": "4/4"
+    },
+    "typer": {
+      "native": "4/4",
+      "split": "3/4"
+    }
+  },
+  "charge_usd": 0.07350981,
+  "study": "reserved_confirm_20261003",
+  "archive": "eval/agent_bench/results/reserved_confirm_20261003",
+  "api_requests": 372,
+  "generation_trajectories": 80,
+  "preregistration": {
+    "recorded_at": "2026-10-03T15:09:02+0200",
+    "before_any_request": true,
+    "protocol_sha256": "ec80bcbe96425ae7f1cadc000b3ad1512d51ab12ab35d4a3f696cef426bc1f90",
+    "analysis_sha256": "93bdb27f829a7637e963a8b116f8eed44ae650454801b9d73c6d79d0614705fa",
+    "review_validation_sha256": "73bec7bf42f2df8d41ac5e9f089c4bdbf8b65f327a85e684bf7abb6c49b51345",
+    "grading_prep_sha256": "95a771c7cc7c8ae06f2e6d5d9864d733d83918288b2004ca7e2e9f46071f9a0b",
+    "primary": "original validation gate, unchanged",
+    "secondary": "replication check (tokens <= 0.90x, supported >= native)"
+  },
+  "continuation": {
+    "regenerated_answers": 0,
+    "existing_validated_reviews": 70,
+    "new_blind_review_group": "05",
+    "reviewer_change": "Missing group completed by continuation coding assistant; mixed reviewer sessions/models, not independent human validation."
+  }
+}

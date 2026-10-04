@@ -67,6 +67,8 @@ def non_inferiority(
 ) -> dict[str, Any]:
     """Is ``arm`` non-inferior to ``baseline`` on ``field`` within ``margin`` (< 0)?"""
     deltas = paired_delta(rows, arm, baseline, field)
+    if not deltas:
+        raise ValueError("non-inferiority requires at least one matched task pair")
     lo, hi, delta_mean = bootstrap_ci(deltas)
     return {
         "arm": arm,

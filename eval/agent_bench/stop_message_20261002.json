@@ -1,0 +1,98 @@
+{
+  "status": "development_gate_failed",
+  "archive": "results/stop_message_20261002",
+  "change": "One change against split_cap4_20261002: the message sent when a run reaches its call limit forbids inferring unseen behavior and asks to name unverified points; applied to all three arms. Sources, catalogs, system prompt and call limits (native/control 6, split 4) unchanged.",
+  "profiles": {
+    "native": {
+      "n": 100,
+      "supported": 79,
+      "material_errors": 3,
+      "strict_all": 79,
+      "mean_tokens": 9412.24,
+      "median_tokens": 7702.0,
+      "tool_calls": 404,
+      "requests": 504,
+      "generation_failures": 0
+    },
+    "current": {
+      "n": 100,
+      "supported": 83,
+      "material_errors": 1,
+      "strict_all": 83,
+      "mean_tokens": 11167.77,
+      "median_tokens": 10490.5,
+      "tool_calls": 393,
+      "requests": 493,
+      "generation_failures": 0
+    },
+    "split": {
+      "n": 100,
+      "supported": 83,
+      "material_errors": 5,
+      "strict_all": 82,
+      "mean_tokens": 8344.72,
+      "median_tokens": 6000.0,
+      "tool_calls": 251,
+      "requests": 351,
+      "generation_failures": 0
+    }
+  },
+  "development_gate": {
+    "supported_at_least_native": true,
+    "supported_at_least_current": true,
+    "material_errors_no_more_than_native": false,
+    "material_errors_no_more_than_current": false,
+    "tokens_at_most_85pct_native": false,
+    "tokens_below_current": true
+  },
+  "gate_passed": false,
+  "bootstrap_95_question_paired": {
+    "split_minus_native_supported": [
+      -0.06,
+      0.14
+    ],
+    "split_over_native_mean_tokens": [
+      0.798,
+      0.9862
+    ],
+    "split_minus_current_supported": [
+      -0.07,
+      0.07
+    ],
+    "split_over_current_mean_tokens": [
+      0.6762,
+      0.8243
+    ]
+  },
+  "split_vs_native_token_ratio": 0.8866,
+  "result": "Split 83 supported, 5 material, 8,345 tokens; native 79, 3, 9,412; control 83, 1, 11,168. Split/native tokens 0.887 [0.798, 0.986]: significantly cheaper but above the 0.85 line this run. Fails tokens and material errors.",
+  "stop_message_effect": "Material errors in split runs that hit the cap fell 3/23 -> 2/23; questions where only split erred materially vs only native went 6:0 -> 5:3. Small and within noise; the message did not remove the excess.",
+  "pooled_four_call_runs": {
+    "native": "152/200 supported, 4 material, 9,562 tokens",
+    "control": "149/200, 6, 11,176",
+    "split": "162/200, 12, 8,239",
+    "split_over_native_tokens": 0.862
+  },
+  "limitations": [
+    "Previously queried questions; development evidence.",
+    "One repetition per run, one model.",
+    "Asymmetric stop policy.",
+    "Arm-blind coding-assistant review; reviewers of groups 05/06/09 were cut off by a usage limit before writing and were re-run; all 300 reviews passed integrity checks."
+  ],
+  "accounting": {
+    "trajectories": 300,
+    "api_requests": 1348,
+    "charge_bound_usd": 0.228903955,
+    "four_study_total_usd": 0.917836
+  },
+  "hashes": {
+    "protocol.json": "0b2a8c93e290fb19fcf01a0b25eefe64226f83fb3a0885d5836230d639ac2507",
+    "results.json": "0bc07005ce26d744e7ddf5148bded302c4b13f14cf14cf7e37b043f506db8a40",
+    "cases.json": "1b003eb6ab14ba987cd5f875ecb09728f99573470af2e4cd38b8df10f6ca032a",
+    "analysis.json": "d7d3afeff85e68c26d0270e8a42307e9d732e1414e05c924b25b904df933ecbd",
+    "spend_ledger.json": "0b3c35bc87d8473a8a0265f70fad77dd25ff0884ee556dfae944c43c88512089",
+    "run_powered.py": "503092637db59520cfe47c5678231e53758c9e986624496a0112b2fe1d28b732",
+    "analyze.py": "73bec7bf42f2df8d41ac5e9f089c4bdbf8b65f327a85e684bf7abb6c49b51345",
+    "prepare_grading.py": "95a771c7cc7c8ae06f2e6d5d9864d733d83918288b2004ca7e2e9f46071f9a0b"
+  }
+}

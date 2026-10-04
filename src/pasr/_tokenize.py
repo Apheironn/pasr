@@ -1,9 +1,9 @@
-"""List-based encode/decode adapter shared by the M0 candidate generators.
+"""List-based encode/decode adapter shared by lexical candidate generators.
 
-The M0 core works with plain ``list[int]`` token id sequences so it stays free of
-``torch``. Any object exposing ``encode(text) -> sequence`` and ``decode(ids) -> str``
-is accepted, including Hugging Face tokenizers and the test whitespace tokenizer.
-M1 replaces this shim with a first-class ``Tokenizer`` protocol plus a tiktoken default.
+The generators use plain ``list[int]`` token ids without importing ``torch``.
+Tokenizers exposing ``encode(text) -> sequence`` and ``decode(ids) -> str`` are
+accepted, including the native ``Tokenizer`` implementations and Hugging Face
+tokenizers with optional keyword arguments or tensor/batched return values.
 """
 
 from __future__ import annotations
@@ -14,13 +14,22 @@ from typing import Any
 def encode_ids(tokenizer: Any, text: str) -> list[int]:
     """Encode text to a flat list of integer token ids.
 
-    Tolerates tokenizers that reject ``add_special_tokens`` and those that return
-    tensors or nested ``[[...]]`` batches.
+    Tolerates tokenizers that accept only text, reject ``add_special_tokens``,
+    or return tensors or nested ``[[...]]`` batches.
     """
     try:
         encoded = tokenizer.encode(text, truncation=False, add_special_tokens=False)
-    except TypeError:
-        encoded = tokenizer.encode(text, truncation=False)
+    except TypeError as exc:
+        if not any(
+            f"unexpected keyword argument {name!r}" in str(exc) for name in ("truncation", "add_special_tokens")
+        ):
+            raise
+        try:
+            encoded = tokenizer.encode(text, truncation=False)
+        except TypeError as exc:
+            if "unexpected keyword argument 'truncation'" not in str(exc):
+                raise
+            encoded = tokenizer.encode(text)
     if hasattr(encoded, "tolist"):
         encoded = encoded.tolist()
     if encoded and isinstance(encoded[0], list):

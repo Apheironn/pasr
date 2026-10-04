@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 
+from pasr.source_text import physical_lines
 from pasr.symbols.base import FileSymbols, SymbolDef
 
 _DEF_NODES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
@@ -48,6 +49,11 @@ def _definition(node: ast.AST, source: str, text: str, line_starts: list[int]) -
     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
         defines.update(arg.arg for arg in node.args.args)
         defines.update(arg.arg for arg in node.args.kwonlyargs)
+        defines.update(arg.arg for arg in node.args.posonlyargs)
+        if node.args.vararg is not None:
+            defines.add(node.args.vararg.arg)
+        if node.args.kwarg is not None:
+            defines.add(node.args.kwarg.arg)
 
     refs: set[str] = set()
     for child in ast.walk(node):
@@ -58,7 +64,7 @@ def _definition(node: ast.AST, source: str, text: str, line_starts: list[int]) -
     refs -= defines
 
     kind = "class" if isinstance(node, ast.ClassDef) else "function"
-    start, end = _char_bounds(node, line_starts)
+    start, end = _char_bounds(node, line_starts, text)
     return SymbolDef(
         name=name,
         kind=kind,
@@ -79,7 +85,7 @@ def _assignment(node: ast.AST, source: str, text: str, line_starts: list[int]) -
     refs = {
         child.id for child in ast.walk(node) if isinstance(child, ast.Name) and isinstance(child.ctx, ast.Load)
     } - names
-    start, end = _char_bounds(node, line_starts)
+    start, end = _char_bounds(node, line_starts, text)
     return SymbolDef(
         name=sorted(names)[0] if names else "<assignment>",
         kind="variable",
@@ -101,7 +107,7 @@ def _import(node: ast.AST, source: str, text: str, line_starts: list[int]) -> Sy
         local = alias.asname or alias.name.split(".", 1)[0]
         names.add(local)
         imported.add(alias.name)
-    start, end = _char_bounds(node, line_starts)
+    start, end = _char_bounds(node, line_starts, text)
     return SymbolDef(
         name=sorted(names)[0] if names else "import",
         kind="import",
@@ -117,13 +123,20 @@ def _import(node: ast.AST, source: str, text: str, line_starts: list[int]) -> Sy
 
 
 def _line_start_offsets(text: str) -> list[int]:
-    offsets = [0]
-    for line in text.splitlines(keepends=True):
-        offsets.append(offsets[-1] + len(line))
-    return offsets
+    starts = [0]
+    for line in physical_lines(text, keepends=True):
+        starts.append(starts[-1] + len(line))
+    return starts
 
 
-def _char_bounds(node: ast.AST, line_starts: list[int]) -> tuple[int, int]:
-    start = line_starts[int(node.lineno) - 1] + int(node.col_offset)
-    end = line_starts[int(node.end_lineno) - 1] + int(node.end_col_offset)
-    return start, end
+def _char_bounds(node: ast.AST, line_starts: list[int], text: str) -> tuple[int, int]:
+    # AST columns are UTF-8 byte offsets, whereas SymbolDef offsets index str.
+    def offset(lineno: int, column: int) -> int:
+        start = line_starts[lineno - 1]
+        end = line_starts[lineno] if lineno < len(line_starts) else len(text)
+        line = text[start:end]
+        if line.isascii():
+            return start + column
+        return start + len(line.encode("utf-8")[:column].decode("utf-8"))
+
+    return offset(int(node.lineno), int(node.col_offset)), offset(int(node.end_lineno), int(node.end_col_offset))

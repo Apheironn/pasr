@@ -1,4 +1,5 @@
 import unittest
+from dataclasses import replace
 
 from _helpers import WhitespaceTokenizer
 
@@ -81,6 +82,59 @@ class CandidateGenerationTests(unittest.TestCase):
         )
         self.assertAlmostEqual(fused[0].score_components["rrf"], 2 / 61)
         self.assertEqual(duplicate_span_ratio({"semantic": [semantic], "lexical": [lexical]}), 0.5)
+
+    def test_repeated_span_within_one_signal_cannot_inflate_rrf_votes(self):
+        first = CandidateSpan("a.md", 0, 2, 2, "alpha", ("lexical_anchor",), {}, 2.0)
+        second = CandidateSpan("b.md", 0, 2, 2, "beta", ("lexical_anchor",), {}, 1.0)
+        semantic = replace(second, selection_reasons=("semantic_embedding",))
+        baseline = fuse_candidates({"lexical": [first, second], "semantic": [semantic]})
+        repeated = fuse_candidates({"lexical": [first, first, second], "semantic": [semantic]})
+
+        self.assertEqual(
+            [(candidate.key, candidate.rank_score) for candidate in repeated],
+            [(candidate.key, candidate.rank_score) for candidate in baseline],
+        )
+        self.assertEqual(repeated[0].source, "b.md")
+
+    def test_exact_span_fusion_preserves_dependency_ordering_metadata(self):
+        from pasr.packing import pack_score_only
+
+        caller = CandidateSpan(
+            "source.py",
+            0,
+            4,
+            4,
+            "def caller(): return helper()",
+            ("bm25",),
+            {},
+            2.0,
+            metadata={"provenance": "source.py:1"},
+        )
+        helper = CandidateSpan(
+            "source.py",
+            4,
+            8,
+            4,
+            "def helper(): return 1",
+            ("bm25",),
+            {},
+            1.0,
+            metadata={"provenance": "source.py:2"},
+        )
+        structural = [
+            replace(
+                caller, selection_reasons=("symbol",), metadata={"symbols": ["caller"], "dependencies": ["helper"]}
+            ),
+            replace(helper, selection_reasons=("symbol",), metadata={"symbols": ["helper"], "dependencies": []}),
+        ]
+        fused = fuse_candidates({"bm25": [caller, helper], "symbols": structural})
+        result = pack_score_only(fused, "caller helper", budget_tokens=8)
+
+        self.assertEqual([candidate.start for candidate in result.selected], [4, 0])
+        self.assertEqual(
+            [candidate.metadata["provenance"] for candidate in result.selected],
+            ["source.py:2", "source.py:1"],
+        )
 
     def test_ranking_is_stable_and_top_k_is_validated(self):
         first = CandidateSpan("b.md", 0, 2, 2, "b", ("lexical_anchor",), {}, 1.0)

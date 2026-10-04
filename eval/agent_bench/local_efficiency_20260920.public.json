@@ -1,0 +1,567 @@
+{
+  "date": "2026-09-20",
+  "decision": "Retain the production response and retrieval behavior. Retain benchmark integrity fixes. Reject all seven runtime candidates; equal-or-better answers with fewer cumulative tokens was not established.",
+  "corpus": {
+    "name": "nushell",
+    "revision": "76ba59d425c25b74ac5c9257ccfb36ddc0d352ed"
+  },
+  "model": {
+    "id": "qwen/qwen3.5-9b",
+    "quantization": "Q4_K_M",
+    "loaded_context_length": 32768,
+    "endpoint": "http://127.0.0.1:1234/v1",
+    "hosted_benchmark_inference_requests": 0
+  },
+  "scope": {
+    "trajectories_after_initial_timeout": 64,
+    "runtime_candidates": 7,
+    "primary_questions": {
+      "Q1": "After you run a command from a nushell plugin, the plugin's process is kept alive for reuse rather than shut down immediately. What decides when an idle plugin finally gets stopped, and which code actually stops the process?",
+      "Q2": "When a user presses Ctrl-C while a long-running nushell pipeline is producing output, how does the code that is running actually notice and stop? What does it check, and where does that shared state live?"
+    },
+    "holdout_questions": {
+      "Q2": "When a Nushell error updates the last command's exit status, how does it choose between an external program's exit status and a shell error's status, and where does it store the chosen value?",
+      "Q1": "How does Nushell prevent a recursive user-defined command from exhausting the native call stack? Identify where the recursion depth is carried and incremented, which configurable limit is checked, and what happens when the limit is exceeded in its evaluators."
+    },
+    "initial_timeout": "control.json: initial generation attempt with 233728 loaded context; excluded from comparisons.",
+    "user_reported_haiku_reference": "Accepted as user-provided evidence. The exact honest 24-run raw artifact was not located; these local runs do not reproduce it."
+  },
+  "methods": {
+    "pilots": "Two repetitions per question/arm, temperature 0.2, seed 20260920 + zero-based repetition, 18 turns, max output 1600, reasoning_effort none. Actual MCP list_tools/call_tool; full text histories sent; tool errors prefixed Tool error in this throwaway driver.",
+    "reasoning_ablation": "One repetition per question/arm, reasoning_effort low, max output 4096, thinking returned in reasoning_content and retained. One candidate run showed decreasing backend prompt usage; not valid evidence of retained full history.",
+    "final_verification": "Fresh interleaved actual production MCP runs using corrected efficiency.py: two repetitions per question/arm, 18 turns, max output 1200, reasoning disabled, backend-default sampling. Schedule seed 20260920 is not a decoding seed.",
+    "final_holdout": "One repetition per question/arm through compare_sources.py with shared current harness and frozen sources. The variant named optimized is retained production PASR, not a released optimization.",
+    "tokens": "Total logical provider-reported input plus output. cl100k_base observation estimates in raw pilots are separate and are not Qwen billing/token counts.",
+    "semantic_review": "Arm labels and token totals hidden from reviewers; tool names still visible. Model-assisted review against pre-existing five-part causal criteria and actual source, not independent human validation. Complete-grounded requires every criterion; incomplete does not mean wholly incorrect."
+  },
+  "findings": {
+    "additional_first_request_tokens_with_original_mcp_tools": 2335,
+    "production_adapter": "Original adapter duplicated tool implementation/schema and reserialized replies; shared 12000-character cutoff made it differ from production. Current adapter calls actual server and preserves all text.",
+    "source_budget": "Selector source budget is not a bound on metadata, schema, repeated history, or output tokens.",
+    "source_enrichment": "Top two hits can duplicate one definition; even distinct files can omit a causal consumer. Automatic first-hit body delivery did not produce a win.",
+    "smaller_toolkit": "The four-tool companion prototype completed 1/4 and made zero PASR tool calls; fewer advertised tools did not restore reliable completion.",
+    "quality": "All seven final nonempty answers passed keyword localization, but none covered every causal criterion. A baseline plugin answer falsely said config/disable changes reset last_update; a PASR plugin answer invented extra delay and a foreground-guard shutdown mechanism.",
+    "v0_2": "Tag c6736a489828467d79165c154087e7e9382b5aa3 had four tools and assumed supplied source scope; it also duplicated source in context/spans. No matched end-to-end experiment here establishes that version as better. The companion pilot is not an exact v0.2 reproduction."
+  },
+  "pilot_results": {
+    "baseline32": {
+      "n": 4,
+      "completed": 4,
+      "keyword_localized": 4,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 268164,
+      "median_turns": 7.5,
+      "backend_prompt_decreased_runs": 0,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 228099,
+          "median_total": 114049.5
+        },
+        "Q2": {
+          "total_tokens": 40065,
+          "median_total": 20032.5
+        }
+      }
+    },
+    "control32": {
+      "n": 4,
+      "completed": 4,
+      "keyword_localized": 4,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 448413,
+      "median_turns": 9.5,
+      "backend_prompt_decreased_runs": 0,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 219815,
+          "median_total": 109907.5
+        },
+        "Q2": {
+          "total_tokens": 228598,
+          "median_total": 114299.0
+        }
+      }
+    },
+    "source_first32": {
+      "n": 4,
+      "completed": 1,
+      "keyword_localized": 1,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 454852,
+      "median_turns": 18.0,
+      "backend_prompt_decreased_runs": 0,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 212715,
+          "median_total": 106357.5
+        },
+        "Q2": {
+          "total_tokens": 242137,
+          "median_total": 121068.5
+        }
+      }
+    },
+    "guided32": {
+      "n": 4,
+      "completed": 1,
+      "keyword_localized": 1,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 568430,
+      "median_turns": 18.0,
+      "backend_prompt_decreased_runs": 0,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 290170,
+          "median_total": 145085.0
+        },
+        "Q2": {
+          "total_tokens": 278260,
+          "median_total": 139130.0
+        }
+      }
+    },
+    "payload_only32": {
+      "n": 4,
+      "completed": 1,
+      "keyword_localized": 1,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 606726,
+      "median_turns": 18.0,
+      "backend_prompt_decreased_runs": 0,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 311785,
+          "median_total": 155892.5
+        },
+        "Q2": {
+          "total_tokens": 294941,
+          "median_total": 147470.5
+        }
+      }
+    },
+    "compact_audit32": {
+      "n": 4,
+      "completed": 3,
+      "keyword_localized": 3,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 682763,
+      "median_turns": 11.5,
+      "backend_prompt_decreased_runs": 0,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 440301,
+          "median_total": 220150.5
+        },
+        "Q2": {
+          "total_tokens": 242462,
+          "median_total": 121231.0
+        }
+      }
+    },
+    "enriched32": {
+      "n": 4,
+      "completed": 2,
+      "keyword_localized": 2,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 558611,
+      "median_turns": 15.5,
+      "backend_prompt_decreased_runs": 0,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 191684,
+          "median_total": 95842.0
+        },
+        "Q2": {
+          "total_tokens": 366927,
+          "median_total": 183463.5
+        }
+      }
+    },
+    "compact_signals32": {
+      "n": 4,
+      "completed": 4,
+      "keyword_localized": 4,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 487692,
+      "median_turns": 10.5,
+      "backend_prompt_decreased_runs": 0,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 295303,
+          "median_total": 147651.5
+        },
+        "Q2": {
+          "total_tokens": 192389,
+          "median_total": 96194.5
+        }
+      }
+    },
+    "holdout_baseline": {
+      "n": 4,
+      "completed": 2,
+      "keyword_localized": 2,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 293487,
+      "median_turns": 17.5,
+      "backend_prompt_decreased_runs": 0,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 114342,
+          "median_total": 57171.0
+        },
+        "Q2": {
+          "total_tokens": 179145,
+          "median_total": 89572.5
+        }
+      }
+    },
+    "holdout_control": {
+      "n": 4,
+      "completed": 3,
+      "keyword_localized": 3,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 674971,
+      "median_turns": 15.0,
+      "backend_prompt_decreased_runs": 0,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 293194,
+          "median_total": 146597.0
+        },
+        "Q2": {
+          "total_tokens": 381777,
+          "median_total": 190888.5
+        }
+      }
+    },
+    "holdout_source_first": {
+      "n": 4,
+      "completed": 1,
+      "keyword_localized": 1,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 578765,
+      "median_turns": 18.0,
+      "backend_prompt_decreased_runs": 0,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 230190,
+          "median_total": 115095.0
+        },
+        "Q2": {
+          "total_tokens": 348575,
+          "median_total": 174287.5
+        }
+      }
+    },
+    "reasoning_baseline": {
+      "n": 2,
+      "completed": 2,
+      "keyword_localized": 2,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 59316,
+      "median_turns": 7.0,
+      "backend_prompt_decreased_runs": 0,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 27766,
+          "median_total": 27766
+        },
+        "Q2": {
+          "total_tokens": 31550,
+          "median_total": 31550
+        }
+      }
+    },
+    "reasoning_guided": {
+      "n": 2,
+      "completed": 1,
+      "keyword_localized": 1,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 312420,
+      "median_turns": 11.5,
+      "backend_prompt_decreased_runs": 1,
+      "per_question": {
+        "Q1": {
+          "total_tokens": 43462,
+          "median_total": 43462
+        },
+        "Q2": {
+          "total_tokens": 268958,
+          "median_total": 268958
+        }
+      }
+    },
+    "companion32": {
+      "n": 4,
+      "completed": 1,
+      "keyword_localized": 1,
+      "semantic_accuracy": null,
+      "reported_total_tokens": 726184,
+      "median_turns": 18.0,
+      "pasr_tool_calls": 0,
+      "backend_prompt_decreased_runs": 0
+    }
+  },
+  "final_production": {
+    "summary": {
+      "Q1_baseline": {
+        "n": 2,
+        "localized": 2,
+        "semantic_accuracy": null,
+        "failed_generations": 0,
+        "median_input": 46209.5,
+        "median_output": 662.0,
+        "median_total": 46871.5,
+        "median_tool_calls": 7.0,
+        "median_model_turns": 7.5,
+        "median_seconds": 9.0,
+        "total_tokens_per_localized": 46871.5
+      },
+      "Q1_pasr": {
+        "n": 2,
+        "localized": 2,
+        "semantic_accuracy": null,
+        "failed_generations": 0,
+        "median_input": 80263.0,
+        "median_output": 771.5,
+        "median_total": 81034.5,
+        "median_tool_calls": 7.5,
+        "median_model_turns": 8.5,
+        "median_seconds": 12.2,
+        "total_tokens_per_localized": 81034.5
+      },
+      "Q2_baseline": {
+        "n": 2,
+        "localized": 2,
+        "semantic_accuracy": null,
+        "failed_generations": 0,
+        "median_input": 84812.0,
+        "median_output": 1115.0,
+        "median_total": 85927.0,
+        "median_tool_calls": 14.5,
+        "median_model_turns": 15.5,
+        "median_seconds": 12.6,
+        "total_tokens_per_localized": 85927.0
+      },
+      "Q2_pasr": {
+        "n": 2,
+        "localized": 1,
+        "semantic_accuracy": null,
+        "failed_generations": 1,
+        "median_input": 187841.5,
+        "median_output": 1361.0,
+        "median_total": 189202.5,
+        "median_tool_calls": 16.0,
+        "median_model_turns": 16.5,
+        "median_seconds": 23.6,
+        "total_tokens_per_localized": 378405.0
+      }
+    },
+    "total_tokens_by_arm": {
+      "baseline": 265597,
+      "pasr": 540474
+    },
+    "all_five_semantic_criteria_covered": {
+      "baseline": "0/4",
+      "pasr": "0/4"
+    }
+  },
+  "final_holdout": {
+    "summary": {
+      "Q1_baseline": {
+        "n": 1,
+        "localized": 1,
+        "semantic_accuracy": null,
+        "median_input": 20990,
+        "median_output": 545,
+        "median_total": 21535,
+        "median_tool_calls": 6,
+        "median_model_turns": 7,
+        "total_tokens_per_localized": 21535.0,
+        "backend_errors": 0,
+        "turn_limit_failures": 0,
+        "empty_answer_failures": 0,
+        "length_truncated_failures": 0
+      },
+      "Q1_optimized": {
+        "n": 1,
+        "localized": 1,
+        "semantic_accuracy": null,
+        "median_input": 126217,
+        "median_output": 1456,
+        "median_total": 127673,
+        "median_tool_calls": 11,
+        "median_model_turns": 12,
+        "total_tokens_per_localized": 127673.0,
+        "backend_errors": 0,
+        "turn_limit_failures": 0,
+        "empty_answer_failures": 0,
+        "length_truncated_failures": 0
+      },
+      "Q2_baseline": {
+        "n": 1,
+        "localized": 0,
+        "semantic_accuracy": null,
+        "median_input": 95704,
+        "median_output": 1193,
+        "median_total": 96897,
+        "median_tool_calls": 18,
+        "median_model_turns": 18,
+        "total_tokens_per_localized": null,
+        "backend_errors": 0,
+        "turn_limit_failures": 1,
+        "empty_answer_failures": 0,
+        "length_truncated_failures": 0
+      },
+      "Q2_optimized": {
+        "n": 1,
+        "localized": 0,
+        "semantic_accuracy": null,
+        "median_input": 280738,
+        "median_output": 1242,
+        "median_total": 281980,
+        "median_tool_calls": 18,
+        "median_model_turns": 18,
+        "total_tokens_per_localized": null,
+        "backend_errors": 0,
+        "turn_limit_failures": 1,
+        "empty_answer_failures": 0,
+        "length_truncated_failures": 0
+      }
+    },
+    "semantic_accuracy": null
+  },
+  "semantic_review": {
+    "answer_id_mapping": {
+      "answer-7": {
+        "question": "Q1",
+        "arm": "pasr",
+        "rep": 2
+      },
+      "answer-3": {
+        "question": "Q1",
+        "arm": "baseline",
+        "rep": 1
+      },
+      "answer-6": {
+        "question": "Q1",
+        "arm": "baseline",
+        "rep": 2
+      },
+      "answer-2": {
+        "question": "Q1",
+        "arm": "pasr",
+        "rep": 1
+      },
+      "answer-8": {
+        "question": "Q2",
+        "arm": "pasr",
+        "rep": 2
+      },
+      "answer-1": {
+        "question": "Q2",
+        "arm": "pasr",
+        "rep": 1
+      },
+      "answer-4": {
+        "question": "Q2",
+        "arm": "baseline",
+        "rep": 1
+      },
+      "answer-5": {
+        "question": "Q2",
+        "arm": "baseline",
+        "rep": 2
+      }
+    },
+    "reviews": {
+      "Q1": "Q1 review: all four answers are incomplete under the full rubric; answer-3 and answer-2 additionally contain material factual errors. This is a model-assisted source review, not independent human validation. No files were changed and no tests, builds, lint, formatting, or inference were run.\n\nSHARED REFERENCE FACTS\nPaths below are relative to D:/kodlama/bench_repos/nushell. Criterion IDs Q1.1–Q1.5 correspond, in order, to the five Q1 rubric entries. A criterion's met flag means the whole criterion is covered; partial correct coverage is identified in evidence rather than treated as a factual error.\n\nQ1.1 — Configuration: crates/nu-protocol/src/config/plugin_gc.rs:7-19 selects a named plugin configuration or the default; :47-60 defines enabled=true and stop_after=10_000_000_000 ns by default. The configured stop_after replaces the default duration; there is no additional delay field. Inactivity is not process age.\nQ1.2 — Usage: crates/nu-plugin-engine/src/interface/mod.rs:797-806 increments a GC lock when starting a call; :539-545 releases it on a successful call response. Output streams acquire/release separate usage locks at :205-235, including response stream registration at :519-529. In crates/nu-plugin-engine/src/gc.rs:113-127, a timeout requires locks<=0, no plugin disable override, enabled config, and an existing last_update. Only AddLocks changes last_update (:141-152). SetConfig only replaces config (:133-135), and SetDisabled only changes disabled (:154-156); neither resets the activity timestamp.\nQ1.3 — Scheduling: gc.rs:113-127 calculates max(stop_after - elapsed_since_last_update, 0). The worker waits with recv_timeout when a timeout exists, otherwise recv, and recalculates after processing messages (:169-194); it calls plugin.stop when the remaining timeout reaches zero (:196-213). This is deadline-driven, not a periodic configurable polling interval. Exited DOES cause stop: :161-163 returns Some(true), :183-188 sets always_stop, and :198-207 invokes plugin.stop if the weak reference upgrades. StopTracking is the distinct message that exits without stopping (:157-159,189-191). The engine reader emits Exited when its consume loop ends, at interface/mod.rs:447-450.\nQ1.4 — Persistent shutdown: crates/nu-plugin-engine/src/persistent.rs:276-278 implements RegisteredPlugin::stop by calling stop_internal(false). The latter stops the old GC's tracking and clears mutable.running (:236-244), dropping RunningPlugin, whose fields are an interface and GC handle (:53-59). It does not call Child.kill. The persistent interface is what enables reuse (:91-93,224), not a foreground guard.\nQ1.5 — Actual graceful-exit chain: the last engine PluginInterface drop calls goodbye at crates/nu-plugin-engine/src/interface/mod.rs:1219-1232; goodbye writes PluginInput::Goodbye and flushes (:660-668). The plugin-side dispatch explicitly consumes Goodbye by dropping its call sender at crates/nu-plugin/src/plugin/interface/mod.rs:339-343. The call_receiver loop then ends, scoped call workers finish, and serve_plugin_io returns (:575-653 in crates/nu-plugin/src/plugin/mod.rs); normal serve_plugin success returns at :367-376. Engine cleanup calls child.wait at crates/nu-plugin-engine/src/init.rs:107-139, via after_close after the reader/manager ends (:175-182), which waits/reaps rather than kills. Dropping a Rust std::process::Child handle does not itself kill or automatically wait for the process: https://doc.rust-lang.org/std/process/struct.Child.html. Therefore a summary saying interface disposal allows natural exit is incomplete without the protocol chain, but is not itself a claim that Child destruction kills.\n\nRECORD answer-7\ncriteria:\n- Q1.1 met=false — Correctly identifies configured stop_after and idle time, but omits the 10-second default and named-plugin/default selection.\n- Q1.2 met=false — Correctly mentions locks<=0 and GC disable gating, but does not explain active calls/output-stream locks or that lock changes update last_update.\n- Q1.3 met=true — Describes the GC channel, remaining/saturating idle timeout, waiting for expiry, and plugin.stop. It does not name recv_timeout, but the described causal mechanism matches it; no keyword requirement was imposed.\n- Q1.4 met=false — Correct stop -> stop_internal(false) -> RunningPlugin/interface disposal, explicitly not an OS kill; omits stopping the old GC's tracking.\n- Q1.5 met=false — Says the interface's references are released and the process exits naturally, but does not trace Goodbye/flush, plugin call-channel closure, serve completion, or child.wait.\ncritical_errors: none. Several line references are imprecise (the drop assignment is persistent.rs:244; timeout arithmetic is gc.rs:119-121), but the associated core claims are supported elsewhere in the cited files.\ncomplete_grounded=false.\nverdict: Mostly correct outline with substantial lifecycle and policy omissions, not a complete causal answer. Delivered select_context observations actually contain the relevant gc.rs deadline/stop path and persistent.rs disposal/stop implementation; they do not deliver the missing Goodbye/serve/reaping chain.\n\nRECORD answer-3\ncriteria:\n- Q1.1 met=false — Correct configurable idle threshold, but omits the default duration and named overrides.\n- Q1.2 met=false — Correct normal no-lock/enable/override gates and lock activity, but falsely says config and disable changes reset the timeout; also omits output-stream protection.\n- Q1.3 met=false — Correctly identifies timeout and Exited as routes to plugin.stop, but omits the receive-wait/recompute mechanism. Its Exited statement is TRUE, not a critical error.\n- Q1.4 met=false — Correct stop_internal(false) and RunningPlugin disposal, but omits stop_tracking and does not fully distinguish the interface disposal from the downstream shutdown mechanism.\n- Q1.5 met=false — Natural-exit summary only; Goodbye/flush, channel closure, serve completion, and reaping are absent.\ncritical_errors:\n- Claim: GC config changes and a plugin disabling itself reset the inactivity timeout. Correction: SetConfig only assigns self.config (crates/nu-plugin-engine/src/gc.rs:133-135); SetDisabled only assigns self.disabled (:154-156); AddLocks alone refreshes last_update (:141-152). Re-enabling/configuring GC can therefore use the already-elapsed idle duration rather than starting a fresh idle period.\ncomplete_grounded=false.\nverdict: Incomplete and materially wrong about what resets idle time. The delivered read_file observation includes gc.rs:113-213, including the exact branches contradicting the reset claim; it also supports the correct Exited -> stop claim and the persistent shutdown entry point.\n\nRECORD answer-6\ncriteria:\n- Q1.1 met=false — Correct enabled default, units, 10-second duration, and idle rather than launch-age policy; omits named-plugin overrides/default selection.\n- Q1.2 met=false — Mentions lock/decrement-based activity but omits no-active-lock gating, plugin disable override, and output streams as usage locks.\n- Q1.3 met=false — Correctly identifies the GC's idle-duration calculation and expiry -> plugin.stop, but does not describe its channel wait and recomputation.\n- Q1.4 met=false — Correct stop_internal/clearing RunningPlugin and explicit no-kill observation, but omits stop_tracking and the false reset argument.\n- Q1.5 met=false — Entire Goodbye/flush -> call channel -> serve completion -> wait/reaping mechanism is omitted.\ncritical_errors: none. Its generic 'if no activity occurs' description is incomplete about gating, not an explicit assertion that a still-locked plugin must be stopped.\ncomplete_grounded=false.\nverdict: Correct but abbreviated policy and disposal explanation; cannot count as a complete grounded answer. Delivered observations include gc.rs, persistent.rs and the full plugin_gc.rs configuration/default code. The missing named-override detail was available, but the final answer did not use it.\n\nRECORD answer-2\ncriteria:\n- Q1.1 met=false — Correct configured timeout and 10-second default, but invents an additional configured delay and omits named overrides/default selection.\n- Q1.2 met=false — Correctly describes no active locks and both disabling controls, but omits output-stream locks and the lock-change -> last_update mechanism.\n- Q1.3 met=false — Correct next_timeout/elapsed-time/stop outline, but the claimed configurable checking intervals misdescribe the deadline-driven receive loop.\n- Q1.4 met=false — Correct persistent running=None/interface-disposal entry point, but omits stop_internal(false)/stop_tracking and adds an incorrect foreground-guard causal explanation.\n- Q1.5 met=false — Does not explain Goodbye/flush, receiver closure, serve completion or child.wait; substitutes an incorrect foreground-guard explanation.\ncritical_errors:\n- Claim: stop_after is supplemented by 'any configured delay' and GC checks at configurable intervals. Correction: PluginGcConfig contains only enabled and stop_after (crates/nu-protocol/src/config/plugin_gc.rs:47-60); gc.rs:113-127 computes the remaining configured idle duration, and :169-194 waits for that deadline or messages, then recomputes. There is no second delay or polling-interval configuration.\n- Claim: ForegroundGuard keeps the plugin alive for reuse and dropping it after the idle timeout causes GC shutdown. Correction: persistent reuse comes from the retained PluginInterface (crates/nu-plugin-engine/src/persistent.rs:91-93,224), and timeout shutdown runs from gc.rs:196-213 into persistent.rs:236-244. ForegroundGuard handles terminal process-group ownership; its drop only resets that ownership (crates/nu-system/src/foreground.rs:345-365,466-478). PluginProcess::exit_foreground drops the guard independently of GC at crates/nu-plugin-engine/src/process.rs:80-87. It neither requests GC stop nor kills the process.\ncomplete_grounded=false.\nverdict: Incomplete and materially misleading about both timing and the mechanism that retains/stops plugins. Delivered observations include configuration, gc.rs and persistent.rs, and foreground.rs:350-450 explicitly exposes the guard's reset-only Drop, so the foreground and additional-delay claims are not supported by the evidence actually delivered.",
+      "Q2": "Audit scope: model-assisted review of the four final answers against actual Nushell source; no arm labels inferred, files changed, inference run, or tests/builds executed. Criterion IDs Q2.1–Q2.5 follow rubric order. A met=true judgment recognizes equivalent causal explanations, not mandatory literal keywords; met=false can indicate an omission rather than a contradiction.\n\nSHARED REFERENCE FACTS\nQ2.1 — Signals derives Clone and contains Option<Arc<AtomicBool>>; cloning shares the atomic allocation, not its current boolean value (crates/nu-protocol/src/pipeline/signals.rs:12–31). EngineState owns Signals and exposes/sets it (crates/nu-protocol/src/engine/engine_state.rs:109,286–288,316–318).\nQ2.2 — ctrlc_protection creates AtomicBool(false), gives EngineState a cloned Arc, and moves the original Arc into the registered callback; Nushell's callback stores true with Relaxed ordering, then runs SignalAction::Interrupt handlers (src/signals.rs:7–33). This callback is not a global Rust unwinder. Separately, one registered handler kills background jobs (src/signals.rs:13–25), so the cooperative explanation should concern the running pipeline's flag checkpoints, not deny every other signal effect.\nQ2.3 — interrupted() atomically loads with Relaxed ordering and returns false for an absent flag; check() returns ShellError::Interrupted or Ok(()). The caller must propagate/handle the error or branch on the boolean (crates/nu-protocol/src/pipeline/signals.rs:43–74).\nQ2.4 — A concrete producer, generate, passes engine_state.signals().clone() into into_pipeline_data (crates/nu-command/src/generators/generate.rs:126–146). The conversion creates ListStream with those Signals (crates/nu-protocol/src/pipeline/pipeline_data.rs:1081–1103); ListStream::new installs InterruptIter (crates/nu-protocol/src/pipeline/list_stream.rs:22–34). InterruptIter::next returns None when interrupted, otherwise invokes its underlying iterator's next (same file:166–190). This is an actual termination branch, not merely an interrupt-related method name.\nQ2.5 — Reader::read propagates a checked interrupt through ShellErrorBridge before calling the underlying read (crates/nu-protocol/src/pipeline/byte_stream.rs:837–842). write_all_and_flush checks before each 8192-byte write and propagates failure (crates/nu-protocol/src/pipeline/pipeline_data.rs:924–957); eval_call checks before evaluating a command (crates/nu-engine/src/eval.rs:343–350). The flag itself does not preempt an underlying blocked read/write or an unchecked loop: control must reach another check. Likewise, InterruptIter checks before entering the underlying next, not continuously while next executes.\n\nRECORD answer-8\ncriteria:\n- Q2.1 met=false: No final answer; no shared-state explanation delivered.\n- Q2.2 met=false: No final writer/handler explanation delivered.\n- Q2.3 met=false: No final checking-semantics explanation delivered.\n- Q2.4 met=false: No final producing-stream/None termination explanation delivered.\n- Q2.5 met=false: No final checkpoint/cooperative-limit explanation delivered.\ncritical_errors: none; failure is absence of an answer, not a factual assertion.\ncomplete_grounded=false.\nverdict: Turn-limit answer fails all criteria; tool observations cannot substitute for the missing final response.\n\nRECORD answer-1\ncriteria:\n- Q2.1 met=true: Identifies Option<Arc<AtomicBool>>, allocation in ctrlc_protection, and access through engine_state.signals(); this correctly identifies the shared state. Clone-sharing could be explained more explicitly.\n- Q2.2 met=true: Explains allocation plus the handler's store(true, Relaxed) and SignalAction::Interrupt dispatch. It does not state the false initializer explicitly, but the writer/sharing mechanism is correctly described rather than replaced with forced cancellation.\n- Q2.3 met=true: Gives atomic-load behavior, boolean interrupted(), ShellError::Interrupted from check(), and the propagation form check(...)?; these match the implementation.\n- Q2.4 met=false: Omits a producer-to-ListStream clone handoff and the actual InterruptIter::next -> None branch. Naming job_recv/chunk_by checks is not that end-to-end mechanism.\n- Q2.5 met=false: Cites real checks, including run_external's argument-glob loop (crates/nu-command/src/system/run_external.rs:446–460), but never explains the cooperative limitation for blocked operations or unchecked code.\ncritical_errors: none. Minor precision corrections: job_recv::recv_without_time_limit is a receive loop returning Result, not an iterator (crates/nu-command/src/experimental/job_recv.rs:129–143); the Ctrl-C callback registration is at src/signals.rs:29, not :32; the check implementation is pipeline/signals.rs:47–59 while :70–74 implements interrupted(). These do not reverse its central mechanism.\nevidence_delivery: Observations include src/signals.rs context, the Signals implementation, and concrete check-call evidence; they do not supply a final causal explanation of InterruptIter termination or cooperative limits.\ncomplete_grounded=false.\nverdict: Substantially correct account of shared flag, writer, and polling API, but incomplete about how producing iteration actually ends and why stopping is cooperative.\n\nRECORD answer-4\ncriteria:\n- Q2.1 met=true: Correctly names the optional shared Arc flag, EngineState, and propagation into streams. Explicit clone semantics are underexplained but it identifies shared—not copied—state.\n- Q2.2 met=false: Correctly describes the handler storing true, but omits allocation/installation of the same flag and dispatch of registered interrupt handlers.\n- Q2.3 met=false: Explains that check can return an error and that interrupted is used by the iterator, but does not explain the atomic load or identify ShellError::Interrupted. Partial correct coverage, not a contrary claim.\n- Q2.4 met=false: Correctly explains InterruptIter::next returning None, with concrete source location. However, it does not trace any producing stream receiving cloned EngineState Signals; the generic assertion that state is passed through pipeline types leaves that half of the criterion missing.\n- Q2.5 met=false: Gives a real checked Reader::read checkpoint, but never states that blocked reads/writes and unchecked loops are not preempted.\ncritical_errors: none under a narrow reading of its examples. Two corrections are important: byte_stream.rs:614 and :631 belong to ByteStream::into_bytes, not a Read::read implementation (crates/nu-protocol/src/pipeline/byte_stream.rs:605–640); only :837–842 is Reader's Read implementation. Also its summary 'returns an error (for byte streams)' must not be read as universal: byte-stream Lines::next, SplitRead::next, and Chunks::next return None on interruption (same file:885–909,938–950,1058–1064), rather than always yielding an error. The answer's specific Reader example is correct; the blanket interpretation would be false.\nevidence_delivery: Observations include ListStream and the relevant into_bytes, Reader, Lines, and SplitRead code, so the core None branch and checked-read example were available rather than inferred solely from method names.\ncomplete_grounded=false.\nverdict: Best explicit explanation here of InterruptIter's actual stopping branch, but incomplete on flag installation/dispatch, atomic-check semantics, producer handoff, and cooperative limits; its byte-stream wording needs qualification.\n\nRECORD answer-5\ncriteria:\n- Q2.1 met=true: Correctly links the shared Arc flag to EngineState installation and cloned Signals in consumers. It does not mention Option explicitly, but that omission does not change the described connected-flag mechanism.\n- Q2.2 met=false: Identifies setting true and the EngineState installation, but omits the false initializer and registered SignalAction::Interrupt dispatch. More precisely, ctrlc invokes Nushell's callback; the Nushell closure writes the flag (src/signals.rs:29–32), rather than the crate independently knowing that flag.\n- Q2.3 met=true: Correctly states interrupted() loads with Relaxed ordering and check(span)? returns ShellError::Interrupted or succeeds.\n- Q2.4 met=false: Gives clone access and names InterruptIter/ListStream checks, but never says the interrupted branch returns None instead of requesting the next underlying value. 'Checks before each yield' does not establish what the check causes. It also lacks a concrete producer-to-wrapper construction trace.\n- Q2.5 met=false: Correctly references real iterator/par_each checkpoints and the checked scanning loop in span.rs:294–317, but provides no cooperative-limit explanation. The span checkpoint is text scanning, not itself a pipeline output I/O checkpoint.\ncritical_errors: none that unambiguously overturn the mechanism. Ownership wording should be corrected: ByteStream itself has signals: Signals (crates/nu-protocol/src/pipeline/byte_stream.rs:191–195); Chunks is only one consuming adapter with its own Signals (same file:961–977), alongside Reader/Lines/SplitRead. ListStream exposes iteration via IntoIter, while the interrupt branch is in InterruptIter::next, not an Iterator implementation directly on ListStream (crates/nu-protocol/src/pipeline/list_stream.rs:138–163,177–186).\nevidence_delivery: Observations explicitly delivered InterruptIter::next including the None branch and the Lines/SplitRead/Chunks branches; the final response nonetheless omitted their termination result. Span's propagated-error checkpoint was also delivered.\ncomplete_grounded=false.\nverdict: Correct shared-state and polling-API account with real source grounding, but listing checks does not fully explain termination, and it omits handler dispatch and non-preemption limits.\n\nOverall: no answer meets every Q2 rubric criterion. The principal failures are omissions, not confidently established critical factual contradictions; small ownership/location/generalization issues are called out separately so they are not confused with invented mechanisms."
+    }
+  },
+  "verification": {
+    "pytest": "302 passed, 1 skipped: optional sentence-transformers dependency absent",
+    "focused": "55 passed after restoring production behavior and adding benchmark-integrity regressions",
+    "ruff": "Changed Python files checked and formatted; no production renderer retained."
+  },
+  "sources": [
+    {
+      "url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+      "lesson": "Optimize useful context and complete workflows; measure real task performance and total tokens, not payload size alone."
+    },
+    {
+      "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+      "lesson": "Keep high-signal context and use just-in-time retrieval; context management is distinct from source selection."
+    },
+    {
+      "url": "https://aider.chat/docs/repomap.html",
+      "lesson": "Budget relevant repository navigation, then retrieve needed source."
+    },
+    {
+      "url": "https://sourcegraph.com/blog/how-cody-understands-your-codebase",
+      "lesson": "Sourcegraph documented adapted-BM25 lexical retrieval and global snippet ranking; embeddings are not universally required."
+    }
+  ],
+  "limitations": [
+    "One local 9B model; four questions in one repository; small sequentially developed pilots, not a broad benchmark.",
+    "Do not pool configurations with different output/reasoning settings as one experiment.",
+    "No claim that smaller payloads or fewer tools are universally worse. These candidates failed their local acceptance checks.",
+    "Baseline directory grep only searches Rust with 40 total hits and 5 per file; findings do not establish superiority against other native toolkits.",
+    "No Pi/TUI integration benchmark was run; this exercises the Python loop against actual MCP schemas/text.",
+    "Zero fully complete rubric answers prevents a meaningful tokens-per-fully-correct ratio.",
+    "Raw artifacts are local and git-ignored; this committed summary retains metrics, source references, review findings and hashes."
+  ],
+  "raw_artifacts_directory": "eval/agent_bench/results/local_20260920",
+  "raw_artifact_sha256": {
+    "baseline32.json": "f8bf22a6537003bb29a186108f811a2b755960a2151ce981aa5ffaf2699bd3a4",
+    "compact_audit32.json": "8ee47d38dc7aba0a3a3a2686c02aaf617e0431fbe051390e275d6b4963a5e45a",
+    "compact_signals32.json": "c2f855fde61e94c04afdfdeae64b157038799af3a24dbf369b71d254ff8e7242",
+    "companion32.json": "7d723af7ee0c7c59154e5e6cf4b913e40a80695dd68c8fa2ba990975c83a6ef7",
+    "control.json": "9bc289ec7847f8c1825326a29eebbbc94b06b31e7704844a46c8bcfc1e023992",
+    "control32.json": "5aa98c2275585e1f0e048d76c58fd0fc832ed4abf31db3e3e0c0f325b62c5ad8",
+    "enriched32.json": "19f6e10b7806e3f1a14fdeba6a757f3ce87f1e650f0ef75a6542422b0038939e",
+    "final_holdout.json": "0ba120649e50ebb0a858fe79c7114ac9f767dc1ebb30ee8231504137616d8bfc",
+    "final_production.json": "9922953cf26187e53ddea3f5735f51f118ac9c6d5720e180eee1f92b3215b755",
+    "guided32.json": "aa14a1b334d6f2002de8b1d0adb045513494ef4310deb0bfa4e924b0602ce438",
+    "holdout_baseline.json": "cf3db0db437e710e0b8ba3e45d4d00408299db8c9dcade36be98265d17d4744a",
+    "holdout_control.json": "6a735c20a08119a7b0c8fccf44b20e3518ab174b14ee29496bd0f62d0513e83f",
+    "holdout_questions.json": "771f57028d88c487f12227db4e44a72c1d416de504900b30bc957a3231bfbd7e",
+    "holdout_source_first.json": "4182d90497926f523191a72d15c1dab4315cb1239301b896dcbea3afe39f9a64",
+    "model_configuration.json": "44a769e41b72859fe25d9b31047b614994ccebf5b45af6febcbb14b27f7195b3",
+    "payload_only32.json": "b529baad71bd056cd2258f1fca8f7ee2860da36c284db9b4a740897f274f5105",
+    "reasoning_baseline.json": "2a9169f132a25604fadee2a937f69d44ac8c0013dcd6f2725fcaf28d2e3d25db",
+    "reasoning_guided.json": "d2f4e30d344e16d28055fd8482adf94078110fd72c7c075597987a5b477af18e",
+    "semantic_review.json": "2c84dac44f314f050cb8a236e23cf622be6b830ba9e972704441bc2e687a16f3",
+    "source_first32.json": "6dff9de8a9141085ed85f591108eccb922999c5c2e741812b069dcbcbc4c8388",
+    "source_snapshots.zip": "f6f89e5a0a2d71018dcb4dffb94812386e37b0f26cedd7c4aaba7dd1bae7e72b"
+  },
+  "snapshot_prefixes": {
+    "control": "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-control-elup_0tu",
+    "source_first": "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-source-first-qy1veb75",
+    "guided": "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-guided-source-_2c9ouwg",
+    "payload_only": "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-payload-only-a7visa3n",
+    "compact_audit": "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-compact-audit-981vwlhx",
+    "enriched": "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-source-enriched-xw3yk9rf",
+    "compact_signals": "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-compact-signals-s8c1ycck",
+    "companion": "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-companion-nd4oe9w6",
+    "verification": "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-verified-harness-17p35yel",
+    "holdout_harness": "<USERPROFILE>\\AppData\\Local\\Temp\\pasr-holdout-harness-n5z_tp3x"
+  },
+  "_publication": {
+    "source_record": "local_efficiency_20260920.json",
+    "source_sha256": "005caf9723776bb6e377a0bd8ed8001ffc177b5e42bd679cab1fed5ba7e7f596",
+    "redactions": "Only local Windows user-profile prefixes and hostname identifiers are replaced. Original frozen record remains unchanged and is not published. No metrics, answers, judgments or experimental outcomes were recomputed.",
+    "redacted_fields": [
+      "snapshot_prefixes/control",
+      "snapshot_prefixes/source_first",
+      "snapshot_prefixes/guided",
+      "snapshot_prefixes/payload_only",
+      "snapshot_prefixes/compact_audit",
+      "snapshot_prefixes/enriched",
+      "snapshot_prefixes/compact_signals",
+      "snapshot_prefixes/companion",
+      "snapshot_prefixes/verification",
+      "snapshot_prefixes/holdout_harness"
+    ]
+  }
+}

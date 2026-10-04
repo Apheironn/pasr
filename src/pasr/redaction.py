@@ -1,8 +1,9 @@
-"""Redaction hook applied to span text before it leaves PASR.
+"""Optional caller-supplied transformation of selected context/span text.
 
-The default is a no-op. A caller (or a future config) can pass any
-``Callable[[str], str]`` to :func:`pasr.select.run_select_context` to strip secrets /
-PII from returned spans and the receipt.
+The default is a no-op; this module does not detect or scrub secrets. Python callers
+can pass a ``Callable[[str], str]`` to :func:`pasr.select.run_select_context`.
+The hook does not sanitize queries, source paths, provenance or other metadata, and
+there is no CLI/MCP redactor configuration. It is not a workspace-wide privacy boundary.
 """
 
 from __future__ import annotations

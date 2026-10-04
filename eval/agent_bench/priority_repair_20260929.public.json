@@ -1,0 +1,1943 @@
+{
+  "schema_version": 1,
+  "status": "priority_repairs_applied_with_mixed_delivery_results",
+  "baseline": "completed pipeline_audit_20260929 source, verified and retained before edits",
+  "model_requests": 0,
+  "model_training_performed": false,
+  "historical_grades_rewritten": false,
+  "new_answer_quality_result": false,
+  "decision": "Correctness improved; catalog smaller; fixed-call delivery not improved. No broad paid benchmark.",
+  "applied_priorities": [
+    "Stateless MCP reads; host owns question lifetime, retained context and stopping.",
+    "Same-read source fingerprints, content-keyed cache, validated packs and content-addressed receipts.",
+    "Pinned index/commit source and callers for staged/range review.",
+    "Physical newline coordinates, strict UTF-8 source, nested ignore and junction policy.",
+    "Retired unused APIs/dependency/study launcher and shortened misleading catalog descriptions.",
+    "Replayed all 31 audited PASR fixed-call sequences, retaining gains and regressions."
+  ],
+  "delivery_comparison": {
+    "before": {
+      "rows": 31,
+      "calls": 116,
+      "errors": 0,
+      "tool_text_tokens": 77262,
+      "context_tokens": 39189,
+      "rubric_source_lines": 1874,
+      "selection_delivered_rubric_lines": 1325
+    },
+    "after": {
+      "rows": 31,
+      "calls": 116,
+      "errors": 0,
+      "tool_text_tokens": 77098,
+      "context_tokens": 39769,
+      "rubric_source_lines": 1874,
+      "selection_delivered_rubric_lines": 1317
+    },
+    "catalog_tokens_before": 1318,
+    "catalog_tokens_after": 536,
+    "catalog_reduction_percent": 59.33,
+    "tool_text_reduction_percent": 0.21,
+    "changed_rows": [
+      {
+        "study": "openai_catalog_20260928",
+        "row": 68,
+        "case_id": "fresh-attrs-validator-combinators",
+        "lost": [],
+        "added": [
+          [
+            "src/attr/validators.py",
+            707
+          ],
+          [
+            "src/attr/validators.py",
+            708
+          ],
+          [
+            "src/attr/validators.py",
+            709
+          ],
+          [
+            "src/attr/validators.py",
+            711
+          ]
+        ],
+        "before": 40,
+        "after": 44
+      },
+      {
+        "study": "openai_catalog_20260928",
+        "row": 169,
+        "case_id": "fresh-requests-response-chunks",
+        "lost": [
+          [
+            "src/requests/models.py",
+            845
+          ],
+          [
+            "src/requests/models.py",
+            846
+          ],
+          [
+            "src/requests/models.py",
+            848
+          ],
+          [
+            "src/requests/models.py",
+            850
+          ],
+          [
+            "src/requests/models.py",
+            852
+          ]
+        ],
+        "added": [],
+        "before": 26,
+        "after": 21
+      },
+      {
+        "study": "openai_catalog_holdout_20260928",
+        "row": 49,
+        "case_id": "holdout-typer-rich-help-panel-partitioning",
+        "lost": [
+          [
+            "typer/rich_utils.py",
+            542
+          ],
+          [
+            "typer/rich_utils.py",
+            543
+          ],
+          [
+            "typer/rich_utils.py",
+            544
+          ],
+          [
+            "typer/rich_utils.py",
+            545
+          ],
+          [
+            "typer/rich_utils.py",
+            546
+          ],
+          [
+            "typer/rich_utils.py",
+            547
+          ],
+          [
+            "typer/rich_utils.py",
+            548
+          ]
+        ],
+        "added": [],
+        "before": 84,
+        "after": 77
+      }
+    ],
+    "unchanged_rows": 28,
+    "model_requests": 0,
+    "answer_quality_measured": false
+  },
+  "measurement_limits": [
+    "No adaptive model, regenerated answers, native replay, or new accuracy measurement.",
+    "Rubric-line inclusion is a conservative source-delivery measure, not semantic sufficiency.",
+    "Selection receipts counted only if their source text occurs in actual delivered context.",
+    "Discovery hits and native-read evidence excluded from selection-line coverage.",
+    "Historical questions are reused and include repeated profiles; no held-out inference.",
+    "Catalog uses identical compact JSON serialization, not provider request framing."
+  ],
+  "component_evidence": {
+    "mcp_lifecycle_before.json": {
+      "tokenizer": "o200k_base",
+      "catalog_tokens": 1298,
+      "default_tools": [
+        "find_files",
+        "find_symbols",
+        "find_evidence",
+        "find_usages",
+        "select_context"
+      ],
+      "requests": [
+        {
+          "call": 1,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 2,
+          "route": "held",
+          "source_complete": false,
+          "context_tokens": 0
+        },
+        {
+          "call": 3,
+          "error": "Error executing tool select_context: Refused: the last 2 selections asked for source you already hold. You now hold 2 line(s) of source across 1 file(s): worker.py. More retrieval will not add evidence - answer the question from what you have, naming what you could not determine."
+        },
+        {
+          "call": 4,
+          "error": "Error executing tool select_context: Refused: this exact select_context call has already returned these same results 2 times in this session, and nothing has changed since. Another identical call cannot add evidence. Answer from what you already have, or change approach - find_symbols(<name>) for where a symbol is defined, find_files(<terms>) for paths."
+        },
+        {
+          "call": 5,
+          "error": "Error executing tool select_context: Refused: this exact select_context call has already returned these same results 3 times in this session, and nothing has changed since. Another identical call cannot add evidence. Answer from what you already have, or change approach - find_symbols(<name>) for where a symbol is defined, find_files(<terms>) for paths."
+        },
+        {
+          "call": 6,
+          "error": "Error executing tool select_context: Refused: this exact select_context call has already returned these same results 4 times in this session, and nothing has changed since. Another identical call cannot add evidence. Answer from what you already have, or change approach - find_symbols(<name>) for where a symbol is defined, find_files(<terms>) for paths."
+        },
+        {
+          "call": 7,
+          "error": "Error executing tool select_context: Refused: this exact select_context call has already returned these same results 5 times in this session, and nothing has changed since. Another identical call cannot add evidence. Answer from what you already have, or change approach - find_symbols(<name>) for where a symbol is defined, find_files(<terms>) for paths."
+        },
+        {
+          "call": 8,
+          "error": "Error executing tool select_context: Refused: this exact select_context call has already returned these same results 6 times in this session, and nothing has changed since. Another identical call cannot add evidence. Answer from what you already have, or change approach - find_symbols(<name>) for where a symbol is defined, find_files(<terms>) for paths."
+        },
+        {
+          "call": 9,
+          "error": "Error executing tool select_context: Refused: this exact select_context call has already returned these same results 7 times in this session, and nothing has changed since. Another identical call cannot add evidence. Answer from what you already have, or change approach - find_symbols(<name>) for where a symbol is defined, find_files(<terms>) for paths."
+        },
+        {
+          "call": 10,
+          "error": "Error executing tool select_context: Refused: this exact select_context call has already returned these same results 8 times in this session, and nothing has changed since. Another identical call cannot add evidence. Answer from what you already have, or change approach - find_symbols(<name>) for where a symbol is defined, find_files(<terms>) for paths."
+        },
+        {
+          "call": 11,
+          "error": "Error executing tool select_context: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 12,
+          "error": "Error executing tool select_context: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 13,
+          "error": "Error executing tool select_context: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 14,
+          "error": "Error executing tool select_context: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        }
+      ],
+      "independent_questions": [
+        {
+          "call": 1,
+          "error": "Error executing tool find_files: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 2,
+          "error": "Error executing tool find_files: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 3,
+          "error": "Error executing tool find_files: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 4,
+          "error": "Error executing tool find_files: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 5,
+          "error": "Error executing tool find_files: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 6,
+          "error": "Error executing tool find_files: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 7,
+          "error": "Error executing tool find_files: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 8,
+          "error": "Error executing tool find_files: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 9,
+          "error": "Error executing tool find_files: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 10,
+          "error": "Error executing tool find_files: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 11,
+          "error": "Error executing tool find_files: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        },
+        {
+          "call": 12,
+          "error": "Error executing tool find_files: Refused: this question has used its 10-call retrieval budget. You now hold 2 line(s) of source across 1 file(s): worker.py. Answer from what you hold, and say plainly which part you could not determine rather than retrieving again."
+        }
+      ]
+    },
+    "mcp_lifecycle_after.json": {
+      "tokenizer": "o200k_base",
+      "catalog_tokens": 516,
+      "default_tools": [
+        "find_files",
+        "find_symbols",
+        "find_evidence",
+        "find_usages",
+        "select_context"
+      ],
+      "requests": [
+        {
+          "call": 1,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 2,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 3,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 4,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 5,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 6,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 7,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 8,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 9,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 10,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 11,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 12,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 13,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        },
+        {
+          "call": 14,
+          "route": "lossless",
+          "source_complete": true,
+          "context_tokens": 18
+        }
+      ],
+      "independent_questions": [
+        {
+          "call": 1,
+          "paths": [
+            "worker.py"
+          ]
+        },
+        {
+          "call": 2,
+          "paths": [
+            "worker.py"
+          ]
+        },
+        {
+          "call": 3,
+          "paths": [
+            "worker.py"
+          ]
+        },
+        {
+          "call": 4,
+          "paths": [
+            "worker.py"
+          ]
+        },
+        {
+          "call": 5,
+          "paths": [
+            "worker.py"
+          ]
+        },
+        {
+          "call": 6,
+          "paths": [
+            "worker.py"
+          ]
+        },
+        {
+          "call": 7,
+          "paths": [
+            "worker.py"
+          ]
+        },
+        {
+          "call": 8,
+          "paths": [
+            "worker.py"
+          ]
+        },
+        {
+          "call": 9,
+          "paths": [
+            "worker.py"
+          ]
+        },
+        {
+          "call": 10,
+          "paths": [
+            "worker.py"
+          ]
+        },
+        {
+          "call": 11,
+          "paths": [
+            "worker.py"
+          ]
+        },
+        {
+          "call": 12,
+          "paths": [
+            "worker.py"
+          ]
+        }
+      ]
+    },
+    "mcp_optional_smoke.json": {
+      "trace_dependencies": {
+        "source_complete": true,
+        "context_tokens": 10,
+        "budget": 100,
+        "budget_kind": "soft target"
+      },
+      "search_code": {
+        "source_complete": true,
+        "context_tokens": 18,
+        "budget": 1500,
+        "budget_kind": "hard cap"
+      },
+      "expand_context": {
+        "source_complete": true,
+        "context_tokens": 18,
+        "budget": 200,
+        "budget_kind": "hard cap"
+      },
+      "select_context": {
+        "source_complete": true,
+        "context_tokens": 18,
+        "budget": 100,
+        "budget_kind": "hard cap"
+      },
+      "receipt_matches": true,
+      "oversized_pack_error": "Error executing tool select_context: stored pack context exceeds this response's 1-token budget",
+      "read_failures_then_recovery": {
+        "honest_errors": 12,
+        "fresh_source_returned": true
+      },
+      "expansion_changed_sources": [
+        "worker.py"
+      ],
+      "adapter_mixed_native_and_selection_calls": 28,
+      "trace_soft_budget_overrun": {
+        "budget": 1,
+        "context_tokens": 10,
+        "within_budget": false
+      },
+      "large_pack_context_tokens": 3500,
+      "large_pack_error": "Error executing tool select_context: stored pack context exceeds this response's 1500-token budget"
+    },
+    "snapshot_before.json": {
+      "phase": "before",
+      "module_root": "D:\\kodlama\\pasr\\src",
+      "indexed_old_symbols": [
+        "alpha"
+      ],
+      "old_evidence": [
+        {
+          "provenance": "sample.py:2",
+          "text": "return 'anchor old'",
+          "in": "function alpha",
+          "read_lines": "1-2"
+        }
+      ],
+      "preserved_size_mtime": true,
+      "saved_context_is_old": true,
+      "old_pack_stale": [],
+      "indexed_new_symbols": [],
+      "new_evidence": [
+        {
+          "provenance": "sample.py:2",
+          "text": "return 'anchor new'",
+          "in": "function alpha",
+          "read_lines": "1-2"
+        }
+      ],
+      "old_receipt_id": "239ae0968335",
+      "new_receipt_id": "239ae0968335",
+      "old_receipt_preserved": false,
+      "old_receipt_context": null,
+      "expansion_changed_sources": null,
+      "tampered_pack_rejected": false
+    },
+    "snapshot_after.json": {
+      "phase": "after",
+      "module_root": "D:\\kodlama\\pasr\\src",
+      "indexed_old_symbols": [
+        "alpha"
+      ],
+      "old_evidence": [
+        {
+          "provenance": "sample.py:2",
+          "text": "return 'anchor old'",
+          "in": "function alpha",
+          "read_lines": "1-2"
+        }
+      ],
+      "preserved_size_mtime": true,
+      "saved_context_is_old": true,
+      "old_pack_stale": [
+        "sample.py"
+      ],
+      "indexed_new_symbols": [
+        "bravo"
+      ],
+      "new_evidence": [
+        {
+          "provenance": "sample.py:2",
+          "text": "return 'anchor new'",
+          "in": "function bravo",
+          "read_lines": "1-2"
+        }
+      ],
+      "old_receipt_id": "da02a5d3599c72f2c79b57e9f9de8f11f95b9f77754cab46ab8e954c487f0420",
+      "new_receipt_id": "04e217763e308f0dbe9ba360075eb0c46be91069ad82cec21a2e47689eaf91fb",
+      "old_receipt_preserved": true,
+      "old_receipt_context": "def alpha():\n    return 'anchor old'\n",
+      "expansion_changed_sources": [
+        "sample.py"
+      ],
+      "tampered_pack_rejected": true,
+      "tampered_pack_error": "pack context hash mismatch; the stored context is corrupt or modified.",
+      "rejection_errors": {
+        "old_pack_version": "unsupported pack version; recreate the pack using version 2.0.",
+        "missing_fingerprints": "selection snapshot requires a valid fingerprint for every source; reselect sources.",
+        "escaped_source": "saved source path must stay within workspace: ../outside.py",
+        "tampered_receipt": "receipt content hash mismatch; the stored evidence is corrupt or modified."
+      },
+      "physical_range_budget_checks": [
+        {
+          "newline": "'\\n'",
+          "budget": 1,
+          "tokens": 0
+        },
+        {
+          "newline": "'\\n'",
+          "budget": 5,
+          "tokens": 5
+        },
+        {
+          "newline": "'\\n'",
+          "budget": 8,
+          "tokens": 5
+        },
+        {
+          "newline": "'\\n'",
+          "budget": 12,
+          "tokens": 5
+        },
+        {
+          "newline": "'\\n'",
+          "budget": 50,
+          "tokens": 5
+        },
+        {
+          "newline": "'\\r\\n'",
+          "budget": 1,
+          "tokens": 0
+        },
+        {
+          "newline": "'\\r\\n'",
+          "budget": 5,
+          "tokens": 5
+        },
+        {
+          "newline": "'\\r\\n'",
+          "budget": 8,
+          "tokens": 5
+        },
+        {
+          "newline": "'\\r\\n'",
+          "budget": 12,
+          "tokens": 5
+        },
+        {
+          "newline": "'\\r\\n'",
+          "budget": 50,
+          "tokens": 5
+        },
+        {
+          "newline": "'\\r'",
+          "budget": 1,
+          "tokens": 0
+        },
+        {
+          "newline": "'\\r'",
+          "budget": 5,
+          "tokens": 5
+        },
+        {
+          "newline": "'\\r'",
+          "budget": 8,
+          "tokens": 5
+        },
+        {
+          "newline": "'\\r'",
+          "budget": 12,
+          "tokens": 5
+        },
+        {
+          "newline": "'\\r'",
+          "budget": 50,
+          "tokens": 5
+        }
+      ]
+    },
+    "review_revision_before.json": {
+      "phase": "before",
+      "checkout_src": "D:\\kodlama\\pasr\\eval\\agent_bench\\results\\priority_repair_20260929\\baseline\\src",
+      "reviews": {
+        "staged": {
+          "returncode": 0,
+          "expected_target": 8,
+          "expected_caller": 8,
+          "passed": false,
+          "payload": {
+            "budget_tokens": 160,
+            "changed_files": [
+              "target.py"
+            ],
+            "context": "# changed definitions\n\n# target.py:1-2\ndef target():\n    return 9\n\n# callers that could be affected\n\n# caller.py:1\nfrom target import target\n\n# caller.py:3-4\ndef caller():\n    return target() + 9",
+            "impacted_callers": [
+              "caller.py:1  import target",
+              "caller.py:3-4  function caller"
+            ],
+            "spans": [
+              {
+                "kind": "function",
+                "name": "target",
+                "provenance": "target.py:1-2",
+                "role": "touched",
+                "source": "target.py"
+              },
+              {
+                "kind": "import",
+                "name": "target",
+                "provenance": "caller.py:1",
+                "role": "caller",
+                "source": "caller.py"
+              },
+              {
+                "kind": "function",
+                "name": "caller",
+                "provenance": "caller.py:3-4",
+                "role": "caller",
+                "source": "caller.py"
+              }
+            ],
+            "token_count": 56,
+            "tool": "review",
+            "touched_symbols": [
+              "target.py:1-2  function target"
+            ],
+            "unresolved_files": [],
+            "within_budget": true
+          },
+          "stderr": ""
+        },
+        "range": {
+          "returncode": 0,
+          "expected_target": 6,
+          "expected_caller": 6,
+          "passed": false,
+          "payload": {
+            "budget_tokens": 160,
+            "changed_files": [
+              "target.py"
+            ],
+            "context": "# changed definitions\n\n# target.py:1-2\ndef target():\n    return 9\n\n# callers that could be affected\n\n# caller.py:1\nfrom target import target\n\n# caller.py:3-4\ndef caller():\n    return target() + 9",
+            "impacted_callers": [
+              "caller.py:1  import target",
+              "caller.py:3-4  function caller"
+            ],
+            "spans": [
+              {
+                "kind": "function",
+                "name": "target",
+                "provenance": "target.py:1-2",
+                "role": "touched",
+                "source": "target.py"
+              },
+              {
+                "kind": "import",
+                "name": "target",
+                "provenance": "caller.py:1",
+                "role": "caller",
+                "source": "caller.py"
+              },
+              {
+                "kind": "function",
+                "name": "caller",
+                "provenance": "caller.py:3-4",
+                "role": "caller",
+                "source": "caller.py"
+              }
+            ],
+            "token_count": 56,
+            "tool": "review",
+            "touched_symbols": [
+              "target.py:1-2  function target"
+            ],
+            "unresolved_files": [],
+            "within_budget": true
+          },
+          "stderr": ""
+        },
+        "range_triple": {
+          "returncode": 0,
+          "expected_target": 6,
+          "expected_caller": 6,
+          "passed": false,
+          "payload": {
+            "budget_tokens": 160,
+            "changed_files": [
+              "target.py"
+            ],
+            "context": "# changed definitions\n\n# target.py:1-2\ndef target():\n    return 9\n\n# callers that could be affected\n\n# caller.py:1\nfrom target import target\n\n# caller.py:3-4\ndef caller():\n    return target() + 9",
+            "impacted_callers": [
+              "caller.py:1  import target",
+              "caller.py:3-4  function caller"
+            ],
+            "spans": [
+              {
+                "kind": "function",
+                "name": "target",
+                "provenance": "target.py:1-2",
+                "role": "touched",
+                "source": "target.py"
+              },
+              {
+                "kind": "import",
+                "name": "target",
+                "provenance": "caller.py:1",
+                "role": "caller",
+                "source": "caller.py"
+              },
+              {
+                "kind": "function",
+                "name": "caller",
+                "provenance": "caller.py:3-4",
+                "role": "caller",
+                "source": "caller.py"
+              }
+            ],
+            "token_count": 56,
+            "tool": "review",
+            "touched_symbols": [
+              "target.py:1-2  function target"
+            ],
+            "unresolved_files": [],
+            "within_budget": true
+          },
+          "stderr": ""
+        },
+        "worktree": {
+          "returncode": 0,
+          "expected_target": 9,
+          "expected_caller": 9,
+          "passed": true,
+          "payload": {
+            "budget_tokens": 160,
+            "changed_files": [
+              "caller.py",
+              "target.py"
+            ],
+            "context": "# changed definitions\n\n# caller.py:3-4\ndef caller():\n    return target() + 9\n\n# target.py:1-2\ndef target():\n    return 9\n\n# callers that could be affected\n\n# caller.py:1\nfrom target import target",
+            "impacted_callers": [
+              "caller.py:1  import target"
+            ],
+            "spans": [
+              {
+                "kind": "function",
+                "name": "caller",
+                "provenance": "caller.py:3-4",
+                "role": "touched",
+                "source": "caller.py"
+              },
+              {
+                "kind": "function",
+                "name": "target",
+                "provenance": "target.py:1-2",
+                "role": "touched",
+                "source": "target.py"
+              },
+              {
+                "kind": "import",
+                "name": "target",
+                "provenance": "caller.py:1",
+                "role": "caller",
+                "source": "caller.py"
+              }
+            ],
+            "token_count": 56,
+            "tool": "review",
+            "touched_symbols": [
+              "caller.py:3-4  function caller",
+              "target.py:1-2  function target"
+            ],
+            "unresolved_files": [],
+            "within_budget": true
+          },
+          "stderr": ""
+        }
+      }
+    },
+    "review_revision_after.json": {
+      "phase": "after",
+      "checkout_src": "D:\\kodlama\\pasr\\src",
+      "reviews": {
+        "staged": {
+          "returncode": 0,
+          "expected_target": 8,
+          "expected_caller": 8,
+          "passed": true,
+          "payload": {
+            "budget_tokens": 160,
+            "changed_files": [
+              "target.py"
+            ],
+            "context": "# changed definitions\n\n# target.py:1-2\ndef target():\n    return 8\n\n# callers that could be affected\n\n# caller.py:1\nfrom target import target\n\n# caller.py:3-4\ndef caller():\n    return target() + 8",
+            "impacted_callers": [
+              "caller.py:1  import target",
+              "caller.py:3-4  function caller"
+            ],
+            "source_revision": {
+              "base_commit": "bf8e09b5bb5e0121fd9eaa25f61996ad0359321b",
+              "base_tree": "7d672a3d70fbb58e9701dc282eea7fe181104ace",
+              "diff": "git",
+              "kind": "index",
+              "tree": "8d61c3695be94df013b34f241d4d9612747d3c87"
+            },
+            "spans": [
+              {
+                "kind": "function",
+                "name": "target",
+                "provenance": "target.py:1-2",
+                "role": "touched",
+                "source": "target.py"
+              },
+              {
+                "kind": "import",
+                "name": "target",
+                "provenance": "caller.py:1",
+                "role": "caller",
+                "source": "caller.py"
+              },
+              {
+                "kind": "function",
+                "name": "caller",
+                "provenance": "caller.py:3-4",
+                "role": "caller",
+                "source": "caller.py"
+              }
+            ],
+            "token_count": 56,
+            "tool": "review",
+            "touched_symbols": [
+              "target.py:1-2  function target"
+            ],
+            "unresolved_files": [],
+            "within_budget": true
+          },
+          "stderr": ""
+        },
+        "range": {
+          "returncode": 0,
+          "expected_target": 6,
+          "expected_caller": 6,
+          "passed": true,
+          "payload": {
+            "budget_tokens": 160,
+            "changed_files": [
+              "target.py"
+            ],
+            "context": "# changed definitions\n\n# target.py:1-2\ndef target():\n    return 6\n\n# callers that could be affected\n\n# caller.py:1\nfrom target import target\n\n# caller.py:3-4\ndef caller():\n    return target() + 6",
+            "impacted_callers": [
+              "caller.py:1  import target",
+              "caller.py:3-4  function caller"
+            ],
+            "source_revision": {
+              "base_commit": "405e9d74c2f7ea9cbe0ae188660dc5bed2f6cc96",
+              "base_tree": "c9438107178b8b3ea9ffa0de76e38ddca655f254",
+              "commit": "e4f2a0c3e78dece541d8cc95af96a0791150f391",
+              "diff": "git",
+              "kind": "commit",
+              "range": "405e9d74c2f7ea9cbe0ae188660dc5bed2f6cc96..e4f2a0c3e78dece541d8cc95af96a0791150f391",
+              "tree": "33f4931f6f3cf33672a692fdbd65ec6f5e4f3d8e"
+            },
+            "spans": [
+              {
+                "kind": "function",
+                "name": "target",
+                "provenance": "target.py:1-2",
+                "role": "touched",
+                "source": "target.py"
+              },
+              {
+                "kind": "import",
+                "name": "target",
+                "provenance": "caller.py:1",
+                "role": "caller",
+                "source": "caller.py"
+              },
+              {
+                "kind": "function",
+                "name": "caller",
+                "provenance": "caller.py:3-4",
+                "role": "caller",
+                "source": "caller.py"
+              }
+            ],
+            "token_count": 56,
+            "tool": "review",
+            "touched_symbols": [
+              "target.py:1-2  function target"
+            ],
+            "unresolved_files": [],
+            "within_budget": true
+          },
+          "stderr": ""
+        },
+        "range_triple": {
+          "returncode": 0,
+          "expected_target": 6,
+          "expected_caller": 6,
+          "passed": true,
+          "payload": {
+            "budget_tokens": 160,
+            "changed_files": [
+              "target.py"
+            ],
+            "context": "# changed definitions\n\n# target.py:1-2\ndef target():\n    return 6\n\n# callers that could be affected\n\n# caller.py:1\nfrom target import target\n\n# caller.py:3-4\ndef caller():\n    return target() + 6",
+            "impacted_callers": [
+              "caller.py:1  import target",
+              "caller.py:3-4  function caller"
+            ],
+            "source_revision": {
+              "base_commit": "405e9d74c2f7ea9cbe0ae188660dc5bed2f6cc96",
+              "base_tree": "c9438107178b8b3ea9ffa0de76e38ddca655f254",
+              "commit": "e4f2a0c3e78dece541d8cc95af96a0791150f391",
+              "diff": "git",
+              "kind": "commit",
+              "range": "405e9d74c2f7ea9cbe0ae188660dc5bed2f6cc96...e4f2a0c3e78dece541d8cc95af96a0791150f391",
+              "tree": "33f4931f6f3cf33672a692fdbd65ec6f5e4f3d8e"
+            },
+            "spans": [
+              {
+                "kind": "function",
+                "name": "target",
+                "provenance": "target.py:1-2",
+                "role": "touched",
+                "source": "target.py"
+              },
+              {
+                "kind": "import",
+                "name": "target",
+                "provenance": "caller.py:1",
+                "role": "caller",
+                "source": "caller.py"
+              },
+              {
+                "kind": "function",
+                "name": "caller",
+                "provenance": "caller.py:3-4",
+                "role": "caller",
+                "source": "caller.py"
+              }
+            ],
+            "token_count": 56,
+            "tool": "review",
+            "touched_symbols": [
+              "target.py:1-2  function target"
+            ],
+            "unresolved_files": [],
+            "within_budget": true
+          },
+          "stderr": ""
+        },
+        "worktree": {
+          "returncode": 0,
+          "expected_target": 9,
+          "expected_caller": 9,
+          "passed": true,
+          "payload": {
+            "budget_tokens": 160,
+            "changed_files": [
+              "caller.py",
+              "target.py"
+            ],
+            "context": "# changed definitions\n\n# caller.py:3-4\ndef caller():\n    return target() + 9\n\n# target.py:1-2\ndef target():\n    return 9\n\n# callers that could be affected\n\n# caller.py:1\nfrom target import target",
+            "impacted_callers": [
+              "caller.py:1  import target"
+            ],
+            "source_revision": {
+              "base_tree": "8d61c3695be94df013b34f241d4d9612747d3c87",
+              "diff": "git",
+              "kind": "worktree"
+            },
+            "spans": [
+              {
+                "kind": "function",
+                "name": "caller",
+                "provenance": "caller.py:3-4",
+                "role": "touched",
+                "source": "caller.py"
+              },
+              {
+                "kind": "function",
+                "name": "target",
+                "provenance": "target.py:1-2",
+                "role": "touched",
+                "source": "target.py"
+              },
+              {
+                "kind": "import",
+                "name": "target",
+                "provenance": "caller.py:1",
+                "role": "caller",
+                "source": "caller.py"
+              }
+            ],
+            "token_count": 56,
+            "tool": "review",
+            "touched_symbols": [
+              "caller.py:3-4  function caller",
+              "target.py:1-2  function target"
+            ],
+            "unresolved_files": [],
+            "within_budget": true
+          },
+          "stderr": ""
+        }
+      }
+    },
+    "review_revision_edges.json": {
+      "unborn_utf8_scope_ignore_symlink": {
+        "returncode": 0,
+        "payload": {
+          "budget_tokens": 6000,
+          "changed_files": [
+            "café space.py",
+            "nested/keep.py"
+          ],
+          "context": "# changed definitions\n\n# café space.py:1-2\ndef target():\n    return 8\n\n# nested/keep.py:1-2\ndef caller():\n    return target() + 8",
+          "impacted_callers": [],
+          "source_revision": {
+            "base_commit": null,
+            "base_tree": "4b825dc642cb6eb9a060e54bf8d69288fbee4904",
+            "diff": "git",
+            "kind": "index",
+            "tree": "0f81cd6d0d9a3dcff67ab28bbcdc69ffda602539"
+          },
+          "spans": [
+            {
+              "kind": "function",
+              "name": "target",
+              "provenance": "café space.py:1-2",
+              "role": "touched",
+              "source": "café space.py"
+            },
+            {
+              "kind": "function",
+              "name": "caller",
+              "provenance": "nested/keep.py:1-2",
+              "role": "touched",
+              "source": "nested/keep.py"
+            }
+          ],
+          "token_count": 41,
+          "tool": "review",
+          "touched_symbols": [
+            "café space.py:1-2  function target",
+            "nested/keep.py:1-2  function caller"
+          ],
+          "unresolved_files": [
+            ".gitignore",
+            "ignored.py",
+            "link.py",
+            "nested/.gitignore",
+            "nested/no.py"
+          ],
+          "within_budget": true
+        },
+        "stderr": ""
+      },
+      "nested_glob": {
+        "returncode": 0,
+        "payload": {
+          "budget_tokens": 6000,
+          "changed_files": [
+            "nested/keep.py"
+          ],
+          "context": "# changed definitions\n\n# nested/keep.py:1-2\ndef caller():\n    return target() + 8",
+          "impacted_callers": [],
+          "source_revision": {
+            "base_commit": null,
+            "base_tree": "4b825dc642cb6eb9a060e54bf8d69288fbee4904",
+            "diff": "git",
+            "kind": "index",
+            "tree": "0f81cd6d0d9a3dcff67ab28bbcdc69ffda602539"
+          },
+          "spans": [
+            {
+              "kind": "function",
+              "name": "caller",
+              "provenance": "nested/keep.py:1-2",
+              "role": "touched",
+              "source": "nested/keep.py"
+            }
+          ],
+          "token_count": 24,
+          "tool": "review",
+          "touched_symbols": [
+            "nested/keep.py:1-2  function caller"
+          ],
+          "unresolved_files": [
+            ".gitignore",
+            "café space.py",
+            "ignored.py",
+            "link.py",
+            "nested/.gitignore",
+            "nested/no.py"
+          ],
+          "within_budget": true
+        },
+        "stderr": ""
+      },
+      "conflicting_modes": {
+        "returncode": 2,
+        "payload": null,
+        "stderr": "usage: pasr review [-h] [--diff DIFF | --staged | --range REF_RANGE]\n                   [--budget BUDGET] [--callers-depth CALLERS_DEPTH]\n                   [--context-file CONTEXT_FILE] [--json]\n                   [paths ...]\npasr review: error: argument --range: not allowed with argument --staged\n"
+      },
+      "invalid_range": {
+        "returncode": 2,
+        "payload": null,
+        "stderr": "error: fatal: Needed a single revision\n"
+      },
+      "escaping_include": {
+        "returncode": 2,
+        "payload": null,
+        "stderr": "error: include pattern must stay inside workspace: ../outside.py\n"
+      },
+      "external_worktree": {
+        "returncode": 0,
+        "payload": {
+          "budget_tokens": 6000,
+          "changed_files": [
+            "scope/café space.py"
+          ],
+          "context": "# changed definitions\n\n# scope/café space.py:1-2\ndef target():\n    return 9\n\n# callers that could be affected\n\n# outside.py:1-2\ndef outside():\n    return target() + 300\n\n# scope/ignored.py:1-2\ndef ignored():\n    return target() + 100\n\n# scope/nested/keep.py:1-2\ndef caller():\n    return target() + 8\n\n# scope/link.py:1-2\ndef live_link():\n    return target() + 900\n\n# scope/nested/no.py:1-2\ndef ignored_nested():\n    return target() + 200",
+          "impacted_callers": [
+            "outside.py:1-2  function outside",
+            "scope/ignored.py:1-2  function ignored",
+            "scope/link.py:1-2  function live_link",
+            "scope/nested/keep.py:1-2  function caller",
+            "scope/nested/no.py:1-2  function ignored_nested"
+          ],
+          "source_revision": {
+            "diff": "external",
+            "kind": "worktree"
+          },
+          "spans": [
+            {
+              "kind": "function",
+              "name": "target",
+              "provenance": "scope/café space.py:1-2",
+              "role": "touched",
+              "source": "scope/café space.py"
+            },
+            {
+              "kind": "function",
+              "name": "outside",
+              "provenance": "outside.py:1-2",
+              "role": "caller",
+              "source": "outside.py"
+            },
+            {
+              "kind": "function",
+              "name": "ignored",
+              "provenance": "scope/ignored.py:1-2",
+              "role": "caller",
+              "source": "scope/ignored.py"
+            },
+            {
+              "kind": "function",
+              "name": "live_link",
+              "provenance": "scope/link.py:1-2",
+              "role": "caller",
+              "source": "scope/link.py"
+            },
+            {
+              "kind": "function",
+              "name": "caller",
+              "provenance": "scope/nested/keep.py:1-2",
+              "role": "caller",
+              "source": "scope/nested/keep.py"
+            },
+            {
+              "kind": "function",
+              "name": "ignored_nested",
+              "provenance": "scope/nested/no.py:1-2",
+              "role": "caller",
+              "source": "scope/nested/no.py"
+            }
+          ],
+          "token_count": 136,
+          "tool": "review",
+          "touched_symbols": [
+            "scope/café space.py:1-2  function target"
+          ],
+          "unresolved_files": [],
+          "within_budget": true
+        },
+        "stderr": ""
+      },
+      "range_rename_delete_missing_worktree": {
+        "returncode": 0,
+        "payload": {
+          "budget_tokens": 6000,
+          "changed_files": [
+            "renamed café.py"
+          ],
+          "context": "# changed definitions\n\n# renamed café.py:1-2\ndef target():\n    return 6",
+          "impacted_callers": [],
+          "source_revision": {
+            "base_commit": "21154a5b3565c5e0bc43d7fe02592eab1883d8c5",
+            "base_tree": "0f81cd6d0d9a3dcff67ab28bbcdc69ffda602539",
+            "commit": "29136c280274726ca5db0ac77309a5e51aade825",
+            "diff": "git",
+            "kind": "commit",
+            "range": "21154a5b3565c5e0bc43d7fe02592eab1883d8c5..29136c280274726ca5db0ac77309a5e51aade825",
+            "tree": "cb1296480ce31c6f34a975e884a81ded68fa5ae3"
+          },
+          "spans": [
+            {
+              "kind": "function",
+              "name": "target",
+              "provenance": "renamed café.py:1-2",
+              "role": "touched",
+              "source": "renamed café.py"
+            }
+          ],
+          "token_count": 20,
+          "tool": "review",
+          "touched_symbols": [
+            "renamed café.py:1-2  function target"
+          ],
+          "unresolved_files": [],
+          "within_budget": true
+        },
+        "stderr": ""
+      }
+    },
+    "physical_source_before.json": {
+      "checkout": "D:\\kodlama\\pasr",
+      "phase": "before",
+      "physical_lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "selected_symbol_text": "b\fc\"\r\n",
+      "symbol_complete": false,
+      "discovered": [
+        "blocked/keep.py",
+        "good.py",
+        "pkg/build/no.py",
+        "pkg/vendor/no.py"
+      ],
+      "usage_provenance": [
+        "blocked/keep.py:1",
+        "invalid.py:1",
+        "pkg/build/no.py:1",
+        "pkg/vendor/no.py:1",
+        "good.py:4",
+        "nul.py:1"
+      ],
+      "diagnostics": []
+    },
+    "physical_source_after.json": {
+      "checkout": "D:\\kodlama\\pasr",
+      "phase": "after",
+      "physical_lines": [
+        1,
+        2,
+        3
+      ],
+      "selected_symbol_text": "def target():\r\n    return \"café\"\r\n",
+      "symbol_complete": true,
+      "discovered": [
+        "good.py",
+        "pkg/deep/deep.tmp.py",
+        "pkg/keep.tmp.py"
+      ],
+      "usage_provenance": [
+        "good.py:2",
+        "pkg/deep/deep.tmp.py:1",
+        "pkg/keep.tmp.py:1"
+      ],
+      "diagnostics": [
+        "Skipping source invalid.py: unsupported UTF-8 source <USERPROFILE>\\AppData\\Local\\Temp\\tmpwi2rh2j_\\invalid.py: 'utf-8' codec can't decode byte 0xff in position 10: invalid start byte",
+        "Skipping source nul.py: source contains NUL bytes: <USERPROFILE>\\AppData\\Local\\Temp\\tmpwi2rh2j_\\nul.py",
+        "Skipping source utf16.py: unsupported UTF-8 source <USERPROFILE>\\AppData\\Local\\Temp\\tmpwi2rh2j_\\utf16.py: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"
+      ]
+    },
+    "physical_source_boundaries_before.json": {
+      "phase": "before",
+      "import_root": "D:\\kodlama\\pasr\\eval\\agent_bench\\results\\priority_repair_20260929\\baseline\\src",
+      "tree_sitter": [
+        {
+          "newline": "'\\n'",
+          "lines": [
+            2,
+            4
+          ],
+          "exact_body": true,
+          "exact_slice": true
+        },
+        {
+          "newline": "'\\r\\n'",
+          "lines": [
+            2,
+            4
+          ],
+          "exact_body": true,
+          "exact_slice": true
+        },
+        {
+          "newline": "'\\r'",
+          "lines": [
+            1,
+            1
+          ],
+          "exact_body": true,
+          "exact_slice": true
+        }
+      ],
+      "searches": {
+        "find_symbols": {
+          "provenance": [
+            "bad.py:1-1"
+          ],
+          "diagnostics": 0
+        },
+        "find_evidence": {
+          "provenance": [
+            "bad.py:1",
+            "nul.py:1",
+            "good.py:1"
+          ],
+          "diagnostics": 0
+        },
+        "find_usages": {
+          "provenance": [
+            "bad.py:1",
+            "good.py:1",
+            "nul.py:1"
+          ],
+          "diagnostics": 0
+        }
+      },
+      "explicit_rejection": {
+        "bad.py": null,
+        "utf16.py": null,
+        "nul.py": null
+      },
+      "selected_ranges": [
+        {
+          "newline": "'\\n'",
+          "context": "b\fc\"\n",
+          "complete": false
+        },
+        {
+          "newline": "'\\r\\n'",
+          "context": "b\fc\"\n",
+          "complete": false
+        },
+        {
+          "newline": "'\\r'",
+          "context": "b\fc\"\n",
+          "complete": false
+        }
+      ],
+      "junction": {
+        "paths": [],
+        "error": "path escapes workspace: <USERPROFILE>\\AppData\\Local\\Temp\\tmpv5mz7mex\\workspace\\linked"
+      }
+    },
+    "physical_source_boundaries_after.json": {
+      "phase": "after",
+      "import_root": "D:\\kodlama\\pasr\\src",
+      "tree_sitter": [
+        {
+          "newline": "'\\n'",
+          "lines": [
+            2,
+            4
+          ],
+          "exact_body": true,
+          "exact_slice": true
+        },
+        {
+          "newline": "'\\r\\n'",
+          "lines": [
+            2,
+            4
+          ],
+          "exact_body": true,
+          "exact_slice": true
+        },
+        {
+          "newline": "'\\r'",
+          "lines": [
+            2,
+            4
+          ],
+          "exact_body": true,
+          "exact_slice": true
+        }
+      ],
+      "searches": {
+        "find_symbols": {
+          "provenance": [
+            "good.py:1-2"
+          ],
+          "diagnostics": 3
+        },
+        "find_evidence": {
+          "provenance": [
+            "good.py:1"
+          ],
+          "diagnostics": 3
+        },
+        "find_usages": {
+          "provenance": [
+            "good.py:1"
+          ],
+          "diagnostics": 3
+        }
+      },
+      "explicit_rejection": {
+        "bad.py": "unsupported UTF-8 source <USERPROFILE>\\AppData\\Local\\Temp\\tmpcept53ec\\workspace\\bad.py: 'utf-8' codec can't decode byte 0xff in position 10: invalid start byte",
+        "utf16.py": "unsupported UTF-8 source <USERPROFILE>\\AppData\\Local\\Temp\\tmpcept53ec\\workspace\\utf16.py: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte",
+        "nul.py": "source contains NUL bytes: <USERPROFILE>\\AppData\\Local\\Temp\\tmpcept53ec\\workspace\\nul.py"
+      },
+      "selected_ranges": [
+        {
+          "newline": "'\\n'",
+          "context": "def target():\n    return \"café\"\n",
+          "complete": true
+        },
+        {
+          "newline": "'\\r\\n'",
+          "context": "def target():\n    return \"café\"\n",
+          "complete": true
+        },
+        {
+          "newline": "'\\r'",
+          "context": "def target():\n    return \"café\"\n",
+          "complete": true
+        }
+      ],
+      "junction": {
+        "paths": [
+          "bad.py",
+          "good.py",
+          "nul.py",
+          "utf16.py"
+        ],
+        "error": null,
+        "diagnostics": [
+          "Skipping directory linked: path escapes workspace: linked"
+        ]
+      }
+    },
+    "source_primitive_after.json": {
+      "status": "passed",
+      "checks": [
+        {
+          "input": "''",
+          "physical_lines": [],
+          "reconstructs_exactly": true
+        },
+        {
+          "input": "'\\n'",
+          "physical_lines": [
+            "\n"
+          ],
+          "reconstructs_exactly": true
+        },
+        {
+          "input": "'a\\r\\nb\\rc\\n'",
+          "physical_lines": [
+            "a\r\n",
+            "b\r",
+            "c\n"
+          ],
+          "reconstructs_exactly": true
+        },
+        {
+          "input": "'a\\u2028b\\x0cc\\n'",
+          "physical_lines": [
+            "a b\fc\n"
+          ],
+          "reconstructs_exactly": true
+        },
+        {
+          "utf8_bom_and_crlf": "normalized",
+          "fingerprint_matches_selected_text": true
+        },
+        {
+          "invalid_hex": "fffe6100",
+          "rejected_with_path": true
+        },
+        {
+          "invalid_hex": "610062",
+          "rejected_with_path": true
+        },
+        {
+          "invalid_hex": "ff",
+          "rejected_with_path": true
+        }
+      ]
+    }
+  },
+  "verification": {
+    "pytest": {
+      "passed": 480,
+      "subtests_passed": 56,
+      "skipped": 1,
+      "failed": 0
+    },
+    "skip": "Windows file-symlink privilege unavailable; directory junction and Git symlink exclusion tested",
+    "ruff": "passed",
+    "unique_integrated_commands": 11,
+    "initial_run": [
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-m",
+          "pytest",
+          "-q"
+        ],
+        "returncode": 1,
+        "elapsed_seconds": 24.387,
+        "stdout": "................................................................... [ 13%]\n........................................................................ [ 28%]\n........................................................................ [ 43%]\n......................................................s............... [ 58%]\n............................. [ 64%]\n..................................................................F..... [ 79%]\n.................................................................. [ 93%]\n.................................                                        [100%]\n================================== FAILURES ===================================\n_________ test_explicit_invalid_source_cannot_be_replacement_decoded __________\n\npath = WindowsPath('<USERPROFILE>/AppData/Local/Temp/pytest-of-mertc/pytest-762/test_explicit_invalid_source_c0/bad.py')\n\n    def read_source(path: Path) -> SourceSnapshot:\n        \"\"\"Read once as UTF-8 (optional BOM), rejecting undecodable or NUL-bearing input.\"\"\"\n        try:\n>           text = path.read_bytes().decode(\"utf-8-sig\")\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nsrc\\pasr\\source_text.py:38: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\ninput = <memory at 0x0000023142B87E80>, errors = 'strict'\n\n    def decode(input, errors='strict'):\n        prefix = 0\n        if input[:3] == codecs.BOM_UTF8:\n            input = input[3:]\n            prefix = 3\n>       (output, consumed) = codecs.utf_8_decode(input, errors, True)\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 9: invalid start byte\nE       decoding with 'utf-8-sig' codec failed\n\nD:\\anaconda\\Lib\\encodings\\utf_8_sig.py:23: UnicodeDecodeError\n\nThe above exception was the direct cause of the following exception:\n\ntmp_path = WindowsPath('<USERPROFILE>/AppData/Local/Temp/pytest-of-mertc/pytest-762/test_explicit_invalid_source_c0')\n\n    def test_explicit_invalid_source_cannot_be_replacement_decoded(tmp_path: Path):\n        (tmp_path / \"bad.py\").write_bytes(b\"value = '\\xff'\\n\")\n        request = validate_select_context_request({\"query\": \"value\", \"files\": [\"bad.py\"]}, tmp_path)\n        with pytest.raises(UnicodeDecodeError):\n>           run_select_context(request, tokenizer=WhitespaceTokenizer())\n\ntests\\test_select.py:714: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nsrc\\pasr\\select.py:200: in run_select_context\n    result, candidate_records = _run(request, tokenizer, redactor, label_lossless)\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc\\pasr\\select.py:268: in _run\n    snapshot = read_source(path)\n               ^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\npath = WindowsPath('<USERPROFILE>/AppData/Local/Temp/pytest-of-mertc/pytest-762/test_explicit_invalid_source_c0/bad.py')\n\n    def read_source(path: Path) -> SourceSnapshot:\n        \"\"\"Read once as UTF-8 (optional BOM), rejecting undecodable or NUL-bearing input.\"\"\"\n        try:\n            text = path.read_bytes().decode(\"utf-8-sig\")\n        except UnicodeDecodeError as exc:\n>           raise ValueError(f\"unsupported UTF-8 source {path}: {exc}\") from exc\nE           ValueError: unsupported UTF-8 source <USERPROFILE>\\AppData\\Local\\Temp\\pytest-of-mertc\\pytest-762\\test_explicit_invalid_source_c0\\bad.py: 'utf-8' codec can't decode byte 0xff in position 9: invalid start byte\n\nsrc\\pasr\\source_text.py:40: ValueError\n=========================== short test summary info ===========================\nSKIPPED [1] tests\\test_packs.py:146: source symlinks are unavailable\nFAILED tests/test_select.py::test_explicit_invalid_source_cannot_be_replacement_decoded\n1 failed, 479 passed, 1 skipped, 56 subtests passed in 21.66s\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-m",
+          "ruff",
+          "check",
+          "src/pasr",
+          "tests",
+          "eval/agent_bench/runner.py",
+          "eval/agent_bench/tools_pasr.py",
+          "eval/agent_bench/priority_repair_check.py",
+          "eval\\agent_bench\\results\\priority_repair_20260929\\stdio_smoke.py"
+        ],
+        "returncode": 1,
+        "elapsed_seconds": 0.355,
+        "stdout": "I001 [*] Import block is un-sorted or un-formatted\n   --> tests\\test_mcp_server.py:626:5\n    |\n625 |   def test_search_code_returns_the_best_source_on_repeated_calls(tmp_path: Path):\n626 | /     from pasr.tokenize import get_tokenizer\n627 | |     from pasr.mcp.server import SELECT_BUDGET\n    | |_____________________________________________^\n628 |       for n in range(6):\n629 |           (tmp_path / f\"stage_{n}.py\").write_text(\n    |\nhelp: Organize imports\n\nFound 1 error.\n[*] 1 fixable with the `--fix` option.\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-B",
+          "eval\\agent_bench\\results\\priority_repair_20260929\\mcp_lifecycle_smoke.py",
+          "after"
+        ],
+        "returncode": 0,
+        "elapsed_seconds": 1.307,
+        "stdout": "{\n  \"tokenizer\": \"o200k_base\",\n  \"catalog_tokens\": 516,\n  \"default_tools\": [\n    \"find_files\",\n    \"find_symbols\",\n    \"find_evidence\",\n    \"find_usages\",\n    \"select_context\"\n  ],\n  \"requests\": [\n    {\n      \"call\": 1,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 2,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 3,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 4,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 5,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 6,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 7,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 8,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 9,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 10,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 11,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 12,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 13,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    },\n    {\n      \"call\": 14,\n      \"route\": \"lossless\",\n      \"source_complete\": true,\n      \"context_tokens\": 18\n    }\n  ],\n  \"independent_questions\": [\n    {\n      \"call\": 1,\n      \"paths\": [\n        \"worker.py\"\n      ]\n    },\n    {\n      \"call\": 2,\n      \"paths\": [\n        \"worker.py\"\n      ]\n    },\n    {\n      \"call\": 3,\n      \"paths\": [\n        \"worker.py\"\n      ]\n    },\n    {\n      \"call\": 4,\n      \"paths\": [\n        \"worker.py\"\n      ]\n    },\n    {\n      \"call\": 5,\n      \"paths\": [\n        \"worker.py\"\n      ]\n    },\n    {\n      \"call\": 6,\n      \"paths\": [\n        \"worker.py\"\n      ]\n    },\n    {\n      \"call\": 7,\n      \"paths\": [\n        \"worker.py\"\n      ]\n    },\n    {\n      \"call\": 8,\n      \"paths\": [\n        \"worker.py\"\n      ]\n    },\n    {\n      \"call\": 9,\n      \"paths\": [\n        \"worker.py\"\n      ]\n    },\n    {\n      \"call\": 10,\n      \"paths\": [\n        \"worker.py\"\n      ]\n    },\n    {\n      \"call\": 11,\n      \"paths\": [\n        \"worker.py\"\n      ]\n    },\n    {\n      \"call\": 12,\n      \"paths\": [\n        \"worker.py\"\n      ]\n    }\n  ]\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-B",
+          "eval\\agent_bench\\results\\priority_repair_20260929\\mcp_optional_smoke.py"
+        ],
+        "returncode": 0,
+        "elapsed_seconds": 1.398,
+        "stdout": "{\n  \"trace_dependencies\": {\n    \"source_complete\": true,\n    \"context_tokens\": 10,\n    \"budget\": 100,\n    \"budget_kind\": \"soft target\"\n  },\n  \"search_code\": {\n    \"source_complete\": true,\n    \"context_tokens\": 18,\n    \"budget\": 1500,\n    \"budget_kind\": \"hard cap\"\n  },\n  \"expand_context\": {\n    \"source_complete\": true,\n    \"context_tokens\": 18,\n    \"budget\": 200,\n    \"budget_kind\": \"hard cap\"\n  },\n  \"select_context\": {\n    \"source_complete\": true,\n    \"context_tokens\": 18,\n    \"budget\": 100,\n    \"budget_kind\": \"hard cap\"\n  },\n  \"receipt_matches\": true,\n  \"oversized_pack_error\": \"Error executing tool select_context: stored pack context exceeds this response's 1-token budget\",\n  \"read_failures_then_recovery\": {\n    \"honest_errors\": 12,\n    \"fresh_source_returned\": true\n  },\n  \"expansion_changed_sources\": [\n    \"worker.py\"\n  ],\n  \"adapter_mixed_native_and_selection_calls\": 28,\n  \"trace_soft_budget_overrun\": {\n    \"budget\": 1,\n    \"context_tokens\": 10,\n    \"within_budget\": false\n  },\n  \"large_pack_context_tokens\": 3500,\n  \"large_pack_error\": \"Error executing tool select_context: stored pack context exceeds this response's 1500-token budget\"\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-B",
+          "eval\\agent_bench\\results\\priority_repair_20260929\\snapshot_smoke.py",
+          "--phase",
+          "after"
+        ],
+        "returncode": 0,
+        "elapsed_seconds": 0.176,
+        "stdout": "{\n  \"phase\": \"after\",\n  \"module_root\": \"D:\\\\kodlama\\\\pasr\\\\src\",\n  \"indexed_old_symbols\": [\n    \"alpha\"\n  ],\n  \"old_evidence\": [\n    {\n      \"provenance\": \"sample.py:2\",\n      \"text\": \"return 'anchor old'\",\n      \"in\": \"function alpha\",\n      \"read_lines\": \"1-2\"\n    }\n  ],\n  \"preserved_size_mtime\": true,\n  \"saved_context_is_old\": true,\n  \"old_pack_stale\": [\n    \"sample.py\"\n  ],\n  \"indexed_new_symbols\": [\n    \"bravo\"\n  ],\n  \"new_evidence\": [\n    {\n      \"provenance\": \"sample.py:2\",\n      \"text\": \"return 'anchor new'\",\n      \"in\": \"function bravo\",\n      \"read_lines\": \"1-2\"\n    }\n  ],\n  \"old_receipt_id\": \"da02a5d3599c72f2c79b57e9f9de8f11f95b9f77754cab46ab8e954c487f0420\",\n  \"new_receipt_id\": \"04e217763e308f0dbe9ba360075eb0c46be91069ad82cec21a2e47689eaf91fb\",\n  \"old_receipt_preserved\": true,\n  \"old_receipt_context\": \"def alpha():\\n    return 'anchor old'\\n\",\n  \"expansion_changed_sources\": [\n    \"sample.py\"\n  ],\n  \"tampered_pack_rejected\": true,\n  \"tampered_pack_error\": \"pack context hash mismatch; the stored context is corrupt or modified.\",\n  \"rejection_errors\": {\n    \"old_pack_version\": \"unsupported pack version; recreate the pack using version 2.0.\",\n    \"missing_fingerprints\": \"selection snapshot requires a valid fingerprint for every source; reselect sources.\",\n    \"escaped_source\": \"saved source path must stay within workspace: ../outside.py\",\n    \"tampered_receipt\": \"receipt content hash mismatch; the stored evidence is corrupt or modified.\"\n  },\n  \"physical_range_budget_checks\": [\n    {\n      \"newline\": \"'\\\\n'\",\n      \"budget\": 1,\n      \"tokens\": 0\n    },\n    {\n      \"newline\": \"'\\\\n'\",\n      \"budget\": 5,\n      \"tokens\": 5\n    },\n    {\n      \"newline\": \"'\\\\n'\",\n      \"budget\": 8,\n      \"tokens\": 5\n    },\n    {\n      \"newline\": \"'\\\\n'\",\n      \"budget\": 12,\n      \"tokens\": 5\n    },\n    {\n      \"newline\": \"'\\\\n'\",\n      \"budget\": 50,\n      \"tokens\": 5\n    },\n    {\n      \"newline\": \"'\\\\r\\\\n'\",\n      \"budget\": 1,\n      \"tokens\": 0\n    },\n    {\n      \"newline\": \"'\\\\r\\\\n'\",\n      \"budget\": 5,\n      \"tokens\": 5\n    },\n    {\n      \"newline\": \"'\\\\r\\\\n'\",\n      \"budget\": 8,\n      \"tokens\": 5\n    },\n    {\n      \"newline\": \"'\\\\r\\\\n'\",\n      \"budget\": 12,\n      \"tokens\": 5\n    },\n    {\n      \"newline\": \"'\\\\r\\\\n'\",\n      \"budget\": 50,\n      \"tokens\": 5\n    },\n    {\n      \"newline\": \"'\\\\r'\",\n      \"budget\": 1,\n      \"tokens\": 0\n    },\n    {\n      \"newline\": \"'\\\\r'\",\n      \"budget\": 5,\n      \"tokens\": 5\n    },\n    {\n      \"newline\": \"'\\\\r'\",\n      \"budget\": 8,\n      \"tokens\": 5\n    },\n    {\n      \"newline\": \"'\\\\r'\",\n      \"budget\": 12,\n      \"tokens\": 5\n    },\n    {\n      \"newline\": \"'\\\\r'\",\n      \"budget\": 50,\n      \"tokens\": 5\n    }\n  ]\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-B",
+          "eval\\agent_bench\\results\\priority_repair_20260929\\review_revision_smoke.py",
+          "after"
+        ],
+        "returncode": 0,
+        "elapsed_seconds": 2.707,
+        "stdout": "{\n  \"phase\": \"after\",\n  \"checkout_src\": \"D:\\\\kodlama\\\\pasr\\\\src\",\n  \"reviews\": {\n    \"staged\": {\n      \"returncode\": 0,\n      \"expected_target\": 8,\n      \"expected_caller\": 8,\n      \"passed\": true,\n      \"payload\": {\n        \"budget_tokens\": 160,\n        \"changed_files\": [\n          \"target.py\"\n        ],\n        \"context\": \"# changed definitions\\n\\n# target.py:1-2\\ndef target():\\n    return 8\\n\\n# callers that could be affected\\n\\n# caller.py:1\\nfrom target import target\\n\\n# caller.py:3-4\\ndef caller():\\n    return target() + 8\",\n        \"impacted_callers\": [\n          \"caller.py:1  import target\",\n          \"caller.py:3-4  function caller\"\n        ],\n        \"source_revision\": {\n          \"base_commit\": \"bf8e09b5bb5e0121fd9eaa25f61996ad0359321b\",\n          \"base_tree\": \"7d672a3d70fbb58e9701dc282eea7fe181104ace\",\n          \"diff\": \"git\",\n          \"kind\": \"index\",\n          \"tree\": \"8d61c3695be94df013b34f241d4d9612747d3c87\"\n        },\n        \"spans\": [\n          {\n            \"kind\": \"function\",\n            \"name\": \"target\",\n            \"provenance\": \"target.py:1-2\",\n            \"role\": \"touched\",\n            \"source\": \"target.py\"\n          },\n          {\n            \"kind\": \"import\",\n            \"name\": \"target\",\n            \"provenance\": \"caller.py:1\",\n            \"role\": \"caller\",\n            \"source\": \"caller.py\"\n          },\n          {\n            \"kind\": \"function\",\n            \"name\": \"caller\",\n            \"provenance\": \"caller.py:3-4\",\n            \"role\": \"caller\",\n            \"source\": \"caller.py\"\n          }\n        ],\n        \"token_count\": 56,\n        \"tool\": \"review\",\n        \"touched_symbols\": [\n          \"target.py:1-2  function target\"\n        ],\n        \"unresolved_files\": [],\n        \"within_budget\": true\n      },\n      \"stderr\": \"\"\n    },\n    \"range\": {\n      \"returncode\": 0,\n      \"expected_target\": 6,\n      \"expected_caller\": 6,\n      \"passed\": true,\n      \"payload\": {\n        \"budget_tokens\": 160,\n        \"changed_files\": [\n          \"target.py\"\n        ],\n        \"context\": \"# changed definitions\\n\\n# target.py:1-2\\ndef target():\\n    return 6\\n\\n# callers that could be affected\\n\\n# caller.py:1\\nfrom target import target\\n\\n# caller.py:3-4\\ndef caller():\\n    return target() + 6\",\n        \"impacted_callers\": [\n          \"caller.py:1  import target\",\n          \"caller.py:3-4  function caller\"\n        ],\n        \"source_revision\": {\n          \"base_commit\": \"405e9d74c2f7ea9cbe0ae188660dc5bed2f6cc96\",\n          \"base_tree\": \"c9438107178b8b3ea9ffa0de76e38ddca655f254\",\n          \"commit\": \"e4f2a0c3e78dece541d8cc95af96a0791150f391\",\n          \"diff\": \"git\",\n          \"kind\": \"commit\",\n          \"range\": \"405e9d74c2f7ea9cbe0ae188660dc5bed2f6cc96..e4f2a0c3e78dece541d8cc95af96a0791150f391\",\n          \"tree\": \"33f4931f6f3cf33672a692fdbd65ec6f5e4f3d8e\"\n        },\n        \"spans\": [\n          {\n            \"kind\": \"function\",\n            \"name\": \"target\",\n            \"provenance\": \"target.py:1-2\",\n            \"role\": \"touched\",\n            \"source\": \"target.py\"\n          },\n          {\n            \"kind\": \"import\",\n            \"name\": \"target\",\n            \"provenance\": \"caller.py:1\",\n            \"role\": \"caller\",\n            \"source\": \"caller.py\"\n          },\n          {\n            \"kind\": \"function\",\n            \"name\": \"caller\",\n            \"provenance\": \"caller.py:3-4\",\n            \"role\": \"caller\",\n            \"source\": \"caller.py\"\n          }\n        ],\n        \"token_count\": 56,\n        \"tool\": \"review\",\n        \"touched_symbols\": [\n          \"target.py:1-2  function target\"\n        ],\n        \"unresolved_files\": [],\n        \"within_budget\": true\n      },\n      \"stderr\": \"\"\n    },\n    \"range_triple\": {\n      \"returncode\": 0,\n      \"expected_target\": 6,\n      \"expected_caller\": 6,\n      \"passed\": true,\n      \"payload\": {\n        \"budget_tokens\": 160,\n        \"changed_files\": [\n          \"target.py\"\n        ],\n        \"context\": \"# changed definitions\\n\\n# target.py:1-2\\ndef target():\\n    return 6\\n\\n# callers that could be affected\\n\\n# caller.py:1\\nfrom target import target\\n\\n# caller.py:3-4\\ndef caller():\\n    return target() + 6\",\n        \"impacted_callers\": [\n          \"caller.py:1  import target\",\n          \"caller.py:3-4  function caller\"\n        ],\n        \"source_revision\": {\n          \"base_commit\": \"405e9d74c2f7ea9cbe0ae188660dc5bed2f6cc96\",\n          \"base_tree\": \"c9438107178b8b3ea9ffa0de76e38ddca655f254\",\n          \"commit\": \"e4f2a0c3e78dece541d8cc95af96a0791150f391\",\n          \"diff\": \"git\",\n          \"kind\": \"commit\",\n          \"range\": \"405e9d74c2f7ea9cbe0ae188660dc5bed2f6cc96...e4f2a0c3e78dece541d8cc95af96a0791150f391\",\n          \"tree\": \"33f4931f6f3cf33672a692fdbd65ec6f5e4f3d8e\"\n        },\n        \"spans\": [\n          {\n            \"kind\": \"function\",\n            \"name\": \"target\",\n            \"provenance\": \"target.py:1-2\",\n            \"role\": \"touched\",\n            \"source\": \"target.py\"\n          },\n          {\n            \"kind\": \"import\",\n            \"name\": \"target\",\n            \"provenance\": \"caller.py:1\",\n            \"role\": \"caller\",\n            \"source\": \"caller.py\"\n          },\n          {\n            \"kind\": \"function\",\n            \"name\": \"caller\",\n            \"provenance\": \"caller.py:3-4\",\n            \"role\": \"caller\",\n            \"source\": \"caller.py\"\n          }\n        ],\n        \"token_count\": 56,\n        \"tool\": \"review\",\n        \"touched_symbols\": [\n          \"target.py:1-2  function target\"\n        ],\n        \"unresolved_files\": [],\n        \"within_budget\": true\n      },\n      \"stderr\": \"\"\n    },\n    \"worktree\": {\n      \"returncode\": 0,\n      \"expected_target\": 9,\n      \"expected_caller\": 9,\n      \"passed\": true,\n      \"payload\": {\n        \"budget_tokens\": 160,\n        \"changed_files\": [\n          \"caller.py\",\n          \"target.py\"\n        ],\n        \"context\": \"# changed definitions\\n\\n# caller.py:3-4\\ndef caller():\\n    return target() + 9\\n\\n# target.py:1-2\\ndef target():\\n    return 9\\n\\n# callers that could be affected\\n\\n# caller.py:1\\nfrom target import target\",\n        \"impacted_callers\": [\n          \"caller.py:1  import target\"\n        ],\n        \"source_revision\": {\n          \"base_tree\": \"8d61c3695be94df013b34f241d4d9612747d3c87\",\n          \"diff\": \"git\",\n          \"kind\": \"worktree\"\n        },\n        \"spans\": [\n          {\n            \"kind\": \"function\",\n            \"name\": \"caller\",\n            \"provenance\": \"caller.py:3-4\",\n            \"role\": \"touched\",\n            \"source\": \"caller.py\"\n          },\n          {\n            \"kind\": \"function\",\n            \"name\": \"target\",\n            \"provenance\": \"target.py:1-2\",\n            \"role\": \"touched\",\n            \"source\": \"target.py\"\n          },\n          {\n            \"kind\": \"import\",\n            \"name\": \"target\",\n            \"provenance\": \"caller.py:1\",\n            \"role\": \"caller\",\n            \"source\": \"caller.py\"\n          }\n        ],\n        \"token_count\": 56,\n        \"tool\": \"review\",\n        \"touched_symbols\": [\n          \"caller.py:3-4  function caller\",\n          \"target.py:1-2  function target\"\n        ],\n        \"unresolved_files\": [],\n        \"within_budget\": true\n      },\n      \"stderr\": \"\"\n    }\n  }\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-B",
+          "eval\\agent_bench\\results\\priority_repair_20260929\\review_revision_edges.py"
+        ],
+        "returncode": 0,
+        "elapsed_seconds": 3.201,
+        "stdout": "{\n  \"unborn_utf8_scope_ignore_symlink\": {\n    \"returncode\": 0,\n    \"changed_files\": [\n      \"café space.py\",\n      \"nested/keep.py\"\n    ],\n    \"stderr\": \"\"\n  },\n  \"nested_glob\": {\n    \"returncode\": 0,\n    \"changed_files\": [\n      \"nested/keep.py\"\n    ],\n    \"stderr\": \"\"\n  },\n  \"conflicting_modes\": {\n    \"returncode\": 2,\n    \"changed_files\": null,\n    \"stderr\": \"usage: pasr review [-h] [--diff DIFF | --staged | --range REF_RANGE]\\n                   [--budget BUDGET] [--callers-depth CALLERS_DEPTH]\\n                   [--context-file CONTEXT_FILE] [--json]\\n                   [paths ...]\\npasr review: error: argument --range: not allowed with argument --staged\\n\"\n  },\n  \"invalid_range\": {\n    \"returncode\": 2,\n    \"changed_files\": null,\n    \"stderr\": \"error: fatal: Needed a single revision\\n\"\n  },\n  \"escaping_include\": {\n    \"returncode\": 2,\n    \"changed_files\": null,\n    \"stderr\": \"error: include pattern must stay inside workspace: ../outside.py\\n\"\n  },\n  \"external_worktree\": {\n    \"returncode\": 0,\n    \"changed_files\": [\n      \"scope/café space.py\"\n    ],\n    \"stderr\": \"\"\n  },\n  \"range_rename_delete_missing_worktree\": {\n    \"returncode\": 0,\n    \"changed_files\": [\n      \"renamed café.py\"\n    ],\n    \"stderr\": \"\"\n  }\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-B",
+          "eval\\agent_bench\\results\\priority_repair_20260929\\physical_source_smoke.py",
+          "after"
+        ],
+        "returncode": 0,
+        "elapsed_seconds": 0.136,
+        "stdout": "{\n  \"checkout\": \"D:\\\\kodlama\\\\pasr\",\n  \"phase\": \"after\",\n  \"physical_lines\": [\n    1,\n    2,\n    3\n  ],\n  \"selected_symbol_text\": \"def target():\\r\\n    return \\\"caf\\u00e9\\\"\\r\\n\",\n  \"symbol_complete\": true,\n  \"discovered\": [\n    \"good.py\",\n    \"pkg/deep/deep.tmp.py\",\n    \"pkg/keep.tmp.py\"\n  ],\n  \"usage_provenance\": [\n    \"good.py:2\",\n    \"pkg/deep/deep.tmp.py:1\",\n    \"pkg/keep.tmp.py:1\"\n  ],\n  \"diagnostics\": [\n    \"Skipping source invalid.py: unsupported UTF-8 source <USERPROFILE>\\\\AppData\\\\Local\\\\Temp\\\\tmpwi2rh2j_\\\\invalid.py: 'utf-8' codec can't decode byte 0xff in position 10: invalid start byte\",\n    \"Skipping source nul.py: source contains NUL bytes: <USERPROFILE>\\\\AppData\\\\Local\\\\Temp\\\\tmpwi2rh2j_\\\\nul.py\",\n    \"Skipping source utf16.py: unsupported UTF-8 source <USERPROFILE>\\\\AppData\\\\Local\\\\Temp\\\\tmpwi2rh2j_\\\\utf16.py: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte\"\n  ]\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-B",
+          "eval\\agent_bench\\results\\priority_repair_20260929\\physical_source_boundaries.py",
+          "after"
+        ],
+        "returncode": 0,
+        "elapsed_seconds": 0.186,
+        "stdout": "{\n  \"phase\": \"after\",\n  \"import_root\": \"D:\\\\kodlama\\\\pasr\\\\src\",\n  \"tree_sitter\": [\n    {\n      \"newline\": \"'\\\\n'\",\n      \"lines\": [\n        2,\n        4\n      ],\n      \"exact_body\": true,\n      \"exact_slice\": true\n    },\n    {\n      \"newline\": \"'\\\\r\\\\n'\",\n      \"lines\": [\n        2,\n        4\n      ],\n      \"exact_body\": true,\n      \"exact_slice\": true\n    },\n    {\n      \"newline\": \"'\\\\r'\",\n      \"lines\": [\n        2,\n        4\n      ],\n      \"exact_body\": true,\n      \"exact_slice\": true\n    }\n  ],\n  \"searches\": {\n    \"find_symbols\": {\n      \"provenance\": [\n        \"good.py:1-2\"\n      ],\n      \"diagnostics\": 3\n    },\n    \"find_evidence\": {\n      \"provenance\": [\n        \"good.py:1\"\n      ],\n      \"diagnostics\": 3\n    },\n    \"find_usages\": {\n      \"provenance\": [\n        \"good.py:1\"\n      ],\n      \"diagnostics\": 3\n    }\n  },\n  \"explicit_rejection\": {\n    \"bad.py\": \"unsupported UTF-8 source <USERPROFILE>\\\\AppData\\\\Local\\\\Temp\\\\tmpcept53ec\\\\workspace\\\\bad.py: 'utf-8' codec can't decode byte 0xff in position 10: invalid start byte\",\n    \"utf16.py\": \"unsupported UTF-8 source <USERPROFILE>\\\\AppData\\\\Local\\\\Temp\\\\tmpcept53ec\\\\workspace\\\\utf16.py: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte\",\n    \"nul.py\": \"source contains NUL bytes: <USERPROFILE>\\\\AppData\\\\Local\\\\Temp\\\\tmpcept53ec\\\\workspace\\\\nul.py\"\n  },\n  \"selected_ranges\": [\n    {\n      \"newline\": \"'\\\\n'\",\n      \"context\": \"def target():\\n    return \\\"caf\\u00e9\\\"\\n\",\n      \"complete\": true\n    },\n    {\n      \"newline\": \"'\\\\r\\\\n'\",\n      \"context\": \"def target():\\n    return \\\"caf\\u00e9\\\"\\n\",\n      \"complete\": true\n    },\n    {\n      \"newline\": \"'\\\\r'\",\n      \"context\": \"def target():\\n    return \\\"caf\\u00e9\\\"\\n\",\n      \"complete\": true\n    }\n  ],\n  \"junction\": {\n    \"paths\": [\n      \"bad.py\",\n      \"good.py\",\n      \"nul.py\",\n      \"utf16.py\"\n    ],\n    \"error\": null,\n    \"diagnostics\": [\n      \"Skipping directory linked: path escapes workspace: linked\"\n    ]\n  }\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-B",
+          "eval\\agent_bench\\results\\priority_repair_20260929\\stdio_smoke.py"
+        ],
+        "returncode": 0,
+        "elapsed_seconds": 2.665,
+        "stdout": "{\"status\": \"passed\", \"transport\": \"child-process stdio MCP\", \"model_requests\": 0, \"calls\": 22, \"identical_successful_selections\": 16, \"edited_source_gets_new_receipt\": true}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-B",
+          "eval/agent_bench/priority_repair_check.py",
+          "--source-root",
+          "src",
+          "--output",
+          "eval\\agent_bench\\results\\priority_repair_20260929\\replay_after.json"
+        ],
+        "returncode": 0,
+        "elapsed_seconds": 28.399,
+        "stdout": "{\"output\": \"eval\\\\agent_bench\\\\results\\\\priority_repair_20260929\\\\replay_after.json\", \"catalog_tokens\": 536, \"rows\": 31, \"calls\": 116, \"errors\": 0, \"tool_text_tokens\": 77098, \"context_tokens\": 39769, \"rubric_source_lines\": 1874, \"selection_delivered_rubric_lines\": 1317}\n",
+        "stderr": ""
+      }
+    ],
+    "resolved_integration_failures": [
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-m",
+          "pytest",
+          "-q"
+        ],
+        "returncode": 0,
+        "elapsed_seconds": 17.84,
+        "stdout": "................................................................... [ 13%]\n........................................................................ [ 28%]\n........................................................................ [ 43%]\n......................................................s............... [ 58%]\n............................. [ 64%]\n........................................................................ [ 79%]\n.................................................................. [ 93%]\n.................................                                        [100%]\n=========================== short test summary info ===========================\nSKIPPED [1] tests\\test_packs.py:146: source symlinks are unavailable\n480 passed, 1 skipped, 56 subtests passed in 17.07s\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "D:\\anaconda\\python.exe",
+          "-m",
+          "ruff",
+          "check",
+          "src/pasr",
+          "tests",
+          "eval/agent_bench/runner.py",
+          "eval/agent_bench/tools_pasr.py",
+          "eval/agent_bench/priority_repair_check.py",
+          "eval\\agent_bench\\results\\priority_repair_20260929\\stdio_smoke.py"
+        ],
+        "returncode": 0,
+        "elapsed_seconds": 0.066,
+        "stdout": "All checks passed!\n",
+        "stderr": ""
+      }
+    ],
+    "initial_failures": [
+      "Rejection test expected UnicodeDecodeError, not path-bearing ValueError; now verifies cause/path.",
+      "One unsorted test import; organized using LSP code action."
+    ],
+    "stdio": {
+      "status": "passed",
+      "transport": "child-process stdio MCP",
+      "model_requests": 0,
+      "calls": 22,
+      "identical_successful_selections": 16,
+      "edited_source_gets_new_receipt": true
+    },
+    "browser": {
+      "status": "passed",
+      "surface": "local landing page in Chromium",
+      "checks": {
+        "independentRequests": true,
+        "noWinClaim": true,
+        "noHorizontalOverflow": true
+      },
+      "screenshot_observed": true
+    }
+  },
+  "migration": [
+    "Packs/receipts v1 rejected; rebuild/reselect. Existing files untouched; no automatic recertification.",
+    "Index format5 rebuilds prior stat-keyed cache.",
+    "Repeated whole-file selection no longer implicitly continues; host must request explicit ranges.",
+    "Retired APIs have no aliases; use supported selection/provider APIs and efficiency.py.",
+    "Saved packs exceeding requested MCP selection cap are rejected, not clipped."
+  ],
+  "remaining_limits": [
+    "Working-tree identity is per-file, not a transaction across source reads or concurrent writers.",
+    "Receipts retain selected evidence, not complete files; trusted local hashes are not authentication.",
+    "Stopping and retained-context management need host policy; resending source can increase history cost.",
+    "Greedy ranking/candidate horizon, keyword diagnostics and approximate name graphs remain imperfect.",
+    "Optional standalone dependency tracing has a soft token target; MiniLM not exercised.",
+    "Prior RAG/map cache and packaged-agent clipping concerns remain outside these priority repairs.",
+    "No cross-platform, exhaustive concurrency, adaptive-model or answer-quality validation in this run."
+  ],
+  "retired_production_paths": [
+    "src/pasr/context_order.py",
+    "src/pasr/controller.py",
+    "src/pasr/symbols/python_symbols.py"
+  ],
+  "additional_retirements": [
+    "eval/agent_bench/sweep.py",
+    "tree-sitter-python dependency"
+  ],
+  "source_hashes_before": {
+    "src/pasr/__init__.py": "e9cb846c4aa6ebda1ce93390a7c22502dd5908880d8ec807ac1c675f99f869d7",
+    "src/pasr/_tokenize.py": "1fc31827c093aaea4a871de67c967077b9ec39f4ed0f134b0dd9fc2efb0a8e68",
+    "src/pasr/candidates.py": "6266d8f4b2ac0d2e98c01e102aa1e0c8503fa839cd17a6810bfdbc4152f58664",
+    "src/pasr/chunker.py": "81727de9a8cbac68662974e72f8b57c274bae689720d59f618459a137939bdf1",
+    "src/pasr/cli.py": "8004bc2d28b53eea5b00fe041e335cf0439b988fd6c1654a62fc2e2d09e48276",
+    "src/pasr/context_order.py": "017a8757d264552cceda6dbd5b6b4bdb2c59b5113142c9d6ef1c82aa4d70ff3a",
+    "src/pasr/controller.py": "b7a91ec251edc4ecb89420a83bd27f0bde6f153f08f182cdb40143b92542cf01",
+    "src/pasr/evidence.py": "753360e7441166c47c177a968ee3987e398364d618b071e50df8c2b3ea564e00",
+    "src/pasr/file_discovery.py": "f48abdba70571f11240f15ed25f33653c63ee71845408ce48db01bd3f2bcd30e",
+    "src/pasr/find_files.py": "a65901d4d934ca51204d3f877c63f55c7f86d721a18e96994aea382e84f979b9",
+    "src/pasr/index.py": "dc2803a075266c084a1139271e11020988eb242636f9f3fe0b23c0475b39ab4e",
+    "src/pasr/ledger.py": "4b68494d420a32158323b8bd95d3ab816f8905351d6126b1c00d5d308d5279e3",
+    "src/pasr/mcp/__init__.py": "88edfdb9913625c27333f4f1ee0d0fa273eab42bba086c3e77b804663041986d",
+    "src/pasr/mcp/server.py": "3ffb4de52ed740149a8d418e1d28b08aae1f80ed3f8f00645a65d4f9a5775c38",
+    "src/pasr/packing.py": "d6454e852d564f3bd5bc8051154e078b05968ad513547c27042b63acea9a1686",
+    "src/pasr/packs.py": "8b86b0192f30098be6c9cf61647d3de5daf206743c10044553d0b35555cf3c98",
+    "src/pasr/pipeline.py": "94522c37b897662c6d3b5217577ec1dc17d001a2549da25530d208a5ed9b3803",
+    "src/pasr/receipt.py": "f1107ad726393a7291ddb6eec62c09df380007704a7620f9b92e8c1bca99fb9d",
+    "src/pasr/redaction.py": "f4505e757e80ff4e74e915d40702ab9f8e22db967122a31721143c442cfa5cc0",
+    "src/pasr/retrieval/__init__.py": "c79b1c094646b1619a610b9a1cec70e7c298a9b0a4fb46fd759e60ad463f3acf",
+    "src/pasr/retrieval/bm25.py": "3a7d5ca07f9f32cdbcb51222b452c837cde326d0d724ae178eee8cf3db03cb7e",
+    "src/pasr/retrieval/lexical.py": "40aa324a6ea037105bd93cea0807d2c50193c286fb0b9f20e0e9b456d5ceec52",
+    "src/pasr/retrieval/semantic.py": "e2cd6d89eb6b3a0144ece7f8d13a54279f47be5f0a2b008682c5bee6d4aada33",
+    "src/pasr/review.py": "fd8ee4e2c5cae2124a20b9a5bfd9cdf961881b1364ef2c97ca5318fab4807f6e",
+    "src/pasr/routing.py": "e0497d4b7d48f942ede976091335dad19c1442521a7b5fab61a4af4e4a724a57",
+    "src/pasr/schema.py": "ffdadfef45b34790520a2a3f1617df445814aad178168c05b7a7b6cb0e25b853",
+    "src/pasr/select.py": "ee1c6cb1b074e19c652d69aec320076f73aaa87f5574c384ade05d124219f738",
+    "src/pasr/symbol_search.py": "10d913c15024cba279564224e61f0ad85e9de262cc74acdc9fbfbd72d8390932",
+    "src/pasr/symbols/__init__.py": "5b9c1d5b92894be3efb9c33ae7d09b5407c3c3099e4d5ae379cb28fb7ffb4e7c",
+    "src/pasr/symbols/base.py": "31f980ba21de80d077f21adb5b6066cc69bcc851c776819ed0faedaf8e51dca2",
+    "src/pasr/symbols/candidates.py": "b057f66cefee52ca855b00e3c082208f7efa7c3eeaf949a240ebeb930edb819d",
+    "src/pasr/symbols/python_provider.py": "8ddd5d70b164ddaf48c436d48b7163eb008fb40ee224c0c221731c10f3cb16d2",
+    "src/pasr/symbols/python_symbols.py": "a30b684a07b391cd102baab324340e05818a4e6961a586b8114b8be5fc523e4a",
+    "src/pasr/symbols/registry.py": "22088e505e7f2f36f7561344aeb5ce7329316cd6620957967182de4f36b9706b",
+    "src/pasr/symbols/treesitter_provider.py": "23342064e359293dd74d7bf67a4b15bf81f4b42de3168c9df17c4300da5f44fd",
+    "src/pasr/tokenize.py": "d16fe7ab09a41209aa583b25a9946cd9ef00ecee54c7271026ea1484d436e90b",
+    "src/pasr/trace.py": "7df0404c0ecfb3c2cf6ebbd1b798f996875d947eb47b364cfa97c28a8ccf5217",
+    "src/pasr/window.py": "7ca2b39a9bf83a6ef123f3bc62f21b9bb73b428f51f9a4f397f1cc0d65b225ea"
+  },
+  "source_hashes_after": {
+    "src/pasr/__init__.py": "e9cb846c4aa6ebda1ce93390a7c22502dd5908880d8ec807ac1c675f99f869d7",
+    "src/pasr/_tokenize.py": "1fc31827c093aaea4a871de67c967077b9ec39f4ed0f134b0dd9fc2efb0a8e68",
+    "src/pasr/candidates.py": "6266d8f4b2ac0d2e98c01e102aa1e0c8503fa839cd17a6810bfdbc4152f58664",
+    "src/pasr/chunker.py": "98345a616afd33560f5fb4bdf5401494013d3803d0fe4398e9823695fdb1f663",
+    "src/pasr/cli.py": "d4edabf2de303b038f7ffc5a9d0f037f5d5fae2d73e8533c3ff12010640315b8",
+    "src/pasr/evidence.py": "753360e7441166c47c177a968ee3987e398364d618b071e50df8c2b3ea564e00",
+    "src/pasr/file_discovery.py": "28f9cebd943981030daa0f2933a3d0cdc6bf7a5abdbe69d25f4b39d50098345b",
+    "src/pasr/find_files.py": "a65901d4d934ca51204d3f877c63f55c7f86d721a18e96994aea382e84f979b9",
+    "src/pasr/index.py": "696d37f9b0bebd4fac9fa5f90f011721bd16b924b3ed0ae0b9407cf4e8c302a6",
+    "src/pasr/ledger.py": "4b68494d420a32158323b8bd95d3ab816f8905351d6126b1c00d5d308d5279e3",
+    "src/pasr/mcp/__init__.py": "88edfdb9913625c27333f4f1ee0d0fa273eab42bba086c3e77b804663041986d",
+    "src/pasr/mcp/server.py": "95b3a11d99fa5194161fae3a8fe272e61120d7148ad65f12838997e5ffc11fef",
+    "src/pasr/packing.py": "d6454e852d564f3bd5bc8051154e078b05968ad513547c27042b63acea9a1686",
+    "src/pasr/packs.py": "ca6d6974584b1e965e52ddbb9e8879647334ca1cc9c467b0a983b86a49829d93",
+    "src/pasr/pipeline.py": "94522c37b897662c6d3b5217577ec1dc17d001a2549da25530d208a5ed9b3803",
+    "src/pasr/receipt.py": "49273d424de11279a4e722ce3362f6580fa022045210e805efc0fea5992ea450",
+    "src/pasr/redaction.py": "f4505e757e80ff4e74e915d40702ab9f8e22db967122a31721143c442cfa5cc0",
+    "src/pasr/retrieval/__init__.py": "c79b1c094646b1619a610b9a1cec70e7c298a9b0a4fb46fd759e60ad463f3acf",
+    "src/pasr/retrieval/bm25.py": "3a7d5ca07f9f32cdbcb51222b452c837cde326d0d724ae178eee8cf3db03cb7e",
+    "src/pasr/retrieval/lexical.py": "40aa324a6ea037105bd93cea0807d2c50193c286fb0b9f20e0e9b456d5ceec52",
+    "src/pasr/retrieval/semantic.py": "e2cd6d89eb6b3a0144ece7f8d13a54279f47be5f0a2b008682c5bee6d4aada33",
+    "src/pasr/review.py": "af3c6cfe0d54490f2cdaf29fb0b0f84ff5734fad36548d538c38484bf25f52d1",
+    "src/pasr/routing.py": "e0497d4b7d48f942ede976091335dad19c1442521a7b5fab61a4af4e4a724a57",
+    "src/pasr/schema.py": "ffdadfef45b34790520a2a3f1617df445814aad178168c05b7a7b6cb0e25b853",
+    "src/pasr/select.py": "a05ba07bd2b81b74b0f07434eec8aae47826e1c23d6c023b63a78c1f1baee737",
+    "src/pasr/source_text.py": "622e0c9ab11a96e836572acb7ec76e6b975279553e7b757a98bf03ad13e648fa",
+    "src/pasr/symbol_search.py": "7ac9390575d50c5d0ba0ff23ac3c78ae6d769c4c825d03c1e581eae9707989c7",
+    "src/pasr/symbols/__init__.py": "a4055f553f6e4b9348d98e3a7514dc9418b86fdcfc6a911b52a9e4fe4ac0c996",
+    "src/pasr/symbols/base.py": "3a0ccde02b37f6d30dffc2b98c26f8b17f8c4a09fcf5125fa30ca431c0733e6d",
+    "src/pasr/symbols/candidates.py": "ab70fb671df6c70de9aa3a65e34ce7cc72d7dcab34ac5e7e0a85b73fbdde80a3",
+    "src/pasr/symbols/python_provider.py": "93c673f97205af727ab6b2733261924dac9a7dfa281958d5401b03ff6cd08e63",
+    "src/pasr/symbols/registry.py": "22088e505e7f2f36f7561344aeb5ce7329316cd6620957967182de4f36b9706b",
+    "src/pasr/symbols/treesitter_provider.py": "60bb90011652ef38335e8fc367b12565130c59b76a28e561eae4fb1700621baa",
+    "src/pasr/tokenize.py": "d16fe7ab09a41209aa583b25a9946cd9ef00ecee54c7271026ea1484d436e90b",
+    "src/pasr/trace.py": "7df0404c0ecfb3c2cf6ebbd1b798f996875d947eb47b364cfa97c28a8ccf5217",
+    "src/pasr/window.py": "7ca2b39a9bf83a6ef123f3bc62f21b9bb73b428f51f9a4f397f1cc0d65b225ea"
+  },
+  "changed_production_paths": [
+    "src/pasr/chunker.py",
+    "src/pasr/cli.py",
+    "src/pasr/file_discovery.py",
+    "src/pasr/index.py",
+    "src/pasr/mcp/server.py",
+    "src/pasr/packs.py",
+    "src/pasr/receipt.py",
+    "src/pasr/review.py",
+    "src/pasr/select.py",
+    "src/pasr/source_text.py",
+    "src/pasr/symbol_search.py",
+    "src/pasr/symbols/__init__.py",
+    "src/pasr/symbols/base.py",
+    "src/pasr/symbols/candidates.py",
+    "src/pasr/symbols/python_provider.py",
+    "src/pasr/symbols/treesitter_provider.py"
+  ],
+  "evidence_archive": "results/priority_repair_20260929 (git-ignored)",
+  "artifact_sha256": {
+    "baseline_manifest.json": "7b797b312d5f94ad5aff07eb918da7a140a5bb46eae375fea83d408c4b7ba019",
+    "delivery_comparison.json": "efdaab34b444af1bed56847470de0b995e8ccb2391717b67bede527365a98803",
+    "docs_visual_smoke.json": "a743363d27e7507079b15c75c9d24f4d3f870d2649411178ace9bb9af1c9eb85",
+    "integrated_runs.json": "15f0872a9e5d51f68c66498c36af223fde4adbb351fa98a560bddad747006cec",
+    "integration_corrections.json": "60eb787f0406c939d87a3f5893543e7a8ae70c44e44a2d2a718f28ea92ee06cb",
+    "mcp_lifecycle_after.json": "e9c3cc31379fb16f2903729dd965d95a811082962de12733f36bd3548a0c9b7d",
+    "mcp_lifecycle_before.json": "a1f85d1ec031083936316cbe904461aadc2c337c14d7e38253aa540c1e2aa91d",
+    "mcp_optional_smoke.json": "70eb5ba1aa9cd0d137d6910bd77b16e762566e9b35355152d795711854955b99",
+    "physical_source_after.json": "2e5a1b6bcaa38ee47f4e88144a655afe4bfb57da6884c0b6919af1d0d9fe8584",
+    "physical_source_before.json": "891ee66fc02357875c60aaa0f1c604a138fb1935e9bb9ee8a77ab5ee7b86d264",
+    "physical_source_boundaries_after.json": "d5eaffc96655aa277e9f459672e784b3db71f8b4a7e8cc70fc8934927f7650c3",
+    "physical_source_boundaries_before.json": "d4bef96acf1a4e398d37814a48e7345c009b0fdde957cddd5b3f23705e4c743c",
+    "replay_after.json": "9f0009fb2776879d7bb20e3ab4c87b24092d0583f76d66a7930799d26e7231d1",
+    "replay_before.json": "b7a58e549ed71e5367031ab3cae33e73fb276effe49b4e9137763f360c93a770",
+    "review_revision_after.json": "d0c945e240e6fb2929505d366ac2f99bc69501f85cad136274716766fb14a1b3",
+    "review_revision_before.json": "7bff9b75373dfad8083f7f6486f166e9eaa66f59727f37e7a5b02aef4a74e4f2",
+    "review_revision_edges.json": "7c02ef5c1fa6ce09ee81233cd93eb45b149e5c2ddb2f07b229245ffada9234cb",
+    "snapshot_after.json": "d38663bd4c39b5abad1f97d872856526bbe81267dd02d1ace286ae64c69baddb",
+    "snapshot_before.json": "c5ea80ba2f8403f833229339d4d6e59e6fac4db2bc3d7c27249419d3a057cb13",
+    "source_primitive_after.json": "a48ff03ca4f43234286df9ae793102981cf51583d0a994b20a354a4ff0c549de",
+    "stdio_smoke.json": "1b6960922ea11e757d87e863fcfbfe6e9a5e649e5cd763d719e70bebecbaed20",
+    "mcp_lifecycle_smoke.py": "60235fe779a2e1bfba3f175551023a0fd604de60b96ea204fdef28b23b39f113",
+    "mcp_optional_smoke.py": "48fcd350e713b994ddd8718ff28a64788965c4ded210ad8fb8ea2bd1330ec8f1",
+    "physical_source_boundaries.py": "328416a2f16c013314567ebda1267c7b188adda153e1df203659f60b0305b983",
+    "physical_source_smoke.py": "a90ac389e12ada533a8d12b115b42d6cf5c04a7a9fe83e66707b935c6c4e4687",
+    "publish_priority.py": "895ea2086c747e61e873b120e4fdb1a255bb046d0e7f9f032b2690f1ba8d0700",
+    "review_revision_edges.py": "21deb22233484b2f752c93f90051cd9e48ae1778a4d502f3ea003eeebce8233f",
+    "review_revision_smoke.py": "57fca44f93013bbf864f6e8db1599936c9d09405b7f32c92feeb4fde2c7fc6ae",
+    "snapshot_smoke.py": "6d536d135d6c6e5e8ff28af3b6e616caa65d23ba707f99b0cc9a2d34e4290029",
+    "stdio_smoke.py": "f4883609df3cab943414d89fb0c461576891828ece8fe22a870fcdf8ab5d2386"
+  },
+  "replay_script_sha256": "c5e4fbe0cccce55751d0d0b0e34aab01b7b4773e515dc7b6a0b5bef273e21c4a",
+  "narrative_sha256": "3bc89bdc5632f68d2c1f6a0afd2e630126996bbabea4d64bfa7ca515fa915c77",
+  "_publication": {
+    "source_record": "priority_repair_20260929.json",
+    "source_sha256": "b73a2371637c1ae0854cfb8ce8faff0f8ea4913ed9d191d08efca4de913dded2",
+    "redactions": "Only local Windows user-profile prefixes and hostname identifiers are replaced. Original frozen record remains unchanged and is not published. No metrics, answers, judgments or experimental outcomes were recomputed.",
+    "redacted_fields": [
+      "component_evidence/physical_source_after.json/diagnostics/0",
+      "component_evidence/physical_source_after.json/diagnostics/1",
+      "component_evidence/physical_source_after.json/diagnostics/2",
+      "component_evidence/physical_source_boundaries_before.json/junction/error",
+      "component_evidence/physical_source_boundaries_after.json/explicit_rejection/bad.py",
+      "component_evidence/physical_source_boundaries_after.json/explicit_rejection/utf16.py",
+      "component_evidence/physical_source_boundaries_after.json/explicit_rejection/nul.py",
+      "verification/initial_run/0/stdout",
+      "verification/initial_run/7/stdout",
+      "verification/initial_run/8/stdout"
+    ]
+  }
+}

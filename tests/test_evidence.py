@@ -1,6 +1,6 @@
 import unittest
 
-from pasr.evidence import account_query_evidence, build_evidence_span, extract_keywords
+from pasr.evidence import account_query_evidence, build_evidence_span
 
 
 class EvidenceAccountingTests(unittest.TestCase):
@@ -89,12 +89,6 @@ class EvidenceAccountingTests(unittest.TestCase):
                     "text": "bad count",
                 }
             )
-
-    def test_candidate_keywords_include_dotted_and_hyphenated_components(self):
-        self.assertEqual(
-            extract_keywords("path.relative_to raw-span"),
-            ["path.relative_to", "path", "relative_to", "raw-span", "raw", "span"],
-        )
 
 
 if __name__ == "__main__":

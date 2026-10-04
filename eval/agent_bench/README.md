@@ -10,9 +10,39 @@ Two arms answer the same question about the same repository, same model, same sy
 prompt, same turn cap:
 
 - **baseline** — `grep` + `read_file`, the tools a coding agent already has.
-- **pasr** — the same grep/read tools plus all eight tools exposed by the actual
-  production MCP server. Schemas come from `list_tools`; observations are the
-  server's `call_tool` text, with fresh session state for each run.
+- **pasr** — the same grep/read tools plus the default five PASR tools exposed by the
+  production MCP server; additional tools remain opt-in. Schemas come from `list_tools`;
+  observations are the server's `call_tool` text. The host, not MCP, owns question stopping.
+
+The current `compare_arms.py` compact presets (`PASR-lite` and `PASR-lite@4calls`)
+publish `search_code` and `read_code`, while retaining the host's native grep/read.
+Discovery accepts only a query; migrate scoped `search_code(..., files=...)`
+calls to `read_code(query=..., files=...)`. Historical runs retain their original
+catalogs and snapshots. The original [four-arm comparison](split_reader_20261001.json)
+failed its unchanged gate: 27/30 supported versus native 27/30 and frozen PASR
+control 29/30, with 5.65% more cumulative provider tokens than native.
+
+The subsequent [reserved40 confirmation](reserved_confirm_20261003.json) tested
+the frozen split reader at four calls against native at six, with the conservative
+stop instruction. Both scored **28/40 supported**; split used **25.3% fewer tokens**
+(ratio 0.7466, paired bootstrap 95% [0.6180, 0.8900]) but made **7 material errors
+versus 3**. The original validation gate failed on errors and accuracy uncertainty;
+the pre-registered direction check passed. Token savings are supported in this
+configuration, not improved reliability or promotion. All 80 original trajectories
+and reviews are included; no answers were regenerated to finish interrupted grading.
+The reserved40 are now consumed. Later comparisons on them are exploratory reuse.
+
+The [cheap-model / real-component comparison](cheap_market_20261003.json) then ran
+480 new trajectories on those reused questions: GPT-5 nano, GPT-4.1 nano and
+GPT-6 Luna, each with native tools, split-4, actual Aider RepoMap and actual
+Repomix compression. Luna/split had the lowest observed token/API cost per
+supported answer: **32/40 at 10,698 mean tokens**, versus Luna/Aider 30/40 at
+53,772 and Luna/Repomix 33/40 at 221,566. No model's original split/native
+validation gate passed. GPT-5 nano/split scored 4/40; GPT-4.1 nano scored 0/40
+with every method. These are hard source-mechanism tasks, not a universal nano-model
+ranking. The **$1.040717920** charge bound covers answer generation only.
+[Methods, uncertainty, failures and full table](../../docs/competitors-benchmark.md#real-upstream-components-with-low-cost-openai-models--2026-10-03)
+distinguish real context components from full competing coding products.
 
 The automatic score is a **keyword-localization proxy**, not semantic accuracy.
 Mentioning expected files and functions does not prove a correct explanation.
@@ -33,7 +63,22 @@ python efficiency.py --backend local --model qwen/qwen3.5-9b \
 the OpenAI chat API with tools). Repetitions matter: single runs can swing widely.
 Report cumulative input plus output, model turns, tool calls, failures, and localization
 separately. `tokens / localization passes` is not tokens per semantically correct answer.
-The older `sweep.py` command reports input-only tokens and labels them accordingly.
+The redundant input-only `sweep.py` launcher has been removed; use `efficiency.py`.
+
+`report.py` preserves provider input/output totals. Its per-component attribution is an
+estimate based on prompt growth and relative message sizes, not provider-measured tokens
+for each tool. It uses a row's recorded `stop_after` threshold when accounting for the
+forced-answer request; an absent historical threshold is unknown, not an assumed six.
+Inconsistent usage produces diagnostics instead of silently clamping components.
+Cache-equivalent columns are hypothetical weighting models, not observed API bills.
+Masked histories need request-level accounting rather than append-only growth estimates.
+The report columns are named `proxy` and `tok/proxy-pass`; neither is semantic answer
+accuracy. Full-answer comparisons require the separate source-grounded review.
+
+`PASR_BENCH_STOP_AFTER` is currently checked between model turns. A multi-tool response
+can cross that stopping threshold: report the actual call count and overshoots rather
+than describing it as a hard execution ceiling. Hosted logical input includes uncached,
+cache-write and cache-read tokens; report observed dollar charges separately when available.
 
 `efficiency.py` and `compare_sources.py` distinguish run-order and decoding controls:
 `--seed` shuffles the schedule, while `--sampling-seed` supplies the local decoding
@@ -50,6 +95,376 @@ Full transcripts, per-request usage, audit packets and frozen source snapshots a
 archived outside the public repo; `results/` is git-ignored, so your own
 runs write there without dirtying the tree. Replaying historical measurements requires
 their archived sources and transcripts; running current code does not recreate old protocols.
+
+## Applied priority repairs — 2026-09-29
+
+The [applied plan](../../docs/priority-repair-20260929.md) fixes MCP lifecycle,
+source identity, revision-consistent review, and physical source coordinates, and
+retires unused APIs. It does not claim improved model answers.
+
+Offline fixed-call replay covered all 31 audited PASR trajectories, including nine
+PASR-only wins: 116 PASR calls per side, zero errors. With identical `o200k_base`
+serialization, catalog size fell 1,318 to 536 tokens. Tool text barely changed
+(77,262 to 77,098), while selected rubric source-line coverage fell 1,325 to 1,317
+of 1,874. One row gained lines, two lost lines, and 28 were unchanged.
+The losses expose the migration from implicit server-held continuation to explicit
+host-chosen scopes. They are retained, not discarded as outliers.
+
+These are local representation and selection-delivery measurements, not cumulative
+provider usage, API bills, semantic sufficiency, or adaptive answer accuracy. No
+model requests or retraining occurred. Broad paid evaluation is not justified by
+these results alone.
+
+Records ending in `.public.json` replace only workstation user-profile prefixes
+and hostname identifiers. Each records the original frozen file's SHA-256 and the
+affected fields under `_publication`; metrics, answers and judgments are unchanged.
+The original files remain local and byte-for-byte intact, not public downloads.
+
+Report: [`priority_repair_20260929.public.json`](priority_repair_20260929.public.json).
+With the local archived sources/transcripts available, reproduce each side using:
+
+```bash
+python eval/agent_bench/priority_repair_check.py \
+  --source-root eval/agent_bench/results/priority_repair_20260929/baseline/src \
+  --output eval/agent_bench/results/priority_repair_20260929/replay_before.json
+python eval/agent_bench/priority_repair_check.py --source-root src \
+  --output eval/agent_bench/results/priority_repair_20260929/replay_after.json
+```
+
+## First-principles pipeline audit — 2026-09-29
+
+The [component and trajectory audit](../../docs/pipeline-audit-20260929.md) covers all
+38 production Python modules, 22 current evaluation modules, and 31 discordant pairs
+from the completed development study and surviving interrupted holdout.
+Of 22 native-correct/PASR-wrong pairs, 12 received the necessary evidence, seven lacked
+it, and three were mixed. Nine PASR-only successes remain counterexamples.
+These are descriptive cases, not independent samples or causal percentages.
+
+In the completed development cohort, production made fewer requests than native
+(4.30 versus 4.78) but consumed more total tokens (12,597.68 versus 8,295.72).
+Its catalog added 1,158 initial input tokens before source retrieval; compact added 513.
+Earlier 22/24 versus 17/24 claims were localization-proxy passes, not source-reviewed
+answer accuracy. The audit corrects that distinction without rewriting historical data.
+
+Local correctness fixes passed 439 tests and 37 subtests plus actual CLI/MCP scenarios.
+No new answer-generating model request, benchmark win, or release promotion is claimed.
+The current Anthropic runner now honors the between-turn threshold and records
+`logical_input_tokens` including cache reads/writes separately from provider-native
+`input_tokens`; replay reconstructs the same stopping policy. This does not change
+the frozen executor or outcomes of the later OpenAI API studies.
+
+Machine-readable report: [`pipeline_audit_20260929.json`](pipeline_audit_20260929.json).
+Local before/after scenarios and replay scripts: `results/pipeline_audit_20260929/`
+(git-ignored). Known remaining defects and keep/change/remove decisions are explicit
+in the report; a passing verification command does not imply every audited contract
+is currently correct.
+
+## Interrupted API catalog holdout — 2026-09-28
+
+**No release decision is authorized; production remains unchanged.** The exact compact
+catalog was frozen against 50 new questions on the same ten repositories, with two
+repetitions of native grep/read @4 and @6, production PASR @6, and compact PASR @6:
+400 scheduled trajectories. This is a question holdout, not an unseen-repository test.
+
+The provider returned HTTP 503 during trajectory 232. The predeclared policy stops
+spending on unknown usage, retains the failed request's reservation, and forbids
+replay. Consequently, **231 trajectories completed, one was interrupted, and 168
+were never attempted**. The completed prefix is unbalanced across profiles and
+question/repetition combinations; its descriptive measurements cannot establish
+the planned paired accuracy/token gate. Missing trajectories are not silently
+discarded, scored as successful, or replaced with retries.
+
+There are **1,143 successful provider responses and one failed request with unknown
+usage**. Recorded usage at published rates totals **$0.1825382**; the unresolved
+reservation is **$0.007591**, giving a conservative study charge bound of
+**$0.1901292**, not an exact bill. Including prior experiments, known charges total
+**$0.519774815** and the conservative bound is **$0.527365815**, below the $5 ceiling.
+No local LLM was used. Assistant source-review compute is outside these API totals.
+
+All **231 completed answers were source-graded** using arm-blind packets, with
+exact-answer quotations and criterion-level rationales. The offline audit reconciled
+all 1,143 surviving responses and validated 1,140 complete request histories.
+The interrupted trajectory has no saved final answer: its three successful prefix
+responses and usage survive, but its tool observations and request histories were
+not persisted before the exception. Those missing observations are not reconstructed
+by rerunning tools. The failed request's token usage and exact charge remain unknown.
+The post-interruption forensic analyzer preserves the frozen full-study files and
+does not substitute a new release gate. The report distinguishes integrity of the
+surviving evidence from completeness of the study; it makes no bootstrap,
+noninferiority, token-win, or promotion claim.
+
+Report: [`openai_catalog_holdout_20260928.json`](openai_catalog_holdout_20260928.json).
+Frozen protocol, source fingerprints, completed transcripts, raw responses, blind
+reviews, interruption record, and offline audit remain in the ignored
+`results/openai_catalog_holdout_20260928/` archive.
+
+## API catalog-description ablation — 2026-09-28
+
+**Decision: retain compact descriptions as a development candidate, not a production
+change. Reject the more aggressive terse candidate for promotion.** GPT-6 Luna
+(`reasoning_effort="none"`) completed 250 new API trajectories on the same 50
+development questions across ten Python repositories. All arms used the current
+production snapshot, including the three correctness repairs below; none reused
+earlier model answers.
+
+Only the five PASR tool descriptions changed. Tool names, order, input schemas,
+native tools, retrieval code, system/question prompts, complete history, and
+sequential-call policy were held fixed. Both native controls were freshly run.
+
+| Profile | Source-reviewed full-answer passes | Mean cumulative input + output tokens |
+|---|---:|---:|
+| grep + read @4 | 33/50 | **5,940** |
+| grep + read @6 | **42/50** | 8,296 |
+| Current production PASR @6 | 37/50 | 12,598 |
+| Compact descriptions @6 | 41/50 | 9,655 |
+| Terse descriptions @6 | 40/50 | 10,914 |
+
+Compact used **23.36% fewer tokens than production** and gained four net full
+answers: five compact-only successes versus one production-only success. The
+question-paired exploratory 95% token-ratio interval was 0.656–0.892; the
+accuracy-difference interval was 0–18 percentage points (repository-cluster
+sensitivity: -2–18 points). It passed the frozen development gate, but this is
+reused data, two candidates, one repetition, and only ten repository clusters—not
+unseen-data noninferiority or independent human validation.
+
+Against grep/read @6, compact still used **16.39% more tokens** and answered one
+fewer question correctly: three native-only successes versus two compact-only.
+Terse saved 13.36% against production but failed the declared question-paired
+accuracy-bound gate (-6 percentage points, below the -5-point margin). Its smaller
+catalog did not produce the cheapest PASR trajectories.
+
+The first provider requests measured **645 fewer input tokens** for compact and
+**793 fewer** for terse, in every matched pair against production. Tool routing
+also changed: native `read_file` calls rose from 11 in production to 25 with compact
+and 28 with terse. Thus catalog savings cannot be treated as a fixed subtraction
+from an otherwise identical conversation.
+
+**Token savings were not API-dollar savings in this run.** Compact's 50
+trajectories cost $0.03808904 versus production's $0.031973915 because their observed
+cache usage differed. The complete study cost **$0.17514883**, across **1,071 API
+requests**; combined with the previous pilot, replication, and repair smokes:
+**$0.337236615**, below the $5 ceiling. Costs use recorded cache/read/write/output
+usage and [published rates](https://developers.openai.com/api/docs/pricing), not an
+invoice or account-balance query; assistant source-review compute is excluded.
+
+Verification reconciled all 250 scheduled trajectories, every raw response and
+request hash, full histories, catalogs, usage, budget reservations, frozen files,
+and all 250 arm-blind source grades. No retries, generation failures, or local LLM
+calls occurred; none of the 202 `select_context` calls requested a semantic model.
+The pre-run checkout hashes cover rubric evidence, not every searchable file.
+A supplementary 1,882-file fingerprint was unchanged from its after-start capture
+through completion; that does not prove a pre-start full-checkout freeze.
+Grading clarifications and isolation checks are disclosed in the report.
+
+Fresh held-out replication is required before shipping compact descriptions.
+Production retrieval and the production catalog remain unchanged.
+
+Full record: [`openai_catalog_20260928.json`](openai_catalog_20260928.json).
+Frozen drivers, raw responses, reviews, and integrity record:
+git-ignored `results/openai_catalog_20260928/`.
+
+## Broader API replication and correctness repairs — 2026-09-28
+
+**Decision: the small pilot's token advantage did not replicate.** GPT-6 Luna
+(`reasoning_effort="none"`) completed 200 API-only trajectories on 50 questions
+across ten Python repositories. These questions and repositories are disjoint from
+the eight-question OpenAI pilot, but were already used in local-model research:
+this is broader model-specific replication, not a new research holdout.
+No local LLM was used in this continuation.
+
+All benchmark rows used the unchanged **pre-fix** production snapshot:
+
+| Profile | Source-reviewed full-answer passes | Mean cumulative input + output tokens |
+|---|---:|---:|
+| grep + read @4 | 34/50 | 6,708 |
+| grep + read @6 | **42/50** | **8,396** |
+| PASR @4, pre-fix | 32/50 | 11,467 |
+| PASR @6, pre-fix | 36/50 | 13,610 |
+
+At six calls, PASR lost six net passes and used **62.11% more total tokens**:
+eight baseline-only successes versus two PASR-only successes. At four calls it
+lost two net passes and used **70.94% more tokens**. Cached API dollars were slightly
+lower for PASR at both limits; that is not a logical-token saving.
+
+The matched first requests had identical system/question text and non-tool
+settings, but PASR's catalog added **1,158 input tokens** in every pair. At six
+calls, mean tool counts were almost equal (3.52 baseline, 3.58 PASR), so the
+small pilot's early-stop savings did not recur. The report includes per-repository
+results, paired transitions, and exploratory question/cluster bootstrap intervals.
+Neither equal counts nor non-significance establishes accuracy equivalence.
+
+Trace inspection and real API smoke calls also exposed three correctness defects,
+now fixed independently of this benchmark:
+
+- Stopword-only literal names disappeared from symbol/path lookup.
+- Overlapping bounded reads lost their scope and could falsely claim whole-file
+  possession.
+- Kind aliases normalized only the requested filter, rejecting native Python
+  classes even with `kinds=["class"]`.
+
+The first repair smoke's failed class lookup is retained. A subsequent API
+confirmation returned the class and correct source range; other API smokes verified
+ranked filename lookup and deduplicated bounded reads with unread ranges still
+available. **97 targeted tests passed**, and Ruff passed for the changed production
+and test modules. These are correctness fixes, not a measured post-fix accuracy or
+token improvement.
+
+This continuation used **876 API requests**, costing **$0.129356575** at published
+rates. Including the earlier pilot: **$0.162087785**, below the combined $5 ceiling.
+All requests have reconciled usage; no automatic retries or provider fallback.
+These figures are not an invoice or queried account balance and exclude assistant
+source-review compute. Grading was arm-blind coding-assistant source review, not
+independent human validation.
+
+The subsequent description-only catalog experiment is reported above. It leaves
+ranking unchanged and retains the cheaper native @4 control and full-answer
+source grading.
+
+Full record: [`openai_replication_20260928.json`](openai_replication_20260928.json).
+Raw evidence and frozen runners: git-ignored `results/openai_replication_20260928/`.
+
+## Capped OpenAI model pilot — 2026-09-28
+
+**Decision: use GPT-6 Luna for inexpensive development measurements; do not claim
+generalized PASR superiority from this pilot.** With the correct source excerpts
+provided, Luna at `reasoning_effort="none"` passed 7/8 questions; GPT-5 nano at
+`minimal` passed 2/8 and failed the predeclared 4/8 capability gate.
+Both models completed real baseline-read and production-MCP search smoke calls.
+
+Only Luna proceeded to the matched retrieval comparison:
+
+| Profile | Source-reviewed full-answer passes | Mean cumulative input + output tokens |
+|---|---:|---:|
+| grep + read @4 | 3/8 | 10,434 |
+| grep + read @6 | 4/8 | 19,171 |
+| Current PASR @4 | 1/8 | 14,503 |
+| Current PASR @6 | 4/8 | 17,390 |
+
+At six calls, PASR matched the observed pass count with **9.29% fewer total tokens**
+and **25.92% lower recorded API cost**. At four calls, PASR lost two correct answers
+and used 39.0% more tokens, despite lower cached dollar cost. Equal pass counts on
+eight reused questions are not proof of accuracy equivalence. The cheaper @4 native
+control remains relevant; the six-call result needs unseen-question replication.
+
+The complete pilot used **193 successful API requests across 52 trajectories**:
+four tool smokes, 16 source-answering controls, and 32 retrieval comparisons.
+Calculated cost from provider usage and published rates was **$0.03273121**,
+including cache writes and reads, below the $5 study ceiling. This is not an invoice
+or a queried account balance; assistant source review and local computation are
+not included. All usage reconciled, no automatic retries or truncations occurred,
+and no credential value was written to study artifacts or repository files.
+
+This is a separate Responses API protocol: sequential tool calls, complete history,
+4,096 maximum billed output tokens per request, and no seed/temperature parameter.
+Model-specific effort was fixed before execution. Do not pool these results with
+older local/Haiku protocols. Source grading was arm-blind coding-assistant review,
+not independent human validation. Production retrieval is unchanged.
+
+Full record: [`openai_pilot_20260928.json`](openai_pilot_20260928.json).
+Raw responses, source reviews, budget ledger and the frozen runner remain under
+the git-ignored `results/openai_pilot_20260928/`.
+
+## Smallest-local-model continuation — 2026-09-28
+
+**Decision: no accuracy/token win; production retrieval remains unchanged.**
+After an Anthropic insufficient-credit rejection, the outstanding contract comparison
+was run separately on the smallest installed generative model, **Llama 3.1 8B
+Q4_K_M**, with a 32,768-token context. No hosted and local trajectories were pooled.
+
+The frozen eight development questions covered 16 profiles: native grep/read,
+current PASR with the required-query schema, identifier-aware selection, and
+frequency-aware selection, each at 3/4/5/6-call stopping thresholds.
+
+| New local comparison | Result |
+|---|---:|
+| Scheduled trajectories attempted once | 128 |
+| Completed generations | 108 |
+| Native tool-format failures | 19 |
+| Truncated generations | 1 |
+| Source-reviewed fully correct answers | 0 |
+| Incomplete / materially incorrect completed answers | 44 / 64 |
+| Trajectories with complete provider usage | 109 |
+
+Every profile scored **0/8** full-answer passes. This quality floor is not useful
+accuracy equivalence. All four native baseline budgets have missing usage, so
+full-cohort token savings cannot be established. The 812,671 recorded provider
+input-plus-output tokens are a lower bound, not the full cost; failed requests
+are neither free nor excluded from the accuracy denominator.
+
+The existing 300-case, 50-question Llama validation from September 27 was retained,
+not rerun or labeled fresh evidence: 162 native-format failures, 138 completed
+generations, and no fully correct answers. The model weight SHA-256 matches.
+These local results do not complete the blocked hosted validation.
+
+Eight arm-blind coding-assistant reviews used frozen source evidence, not keyword
+scores. Identity, exact quotation, duplicate-verdict, source/harness hash,
+append-only history and recorded-usage checks passed. A real native tool-call smoke
+also passed; simple compatibility did not predict benchmark reliability.
+No production code changed, no tests were rerun, and the study model was unloaded.
+
+Full record: [`local_continuation_20260928.json`](local_continuation_20260928.json).
+Raw runs and reviews remain under the git-ignored `results/local_continuation_20260928/`.
+
+## Accuracy versus total tokens — 2026-09-27
+
+**Decision: retain production retrieval. The requested accuracy/token win was not established.**
+After development on eight questions, six profiles were frozen before 50 new questions
+across ten repositories. Qwen3.5-9B ran every profile once per question, interleaved,
+with identical generation settings and full history. Every PASR profile includes the
+required-query schema correction.
+
+| Profile | Source-reviewed full-answer passes | Mean cumulative input + output tokens |
+|---|---:|---:|
+| grep + read @4 | 18/50 | 9,764 |
+| grep + read @6 | 16/50 | 16,730 |
+| Current PASR @6 | 20/50 | 25,931 |
+| Identifier-aware selector @3 | 13/50 | 12,483 |
+| Identifier-aware selector @4 | 18/50 | 17,788 |
+| Occurrence-preserving BM25 selector @5 | 14/50 | 23,008 |
+
+`@N` is a between-turn stopping threshold, not a hard call ceiling; three trajectories
+overshot it. All 300 returned complete usage. Source/harness hashes and append-only
+request histories were verified; all delivered observations were retained unchanged.
+
+The @4 identifier candidate matched the optimized native control's pass count while
+using **82.2% more tokens**. The @3 candidate saved **25.4%** against native @6 but
+lost three correct answers. No tested PASR profile met both requirements against
+either native control. A sensitivity accepting three ambiguous cleanup-intent
+explanations does not change that conclusion.
+
+These are arm-blind coding-assistant source reviews, not human validation or keyword
+scores. Questions were purposively selected; fresh repositories are Python projects,
+with one repetition per profile. Question- and repository-clustered intervals are
+descriptive, not population-equivalence proofs. Cross-cohort development comparisons
+are explicitly qualified; the fresh profiles share one interleaved schedule.
+
+Retained changes: truthful token accounting/proxy labels and the MCP `query` requirement.
+Identifier-aware ranking, occurrence-preserving ranking, and batching/masking remain
+isolated experiments. Packing probes did not reproduce the required evidence-loss case,
+so no speculative packer rewrite was introduced.
+
+The independent Llama 3.1 run attempted the same 300 scheduled trajectories once.
+LM Studio rejected 162 generations for native tool-output format errors; the other
+138 completed but produced no fully correct answers under source review. Every
+profile therefore has unknown full-cohort token cost, and this quality floor does
+not support a retrieval comparison. Failed attempts were neither retried nor dropped.
+
+Haiku completed 219 development/smoke trajectories before an insufficient-credit
+rejection. The corrected-contract sweep stopped after 31 completions plus one failed
+request, leaving 96 scheduled cases unrun; fresh hosted validation was unavailable.
+Known metered expenditure was $6.2210: $5.7079 at Anthropic published rates plus
+$0.5131 tool-reported diagnostic grading. This is not an invoice or total project
+cost; local runtime and coding-assistant source review were not metered in that sum.
+
+Verification: 327 production tests passed, one optional semantic-dependency test
+skipped; 74 isolated candidate checks passed. Final report-focused checks, Ruff,
+real MCP selection/saved-pack calls and the report CLI also passed.
+Only study-owned model instances were unloaded; evidence and model weights remain.
+
+Full study record, additional-model limitations, spend and verification:
+[`accuracy_tokens_20260927.json`](accuracy_tokens_20260927.json).
+Raw evidence and reproducible drivers are retained locally under the git-ignored
+`results/accuracy_tokens_20260927/`; this study's raw evidence was not published.
 
 ## Cost-aware identifier-plus-dedup comparison — 2026-09-20
 
@@ -223,7 +638,7 @@ and four failed launches are excluded and preserved; the corrected launcher veri
 the imported module path and frozen source hash for all 96 accepted retrieval calls.
 
 Protocol, per-question results, costs, limitations and archive hashes:
-[`retrieval_fixes_20260920.json`](retrieval_fixes_20260920.json).
+[`retrieval_fixes_20260920.public.json`](retrieval_fixes_20260920.public.json).
 Full local evidence: `results/retrieval_fixes_20260920/`.
 
 ## Fixed-query retrieval isolation — 2026-09-20
@@ -313,7 +728,7 @@ instead of treating another payload change as a complete fix.
 
 The source-grounded causal review, per-request reconciliation, acceptance gates,
 limitations and archive hashes are recorded in
-[`definition_retrieval_20260920.json`](definition_retrieval_20260920.json).
+[`definition_retrieval_20260920.public.json`](definition_retrieval_20260920.public.json).
 Raw transcripts, label/cost-blinded review packets and frozen sources are retained
 locally under `results/definitions_20260920/`. This is a small, single-repository
 experiment—not a general accuracy or non-inferiority result.
@@ -378,7 +793,7 @@ changing presentation can change the trajectory. Neither heuristic retrieval
 confidence nor keyword overlap certifies that the answer has been established.
 
 Machine-readable results, caveats, review findings, and source links:
-[`local_efficiency_20260920.json`](local_efficiency_20260920.json).
+[`local_efficiency_20260920.public.json`](local_efficiency_20260920.public.json).
 Raw transcripts and frozen candidate sources are retained locally under
 `results/local_20260920/`; the summary records their hashes.
 
@@ -437,10 +852,10 @@ Four arms, randomized within each repetition:
 | `pasr_compact` | Columnar search records, deduplicated locations, raw code instead of JSON-escaped code |
 | `pasr_terse` | Compact responses plus shorter tool descriptions |
 
-The `pasr` arm now uses the production descriptions, schemas, session guards, and
-unmodified text observations. `pasr_compact` and `pasr_terse` are explicitly
-experimental presentation arms, not production defaults. They do not change the
-baseline toolkit or truncate observations.
+The current `pasr` arm uses production descriptions, schemas, and unmodified text
+observations. MCP no longer owns history/novelty guards; the runner owns stopping.
+`pasr_compact` and `pasr_terse` remain experimental presentation arms, not production
+defaults. They do not change the baseline toolkit or truncate observations.
 
 The report records the repository revision, dependency versions, code hashes, exact
 prompts/schemas, full delivered observations, answers and per-request usage.

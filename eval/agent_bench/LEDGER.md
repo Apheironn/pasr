@@ -1,10 +1,10 @@
 # Token ledger — grep+read vs PASR previous vs PASR now
 
-Every experiment is one sweep: the three arms run interleaved in the same invocation of
-`compare_sources.py` (numbers from different sweeps are never compared — see README).
+The historical sweeps below run their arms interleaved in one invocation of
+`compare_sources.py`; comparisons across separate sweeps need an explicit qualification.
 `grep+read` is the host's own tools only; `PASR previous` is the last accepted tree;
-`PASR now` is the candidate. Tables come from `report.py --md`, whose columns always sum
-to TOTAL: each turn's prompt growth is read off the server's `prompt_tokens`, attributed
+`PASR now` is the candidate. Tables come from `report.py --md`; unrounded component
+estimates conserve per-turn provider usage. Prompt growth is attributed
 to what was appended (the assistant's call, the tool results by size) and charged for
 every later turn that re-sends it.
 
@@ -13,12 +13,35 @@ Columns: `fixed` = system prompt + tool catalogue + question, re-sent every turn
 find_usages, `f_files` find_files, `read`/`grep` the host's tools, `asst` the model's own
 tool-call messages re-sent, `output` generated tokens.
 
+Accounting note (2026-09-27): these historical component columns are estimates, not
+provider-measured per-tool usage. The corrected reporter uses each recorded stopping
+threshold, leaves missing historical thresholds unknown, and reports attribution
+inconsistencies without changing provider TOTAL. Cache-equivalent figures below are
+hypothetical discounts, not observed bills. A stopping threshold is checked between
+model turns; batched requests can overshoot it.
+
 **Goal:** fewer tokens per run than grep+read, at equal or better accuracy.
 
 Model: Qwen3.5-9B (LM Studio, 32k context, reasoning off, T=0.2), stopping policy at 6
 calls for every arm. Accuracy is the keyword-localization proxy, not graded answers.
 Noise, for reading the tables: at 24 runs an arm, ±2 answers and ±10–15% tokens are within
 what a changed prompt alone produces.
+
+## Source-graded fresh comparison (2026-09-27)
+
+The new study uses full-answer source review, not the historical keyword proxy.
+On 50 fresh questions, native @4 achieved 18/50 at 9,764 mean total tokens.
+Identifier-aware PASR @4 also achieved 18/50, at 17,788 tokens (+82.2%).
+The cheaper PASR @3 profile used 12,483 tokens but passed only 13/50; native @6
+passed 16/50 at 16,730 tokens. Current PASR @6 passed 20/50 at 25,931 tokens;
+the frequency-aware @5 candidate passed 14/50 at 23,008.
+
+**No retrieval or host-policy candidate was promoted.** Only the query-schema
+correctness fix and honest reporting changes were retained. Full protocol, source
+grading limitations, additional-model results, and provider accounting are recorded
+in [`accuracy_tokens_20260927.json`](accuracy_tokens_20260927.json) and the
+[benchmark README](README.md#accuracy-versus-total-tokens--2026-09-27).
+Historical proxy rates below do not establish semantic noninferiority.
 
 ## Where it stands (2026-09-25)
 
@@ -33,7 +56,8 @@ Confirmed in one sweep of 64 runs an arm over four corpora (below): PASR 43,435 
 tokens a run, **−24% [−31%, −18%]**, accuracy 55 → 53/64 (n.s.); on the never-tuned
 `nushell_fresh` set −22%. Against grep+read (23,772, 48/64): +38% tokens, +8 points
 accuracy; below it on airguard (−3%), +13% on nushell, +80% on the multi-file holdout and
-fresh sets. Under prompt caching (re-sent input at 0.1x): 10,912 vs 8,754.
+fresh sets. Hypothetically weighting re-sent input at 0.1x gives 10,912 vs 8,754;
+these are not observed API bills.
 
 **At four calls PASR is cheaper than grep+read at six, with accuracy a little below and
 not significantly different** (budget sweep + field comparison, 112 runs each: 20.9k vs

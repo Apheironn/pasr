@@ -94,8 +94,8 @@ def assess(query_class: str, result: dict[str, Any], *, has_line_ranges: bool = 
                 "query_class": query_class,
                 "confidence": 0.0,
                 "advice": [
-                    "No symbols were indexed for these files (unsupported language, or no definitions). "
-                    "Call select_context without `outline` to read the text itself."
+                    "No symbol entries were returned (none indexed, or none fit the budget). "
+                    "Raise budget_tokens or call select_context without `outline` to read the text itself."
                 ],
             }
         return {
@@ -105,6 +105,37 @@ def assess(query_class: str, result: dict[str, Any], *, has_line_ranges: bool = 
                 f"Outline only: {line_count} definition(s) listed, no bodies - this locates, it does not "
                 "answer. Pick the definitions you need and call select_context again with those `files` "
                 "and a query naming them (or find_symbols for an exact name)."
+            ],
+        }
+
+    continuation = result.get("continuation")
+    if continuation is not None and continuation["files"]:
+        if continuation["blocked"]:
+            advice = [
+                "No requested body line fits. Increase budget where possible (MCP cap: 1,500 tokens) "
+                "or read directly; do not skip the line or retry unchanged."
+            ]
+        else:
+            advice = ["Range prefix only. Continue if needed with continuation.files as files, without include."]
+        advice.append("Compare shared source_fingerprint values before combining pages; calls do not freeze source.")
+        return {"query_class": query_class, "confidence": 0.0, "advice": advice}
+
+    if not spans and not result.get("context", "").strip():
+        return {
+            "query_class": query_class,
+            "confidence": 0.0,
+            "advice": [
+                "No source text was returned. Check that the requested files or ranges contain text; "
+                "if candidates were over budget, raise budget_tokens or request a smaller range."
+            ],
+        }
+
+    if continuation is not None:
+        return {
+            "query_class": query_class,
+            "confidence": 0.95,
+            "advice": [
+                "All extant requested lines are included, not necessarily callers, dependencies, or the answer."
             ],
         }
 
@@ -150,14 +181,21 @@ def assess(query_class: str, result: dict[str, Any], *, has_line_ranges: bool = 
     advice: list[str] = []
     if query_class == "trace":
         advice.append(
-            "This reads like a dependency question - trace_dependencies(<symbol>, files=[...]) returns a tighter, "
-            "complete closure. It needs the files to look in; called with a symbol alone it errors."
+            "This reads like a dependency question - trace_dependencies(<symbol>, files=[...]) follows static "
+            "name references within the supplied files and max_depth. It is not a complete runtime call graph. "
+            "It needs the files to look in; called with a symbol alone it errors."
         )
     elif query_class == "aggregation":
-        advice.append(
-            "Aggregation-style question: PASR returns a partial slice and will miss occurrences. "
-            "Read the files directly or raise budget_tokens."
-        )
+        if result["route"] == "lossless":
+            advice.append(
+                "Aggregation-style question: all text in the requested scope is included. Count or summarize "
+                "from it if that scope covers the question; a full scoped read is not whole-repository coverage."
+            )
+        else:
+            advice.append(
+                "Aggregation-style question: PASR returns a partial slice and may miss occurrences. "
+                "Read the files directly or raise budget_tokens."
+            )
     elif query_class == "unknown":
         advice.append("Query has too few content words to target - add specific identifiers.")
 
@@ -187,8 +225,8 @@ def assess(query_class: str, result: dict[str, Any], *, has_line_ranges: bool = 
         )
     if not advice:
         advice.append(
-            "Looks complete for a localized question: the slice covers the query's terms. "
-            "Answer from it - further retrieval calls are unlikely to add evidence."
+            "The selected text covers the query's terms, which is not proof of answer completeness. "
+            "If it establishes the requested mechanism, answer from it; retrieve more only for a specific missing link."
         )
     if has_line_ranges:
         advice.append(

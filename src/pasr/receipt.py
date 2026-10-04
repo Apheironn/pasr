@@ -1,26 +1,32 @@
 """Selection receipts: a byte-stable, inspectable record of a ``select_context`` run.
 
-Written to ``<workspace>/.pasr/receipts/<id>.json`` (+ a ``.md`` human diff). The id is
-a content hash of the request, so the same request always overwrites the same file.
-No wall-clock is stored -- determinism over an audit timestamp (the file mtime carries
-that).
+Written to ``<workspace>/.pasr/receipts/<id>.json`` (+ a ``.md`` human diff), using LF.
+The id hashes the request, per-file source fingerprints and persisted rendering outcome.
+Source edits cannot overwrite earlier evidence. Stored context and selected spans are
+retained, not the full source files; expansion explicitly compares new source snapshots.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
-RECEIPT_VERSION = "1.0"
+RECEIPT_VERSION = "2.0"
 RECEIPTS_DIR = ".pasr/receipts"
 
 
-def receipt_id(request: dict[str, Any]) -> str:
-    """Stable 12-hex id for a canonicalised request dict."""
-    canonical = json.dumps(request, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:12]
+def receipt_id(document: dict[str, Any]) -> str:
+    """Content address of the receipt document, excluding its own id."""
+    canonical = json.dumps(
+        {key: value for key, value in document.items() if key != "id"},
+        sort_keys=True,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def build_receipt(
@@ -55,10 +61,12 @@ def build_receipt(
         if not candidate["selected"]
     ]
     diagnostics = {key: value for key, value in result["diagnostics"].items() if key != "candidates"}
-    return {
+    receipt = {
         "receipt_version": RECEIPT_VERSION,
-        "id": receipt_id(request),
         "request": request,
+        "sources": list(result["sources"]),
+        "source_fingerprint": dict(result["source_fingerprint"]),
+        "context": result["context"],
         "result": {
             "route": result["route"],
             "query_class": result.get("query_class"),
@@ -74,6 +82,10 @@ def build_receipt(
         "dropped": dropped,
         "diagnostics": diagnostics,
     }
+    if "continuation" in result:
+        receipt["result"]["continuation"] = dict(result["continuation"])
+    receipt["id"] = receipt_id(receipt)
+    return receipt
 
 
 def receipt_bytes(receipt: dict[str, Any]) -> str:
@@ -84,12 +96,13 @@ def receipt_bytes(receipt: dict[str, Any]) -> str:
 def write_receipt(workspace_root: Path, receipt: dict[str, Any]) -> Path | None:
     """Write ``<root>/.pasr/receipts/<id>.{json,md}``. Best-effort: returns the json
     path, or ``None`` if the directory is not writable."""
+    _validate_receipt(receipt, receipt.get("id"))
     try:
         directory = Path(workspace_root) / RECEIPTS_DIR
         directory.mkdir(parents=True, exist_ok=True)
         json_path = directory / f"{receipt['id']}.json"
-        json_path.write_text(receipt_bytes(receipt), encoding="utf-8")
-        (directory / f"{receipt['id']}.md").write_text(render_markdown(receipt), encoding="utf-8")
+        json_path.write_text(receipt_bytes(receipt), encoding="utf-8", newline="\n")
+        (directory / f"{receipt['id']}.md").write_text(render_markdown(receipt), encoding="utf-8", newline="\n")
         return json_path
     except OSError:
         return None
@@ -100,7 +113,35 @@ def read_receipt(workspace_root: Path, receipt_id_value: str) -> dict[str, Any]:
     if not receipt_id_value.isalnum():
         raise ValueError("receipt id must be alphanumeric.")
     path = Path(workspace_root) / RECEIPTS_DIR / f"{receipt_id_value}.json"
-    return json.loads(path.read_text(encoding="utf-8"))
+    receipt = json.loads(path.read_text(encoding="utf-8"))
+    _validate_receipt(receipt, receipt_id_value)
+    return receipt
+
+
+def _validate_receipt(receipt: Any, expected_id: str) -> None:
+    if not isinstance(receipt, dict) or receipt.get("receipt_version") != RECEIPT_VERSION:
+        raise ValueError(f"unsupported receipt version; reselect sources using version {RECEIPT_VERSION}.")
+    fingerprints = receipt.get("source_fingerprint")
+    sources = receipt.get("sources")
+    if (
+        not isinstance(sources, list)
+        or not all(isinstance(source, str) and source for source in sources)
+        or len(sources) != len(set(sources))
+        or not isinstance(fingerprints, dict)
+        or set(fingerprints) != set(sources)
+        or not all(
+            isinstance(source, str) and source and isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value)
+            for source, value in fingerprints.items()
+        )
+        or not isinstance(receipt.get("context"), str)
+    ):
+        raise ValueError("receipt is missing valid source snapshot metadata; reselect sources.")
+    for source in sources:
+        path = Path(source)
+        if path.is_absolute() or path.drive or ".." in path.parts:
+            raise ValueError(f"saved source path must stay within workspace: {source}")
+    if receipt.get("id") != expected_id or receipt_id(receipt) != expected_id:
+        raise ValueError("receipt content hash mismatch; the stored evidence is corrupt or modified.")
 
 
 def render_markdown(receipt: dict[str, Any]) -> str:

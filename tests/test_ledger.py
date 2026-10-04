@@ -27,6 +27,21 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(row["query"], "how is the rate limit enforced")
         self.assertTrue(row["ts"].endswith("Z"))
 
+    def test_production_result_retains_scanned_file_count_after_response_trimming(self):
+        from pasr.schema import validate_select_context_request
+        from pasr.select import run_select_context
+        from pasr.tokenize import WhitespaceTokenizer
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name in ("a.py", "b.py", "c.py"):
+                (root / name).write_text("VALUE = 1\n", encoding="utf-8")
+            request = validate_select_context_request({"query": "VALUE", "include": ["*.py"]}, root)
+            result = run_select_context(request, tokenizer=WhitespaceTokenizer(), write_receipt_file=False)
+            row = ledger_entry(result)
+            self.assertEqual(row["files_scanned"], 3)
+            self.assertEqual(row["round_trips_saved"], 2)
+
     def test_append_and_read_round_trip(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

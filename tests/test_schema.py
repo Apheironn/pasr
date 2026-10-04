@@ -69,3 +69,29 @@ def test_rejects_unknown_recall_strategy(workspace: Path) -> None:
 def test_enforces_max_files(workspace: Path) -> None:
     with pytest.raises(ValueError, match="exceeding max_files"):
         validate_select_context_request({"query": "q", "include": ["pkg/*.py"], "max_files": 1}, workspace)
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("query", None),
+        ("query", 42),
+        ("outline", "false"),
+        ("outline", 1),
+        ("budget_tokens", 3.9),
+        ("budget_tokens", float("inf")),
+        ("budget_tokens", float("nan")),
+        ("trace", ["target"]),
+    ],
+)
+def test_rejects_values_that_change_meaning_when_coerced(workspace: Path, field: str, value) -> None:
+    with pytest.raises(ValueError):
+        validate_select_context_request({"query": "target value", "files": ["pkg/a.py"], field: value}, workspace)
+
+
+@pytest.mark.parametrize("symbol", [None, 42, [], ""])
+def test_trace_requires_a_nonempty_symbol_string(workspace: Path, symbol) -> None:
+    from pasr.schema import validate_trace_dependencies_request
+
+    with pytest.raises(ValueError):
+        validate_trace_dependencies_request({"symbol": symbol, "files": ["pkg/a.py"]}, workspace)

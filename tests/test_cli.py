@@ -35,7 +35,6 @@ def test_explain_json_is_valid(capsys):
     code = main(["--workspace", str(MINI_REPO), "explain", "rate limit", "api/ratelimit.py", "--json", "--no-write"])
     payload = json.loads(capsys.readouterr().out)
     assert code == 0
-    assert payload["receipt_version"] == "1.0"
     assert "kept" in payload and "dropped" in payload
 
 
@@ -59,6 +58,12 @@ def test_trace_missing_symbol_returns_one(capsys):
     code = main(["--workspace", str(TRACE_REPO), "trace", "no_such_symbol", "app"])
     assert code == 1
     assert "not defined" in capsys.readouterr().out
+
+
+def test_trace_missing_symbol_json_preserves_failure_exit_code(capsys):
+    code = main(["--workspace", str(TRACE_REPO), "trace", "no_such_symbol", "app", "--json"])
+    assert code == 1
+    assert json.loads(capsys.readouterr().out)["found"] is False
 
 
 def test_pack_writes_a_context_pack(mini_workspace, capsys):
@@ -138,6 +143,15 @@ def test_context_writes_files_and_reads_issue_file(tmp_path, capsys):
     assert metrics["route"] in {"lossless", "selected"}
 
 
+def test_context_metrics_count_the_resolved_files(tmp_path, capsys):
+    (tmp_path / "a.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (tmp_path / "b.py").write_text("VALUE = 2\n", encoding="utf-8")
+    assert main(["--workspace", str(tmp_path), "context", "*.py", "--issue", "VALUE"]) == 0
+    metrics = json.loads(capsys.readouterr().out)["metrics"]
+    assert metrics["files_scanned"] == 2
+    assert metrics["round_trips_saved"] == 1
+
+
 def test_context_requires_an_issue(capsys):
     code = main(["--workspace", str(MINI_REPO), "context", "."])
     assert code == 2
@@ -193,6 +207,10 @@ def test_review_json_and_empty_diff(tmp_path, capsys):
     empty.write_text("", encoding="utf-8")
     assert main(["--workspace", str(TRACE_REPO), "review", "--diff", str(empty)]) == 0
     assert "no changed files" in capsys.readouterr().out
+    assert main(["--workspace", str(TRACE_REPO), "review", "--diff", str(empty), "--json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["changed_files"] == []
+    assert payload["context"] == ""
 
     diff = tmp_path / "d.diff"
     diff.write_text(_DIFF, encoding="utf-8")
