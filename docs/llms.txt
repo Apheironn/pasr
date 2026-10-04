@@ -8,14 +8,19 @@
 > completeness guarantees. End-to-end superiority to native grep/read is unproven.
 > Offline use requires installed dependencies and cached tokenizer encoding data.
 
-Source version: 0.3.0. GitHub release artifacts:
+Released package: 0.3.0, now on PyPI: https://pypi.org/project/pasr-mcp/0.3.0/
+Separate GitHub wheel/sdist artifacts:
 https://github.com/Apheironn/pasr/releases/tag/v0.3.0
-PyPI publication is separate; it provides 0.2.1 at release preparation.
-For the behavior documented here, clone/update the checkout and run:
-`uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project`.
-MCP config: `{"command":"uvx","args":["--from","/absolute/path/to/pasr","pasr-mcp","--workspace","/absolute/path/to/project"]}`.
-Replace both absolute paths. Published install: `pip install pasr-mcp` or
-`uvx pasr-mcp --workspace /absolute/path/to/project`; it can lack checkout features.
+Install uv, make uvx available on PATH, and use Python 3.10+ (or let uv provision it).
+No PASR checkout is required:
+`uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project`.
+MCP config: `{"command":"uvx","args":["--from","pasr-mcp==0.3.0","pasr-mcp","--workspace","/absolute/path/to/project"]}`.
+Replace the workspace path with the project's absolute path. Update an existing
+pasr registration instead of adding another. Published install: `pip install pasr-mcp==0.3.0`.
+Without an agent, run `uvx --from pasr-mcp==0.3.0 pasr explain "<question>"` in the project.
+Developers only: to run a PASR checkout, replace `pasr-mcp==0.3.0` after `--from`
+with `/absolute/path/to/pasr` in the existing registration, not a second server.
+This runs that checkout, which can differ from the published release.
 
 Local selection does not prevent the client forwarding source to a cloud model.
 Default redaction is a no-op, not automatic secret detection. Computed spans are

@@ -65,33 +65,44 @@ redaction is a no-op, not automatic secret detection.
 
 ## Install
 
-**Source version: 0.3.0. GitHub releases and PyPI are separate distribution channels.**
-Use the [v0.3.0 GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.3.0)
-for versioned wheel/sdist artifacts; the PyPI badge above reports PyPI availability.
-At release preparation, PyPI still provides 0.2.1. Do not assume a GitHub release
-has already been uploaded there. To use this checkout, clone or update the
-repository and replace both absolute paths below:
+**0.3.0 is now available on [PyPI](https://pypi.org/project/pasr-mcp/0.3.0/).**
+Install [`uv`](https://docs.astral.sh/uv/) and make `uvx` available on your PATH;
+use Python **3.10+** or allow uv to provision it. No PASR checkout is required.
+Replace `/absolute/path/to/project` with the repository to inspect, then choose
+the command for your client:
 
 ```bash
-claude mcp add pasr -- uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project
-codex mcp add pasr -- uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project
+claude mcp add pasr -- uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project
+codex mcp add pasr -- uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project
 ```
 
-Or use this MCP configuration:
+Alternatively, merge this MCP configuration into your client's config. Update any
+existing `pasr` entry rather than registering the same server twice:
 
 ```json
-{ "mcpServers": { "pasr": { "command": "uvx", "args": ["--from", "/absolute/path/to/pasr", "pasr-mcp", "--workspace", "/absolute/path/to/project"] } } }
+{ "mcpServers": { "pasr": { "command": "uvx", "args": ["--from", "pasr-mcp==0.3.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"] } } }
 ```
 
-To install the versioned GitHub wheel instead of using a checkout:
+The separate [v0.3.0 GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.3.0)
+also provides versioned wheel/sdist artifacts. To install its wheel instead:
 
 ```bash
 python -m pip install https://github.com/Apheironn/pasr/releases/download/v0.3.0/pasr_mcp-0.3.0-py3-none-any.whl
 ```
 
-For the PyPI channel, `uvx pasr-mcp --workspace /absolute/path/to/project` resolves
-the latest package available there, which can lag this source version. An existing
-global `pasr` installation is not updated by editing this checkout.
+After installing that wheel, configure your client to run the installed `pasr-mcp`
+executable with `--workspace /absolute/path/to/project` instead of the `uvx` launch.
+
+**Developers only — source checkout:** replace `pasr-mcp==0.3.0` after `--from`
+in your existing registration with `/absolute/path/to/pasr`. For example:
+
+```bash
+uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project
+```
+
+Use this instead of the published-package launch, not a second `pasr` registration.
+It runs that checkout, which may differ from the release; editing it does not update
+an existing global installation.
 
 After installation, PASR's tools are available alongside the agent's native tools.
 The model decides when to search, select context, or read files directly. Smaller
@@ -102,8 +113,8 @@ selected context does not by itself establish cheaper or more accurate answers.
 Per-client setup notes: [Claude Code](https://github.com/Apheironn/pasr/blob/main/docs/install/claude-code.md) ·
 [Cursor](https://github.com/Apheironn/pasr/blob/main/docs/install/cursor.md) · [Windsurf](https://github.com/Apheironn/pasr/blob/main/docs/install/windsurf.md).
 
-**Without an agent:** from the current checkout, `uv run pasr explain "<question>"`
-prints a selection receipt. `pip install pasr-mcp` installs the published release.
+**Without an agent:** run `uvx --from pasr-mcp==0.3.0 pasr explain "<question>"`
+from the project to inspect to print a selection receipt.
 Five historical CLI examples against pinned public repos are in
 [`examples/`](https://github.com/Apheironn/pasr/blob/main/examples/README.md).
 
@@ -238,7 +249,7 @@ This is an experimental configuration, not a demonstrated accuracy/token win;
 the default five-tool catalog is unchanged.
 
 The equivalent stdio configuration is
-`uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project --tools find_symbols,find_evidence`.
+`uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project --tools find_symbols,find_evidence`.
 Keep the host's native grep and source reader available; this catalog does not
 contain a source-reading tool.
 
@@ -303,7 +314,7 @@ Scope errors do not trigger automatic discovery, path correction, or retries.
 Each call is independent; compare shared-file fingerprints before joining pages.
 
 Publish the compact pair with
-`uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project --tools search_code,read_code`.
+`uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project --tools search_code,read_code`.
 The default five-tool catalog and `select_context` behavior are unchanged.
 This flag does not impose the experiments' four-call limit or stopping policy.
 Unlike `select_context`, the compact pair does not persist selection receipts or

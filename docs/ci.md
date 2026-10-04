@@ -10,9 +10,9 @@ bounded reads. A downstream agent may still need to inspect more source.
 
 Install [`uv`](https://docs.astral.sh/uv/) and provide Python **3.10+** (or allow uv
 to provision it). Initial environment/dependency setup can require network access.
-The example below selects the **0.3.0 source checkout**, rather than an older
-global install or whatever version is currently available on PyPI. Replace both
-absolute paths; quote paths containing spaces.
+The example below selects the **0.3.0 source checkout**, rather than a global
+install or a package resolved from PyPI. Replace both absolute paths; quote paths
+containing spaces.
 
 ```bash
 uvx --from /absolute/path/to/pasr pasr --workspace /absolute/path/to/project context \
@@ -24,10 +24,10 @@ uvx --from /absolute/path/to/pasr pasr --workspace /absolute/path/to/project con
   --metrics-file metrics.json
 ```
 
-For the explicitly released **0.2.1** package instead, replace the checkout path
-after `--from` with `pasr-mcp==0.2.1`. A released package need not match the current
-checkout's interface. Bare `uvx pasr-mcp` runs the published MCP server, not this
-headless source-checkout command.
+For the explicitly released **0.3.0** package instead, replace the checkout path
+after `--from` with `pasr-mcp==0.3.0`. Source and published-package selection are
+separate choices. Bare `uvx pasr-mcp` runs the published MCP server, not the
+headless `pasr context` command.
 
 - `--issue TEXT` or `--issue-file PATH` (one required).
 - positional `paths` — globs / directories to scan (default `.`).
@@ -100,7 +100,7 @@ both package source and scanned workspace:
       ${{ steps.pasr.outputs.metrics-file }}
 ```
 
-To intentionally use the released package, set `pasr-version: "pasr-mcp==0.2.1"`.
+To intentionally use the released package, set `pasr-version: "pasr-mcp==0.3.0"`.
 In another repository, reference the action as
 `Apheironn/pasr/.github/actions/pasr-context@<reviewed-commit-sha>`, replacing the
 placeholder with an actual reviewed commit. Action revision and package version
@@ -223,3 +223,93 @@ release and a passing package smoke are not proof of PyPI publication: verify
 updating PyPI availability claims. Likewise, submit `server.json` to the MCP
 registry only after its exact referenced PyPI version is available.
 
+### Observed PyPI publication — 2026-10-04
+
+[Publish run 37191531085, attempt 3](https://github.com/Apheironn/pasr/actions/runs/37191531085)
+succeeded for release commit `9cebfdaef67cc8332c1bc5a4db6b39887807fa60`.
+The [public PyPI 0.3.0 metadata](https://pypi.org/pypi/pasr-mcp/0.3.0/json)
+contains the MCP ownership marker
+`<!-- mcp-name: io.github.Apheironn/pasr -->` and these artifact SHA-256 hashes:
+
+| Artifact | SHA-256 |
+|---|---|
+| `pasr_mcp-0.3.0-py3-none-any.whl` | `b43dbc2cc95aa57b3630263d1256e36158eedb0a76cb396c280377c2d45afdd8` |
+| `pasr_mcp-0.3.0.tar.gz` | `22bba7dbe0df438249d2ebf607409109379ec4c5c5aecc25599a64a0c056ea4c` |
+
+A separate clean Windows/Python 3.12 environment installed `pasr-mcp==0.3.0`
+from `https://pypi.org/simple`. The installed-package smoke
+(`scripts/smoke_dist.py --installed-version 0.3.0`) passed actual CLI execution,
+default and split MCP calls, token-budget and receipt checks, and rejection of
+workspace escapes. This is package/protocol evidence, not a GUI-client workflow,
+adoption, or task-quality result.
+The primary pinned `uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace ...` launch
+was also exercised through a real MCP client with a fresh uv cache and a workspace
+path containing spaces. It exposed all five default tools, located the fixture
+symbol, and returned its source with file:line provenance at 24 tokens under a
+180-token budget. This checks the documented launcher, not just an installed
+console script.
+
+## MCP Registry publication
+
+The official registry hosts metadata, not the Python distribution. Publish the
+exact PyPI package first, including its README ownership marker, then publish
+the reviewed root `server.json`. Follow the official
+[quickstart](https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/quickstart.mdx)
+and [authentication guidance](https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/authentication.mdx).
+Inspect existing registry versions before publishing; do not overwrite or
+change an unexpected entry.
+
+Use an official `mcp-publisher` release in a temporary directory and verify the
+download against that release's checksum file before execution. The observed
+publication used [v1.8.1](https://github.com/modelcontextprotocol/registry/releases/tag/v1.8.1),
+with `mcp-publisher_windows_amd64.tar.gz` SHA-256
+`399ad0d6e00a50812b563a71d8bfbff5160c085e6b13aac6ec083d98d5ff7c45`,
+matching both `registry_1.8.1_checksums.txt` and the GitHub asset digest.
+No global installation is needed.
+
+The publisher supports `MCP_GITHUB_TOKEN` for `login github`, as implemented in
+its [v1.8.1 authentication source](https://github.com/modelcontextprotocol/registry/blob/v1.8.1/cmd/publisher/auth/github-at.go).
+An already authenticated maintainer can capture `gh auth token` directly into
+the login subprocess's environment; never print it, pass it via `--token`, or
+write it into the repository. Check the authenticated GitHub identity first.
+Alternatively, `login github` without that environment variable uses the
+interactive GitHub device flow. GitHub Actions can use `login github-oidc`;
+no registry workflow was needed for this publication.
+
+Run the verified executable with the following arguments, substituting the
+absolute reviewed manifest path:
+
+```text
+mcp-publisher validate /absolute/path/to/pasr/server.json
+mcp-publisher login github
+mcp-publisher publish /absolute/path/to/pasr/server.json
+mcp-publisher logout
+```
+
+Keep the publisher's home directory isolated in that temporary directory
+(`USERPROFILE` on Windows, `HOME` on Unix): v1.8.1 stores registry credentials
+under `~/.config/mcp-publisher/token.json`. Remove `MCP_GITHUB_TOKEN` from the
+subprocess environment after login. Log out and remove the temporary publisher,
+archive and credential directory afterward, including on failure. These
+commands publish metadata; they do not rebuild or release a new Python version.
+
+### Observed registry publication — 2026-10-04
+
+The initial exact-name search returned no entries. The verified publisher
+accepted the unchanged root `server.json` with `validate`, authenticated through
+the existing `Apheironn` GitHub authority, and successfully published
+`io.github.Apheironn/pasr` version `0.3.0`.
+
+The [public version endpoint](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.Apheironn%2Fpasr/versions/0.3.0)
+then returned:
+
+- Server: `io.github.Apheironn/pasr`, version `0.3.0`, status `active`.
+- Package: PyPI `pasr-mcp==0.3.0`, registry base `https://pypi.org`.
+- Transport: `stdio`.
+- Required named argument: `--workspace`, format `filepath`, described as an
+  absolute project workspace path.
+- Registry publication timestamp: `2026-10-04T13:32:46.832142Z`.
+
+Registry metadata was checked after publishing, then the publisher was logged
+out and temporary tools and credentials removed. Registry publication does not
+establish that any particular MCP client has installed or invoked the server.

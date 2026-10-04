@@ -4,8 +4,8 @@
   <text x="24" y="32" font-size="13" fill="#8b949e">configure PASR alongside your agent's native tools</text>
 
   <text x="24" y="64" font-size="12.5" fill="#6e7681">1</text>
-  <text x="46" y="64" font-size="12.5" fill="#8b949e">use the quickstart's source-checkout MCP configuration</text>
-  <text x="46" y="84" font-size="12" fill="#484f58">current checkout: target 0.3.0 · published package: 0.2.1</text>
+  <text x="46" y="64" font-size="12.5" fill="#8b949e">use the quickstart's pinned PyPI MCP configuration</text>
+  <text x="46" y="84" font-size="12" fill="#484f58">pasr-mcp==0.3.0 · no PASR checkout required</text>
 
   <text x="24" y="116" font-size="12.5" fill="#6e7681">2</text>
   <text x="46" y="116" font-size="12.5" fill="#8b949e">ask your agent normally — no <tspan fill="#c9d1d9">pasr</tspan>, no flags</text>

@@ -4,55 +4,55 @@
 
 Install [`uv`](https://docs.astral.sh/uv/) and ensure a Python **3.10+** interpreter
 is available (or allow uv to provision one). Make `uvx` available on your PATH.
-These instructions describe the **0.3.0** source interface. The previous PyPI
-release **0.2.1** may expose an older interface. Versioned wheels are distributed
-through [GitHub releases](https://github.com/Apheironn/pasr/releases/tag/v0.3.0);
-PyPI availability is separate. The examples below explicitly use your checkout.
+These instructions pin **0.3.0**, now available on
+[PyPI](https://pypi.org/project/pasr-mcp/0.3.0/); no PASR checkout is required.
+Versioned wheels are also distributed through the separate
+[GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.3.0).
 Initial setup can download dependencies; context selection itself runs locally.
 
-Replace `/absolute/path/to/pasr` with your current PASR checkout and
-`/absolute/path/to/project` with the repository you want the agent to inspect.
-They need not be the same directory. Use absolute paths for both.
+Replace `/absolute/path/to/project` with the absolute path to the repository you
+want the agent to inspect.
 
-## Add the current checkout
+## Add the published package
 
 From the project where you want the server configured:
 
 ```bash
-claude mcp add pasr -- uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project
+claude mcp add pasr -- uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project
 ```
 
-Alternatively, merge this into the project's `.mcp.json`:
+Alternatively, merge this into the project's `.mcp.json`. Update an existing
+`pasr` entry rather than adding a duplicate registration:
 
 ```json
 {
   "mcpServers": {
     "pasr": {
       "command": "uvx",
-      "args": ["--from", "/absolute/path/to/pasr", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
+      "args": ["--from", "pasr-mcp==0.3.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
     }
   }
 }
 ```
 
 Quote paths containing spaces in shell commands. On Windows, JSON paths can use
-forward slashes, such as `D:/code/pasr` and `D:/code/my-project`.
+forward slashes, such as `D:/code/my-project`.
 `--workspace` is the boundary for source-file access; it must not depend on the
 client's working directory. Approve the server when prompted and reconnect after
 changing its configuration.
 
-### Released package instead (0.2.1)
+### Developers only: source checkout
 
-To intentionally use the published release rather than this checkout:
+To work on PASR itself, use your checkout instead of the published package:
 
 ```bash
-claude mcp add pasr -- uvx --from pasr-mcp==0.2.1 pasr-mcp --workspace /absolute/path/to/project
+uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project
 ```
 
-Use this **instead of**, not alongside, the same-name checkout registration.
-For JSON, replace the checkout path after `--from` with `pasr-mcp==0.2.1`.
-Bare `uvx pasr-mcp` resolves a published package; it does not select local 0.3.0
-source. The following tool descriptions apply to the current checkout.
+Replace `/absolute/path/to/pasr` with your PASR checkout. In the existing client
+registration or JSON `args`, replace `pasr-mcp==0.3.0` after `--from` with that path.
+Do not add a second same-name registration. The checkout can differ from the
+published release; the tool descriptions below describe 0.3.0.
 
 ## Use it deliberately
 

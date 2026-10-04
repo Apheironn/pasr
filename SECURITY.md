@@ -4,13 +4,13 @@
 
 | Version | Status |
 |---|---|
-| 0.3.x | Current source/GitHub release line; reports accepted |
-| 0.2.x | Previous release line, still available on PyPI; reports accepted |
+| 0.3.x | Current source/GitHub/PyPI release line; reports accepted |
+| 0.2.x | Previous release line; reports accepted |
 | < 0.2 | Unsupported internal pre-releases |
 
-The source tree and MCP registry manifest identify 0.3.0. GitHub artifact delivery
-does not itself publish that version to PyPI or register the MCP manifest.
-Check the installed version and distribution source when reporting.
+Version 0.3.0 is available on both GitHub Releases and PyPI. Registry metadata
+does not install or update a running server. Check the installed version and
+distribution source when reporting.
 
 ## Reporting a vulnerability
 

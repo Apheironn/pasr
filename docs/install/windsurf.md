@@ -7,48 +7,49 @@ is available (or allow uv to provision one). Windsurf must be able to launch `uv
 use its absolute executable path in `command` if the GUI does not inherit your
 shell's PATH.
 
-These instructions describe the **0.3.0** source interface. The previous PyPI
-release **0.2.1** may expose an older interface. Versioned wheels are distributed
-through [GitHub releases](https://github.com/Apheironn/pasr/releases/tag/v0.3.0);
-PyPI availability is separate. These instructions explicitly select this checkout.
+These instructions pin **0.3.0**, now available on
+[PyPI](https://pypi.org/project/pasr-mcp/0.3.0/); no PASR checkout is required.
+Versioned wheels are also distributed through the separate
+[GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.3.0).
 Initial dependency installation can use the network; selection runs locally.
 
-## Add the current checkout
+## Add the published package
 
 Open Windsurf's MCP server settings and its custom-server configuration
-(`~/.codeium/windsurf/mcp_config.json`). Merge:
+(`~/.codeium/windsurf/mcp_config.json`). Merge into any existing `pasr` entry
+rather than creating a duplicate registration:
 
 ```json
 {
   "mcpServers": {
     "pasr": {
       "command": "uvx",
-      "args": ["--from", "/absolute/path/to/pasr", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
+      "args": ["--from", "pasr-mcp==0.3.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
     }
   }
 }
 ```
 
-Replace the first path with your **current PASR checkout** and the second with the
-**project to inspect**. Always use absolute paths: a GUI's server working directory
-need not be the project root. Windows JSON can use paths like `D:/code/pasr` and
-`D:/code/my-project`. This configuration stays pinned to that workspace when you
-open another project; update it deliberately.
+Replace `/absolute/path/to/project` with the **project to inspect**.
+Always use an absolute path: a GUI's server working directory need not be the
+project root. Windows JSON can use `D:/code/my-project`. This configuration stays
+pinned to that workspace when you open another project; update it deliberately.
 
-Refresh/reconnect and approve the server in the MCP panel. The current checkout
+Refresh/reconnect and approve the server in the MCP panel. Version 0.3.0
 should expose five default tools: `find_files`, `find_symbols`, `find_evidence`,
 `find_usages`, and `select_context`. The workspace bounds source-file access.
 
-### Released package instead (0.2.1)
+### Developers only: source checkout
 
-To intentionally select the published release, replace `args` with:
+To work on PASR itself, replace `args` in the existing registration with:
 
 ```json
-["--from", "pasr-mcp==0.2.1", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
+["--from", "/absolute/path/to/pasr", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
 ```
 
-That older release need not have the current checkout's interface.
-Bare `uvx pasr-mcp` also selects a published package, not local 0.3.0 source.
+Replace `/absolute/path/to/pasr` with your PASR checkout's absolute path.
+Use this instead of the published-package configuration, not a second `pasr` entry.
+That checkout can differ from the published 0.3.0 release.
 
 ## First task
 
