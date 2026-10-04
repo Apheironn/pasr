@@ -7,10 +7,11 @@ is available (or allow uv to provision one). The GUI must be able to launch `uvx
 if it cannot find your shell's PATH, use the absolute path to the `uvx` executable
 in `command`.
 
-The current checkout targets **0.3.0, not yet published**. PyPI currently has
-**0.2.1**, which may expose an older interface. Use the source configuration below
-to try the current checkout. Dependency installation may require network access;
-context selection runs locally.
+These instructions describe the **0.3.0** source interface. The previous PyPI
+release **0.2.1** may expose an older interface. Versioned wheels are distributed
+through [GitHub releases](https://github.com/Apheironn/pasr/releases/tag/v0.3.0);
+PyPI availability is separate. Use the source configuration below to select this
+checkout. Dependency installation may require network access; selection runs locally.
 
 ## Add the current checkout
 

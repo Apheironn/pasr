@@ -3,7 +3,19 @@
 All notable changes to PASR. Format follows [Keep a Changelog](https://keepachangelog.com/);
 this project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased] — targeting 0.3.0
+## [Unreleased]
+
+## [0.3.0] — 2026-10-04
+
+Distribution channels are separate: versioned wheel/sdist artifacts are promoted
+through GitHub Releases; PyPI upload requires the project's Trusted Publisher.
+The MCP registry manifest must not be submitted before its PyPI version exists.
+
+- **Remote release gates passed.** PR #1's CI run `37190827980` passed both Linux
+  source-test jobs and all four Linux/Windows Python 3.10/3.12 installed-artifact
+  jobs. The workflow retains verified artifacts for release promotion. A separate
+  manual `publish-pypi` workflow rechecks exact GitHub release artifacts, then uses
+  OIDC only in its isolated publishing job; no repository-stored PyPI token is needed.
 
 - **Repeatable real-client demo.** `scripts/demo_client.py` installs a supplied
   wheel, isolates Codex and a one-file public workspace, and retains the real
@@ -684,6 +696,7 @@ saved, route.
   retriever" — add an arm and measure it against the same 50 tasks. Results:
   `eval/RESULTS.md`, `docs/competitors-benchmark.md`.
 
-[Unreleased]: https://github.com/Apheironn/pasr/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/Apheironn/pasr/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Apheironn/pasr/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/Apheironn/pasr/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Apheironn/pasr/releases/tag/v0.2.0

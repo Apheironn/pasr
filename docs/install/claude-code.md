@@ -4,9 +4,10 @@
 
 Install [`uv`](https://docs.astral.sh/uv/) and ensure a Python **3.10+** interpreter
 is available (or allow uv to provision one). Make `uvx` available on your PATH.
-The current checkout targets **0.3.0; it is not yet published**. The released PyPI
-package is **0.2.1** and may expose an older interface. The examples below use your
-current source checkout, not a globally installed command or the latest PyPI package.
+These instructions describe the **0.3.0** source interface. The previous PyPI
+release **0.2.1** may expose an older interface. Versioned wheels are distributed
+through [GitHub releases](https://github.com/Apheironn/pasr/releases/tag/v0.3.0);
+PyPI availability is separate. The examples below explicitly use your checkout.
 Initial setup can download dependencies; context selection itself runs locally.
 
 Replace `/absolute/path/to/pasr` with your current PASR checkout and

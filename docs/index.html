@@ -223,15 +223,16 @@
 <section>
   <div class="wrap">
     <h2>Install</h2>
-    <p><b>This checkout targets 0.3.0; PyPI currently provides 0.2.1.</b>
-    To use the behavior described here, clone or update the source checkout and
-    replace both absolute paths:</p>
+    <p><b>Source version: 0.3.0.</b> Versioned wheel/sdist artifacts use the
+    <a href="https://github.com/Apheironn/pasr/releases/tag/v0.3.0">GitHub release channel</a>.
+    PyPI publication is separate; at release preparation it provides 0.2.1.
+    To explicitly use this source checkout, replace both absolute paths:</p>
     <pre>claude mcp add pasr -- uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project</pre>
     <p>Or paste this into your client's MCP config:</p>
     <pre>{ "mcpServers": { "pasr": { "command": "uvx", "args": ["--from", "/absolute/path/to/pasr", "pasr-mcp", "--workspace", "/absolute/path/to/project"] } } }</pre>
-    <p>For the published release instead, use
+    <p>For the PyPI channel instead, use
     <code>uvx pasr-mcp --workspace /absolute/path/to/project</code>.
-    It can lack checkout features; 0.3.0 is not yet published.</p>
+    It resolves the latest package published there, which can lag GitHub releases.</p>
     <p>These tools sit alongside the agent's native tools. The model chooses which
     to call; smaller selected context does not establish cheaper or more accurate
     answers. Dependency tracing and other optional tools require explicit exposure.</p>

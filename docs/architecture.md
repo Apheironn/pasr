@@ -14,8 +14,8 @@ better answer accuracy or lower total tokens than native grep/read. Live selecti
 now budgets its rendered context; MCP envelopes, catalogs, and repeated conversation
 history remain separate costs.
 
-This document describes the current checkout targeting 0.3.0, not an already
-published release. PyPI currently provides 0.2.1. To run this source, use
+This document describes PASR 0.3.0 source and GitHub release artifacts.
+PyPI publication is a separate step. To run this source, use
 `uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project`
 with a current checkout and absolute paths.
 

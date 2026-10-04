@@ -10,8 +10,8 @@ bounded reads. A downstream agent may still need to inspect more source.
 
 Install [`uv`](https://docs.astral.sh/uv/) and provide Python **3.10+** (or allow uv
 to provision it). Initial environment/dependency setup can require network access.
-The example below selects the **current source checkout targeting 0.3.0, not yet
-published**, rather than an older global install or PyPI package. Replace both
+The example below selects the **0.3.0 source checkout**, rather than an older
+global install or whatever version is currently available on PyPI. Replace both
 absolute paths; quote paths containing spaces.
 
 ```bash
@@ -178,4 +178,48 @@ on the older September 25 commit `b886d0588632175c0ddc43a4deb96a3ac63ddd9f`.
 That historical result is not a run of these changes. A reviewed commit/push and
 a passing GitHub Actions matrix are still required before release. No commit,
 push, package publication or answering-model API call was made in this pass.
+
+### Remote pull-request gates — 2026-10-04
+
+After reconciling divergent Git histories without reverting the reviewed source,
+[PR #1](https://github.com/Apheironn/pasr/pull/1) ran
+[CI 37190827980](https://github.com/Apheironn/pasr/actions/runs/37190827980).
+All six jobs passed: source tests/core imports/headless CLI on Linux Python
+3.10/3.12, plus installed wheel/sdist checks on Linux and Windows Python 3.10/3.12.
+This supersedes the local-only Linux limitation above for that verified revision.
+The workflow retains the Linux/Python 3.12 `pasr-dist` artifact only after the
+installed checks pass. Release promotion must use artifacts from the final green
+revision, not an earlier local candidate. Current run status remains on GitHub.
+
+## Publishing the exact GitHub release artifacts
+
+The manual `publish-pypi` workflow (`.github/workflows/publish.yml`) downloads the
+wheel and sdist from an existing GitHub release tag. It validates their package
+descriptions and repeats the installed CLI/MCP smoke before passing those same
+files to the publishing job. It does not rebuild or silently skip existing files.
+Only the final publishing job has OIDC `id-token: write`; package installation and
+source execution occur in the separate verification job without that permission.
+
+The PyPI project owner must configure a **Trusted Publisher** for:
+
+| Field | Value |
+|---|---|
+| PyPI project | `pasr-mcp` |
+| GitHub owner | `Apheironn` |
+| Repository | `pasr` |
+| Workflow filename | `publish.yml` |
+| Environment | `pypi` |
+
+Configure it in the project's PyPI publishing settings, then dispatch:
+
+```bash
+gh workflow run publish.yml --repo Apheironn/pasr -f tag=v0.3.0
+```
+
+GitHub repository administration alone does not grant PyPI publishing rights.
+Never paste a PyPI token into an issue, PR, transcript or source file. A GitHub
+release and a passing package smoke are not proof of PyPI publication: verify
+`https://pypi.org/pypi/pasr-mcp/0.3.0/json` and install the published package before
+updating PyPI availability claims. Likewise, submit `server.json` to the MCP
+registry only after its exact referenced PyPI version is available.
 

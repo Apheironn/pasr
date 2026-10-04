@@ -2,11 +2,12 @@
 
 ## Release status
 
-The current source checkout targets **0.3.0**. It is **not yet published**; the
-released PyPI package is **0.2.1**. Source availability, a release artifact, and a
-verified client workflow are different milestones. The
-[install guides](install/claude-code.md) show how to select a current checkout
-explicitly rather than accidentally run an older published package.
+The current source version is **0.3.0**. Its versioned distribution channel is the
+[GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.3.0); PyPI upload
+is separate and still requires project publishing authorization. PyPI provides
+**0.2.1** at release preparation. Source availability, release artifacts and
+verified client behavior are distinct milestones. The
+[install guides](install/claude-code.md) explicitly select the source checkout.
 
 ### Verified locally on 2026-10-04
 
@@ -23,7 +24,7 @@ explicitly rather than accidentally run an older published package.
 - Fresh wheel/sdist artifacts also passed installed CLI/MCP checks on both
   Python 3.10.22 and 3.12.10, plus strict package-description validation.
   See the [release-gate record](ci.md#observed-local-release-gates--2026-10-04).
-  Linux and a remote run of the current changes are still required before release.
+  The later remote run below covers the Linux/Windows release matrix.
 - Codex CLI 0.160.0 with GPT-6 Luna completed one prompted source-reading task
   against an installed PASR 0.3.0 wheel and one unmodified public source file.
   The final attempt made three PASR calls, received 364 selected-context tokens,
@@ -35,7 +36,20 @@ explicitly rather than accidentally run an older published package.
 See the [client integration record](../eval/agent_bench/client_smoke_20261004.json).
 This is maintainer-operated onboarding evidence, not independent adoption,
 unprompted tool use, a full-repository task, or a native-versus-PASR comparison.
-The package is still unpublished; GUI-client behavior and remote CI remain open.
+The maintained demo driver also completed a live repeat with two PASR calls and
+checked relative citations; see its [record](../eval/agent_bench/client_demo_20261004.json).
+GUI-client behavior and independent adoption remain unverified.
+
+### Remote gates and publication
+
+[PR #1](https://github.com/Apheironn/pasr/pull/1) passed all six jobs in
+[CI 37190827980](https://github.com/Apheironn/pasr/actions/runs/37190827980), including
+Linux source tests and the Linux/Windows Python 3.10/3.12 artifact matrix.
+Final artifact identities and promotion status belong to the GitHub release.
+The [manual PyPI workflow](ci.md#publishing-the-exact-github-release-artifacts)
+rechecks those exact release files before OIDC publication. Its external
+prerequisite is the PyPI project's Trusted Publisher binding; GitHub administration
+does not confer that permission. MCP registry publication follows PyPI, not before.
 
 ## Available in the current checkout
 
@@ -91,21 +105,21 @@ results rather than declaring a milestone complete because configuration exists.
 |---|---|---|
 | Local release candidate | Verified locally | Install both artifacts outside the checkout; exercise CLI, default/split MCP, budgets, receipt recovery and workspace confinement |
 | First real client recipe | Verified in a narrow controlled task | Model-selected PASR calls and source-supported relative citations; retain setup failures and the exact client/model/configuration |
-| Public 0.3.0 release | Pending | Full CI gates pass; release notes, artifact identities and published install instructions agree; GitHub/PyPI publication verified separately |
+| Public 0.3.0 release | Remote CI passed; GitHub promotion tracked in the release; PyPI authorization pending | Promote exact green-CI artifacts; verify GitHub and PyPI publication separately |
 | Independent usage | Pending | Target five outside installations and three users returning to their own tasks within two weeks; record failures and abandonment |
 | Fresh task-level validation | Pending | Freeze new tasks, baselines and decision rules before running; report success, material errors, time, intervention and total provider cost together |
 | First paid pilot | Pending | One team pays for a bounded assessment/integration on its own workflow; payment and useful delivery, not interest or stars, establish the milestone |
 
 ### 1. Finish the public release and reproducible demonstration
 
-Next: run the full configured CI gates, resolve release-blocking failures, and
-publish only after reviewing the exact changes and artifacts. The locally passed
-checks do not replace the Linux/Windows Python 3.10/3.12 matrix. Keep source,
-package and registry identities aligned when publication actually happens.
+Remote CI and the reproducible model-driven demo are now verified. Promote only
+artifacts from the final green revision and keep source, GitHub, PyPI and registry
+identities aligned. Finish PyPI publishing authorization without treating it as
+already granted; then verify installation from that channel before registry submission.
 
-Record a short real-client demonstration with installation, explicit workspace
-and permission scope, model-selected calls, source citations and one limitation.
-Use the existing integration record as evidence, not a hand-written mock session.
+The website presents observed tool calls and citations, not a hand-written mock
+session. `scripts/demo_client.py` repeats the paid, isolated workflow and preserves
+failures. Client/model behavior may vary; this is not independent adoption evidence.
 Keep interactive approval as the normal starting point. Preapprove only a known
 server/workspace for unattended use; a host's read-only shell sandbox does not
 sandbox an independently started MCP server.

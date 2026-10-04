@@ -65,10 +65,12 @@ redaction is a no-op, not automatic secret detection.
 
 ## Install
 
-**This checkout targets 0.3.0; the published package is currently 0.2.1.**
-The behavior documented here describes the current source checkout, not an
-already-published 0.3.0 release. To use it, clone or update this repository and
-replace both absolute paths below:
+**Source version: 0.3.0. GitHub releases and PyPI are separate distribution channels.**
+Use the [v0.3.0 GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.3.0)
+for versioned wheel/sdist artifacts; the PyPI badge above reports PyPI availability.
+At release preparation, PyPI still provides 0.2.1. Do not assume a GitHub release
+has already been uploaded there. To use this checkout, clone or update the
+repository and replace both absolute paths below:
 
 ```bash
 claude mcp add pasr -- uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project
@@ -81,9 +83,15 @@ Or use this MCP configuration:
 { "mcpServers": { "pasr": { "command": "uvx", "args": ["--from", "/absolute/path/to/pasr", "pasr-mcp", "--workspace", "/absolute/path/to/project"] } } }
 ```
 
-For the published release instead, use
-`uvx pasr-mcp --workspace /absolute/path/to/project`. It can lack checkout features;
-an existing global `pasr` installation is not updated by editing this checkout.
+To install the versioned GitHub wheel instead of using a checkout:
+
+```bash
+python -m pip install https://github.com/Apheironn/pasr/releases/download/v0.3.0/pasr_mcp-0.3.0-py3-none-any.whl
+```
+
+For the PyPI channel, `uvx pasr-mcp --workspace /absolute/path/to/project` resolves
+the latest package available there, which can lag this source version. An existing
+global `pasr` installation is not updated by editing this checkout.
 
 After installation, PASR's tools are available alongside the agent's native tools.
 The model decides when to search, select context, or read files directly. Smaller

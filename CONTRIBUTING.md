@@ -5,8 +5,8 @@ invariants and pay for its own complexity".
 
 ## Setup
 
-Use Python **3.10+** from the current source checkout. This checkout targets
-**0.3.0 (not yet published)**; the published PyPI package is currently **0.2.1**.
+Use Python **3.10+** from the **0.3.0** source checkout. GitHub release artifacts
+and PyPI publication are separate; PyPI provides **0.2.1** at release preparation.
 An editable install below selects your local source, not a globally installed CLI.
 
 ```bash

@@ -7,10 +7,11 @@ is available (or allow uv to provision one). Windsurf must be able to launch `uv
 use its absolute executable path in `command` if the GUI does not inherit your
 shell's PATH.
 
-The current checkout targets **0.3.0, not yet published**. The PyPI release is
-**0.2.1**, which may expose an older interface. These instructions select the
-current source checkout explicitly. Initial dependency installation can use the
-network; context selection runs locally.
+These instructions describe the **0.3.0** source interface. The previous PyPI
+release **0.2.1** may expose an older interface. Versioned wheels are distributed
+through [GitHub releases](https://github.com/Apheironn/pasr/releases/tag/v0.3.0);
+PyPI availability is separate. These instructions explicitly select this checkout.
+Initial dependency installation can use the network; selection runs locally.
 
 ## Add the current checkout
 

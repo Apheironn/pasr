@@ -8,7 +8,9 @@
 > completeness guarantees. End-to-end superiority to native grep/read is unproven.
 > Offline use requires installed dependencies and cached tokenizer encoding data.
 
-This checkout targets 0.3.0; PyPI currently provides 0.2.1, not 0.3.0.
+Source version: 0.3.0. GitHub release artifacts:
+https://github.com/Apheironn/pasr/releases/tag/v0.3.0
+PyPI publication is separate; it provides 0.2.1 at release preparation.
 For the behavior documented here, clone/update the checkout and run:
 `uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project`.
 MCP config: `{"command":"uvx","args":["--from","/absolute/path/to/pasr","pasr-mcp","--workspace","/absolute/path/to/project"]}`.
