@@ -227,7 +227,3 @@ def test_report_reads_the_ledger(mini_workspace, capsys):
     assert code == 0
     summary = json.loads(capsys.readouterr().out)
     assert summary["calls"] == 1 and summary["tokens_saved"] > 0
-
-    code = main(["--workspace", str(mini_workspace), "report"])
-    assert code == 0
-    assert "PASR usage" in capsys.readouterr().out

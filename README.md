@@ -65,35 +65,35 @@ redaction is a no-op, not automatic secret detection.
 
 ## Install
 
-**0.3.0 is now available on [PyPI](https://pypi.org/project/pasr-mcp/0.3.0/).**
+**Install version 0.4.0 from [PyPI](https://pypi.org/project/pasr-mcp/0.4.0/).**
 Install [`uv`](https://docs.astral.sh/uv/) and make `uvx` available on your PATH;
 use Python **3.10+** or allow uv to provision it. No PASR checkout is required.
 Replace `/absolute/path/to/project` with the repository to inspect, then choose
 the command for your client:
 
 ```bash
-claude mcp add pasr -- uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project
-codex mcp add pasr -- uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project
+claude mcp add pasr -- uvx --from pasr-mcp==0.4.0 pasr-mcp --workspace /absolute/path/to/project
+codex mcp add pasr -- uvx --from pasr-mcp==0.4.0 pasr-mcp --workspace /absolute/path/to/project
 ```
 
 Alternatively, merge this MCP configuration into your client's config. Update any
 existing `pasr` entry rather than registering the same server twice:
 
 ```json
-{ "mcpServers": { "pasr": { "command": "uvx", "args": ["--from", "pasr-mcp==0.3.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"] } } }
+{ "mcpServers": { "pasr": { "command": "uvx", "args": ["--from", "pasr-mcp==0.4.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"] } } }
 ```
 
-The separate [v0.3.0 GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.3.0)
-also provides versioned wheel/sdist artifacts. To install its wheel instead:
+For the separate [v0.4.0 GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.4.0)
+wheel instead, use:
 
 ```bash
-python -m pip install https://github.com/Apheironn/pasr/releases/download/v0.3.0/pasr_mcp-0.3.0-py3-none-any.whl
+python -m pip install https://github.com/Apheironn/pasr/releases/download/v0.4.0/pasr_mcp-0.4.0-py3-none-any.whl
 ```
 
 After installing that wheel, configure your client to run the installed `pasr-mcp`
 executable with `--workspace /absolute/path/to/project` instead of the `uvx` launch.
 
-**Developers only — source checkout:** replace `pasr-mcp==0.3.0` after `--from`
+**Developers only — source checkout:** replace `pasr-mcp==0.4.0` after `--from`
 in your existing registration with `/absolute/path/to/pasr`. For example:
 
 ```bash
@@ -113,18 +113,18 @@ selected context does not by itself establish cheaper or more accurate answers.
 Per-client setup notes: [Claude Code](https://github.com/Apheironn/pasr/blob/main/docs/install/claude-code.md) ·
 [Cursor](https://github.com/Apheironn/pasr/blob/main/docs/install/cursor.md) · [Windsurf](https://github.com/Apheironn/pasr/blob/main/docs/install/windsurf.md).
 
-**Without an agent:** run `uvx --from pasr-mcp==0.3.0 pasr explain "<question>"`
+**Without an agent:** run `uvx --from pasr-mcp==0.4.0 pasr explain "<question>"`
 from the project to inspect to print a selection receipt.
 Five historical CLI examples against pinned public repos are in
 [`examples/`](https://github.com/Apheironn/pasr/blob/main/examples/README.md).
 
-### Diagnose startup — unreleased source feature
+### 0.4.0 diagnostics
 
-The current source adds `pasr doctor`; **published 0.3.0 does not include it**.
-To diagnose the source installation, use your PASR checkout explicitly:
+Version 0.4.0 includes `pasr doctor`. To diagnose this package installation,
+use the same version as your registered server:
 
 ```bash
-uvx --from /absolute/path/to/pasr pasr --workspace /absolute/path/to/project doctor --json --timeout 30
+uvx --from pasr-mcp==0.4.0 pasr --workspace /absolute/path/to/project doctor --json --timeout 30
 ```
 
 Omit `--json` for a readable report. Exit codes are `0` for success, `1` for a
@@ -141,7 +141,7 @@ A pass does not verify your client's registration, approval settings or answers.
 Optional public reports: [installation trouble](https://github.com/Apheironn/pasr/issues/new?template=installation-trouble.yml)
 or [real-task feedback](https://github.com/Apheironn/pasr/issues/new?template=real-task-feedback.yml).
 Review before posting; do not include secrets, private source or raw transcripts.
-Published-version users can report without running doctor.
+Doctor is optional; you can report without running it.
 
 ### Verified Codex onboarding, with explicit limits
 
@@ -174,7 +174,7 @@ normal secret mechanism; **this makes paid API requests**.
 
 ```bash
 python -m build --outdir dist/demo
-python scripts/demo_client.py --codex /absolute/path/to/codex --wheel dist/demo/pasr_mcp-0.3.0-py3-none-any.whl --output eval/agent_bench/results/client-demo
+python scripts/demo_client.py --codex /absolute/path/to/codex --wheel dist/demo/pasr_mcp-0.4.0-py3-none-any.whl --output eval/agent_bench/results/client-demo
 ```
 
 On Windows, pass the actual `codex.exe`, not its shell wrapper. The output directory
@@ -274,7 +274,7 @@ This is an experimental configuration, not a demonstrated accuracy/token win;
 the default five-tool catalog is unchanged.
 
 The equivalent stdio configuration is
-`uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project --tools find_symbols,find_evidence`.
+`uvx --from pasr-mcp==0.4.0 pasr-mcp --workspace /absolute/path/to/project --tools find_symbols,find_evidence`.
 Keep the host's native grep and source reader available; this catalog does not
 contain a source-reading tool.
 
@@ -339,7 +339,7 @@ Scope errors do not trigger automatic discovery, path correction, or retries.
 Each call is independent; compare shared-file fingerprints before joining pages.
 
 Publish the compact pair with
-`uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project --tools search_code,read_code`.
+`uvx --from pasr-mcp==0.4.0 pasr-mcp --workspace /absolute/path/to/project --tools search_code,read_code`.
 The default five-tool catalog and `select_context` behavior are unchanged.
 This flag does not impose the experiments' four-call limit or stopping policy.
 Unlike `select_context`, the compact pair does not persist selection receipts or
@@ -437,6 +437,39 @@ API savings or proven avoided round trips. Context Packs land in `.pasr/packs/`
 (committable); review them for sensitive source before sharing. Load a named pack
 with `select_context(query="", advanced={"pack": "auth"})`. For CI, see
 [`docs/ci.md`](https://github.com/Apheironn/pasr/blob/main/docs/ci.md).
+
+### 0.4.0 report compatibility
+
+Version 0.4.0's `report` recomputes `tokens_saved` as signed
+`tokens_in - tokens_out`, including for existing ledger rows. Negative values mean
+context expansion; positive rows no longer hide larger outputs in other calls.
+The ledger itself is not rewritten.
+
+JSON reports include `unmeasured_calls`: rows without a valid nonnegative integer
+for both token counters. An affected total or daily difference is `null`, rendered
+as `unknown`; incomplete measurements produce neither a reduction percentage nor
+a dollar estimate. A zero input total also has no defined reduction percentage.
+Fully known counters and days remain reportable.
+Consumers must accept nullable counters, differences, ratios and cost estimates,
+and signed differences. Do not replace `null` with zero or clamp negative values;
+check `unmeasured_calls` before interpreting totals. No ledger migration is needed.
+
+`--price-per-mtok` must be finite and nonnegative; zero leaves the dollar estimate
+disabled. JSON cost estimates retain sub-cent precision, and text displays eight
+decimal places. These are hypothetical source-context differences, **not provider
+charges or measured savings**. Coverage describes the recorded rows in the selected
+date range, not missing writes or a complete agent session.
+
+The reader refuses to generate a report from a damaged ledger: malformed or
+unfinished JSON, non-object records, invalid UTF-8, or read failures produce CLI
+exit code 2 and a diagnostic on stderr, with no text/JSON totals on stdout.
+JSON/record errors identify the physical line without echoing its contents.
+The whole file is checked before `--since` filtering, so a date filter cannot hide
+corruption. Blank lines are ignored; Unicode separators inside valid query strings
+remain part of that record. A genuinely absent ledger still means no recorded rows.
+Reading never trims or repairs the file. If a writer is still appending, let it
+finish before retrying; otherwise inspect a backup or restore a known-valid ledger.
+These corrections change report semantics relative to 0.3.0.
 
 ## Capability boundary
 

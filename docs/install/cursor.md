@@ -7,13 +7,13 @@ is available (or allow uv to provision one). The GUI must be able to launch `uvx
 if it cannot find your shell's PATH, use the absolute path to the `uvx` executable
 in `command`.
 
-These instructions pin **0.3.0**, now available on
-[PyPI](https://pypi.org/project/pasr-mcp/0.3.0/); no PASR checkout is required.
-Versioned wheels are also distributed through the separate
-[GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.3.0).
+These instructions install **0.4.0** from
+[PyPI](https://pypi.org/project/pasr-mcp/0.4.0/); no PASR checkout is required.
+For versioned wheel artifacts, use the separate
+[GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.4.0).
 Dependency installation may require network access; selection runs locally.
 
-## Add the published package
+## Install version 0.4.0
 
 Merge this into `.cursor/mcp.json` in your project, or `~/.cursor/mcp.json` for a
 global configuration. Update an existing `pasr` entry rather than adding a duplicate:
@@ -23,7 +23,7 @@ global configuration. Update an existing `pasr` entry rather than adding a dupli
   "mcpServers": {
     "pasr": {
       "command": "uvx",
-      "args": ["--from", "pasr-mcp==0.3.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
+      "args": ["--from", "pasr-mcp==0.4.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
     }
   }
 }
@@ -36,10 +36,10 @@ On Windows, JSON can use `D:/code/my-project`.
 A global configuration remains pinned to that project; update `--workspace` before
 using it for a different one.
 
-Reload/reconnect the server and approve it in Cursor's MCP settings. Version 0.3.0
+Reload/reconnect the server and approve it in Cursor's MCP settings. Version 0.4.0
 exposes five tools by default: `find_files`, `find_symbols`,
 `find_evidence`, `find_usages`, and `select_context`. If a tool is absent, check the
-configured package version and tool list rather than assuming you are running 0.3.0.
+configured package version and tool list rather than assuming you are running 0.4.0.
 
 ### Developers only: source checkout
 
@@ -51,7 +51,7 @@ To work on PASR itself, replace `args` in the existing registration with:
 
 Replace `/absolute/path/to/pasr` with your PASR checkout's absolute path.
 Use this instead of the published-package configuration, not a second `pasr` entry.
-That checkout can differ from the published 0.3.0 release.
+That checkout can differ from the version-pinned 0.4.0 package.
 
 ## First task
 

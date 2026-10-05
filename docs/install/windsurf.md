@@ -7,13 +7,13 @@ is available (or allow uv to provision one). Windsurf must be able to launch `uv
 use its absolute executable path in `command` if the GUI does not inherit your
 shell's PATH.
 
-These instructions pin **0.3.0**, now available on
-[PyPI](https://pypi.org/project/pasr-mcp/0.3.0/); no PASR checkout is required.
-Versioned wheels are also distributed through the separate
-[GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.3.0).
+These instructions install **0.4.0** from
+[PyPI](https://pypi.org/project/pasr-mcp/0.4.0/); no PASR checkout is required.
+For versioned wheel artifacts, use the separate
+[GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.4.0).
 Initial dependency installation can use the network; selection runs locally.
 
-## Add the published package
+## Install version 0.4.0
 
 Open Windsurf's MCP server settings and its custom-server configuration
 (`~/.codeium/windsurf/mcp_config.json`). Merge into any existing `pasr` entry
@@ -24,7 +24,7 @@ rather than creating a duplicate registration:
   "mcpServers": {
     "pasr": {
       "command": "uvx",
-      "args": ["--from", "pasr-mcp==0.3.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
+      "args": ["--from", "pasr-mcp==0.4.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
     }
   }
 }
@@ -35,7 +35,7 @@ Always use an absolute path: a GUI's server working directory need not be the
 project root. Windows JSON can use `D:/code/my-project`. This configuration stays
 pinned to that workspace when you open another project; update it deliberately.
 
-Refresh/reconnect and approve the server in the MCP panel. Version 0.3.0
+Refresh/reconnect and approve the server in the MCP panel. Version 0.4.0
 should expose five default tools: `find_files`, `find_symbols`, `find_evidence`,
 `find_usages`, and `select_context`. The workspace bounds source-file access.
 
@@ -49,7 +49,7 @@ To work on PASR itself, replace `args` in the existing registration with:
 
 Replace `/absolute/path/to/pasr` with your PASR checkout's absolute path.
 Use this instead of the published-package configuration, not a second `pasr` entry.
-That checkout can differ from the published 0.3.0 release.
+That checkout can differ from the version-pinned 0.4.0 package.
 
 ## First task
 

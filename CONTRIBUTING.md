@@ -5,9 +5,9 @@ invariants and pay for its own complexity".
 
 ## Setup
 
-Use Python **3.10+** from the **0.3.0** source checkout. The same release is
-available on PyPI and GitHub; contributor work still needs the editable install
-below, which selects your local source rather than the published package.
+Use Python **3.10+** from the **0.4.0** source checkout. Contributor work needs
+the editable install below, which selects your local source rather than a
+version-pinned package.
 
 ```bash
 python -m venv .venv
@@ -48,8 +48,8 @@ transcript, or cost number is required. Report suspected security bugs through
 [private vulnerability reporting](https://github.com/Apheironn/pasr/security/advisories/new),
 not either public form.
 
-The current source iteration adds an optional installed-runtime diagnostic;
-**published 0.3.0 does not include `doctor`**. To try it from a source checkout:
+Version 0.4.0 includes an optional installed-runtime diagnostic.
+To try it from your contributor checkout:
 
 ```bash
 uvx --from /absolute/path/to/pasr pasr --workspace /absolute/path/to/project doctor --json
@@ -61,9 +61,9 @@ disposable fixture, not your project sources or `.pasr/`. It makes no paid
 model/API request. Initial dependency setup and the tokenizer's first-use encoding
 download may need network access. It does not check client registration, GUI
 approvals, model tool choice, or task quality. Review the JSON before sharing it;
-it describes that source runtime, not a separately registered 0.3.0 server.
-Doctor output is optional: published-version users can file directly without
-upgrading or running a diagnostic.
+it describes that source runtime, not a separately registered package server.
+Doctor output is optional: users can file directly without upgrading or
+running a diagnostic.
 
 Maintainer review should distinguish setup failures, self-assessed task outcomes,
 guided demonstrations, and independent repeat use. Keep failures and abandonment

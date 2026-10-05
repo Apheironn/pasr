@@ -4,13 +4,14 @@
 
 | Version | Status |
 |---|---|
-| 0.3.x | Current source/GitHub/PyPI release line; reports accepted |
+| 0.4.x | Current release line; reports accepted |
+| 0.3.x | Previous release line; reports accepted |
 | 0.2.x | Previous release line; reports accepted |
 | < 0.2 | Unsupported internal pre-releases |
 
-Version 0.3.0 is available on both GitHub Releases and PyPI. Registry metadata
-does not install or update a running server. Check the installed version and
-distribution source when reporting.
+GitHub Releases, PyPI and the MCP Registry are separate distribution channels.
+Registry metadata does not install or update a running server. Check the installed
+version and distribution source when reporting.
 
 ## Reporting a vulnerability
 
