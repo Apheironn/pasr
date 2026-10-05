@@ -280,3 +280,70 @@ the executable drivers, raw responses, ledgers, context artifacts, source scopes
 reviews and protocols. Python syntax compilation and actual execution passed;
 the full Ruff check reported research-script style diagnostics, so this is not a
 claim of a clean lint run.
+
+## Fresh workflow study: method measurements — 2026-10-05
+
+PASR 0.4.0 was exercised on 12 newly authored development questions across
+Tenacity, Cachetools, python-dotenv and ItsDangerous. These repositories were
+absent from the inventoried earlier benchmark corpora. The method measurement
+uses **oracle-provided symbols/files**, not agent-discovered scopes: it measures
+returned payloads, not answer quality or end-to-end efficiency.
+
+All 10 public MCP methods and 35 method/mode combinations were exercised on all
+12 cases: **420 successful calls**, with no final errors, unavailable modes or
+missing token counts. The optional CPU MiniLM path actually loaded cached model
+weights; it was not replaced with the default semantic implementation.
+
+### Returned text, not provider conversation usage
+
+Counts below use `o200k_base` over complete returned MCP text, including JSON,
+escaped source, receipt fields and diagnostics. Each representative-mode column
+has 12 observations. “All modes” pools the recorded modes for that method; it is
+not a workload-frequency estimate. p95 uses nearest rank, so it equals the maximum
+for these 12-observation representative samples.
+
+| Method | Representative mode | Mean tokens | Median | p95 | All-mode mean |
+|---|---|---:|---:|---:|---:|
+| `find_files` | scoped query | 37.83 | 38 | 41 | 102.29 |
+| `find_symbols` | scoped query | 149.50 | 111.5 | 546 | 95.17 |
+| `find_evidence` | scoped query | 128.08 | 117 | 167 | 256.04 |
+| `find_usages` | scoped qualified name | 205.58 | 175.5 | 369 | 296.62 |
+| `select_context` | receipt setup, **1000-token context budget** | 1117.75 | 1222 | 1314 | 1150.24 |
+| `trace_dependencies` | dependencies, default depth/budget | 9291.50 | 4317.5 | 29345 | 7305.92 |
+| `explain_selection` | stored receipt | 3211.08 | 3269 | 5633 | 3211.08 |
+| `expand_context` | stored receipt, +500 context tokens | 1558.42 | 1776 | 1882 | 1558.42 |
+| `search_code` | query | 1223.58 | 1281.5 | 1347 | 1270.92 |
+| `read_code` | files | 1320.50 | 1514 | 1553 | 1100.96 |
+
+The representative selector call explicitly used **1000**, not its production
+schema default of 1500. Search/read used their existing 1500-token defaults;
+representative tracing used depth 4, budget 4000 and maximum 200 files. Receipt
+explanation/expansion reused the 1000-token selection. A context budget does not
+cap the entire serialized response, and these methods serve different purposes.
+
+### Payload findings and limits
+
+- Across all tracing modes, the complete payloads totaled 263,013 tokens.
+  All 665 returned span texts also occurred verbatim in the corresponding
+  rendered contexts. Nine of 36 responses reported `within_budget=false`.
+  The response carries both structured spans and rendered source; its cost is
+  materially larger than a compact navigation result.
+- Receipt explanations totaled 38,533 tokens. Independently tokenized `kept`,
+  `context` and `dropped` member segments accounted for 15,678, 12,183 and 5,817,
+  respectively. Eighteen of 31 kept texts also appeared verbatim in context.
+  Field tokenization has boundary residuals; these are descriptive contributions,
+  **not measured savings from deleting fields**.
+- MiniLM ran with sentence-transformers 5.7.0, torch 2.14.1+cpu and transformers
+  5.18.0, using revision `1110a243fdf4706b3f48f1d95db1a4f5529b4d41`.
+  All 12 MiniLM-mode calls succeeded. The separate three-string similarity smoke
+  establishes actual inference, not task-quality improvement or availability in
+  the default installation.
+- The first preflight had 12 invalid workspace-discovery calls and 12 unavailable
+  MiniLM preconditions. Those failures are retained separately, not pooled into
+  the final successful measurements. Ordered calls can reuse warm process caches;
+  this is not a cold-start latency comparison.
+
+No API calls were made for this method measurement. Smaller local payloads alone
+do not establish fewer cumulative provider tokens, lower bills or better answers.
+The diagnostic payload findings do not authorize removing public response fields
+without a separate compatibility and answer-quality evaluation.

@@ -53,6 +53,11 @@ Runtime diagnostics and report compatibility corrections; retrieval defaults are
   differences, ratios and cost estimates; do not coerce unknown values to zero or
   clamp expansion away. Handle report exit 2 as a failed read, not an empty report.
   Existing ledgers require no rewrite; frozen evaluation evidence is unchanged.
+- **Verified publication.** Exact artifacts from six-job green CI `37283601255`
+  were released as `v0.4.0` and published to PyPI by workflow `37284488496`.
+  A clean PyPI installation passed real CLI/MCP/doctor checks; MCP Registry
+  `io.github.Apheironn/pasr` is active at 0.4.0. Artifact hashes and the observed
+  publication sequence are recorded in `docs/ci.md`.
 
 ### Historical 0.3.0 onboarding and publication — 2026-10-04
 
