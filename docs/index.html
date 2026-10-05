@@ -84,7 +84,7 @@
     </div>
     <div class="cta">
       <a class="btn primary" href="https://github.com/Apheironn/pasr">GitHub&nbsp;↗</a>
-      <a class="btn" href="https://pypi.org/project/pasr-mcp/0.3.0/"><code>pip install pasr-mcp==0.3.0</code></a>
+      <a class="btn" href="https://pypi.org/project/pasr-mcp/0.4.0/"><code>pip install pasr-mcp==0.4.0</code></a>
       <a class="btn" href="#live-demo">Observed Codex demo&nbsp;↗</a>
       <a class="btn" href="#evidence">Evidence and limits&nbsp;↗</a>
     </div>
@@ -222,31 +222,31 @@
 
 <section>
   <div class="wrap">
-    <h2>Install</h2>
-    <p><b>0.3.0 is now on <a href="https://pypi.org/project/pasr-mcp/0.3.0/">PyPI</a>.</b>
+    <h2>Install version 0.4.0</h2>
+    <p>Use the version-pinned <a href="https://pypi.org/project/pasr-mcp/0.4.0/">PyPI package</a>.
     Install <a href="https://docs.astral.sh/uv/">uv</a>, make <code>uvx</code> available
     on PATH, and use Python <b>3.10+</b> (or let uv provision it). No PASR checkout
     is required. Replace the workspace path with the project's absolute path:</p>
-    <pre>claude mcp add pasr -- uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project</pre>
+    <pre>claude mcp add pasr -- uvx --from pasr-mcp==0.4.0 pasr-mcp --workspace /absolute/path/to/project</pre>
     <p>Alternatively, merge this into your client's MCP config. Update an existing
     <code>pasr</code> entry rather than registering the same server twice:</p>
-    <pre>{ "mcpServers": { "pasr": { "command": "uvx", "args": ["--from", "pasr-mcp==0.3.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"] } } }</pre>
-    <p>The separate <a href="https://github.com/Apheironn/pasr/releases/tag/v0.3.0">GitHub release</a>
-    also provides versioned wheel/sdist artifacts. To install its wheel instead:</p>
-    <pre>python -m pip install https://github.com/Apheironn/pasr/releases/download/v0.3.0/pasr_mcp-0.3.0-py3-none-any.whl</pre>
+    <pre>{ "mcpServers": { "pasr": { "command": "uvx", "args": ["--from", "pasr-mcp==0.4.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"] } } }</pre>
+    <p>For the separate <a href="https://github.com/Apheironn/pasr/releases/tag/v0.4.0">GitHub release</a>
+    wheel instead, use:</p>
+    <pre>python -m pip install https://github.com/Apheironn/pasr/releases/download/v0.4.0/pasr_mcp-0.4.0-py3-none-any.whl</pre>
     <p>Then configure the installed <code>pasr-mcp</code> executable with
     <code>--workspace /absolute/path/to/project</code> instead of the uvx launch.</p>
-    <p><b>Developers only — source checkout:</b> replace <code>pasr-mcp==0.3.0</code>
+    <p><b>Developers only — source checkout:</b> replace <code>pasr-mcp==0.4.0</code>
     after <code>--from</code> in the existing registration with
     <code>/absolute/path/to/pasr</code>, not a second <code>pasr</code> entry.
-    This runs that checkout, which can differ from the release:</p>
+    This runs your checkout, which can differ from the version-pinned package:</p>
     <pre>uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project</pre>
     <p>These tools sit alongside the agent's native tools. The model chooses which
     to call; smaller selected context does not establish cheaper or more accurate
     answers. Dependency tracing and other optional tools require explicit exposure.</p>
     <img src="assets/concept-mcp.svg" style="display:block;width:100%;max-width:760px;margin:16px 0 0;border:1px solid var(--line);border-radius:10px" alt="PASR sits alongside native tools; the host chooses tools and stopping policy">
     <p style="color:var(--dim);font-size:.95rem;margin-top:14px"><b>Without an agent:</b>
-    run <code>uvx --from pasr-mcp==0.3.0 pasr explain "&lt;question&gt;"</code>
+    run <code>uvx --from pasr-mcp==0.4.0 pasr explain "&lt;question&gt;"</code>
     from the project to inspect to print a selection receipt.</p>
   </div>
 </section>

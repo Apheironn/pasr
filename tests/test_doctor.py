@@ -64,7 +64,14 @@ def _deny_workspace_content(monkeypatch, workspace):
         return guarded
 
     with monkeypatch.context() as patch:
-        for module, name in ((builtins, "open"), (io, "open"), (os, "open"), (os, "scandir"), (os, "listdir")):
+        for module, name in (
+            (builtins, "open"),
+            (io, "open"),
+            (os, "open"),
+            (os, "mkdir"),
+            (os, "scandir"),
+            (os, "listdir"),
+        ):
             patch.setattr(module, name, guard(getattr(module, name)))
         yield accesses
 
@@ -79,7 +86,7 @@ def test_invalid_workspace_stops_before_probe_without_content_access_or_path_lea
         workspace.write_bytes(b"PRIVATE_FILE_CONTENT_SENTINEL")
     probes = []
 
-    async def unexpected_probe(checks, workspace, timeout):
+    async def unexpected_probe(checks, workspace, timeout, cache_root):
         probes.append(workspace)
         raise AssertionError("invalid workspace reached the protocol probe")
 
@@ -104,7 +111,7 @@ def test_invalid_workspace_stops_before_probe_without_content_access_or_path_lea
 def test_api_rejects_nonpositive_or_nonfinite_timeout_before_probe(tmp_path, monkeypatch, timeout):
     probes = []
 
-    async def unexpected_probe(checks, workspace, timeout):
+    async def unexpected_probe(checks, workspace, timeout, cache_root):
         probes.append(workspace)
         raise AssertionError("invalid timeout reached the protocol probe")
 
@@ -119,7 +126,7 @@ def test_api_rejects_nonpositive_or_nonfinite_timeout_before_probe(tmp_path, mon
 def test_cli_rejects_invalid_timeout_with_usage_exit(tmp_path, monkeypatch, capsys, timeout):
     probes = []
 
-    async def unexpected_probe(checks, workspace, timeout):
+    async def unexpected_probe(checks, workspace, timeout, cache_root):
         probes.append(workspace)
         raise AssertionError("invalid timeout reached the protocol probe")
 
@@ -149,7 +156,7 @@ def test_probe_failure_redacts_exception_and_leaves_user_workspace_untouched(tmp
     monkeypatch.setenv("PASR_DOCTOR_PRIVATE_TEST", private_env)
     probe_workspaces = []
 
-    async def failing_probe(checks, workspace, timeout):
+    async def failing_probe(checks, workspace, timeout, cache_root):
         probe_workspaces.append(workspace)
         raise RuntimeError(f"protocol failed: {source} {private_env} PRIVATE_STDERR_SENTINEL")
 
@@ -179,12 +186,108 @@ def test_probe_failure_redacts_exception_and_leaves_user_workspace_untouched(tmp
         assert sentinel not in serialized
 
 
+@pytest.mark.parametrize("setting", ["cached", "TMPDIR", "TEMP", "TMP"])
+def test_project_contained_temporary_root_is_rejected_before_any_writes(tmp_path, monkeypatch, capsys, setting):
+    workspace = tmp_path / "PRIVATE_PROJECT_SENTINEL"
+    workspace.mkdir()
+    temporary_root = workspace if setting == "cached" else workspace / "temporary"
+    temporary_root.mkdir(exist_ok=True)
+    for name in ("TMPDIR", "TEMP", "TMP"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(doctor.tempfile, "tempdir", str(temporary_root) if setting == "cached" else None)
+    if setting != "cached":
+        monkeypatch.setenv(setting, str(temporary_root))
+    with _deny_workspace_content(monkeypatch, workspace) as accesses:
+        report = _call("cli", workspace, capsys)
+    assert not accesses
+    assert any(check["id"] == "mcp" and check["status"] == "fail" for check in report["checks"])
+    assert all(check["status"] == "skipped" for check in report["checks"] if check["id"] in {"tools", "selection"})
+    assert not list(temporary_root.iterdir())
+    assert "PRIVATE_" not in json.dumps(report)
+
+
+@pytest.mark.parametrize("alias", ["workspace", "temporary"])
+def test_temporary_containment_resolves_directory_aliases(tmp_path, monkeypatch, capsys, alias):
+    workspace = tmp_path / "PRIVATE_PROJECT_SENTINEL"
+    workspace.mkdir()
+    temporary_root = workspace / "temporary"
+    temporary_root.mkdir()
+    link = tmp_path / "directory-alias"
+    try:
+        link.symlink_to(workspace if alias == "workspace" else temporary_root, target_is_directory=True)
+    except OSError:
+        pytest.skip("directory symlinks unavailable")
+    inspected = link if alias == "workspace" else workspace
+    configured = temporary_root if alias == "workspace" else link
+    monkeypatch.setattr(doctor.tempfile, "tempdir", str(configured))
+    with _deny_workspace_content(monkeypatch, workspace) as accesses:
+        report = _call("api", inspected, capsys)
+    assert not accesses
+    assert any(check["id"] == "mcp" and check["status"] == "fail" for check in report["checks"])
+    assert not list(temporary_root.iterdir())
+    assert "PRIVATE_" not in json.dumps(report)
+
+
+def test_missing_configured_temporary_root_fails_without_fallback(tmp_path, monkeypatch, capsys):
+    workspace = tmp_path / "project"
+    workspace.mkdir()
+    missing = tmp_path / "PRIVATE_MISSING_TEMP_SENTINEL"
+    monkeypatch.setattr(doctor.tempfile, "tempdir", None)
+    monkeypatch.setenv("TMPDIR", str(missing))
+    with _deny_workspace_content(monkeypatch, workspace) as accesses:
+        report = _call("cli", workspace, capsys)
+    assert not accesses
+    assert not missing.exists()
+    assert not list(workspace.iterdir())
+    assert any(check["id"] == "mcp" and check["status"] == "fail" for check in report["checks"])
+    assert "PRIVATE_" not in json.dumps(report)
+
+
+@pytest.mark.parametrize("layout", ["cache_is_project", "project_inside_cache", "cache_inside_project"])
+def test_tokenizer_cache_overlap_is_rejected_before_subprocess_work(tmp_path, monkeypatch, capsys, layout):
+    temporary_root = tmp_path / "temporary"
+    temporary_root.mkdir()
+    cache_root = temporary_root / "data-gym-cache"
+    if layout == "cache_inside_project":
+        workspace = tmp_path / "PRIVATE_PROJECT_SENTINEL"
+        workspace.mkdir()
+        target = workspace / "cache"
+        target.mkdir()
+        try:
+            cache_root.symlink_to(target, target_is_directory=True)
+        except OSError:
+            pytest.skip("directory symlinks unavailable")
+    else:
+        cache_root.mkdir()
+        workspace = cache_root if layout == "cache_is_project" else cache_root / "PRIVATE_PROJECT_SENTINEL"
+        workspace.mkdir(exist_ok=True)
+    sentinel = workspace / "private.txt"
+    sentinel.write_bytes(b"PRIVATE_SOURCE_SENTINEL")
+    before = set(workspace.iterdir())
+    monkeypatch.setattr(doctor.tempfile, "tempdir", str(temporary_root))
+    attempted = []
+
+    async def forbidden_probe(*args):
+        attempted.append(True)
+        raise AssertionError("overlapping cache reached subprocess work")
+
+    monkeypatch.setattr(doctor, "_probe", forbidden_probe)
+    with _deny_workspace_content(monkeypatch, workspace) as accesses:
+        report = _call("cli", workspace, capsys)
+    assert not attempted
+    assert not accesses
+    assert any(check["id"] == "mcp" and check["status"] == "fail" for check in report["checks"])
+    assert sentinel.read_bytes() == b"PRIVATE_SOURCE_SENTINEL"
+    assert set(workspace.iterdir()) == before
+    assert "PRIVATE_" not in json.dumps(report)
+
+
 @pytest.mark.parametrize("caller", ["api", "cli"])
 def test_deadline_cancels_and_awaits_protocol_task(tmp_path, monkeypatch, capsys, caller):
     events = []
     probe_workspaces = []
 
-    async def sleeping_probe(checks, workspace, timeout):
+    async def sleeping_probe(checks, workspace, timeout, cache_root):
         probe_workspaces.append(workspace)
         events.append("started")
         try:

@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.Apheironn/pasr",
   "description": "Local, token-budgeted code context with file:line provenance and selection receipts.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "repository": {
     "url": "https://github.com/Apheironn/pasr",
     "source": "github"
@@ -12,7 +12,7 @@
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "pasr-mcp",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "transport": { "type": "stdio" },
       "packageArguments": [
         {

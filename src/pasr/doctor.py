@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import platform
 import sys
 import tempfile
@@ -24,12 +25,26 @@ _LIMITS = [
 ]
 
 
+def _temporary_root() -> Path:
+    # gettempdir() can probe candidate directories by writing files. Resolve the
+    # configured location without probing so containment is checked before writes.
+    configured = tempfile.tempdir
+    if configured is None:
+        configured = next((os.environ[name] for name in ("TMPDIR", "TEMP", "TMP") if os.environ.get(name)), None)
+    if configured is not None:
+        return Path(os.fsdecode(configured)).resolve()
+    if os.name == "nt":
+        base = os.environ.get("LOCALAPPDATA") or os.environ.get("SystemRoot", r"C:\Windows")
+        return (Path(base) / "Temp").resolve()
+    return Path("/tmp").resolve()
+
+
 def _record(checks: list[dict], check_id: str, status: str, detail: str) -> None:
     check = next(item for item in checks if item["id"] == check_id)
     check.update(status=status, detail=detail)
 
 
-async def _probe(checks: list[dict], workspace: Path, timeout: float) -> None:
+async def _probe(checks: list[dict], workspace: Path, timeout: float, cache_root: Path) -> None:
     from mcp import Client, StdioServerParameters
     from mcp.client.stdio import stdio_client
 
@@ -37,10 +52,14 @@ async def _probe(checks: list[dict], workspace: Path, timeout: float) -> None:
         command=sys.executable,
         args=["-m", "pasr.mcp.server", "--workspace", str(workspace)],
         cwd=workspace,
+        env={
+            **{name: str(workspace.parent) for name in ("TMPDIR", "TEMP", "TMP")},
+            "TIKTOKEN_CACHE_DIR": str(cache_root),
+        },
     )
     # SDK/server stderr can contain local paths. Keep it out of the shareable report
     # and remove it with the temporary file, including when a probe fails.
-    with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as error_log:
+    with tempfile.TemporaryFile(mode="w+", encoding="utf-8", dir=workspace) as error_log:
         async with Client(stdio_client(parameters, errlog=error_log), read_timeout_seconds=timeout) as client:
             _record(checks, "mcp", "pass", "Python MCP subprocess connected over stdio.")
             catalog = {tool.name for tool in (await client.list_tools()).tools}
@@ -103,10 +122,39 @@ def run_doctor(workspace: Path, *, timeout: float = 30) -> dict:
 
         async def bounded_probe(probe_workspace: Path) -> None:
             with anyio.fail_after(timeout):
-                await _probe(checks, probe_workspace, timeout)
+                await _probe(checks, probe_workspace, timeout, cache_root)
 
-        with tempfile.TemporaryDirectory(prefix="pasr-doctor-") as temporary:
-            probe_workspace = Path(temporary)
+        temporary_root = _temporary_root()
+        project_root = workspace.resolve()
+        if temporary_root.is_relative_to(project_root):
+            _record(
+                checks,
+                "mcp",
+                "fail",
+                "Temporary directory overlaps the workspace; configure TEMP/TMP/TMPDIR outside the project.",
+            )
+            return report
+        cache_root = (temporary_root / "data-gym-cache").resolve()
+        if cache_root.is_relative_to(project_root) or project_root.is_relative_to(cache_root):
+            _record(
+                checks,
+                "mcp",
+                "fail",
+                "Tokenizer cache overlaps the workspace; configure TEMP/TMP/TMPDIR with an external cache.",
+            )
+            return report
+        try:
+            temporary = tempfile.TemporaryDirectory(prefix="pasr-doctor-", dir=temporary_root)
+        except OSError:
+            _record(
+                checks,
+                "mcp",
+                "fail",
+                "Cannot create an isolated temporary directory; check TEMP/TMP/TMPDIR location and permissions.",
+            )
+            return report
+        with temporary as directory:
+            probe_workspace = Path(directory)
             (probe_workspace / "probe.py").write_text(_SOURCE, encoding="utf-8")
             anyio.run(bounded_probe, probe_workspace)
     except Exception as exc:

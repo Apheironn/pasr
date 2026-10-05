@@ -181,6 +181,42 @@ availability is not proof that outside users have submitted or benefited from
 them. The form and chooser definitions pass JSON Schema validation. Authenticated
 submission and outside-user results remain separate from local runtime checks.
 
+#### Local-only isolation follow-up
+
+A configured temporary root inside the inspected project previously let doctor
+create its disposable fixture there and still report success. The local fix checks
+resolved containment before any temporary-file probing or creation, including
+directory aliases. Missing or unwritable configured roots fail without fallback.
+The MCP child uses the validated external temporary root; its captured stderr
+stays in the disposable fixture. No retrieval behavior or frozen evaluation
+record changed.
+
+On Windows/Python 3.14.6 with MCP 2.1.1, four containment regression cases failed
+against the previous implementation. After the fix, the local suite passed
+557 tests and 58 subtests, with three unavailable-symlink skips; changed Python
+files passed Ruff lint/format checks. An isolated editable source installation
+passed actual CLI/MCP checks, unsafe inherited temporary-directory variables,
+and rejection of a project-contained Windows junction. A real sleeping MCP
+child was terminated on the 1.5-second protocol deadline, returning a failed
+diagnostic after about 3.54 seconds. These are local observations, not remote CI,
+a new package release, or independent-user validation.
+
+A subsequent local cache check reproduced a separate boundary failure: with the
+inspected project at `<temporary-root>/data-gym-cache`, the actual MCP probe wrote
+a 3,613,922-byte encoding file there and still reported success. Doctor now rejects
+overlap between the resolved cache directory and the workspace in either direction
+before subprocess work, and passes the validated cache location explicitly.
+
+On the same Windows/Python 3.14.6/MCP 2.1.1 environment, two new regression cases
+failed against the previous local implementation. The updated suite passed
+559 tests and 58 subtests, with four unavailable-symlink skips; changed Python
+files passed Ruff lint/format checks. An actual Windows cache-directory junction
+into the project was rejected. Actual source-installed MCP selection also passed
+with a warm cache and external socket connections/DNS blocked in both parent and
+child (Windows asyncio loopback remained allowed), leaving the inspected project
+empty. No commit, push, publication, paid model call, or new quality score is part
+of this local verification.
+
 ### 3. Learn from outside users before adding integrations
 
 During the first two weeks after release, target roughly ten focused developer

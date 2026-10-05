@@ -8,19 +8,19 @@
 > completeness guarantees. End-to-end superiority to native grep/read is unproven.
 > Offline use requires installed dependencies and cached tokenizer encoding data.
 
-Released package: 0.3.0, now on PyPI: https://pypi.org/project/pasr-mcp/0.3.0/
-Separate GitHub wheel/sdist artifacts:
-https://github.com/Apheironn/pasr/releases/tag/v0.3.0
+Install version 0.4.0: https://pypi.org/project/pasr-mcp/0.4.0/
+Separate GitHub release wheel/sdist location:
+https://github.com/Apheironn/pasr/releases/tag/v0.4.0
 Install uv, make uvx available on PATH, and use Python 3.10+ (or let uv provision it).
 No PASR checkout is required:
-`uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project`.
-MCP config: `{"command":"uvx","args":["--from","pasr-mcp==0.3.0","pasr-mcp","--workspace","/absolute/path/to/project"]}`.
+`uvx --from pasr-mcp==0.4.0 pasr-mcp --workspace /absolute/path/to/project`.
+MCP config: `{"command":"uvx","args":["--from","pasr-mcp==0.4.0","pasr-mcp","--workspace","/absolute/path/to/project"]}`.
 Replace the workspace path with the project's absolute path. Update an existing
-pasr registration instead of adding another. Published install: `pip install pasr-mcp==0.3.0`.
-Without an agent, run `uvx --from pasr-mcp==0.3.0 pasr explain "<question>"` in the project.
-Developers only: to run a PASR checkout, replace `pasr-mcp==0.3.0` after `--from`
+pasr registration instead of adding another. Package install: `pip install pasr-mcp==0.4.0`.
+Without an agent, run `uvx --from pasr-mcp==0.4.0 pasr explain "<question>"` in the project.
+Developers only: to run a PASR checkout, replace `pasr-mcp==0.4.0` after `--from`
 with `/absolute/path/to/pasr` in the existing registration, not a second server.
-This runs that checkout, which can differ from the published release.
+This runs your checkout, which can differ from the version-pinned package.
 
 Local selection does not prevent the client forwarding source to a cloud model.
 Default redaction is a no-op, not automatic secret detection. Computed spans are
@@ -82,6 +82,29 @@ larger than the requested selection budget (at most 1500) are rejected, not clip
   a pinned index tree; A..B/A...B reads pinned B; external --diff uses the working tree.
 - pasr context --issue <text> [paths]: headless source context for CI / agents.
 - pasr report [--price-per-mtok N]: source-context ledger estimates, not measured API savings.
+- pasr doctor [--json] [--timeout SECONDS]: 0.4.0 runtime diagnostics.
+  Invoke with `uvx --from pasr-mcp==0.4.0 pasr --workspace /absolute/path/to/project doctor --json`.
+  It probes a disposable MCP fixture, not project
+  source; no project writes, paid model calls or automatic uploads. Temporary and
+  tokenizer-cache locations must be disjoint from the inspected workspace.
+  Exit 0 means diagnostic success, 1 a failed check, 2 invalid options; a pass
+  does not establish client registration, approval settings or answer quality.
+
+0.4.0 report contract: tokens_saved is signed tokens_in - tokens_out,
+recomputed from raw counters; negative means expansion. unmeasured_calls counts rows
+missing valid nonnegative integer counters. Affected totals/daily differences and
+cost estimates are null, not zero; zero input has no reduction ratio. Fully known
+fields remain available. Prices must be finite/nonnegative; zero disables pricing.
+Sub-cent differences are retained. Coverage is only parsed ledger rows within the
+date filter, never a complete record of provider usage or agent costs.
+Malformed/unfinished JSON, non-object records, invalid UTF-8 or read failures stop
+the report with exit 2 and no stdout totals, even with --since. Record errors give
+the physical line without raw contents. Blank lines and Unicode separators inside
+query strings are handled separately. No automatic repair or file modification;
+missing or empty ledgers still report no recorded rows, unlike unreadable ledgers.
+Consumer migration: accept nullable counters/differences/ratios/costs and signed
+differences. Never coerce null to zero or clamp expansion; treat exit 2 as failure,
+not an empty report. Existing ledgers need no rewrite.
 
 Packs and receipts use format 2. Rebuild/reselect format-1 records; they are not
 automatically recertified. Source reads are strict UTF-8 (optional BOM), normalized

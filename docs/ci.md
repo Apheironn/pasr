@@ -10,7 +10,7 @@ bounded reads. A downstream agent may still need to inspect more source.
 
 Install [`uv`](https://docs.astral.sh/uv/) and provide Python **3.10+** (or allow uv
 to provision it). Initial environment/dependency setup can require network access.
-The example below selects the **0.3.0 source checkout**, rather than a global
+The example below selects the **0.4.0 source checkout**, rather than a global
 install or a package resolved from PyPI. Replace both absolute paths; quote paths
 containing spaces.
 
@@ -24,8 +24,8 @@ uvx --from /absolute/path/to/pasr pasr --workspace /absolute/path/to/project con
   --metrics-file metrics.json
 ```
 
-For the explicitly released **0.3.0** package instead, replace the checkout path
-after `--from` with `pasr-mcp==0.3.0`. Source and published-package selection are
+For the version-pinned **0.4.0** package instead, replace the checkout path
+after `--from` with `pasr-mcp==0.4.0`. Source and published-package selection are
 separate choices. Bare `uvx pasr-mcp` runs the published MCP server, not the
 headless `pasr context` command.
 
@@ -100,11 +100,11 @@ both package source and scanned workspace:
       ${{ steps.pasr.outputs.metrics-file }}
 ```
 
-To intentionally use the released package, set `pasr-version: "pasr-mcp==0.3.0"`.
+To use the version-pinned package, set `pasr-version: "pasr-mcp==0.4.0"`.
 In another repository, reference the action as
 `Apheironn/pasr/.github/actions/pasr-context@<reviewed-commit-sha>`, replacing the
 placeholder with an actual reviewed commit. Action revision and package version
-are separate choices: pin both. If you want local 0.3.0 source there, check out PASR
+are separate choices: pin both. If you want local 0.4.0 source there, check out PASR
 separately and pass its absolute directory as `pasr-version`; do not pass the
 target project's path as the package source unless that project is PASR itself.
 Artifact publication can expose code, so limit access and retention appropriately.
@@ -127,7 +127,7 @@ python scripts/smoke_dist.py dist/first-use-source
 Use a new, otherwise empty output directory so existing release artifacts are
 preserved. Do not rebuild over the published `dist/0.3.0` files. The smoke refuses
 to guess between multiple wheels or source distributions. The current script
-checks the unreleased doctor feature: use it with artifacts from this checkout,
+checks the 0.4.0 doctor feature: use it with artifacts from this checkout,
 not with the older published 0.3.0 package.
 
 The smoke script creates separate clean virtual environments for the built wheel
@@ -144,7 +144,7 @@ report privacy and invalid-option boundaries are covered by the source tests.
 
 The distribution CI job covers Linux and Windows with Python 3.10 and 3.12.
 This documents the configured checks, not a claim that remote jobs have already
-passed. Building and smoke-testing 0.3.0 locally does not publish it. A passing
+passed. Building and smoke-testing 0.4.0 locally does not publish it. A passing
 package/protocol smoke also does not validate a GUI client's permissions,
 model-selected tool use, supported answers, or end-to-end token savings; those
 need a real client workflow and fresh task-level evidence.
@@ -217,18 +217,24 @@ The PyPI project owner must configure a **Trusted Publisher** for:
 | Workflow filename | `publish.yml` |
 | Environment | `pypi` |
 
-Configure it in the project's PyPI publishing settings, then dispatch:
+For the 0.4.0 release target, configure it in the project's PyPI publishing settings,
+then dispatch only after the verified GitHub release and its artifacts exist:
 
 ```bash
-gh workflow run publish.yml --repo Apheironn/pasr -f tag=v0.3.0
+gh workflow run publish.yml --repo Apheironn/pasr -f tag=v0.4.0
 ```
 
 GitHub repository administration alone does not grant PyPI publishing rights.
 Never paste a PyPI token into an issue, PR, transcript or source file. A GitHub
 release and a passing package smoke are not proof of PyPI publication: verify
-`https://pypi.org/pypi/pasr-mcp/0.3.0/json` and install the published package before
+`https://pypi.org/pypi/pasr-mcp/0.4.0/json` and install the published package before
 updating PyPI availability claims. Likewise, submit `server.json` to the MCP
 registry only after its exact referenced PyPI version is available.
+The current source manifest and workflow default target 0.4.0; they do not
+establish publication. Release-branch installation instructions must match the
+version being built into the immutable wheel/sdist README. Merge those instructions
+to public main only after exact-artifact PyPI and registry verification; add new
+availability evidence only when observed. The records below remain historical 0.3.0 evidence.
 
 ### Observed PyPI publication — 2026-10-04
 

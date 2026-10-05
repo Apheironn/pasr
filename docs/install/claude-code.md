@@ -4,21 +4,21 @@
 
 Install [`uv`](https://docs.astral.sh/uv/) and ensure a Python **3.10+** interpreter
 is available (or allow uv to provision one). Make `uvx` available on your PATH.
-These instructions pin **0.3.0**, now available on
-[PyPI](https://pypi.org/project/pasr-mcp/0.3.0/); no PASR checkout is required.
-Versioned wheels are also distributed through the separate
-[GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.3.0).
+These instructions install **0.4.0** from
+[PyPI](https://pypi.org/project/pasr-mcp/0.4.0/); no PASR checkout is required.
+For versioned wheel artifacts, use the separate
+[GitHub release](https://github.com/Apheironn/pasr/releases/tag/v0.4.0).
 Initial setup can download dependencies; context selection itself runs locally.
 
 Replace `/absolute/path/to/project` with the absolute path to the repository you
 want the agent to inspect.
 
-## Add the published package
+## Install version 0.4.0
 
 From the project where you want the server configured:
 
 ```bash
-claude mcp add pasr -- uvx --from pasr-mcp==0.3.0 pasr-mcp --workspace /absolute/path/to/project
+claude mcp add pasr -- uvx --from pasr-mcp==0.4.0 pasr-mcp --workspace /absolute/path/to/project
 ```
 
 Alternatively, merge this into the project's `.mcp.json`. Update an existing
@@ -29,7 +29,7 @@ Alternatively, merge this into the project's `.mcp.json`. Update an existing
   "mcpServers": {
     "pasr": {
       "command": "uvx",
-      "args": ["--from", "pasr-mcp==0.3.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
+      "args": ["--from", "pasr-mcp==0.4.0", "pasr-mcp", "--workspace", "/absolute/path/to/project"]
     }
   }
 }
@@ -50,26 +50,42 @@ uvx --from /absolute/path/to/pasr pasr-mcp --workspace /absolute/path/to/project
 ```
 
 Replace `/absolute/path/to/pasr` with your PASR checkout. In the existing client
-registration or JSON `args`, replace `pasr-mcp==0.3.0` after `--from` with that path.
+registration or JSON `args`, replace `pasr-mcp==0.4.0` after `--from` with that path.
 Do not add a second same-name registration. The checkout can differ from the
-published release; the tool descriptions below describe 0.3.0.
+version-pinned package; the tool descriptions below describe 0.4.0.
 
-### Optional diagnostic for the unreleased source iteration
+### Optional 0.4.0 diagnostics
 
-**Published 0.3.0 has no `doctor` command.** You can report installation trouble
-without it; do not change your client registration or upgrade just to file feedback.
-If you are already trying the current PASR source checkout, run:
+Version 0.4.0 includes `doctor`. You can report installation trouble without it;
+do not change your client registration or upgrade just to file feedback.
+For a 0.4.0 package installation, run:
 
 ```bash
-uvx --from /absolute/path/to/pasr pasr --workspace /absolute/path/to/project doctor --json
+uvx --from pasr-mcp==0.4.0 pasr --workspace /absolute/path/to/project doctor --json
 ```
 
-Replace both paths and quote paths with spaces. This probes that source-installed
-runtime, not any separately configured published server. It checks that the
-workspace exists and is a directory, then exercises MCP, the default tool catalog,
+Replace the workspace path and quote paths with spaces. For a source installation,
+replace `pasr-mcp==0.4.0` with your PASR checkout path to probe that runtime instead.
+It checks that the workspace exists and is a directory, then exercises MCP, the default tool catalog,
 and selection in a disposable fixture. It does not read or write your project's
 sources or `.pasr/`. No paid model/API request is made; dependency setup and a
 first-use tokenizer encoding download may need network access.
+
+The temporary root must already exist, be writable, and resolve outside the
+inspected workspace, including through symlinks or Windows junctions. Doctor uses
+Python's cached temporary root when present, otherwise the first nonempty
+`TMPDIR`, `TEMP`, or `TMP`. With none configured, it uses `/tmp` on POSIX or
+`LOCALAPPDATA/Temp` on Windows (`SystemRoot/Temp` if `LOCALAPPDATA` is unset).
+It does not probe locations by writing files before checking containment, create
+missing roots, or silently fall back from an invalid configured location.
+On an overlap or temporary-directory error, set `TMPDIR` (or `TEMP`/`TMP`) to an
+existing writable directory outside the project and start a new process.
+Doctor also resolves `<temporary-root>/data-gym-cache` and requires that cache
+directory and the workspace be disjoint: neither may contain the other, including
+through directory aliases. It explicitly sets the MCP child's `TIKTOKEN_CACHE_DIR`
+to this validated location, rather than using a custom client cache setting.
+An existing encoding cache remains reusable without an encoding download.
+Captured diagnostic stderr stays inside the disposable fixture.
 
 A passing diagnostic is **not** proof of Claude registration, GUI permissions or
 approval, model tool choice, or answer quality. Check those in the client using
@@ -137,7 +153,7 @@ assuming savings or quality improvements over native search/read.
 Use [installation trouble](https://github.com/Apheironn/pasr/issues/new?template=installation-trouble.yml)
 for setup/connection problems, or [real-task feedback](https://github.com/Apheironn/pasr/issues/new?template=real-task-feedback.yml)
 for a first task, repeat use, or why you disabled PASR. Feedback is optional;
-0.3.0 users can submit without doctor output. Include known versions, OS and
+you can submit without doctor output. Include known versions, OS and
 installation method, approximate time to a useful result (or giving up), expected
 versus observed behavior, your assessment of the outcome, and extra reads or
 interventions. Say unknown rather than inventing usage or cost numbers.

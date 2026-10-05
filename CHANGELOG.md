@@ -3,21 +3,60 @@
 All notable changes to PASR. Format follows [Keep a Changelog](https://keepachangelog.com/);
 this project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.4.0] — 2026-10-05
 
-- **Source-only runtime doctor.** `pasr doctor [--json] [--timeout SECONDS]`
+Runtime diagnostics and report compatibility corrections; retrieval defaults are unchanged.
+
+- **Signed, nullable token accounting.** `pasr report` now derives signed
+  input-minus-output differences from raw counters, so context expansion offsets
+  reductions even in old rows whose stored difference was clamped to zero.
+  Missing or invalid counters remain unknown through receipt/result accounting,
+  JSONL persistence and summaries. Reports expose `unmeasured_calls`, use
+  `null`/`unknown` for affected totals and avoid pricing incomplete measurements.
+  Zero input has no defined reduction ratio. Sub-cent estimates are no longer
+  rounded to whole cents; negative/nonfinite prices are rejected. Existing
+  ledgers and frozen evaluation records are not rewritten. These remain
+  hypothetical source-context differences, not measured model/API savings.
+- **Fail-closed ledger reading.** Damaged or unfinished JSONL, non-object rows,
+  undecodable UTF-8 and read failures now stop `pasr report` instead of silently
+  skipping data or presenting an unreadable ledger as empty. CLI errors give
+  sanitized diagnostics (including line numbers for JSON/record errors), exit 2,
+  and no partial totals, before date filtering. Unicode separators inside query
+  strings no longer split or discard valid records. Reading leaves the ledger
+  unchanged; no automatic repair is performed.
+- **Runtime doctor.** `pasr doctor [--json] [--timeout SECONDS]`
   checks workspace directory existence, launches a real MCP subprocess against
   a disposable fixture, checks the default catalog and selects known source
   within a reported token budget. Reports omit project paths, source, environment
   values and raw exception messages; the inspected project and its PASR state
   are untouched. Protocol work has a finite deadline with SDK subprocess cleanup.
-  This is not in published 0.3.0 and does not check GUI registration, approvals
-  or model behavior. No paid model calls or automatic uploads are made.
+  It does not check GUI registration, approvals or model behavior.
+  No paid model calls or automatic uploads are made.
+- **Doctor temporary-directory isolation.** Reject temporary locations inside
+  the inspected workspace, including directory aliases, before creating or probing
+  files. Pin MCP child temporary/cache work to the validated external root and
+  keep diagnostic stderr in the disposable fixture. An unavailable configured
+  temporary location fails with sanitized guidance instead of silently falling
+  back. These isolation fixes apply to the new doctor command.
+- **Doctor tokenizer-cache containment.** Validate the resolved shared
+  `data-gym-cache` directory separately from the temporary root; reject overlap
+  with the inspected workspace in either direction. Pass the validated cache
+  explicitly to the MCP subprocess so a healthy existing cache remains reusable.
+  Previously a project at the default cache location could receive encoding data
+  while doctor reported success.
 - **Opt-in first-use feedback.** Installation-trouble and real-task issue forms
   collect sanitized setup/outcome information with required public-posting
   confirmations. Security reports use private advisories. The roadmap now sets
   concrete diagnostic acceptance and fresh-evaluation gates without inventing
   independent users or changing frozen results.
+- **Report consumer migration.** Accept signed differences and nullable counters,
+  differences, ratios and cost estimates; do not coerce unknown values to zero or
+  clamp expansion away. Handle report exit 2 as a failed read, not an empty report.
+  Existing ledgers require no rewrite; frozen evaluation evidence is unchanged.
+
+### Historical 0.3.0 onboarding and publication — 2026-10-04
+
+The following records describe the already-published 0.3.0 package, not 0.4.0.
 
 - **Published-package onboarding.** The primary README, website and client setup
   examples now pin the verified PyPI release `pasr-mcp==0.3.0`; cloning PASR is
@@ -724,7 +763,7 @@ saved, route.
   retriever" — add an arm and measure it against the same 50 tasks. Results:
   `eval/RESULTS.md`, `docs/competitors-benchmark.md`.
 
-[Unreleased]: https://github.com/Apheironn/pasr/compare/v0.3.0...HEAD
+[0.4.0]: https://github.com/Apheironn/pasr/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Apheironn/pasr/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/Apheironn/pasr/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Apheironn/pasr/releases/tag/v0.2.0
