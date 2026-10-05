@@ -21,6 +21,12 @@ this project uses [Semantic Versioning](https://semver.org/).
   connection failures. It preserves the $5 cap, prior rows and charges, does not
   retry failed requests, and leaves other unknown states fail-closed. The
   interrupted study is explicitly ineligible for pipeline promotion.
+- **Completed fresh workflow comparison.** Retained all 664 attempts, including
+  400 held-out schedule cells and two unretried provider failures. The selected
+  prompt used 18.26% more Luna provider tokens than unchanged split-4 (paired
+  95% ratio interval 1.04594–1.35231); no retrieval policy was promoted. Published
+  method/competitor results distinguish strict source support, material errors,
+  local payload estimates, unknown usage and reserved cost bounds.
 
 ## [0.4.0] — 2026-10-05
 

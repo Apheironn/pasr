@@ -112,7 +112,32 @@ to LF. Fingerprints describe each actual read, not an atomic workspace snapshot.
 Expansion reports changed source identities. Standalone dependency tracing has a
 soft token target and may report within_budget=false.
 
-## Current evidence (2026-10-03)
+## Current evidence (2026-10-05)
+
+- All 10 PASR methods measured in 420 local calls / 35 modes. Local payload tokens
+  are not cumulative provider usage or answer quality. Canonical selector probes
+  explicitly used 1000 context tokens; the installed default remains 1500.
+- 664 answering trajectories retained. The 40-question schedule attempted all
+  400 cells: 398 answers, two failed requests with unknown usage and no retries.
+  A separately recorded user approval allowed the remaining 128 distinct attempts
+  after the connection-error halt; this is an amended descriptive continuation.
+- Actual Aider RepoMap, Repomix and Serena components, not full-product coding
+  agents, ran with a shared answering harness. Aider ran in development; the
+  frozen quality-first rule selected Repomix for the five-arm confirmation.
+- Selected prompt versus unchanged split-4, Luna: 12,677.825 versus 10,720.525 mean
+  provider tokens, ratio 1.182575, paired 95% interval [1.04594, 1.35231].
+  Full rubric/source support 4/40 versus 3/40; material-error answers 3 versus 5.
+  Strict compound completeness is not ordinary answer accuracy.
+- No pipeline promotion: token gates failed, usage is incomplete, and the
+  continuation approval forbids promotion. Production retrieval defaults unchanged.
+- Answering API: $0.636401240 known published-rate charges plus $0.008003750
+  retained unknown reservations; conservative bound $0.644404990 under $5.
+  Not an invoice; authoring/coding/review assistant-session tokens excluded.
+- Full report: https://github.com/Apheironn/pasr/blob/main/docs/competitors-benchmark.md#fresh-workflow-study--2026-10-05
+- Summary: https://github.com/Apheironn/pasr/blob/main/eval/agent_bench/workflow_study_20261005.json
+- Evidence: https://github.com/Apheironn/pasr/releases/tag/workflow-study-20261005
+
+## Earlier evidence (2026-10-03)
 
 - Untouched 40-question confirmation: native/split supported 28/40 each, material
   errors 3/7; split used 25.3% fewer cumulative provider tokens. Primary gate failed.
@@ -131,7 +156,7 @@ soft token target and may report within_budget=false.
 
 - README: https://github.com/Apheironn/pasr
 - Historical selector evaluation (different protocol): https://github.com/Apheironn/pasr/blob/main/eval/RESULTS.md
-- Current real-component comparison and historical proxies: https://github.com/Apheironn/pasr/blob/main/docs/competitors-benchmark.md#real-upstream-components-with-low-cost-openai-models--2026-10-03
+- Current real-component comparison and historical proxies: https://github.com/Apheironn/pasr/blob/main/docs/competitors-benchmark.md#fresh-workflow-study--2026-10-05
 - Architecture: https://github.com/Apheironn/pasr/blob/main/docs/architecture.md
 - Roadmap: https://github.com/Apheironn/pasr/blob/main/docs/roadmap.md
 - First-principles audit: https://github.com/Apheironn/pasr/blob/main/docs/pipeline-audit-20260929.md

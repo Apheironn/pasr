@@ -1,0 +1,4964 @@
+{
+  "format_version": 1,
+  "study": "workflow_20261005",
+  "released_product_version": "0.4.0",
+  "decision": {
+    "study": "workflow_20261005",
+    "production_retrieval_changed": false,
+    "promote": false,
+    "selected_candidate": "evidence_first4",
+    "unchanged_pasr_reference": "pasr_split4",
+    "confirmation_promotion": {
+      "promote": false,
+      "candidate": "evidence_first4",
+      "unchanged_pasr_reference": "pasr_split4",
+      "confirmation_cases": 40,
+      "confirmation_rows": 400,
+      "all_provider_usage_complete": false,
+      "confirmation_provider_usage_complete": false,
+      "study_provider_usage_complete": false,
+      "study_plan_sha256": "a31ca195b9f0de12d9373817e9374e9fca62c6ee524d3fe3869e76ed1a0d1bdf",
+      "confirmation_decision_sha256": "648cb04359a36a2cc42cfe3852ad4520d54ec3c641edbf4a8a18d1990e17a0f1",
+      "rule": "Luna original gate against both references; nano supported/material-error non-regression against both",
+      "comparisons": {
+        "luna:native6": {
+          "pass": false,
+          "replication_nonregression": false,
+          "problems": [
+            "Incomplete provider usage blocks promotion"
+          ]
+        },
+        "luna:pasr_split4": {
+          "pass": false,
+          "replication_nonregression": true,
+          "N_pairs": 40,
+          "seed": 2026100505,
+          "bootstrap_draws": 10000,
+          "unit": "question",
+          "candidate_supported": 4,
+          "reference_supported": 3,
+          "candidate_material_error_answers": 3,
+          "reference_material_error_answers": 5,
+          "accuracy_difference_95_ci": [
+            -0.05,
+            0.1
+          ],
+          "mean_token_ratio": 1.182575013816954,
+          "token_ratio_95_ci": [
+            1.0459362257054168,
+            1.3523051973356106
+          ],
+          "checks": {
+            "supported_nonregression": true,
+            "material_error_nonregression": true,
+            "accuracy_difference_95_lower_ge_minus_05": true,
+            "token_ratio_95_upper_lt_1": false,
+            "mean_token_ratio_le_085": false
+          },
+          "problems": []
+        },
+        "nano5:native6": {
+          "pass": true,
+          "replication_nonregression": true,
+          "N_pairs": 40,
+          "seed": 2026100505,
+          "bootstrap_draws": 10000,
+          "unit": "question",
+          "candidate_supported": 1,
+          "reference_supported": 1,
+          "candidate_material_error_answers": 20,
+          "reference_material_error_answers": 25,
+          "accuracy_difference_95_ci": [
+            0,
+            0
+          ],
+          "mean_token_ratio": 0.5087382275423248,
+          "token_ratio_95_ci": [
+            0.423294273923729,
+            0.6060796758991926
+          ],
+          "checks": {
+            "supported_nonregression": true,
+            "material_error_nonregression": true,
+            "accuracy_difference_95_lower_ge_minus_05": true,
+            "token_ratio_95_upper_lt_1": true,
+            "mean_token_ratio_le_085": true
+          },
+          "problems": []
+        },
+        "nano5:pasr_split4": {
+          "pass": false,
+          "replication_nonregression": true,
+          "N_pairs": 40,
+          "seed": 2026100505,
+          "bootstrap_draws": 10000,
+          "unit": "question",
+          "candidate_supported": 1,
+          "reference_supported": 0,
+          "candidate_material_error_answers": 20,
+          "reference_material_error_answers": 21,
+          "accuracy_difference_95_ci": [
+            0,
+            0.075
+          ],
+          "mean_token_ratio": 1.0700675931992965,
+          "token_ratio_95_ci": [
+            0.8516335733971983,
+            1.3293287710703028
+          ],
+          "checks": {
+            "supported_nonregression": true,
+            "material_error_nonregression": true,
+            "accuracy_difference_95_lower_ge_minus_05": true,
+            "token_ratio_95_upper_lt_1": false,
+            "mean_token_ratio_le_085": false
+          },
+          "problems": []
+        }
+      }
+    },
+    "continuation_promotion_forbidden": true,
+    "reason": "The candidate failed the frozen token objective against unchanged PASR; two provider failures retain unknown usage. The explicitly approved continuation also forbids automatic promotion. No retrieval-default change is justified.",
+    "accounting": {
+      "scope": "Answering-model API requests only; authoring, coding and semantic-review assistant-session tokens are excluded and unmeasured. Published-rate arithmetic is not an invoice.",
+      "attempted_trajectories": 664,
+      "api_requests": 3081,
+      "known_published_rate_cost_usd": 0.6364012400000009,
+      "unknown_reserved_usd": 0.00800375,
+      "conservative_cost_upper_bound_usd": 0.644404990000001,
+      "ceiling_usd": 5
+    },
+    "verification": {
+      "source_suite": {
+        "passed": 577,
+        "skipped": 4
+      },
+      "ruff_checked": true,
+      "ruff_formatted_files": 114,
+      "continuation_guard_regressions": 8,
+      "confirmation_reviews_validated": 400,
+      "method_measurements": 420,
+      "original_272_rows_byte_identical": 272,
+      "prior_2482_ledger_entries_unchanged": 2482
+    }
+  },
+  "design": {
+    "development_questions": 12,
+    "confirmation_questions": 40,
+    "confirmation_arms": 5,
+    "models": {
+      "luna": {
+        "id": "gpt-6-luna",
+        "effort": "none",
+        "input": 0.1,
+        "cached": 0.01,
+        "write": 0.125,
+        "output": 0.5
+      },
+      "nano5": {
+        "id": "gpt-5-nano-2025-08-07",
+        "effort": "minimal",
+        "input": 0.05,
+        "cached": 0.005,
+        "write": 0.05,
+        "output": 0.4
+      }
+    },
+    "source_scope": "Production Python files from four pinned repositories; not an unrestricted repository-editing benchmark.",
+    "bootstrap_unit": "Question, paired across arms. Independence across questions is an analytical assumption, not established by this study.",
+    "candidate_count": 2,
+    "review": "AI-mediated, label-blind semantic review against frozen source-bound compound criteria; not independent human auditing or ordinary answer accuracy.",
+    "failed_attempts": "Retained without replacement; unknown provider usage is not zero. Full N=40 means remain unknown where a request has unknown usage."
+  },
+  "methods": {
+    "unit": "Local o200k_base tokens in the full MCP text envelope, not cumulative provider usage or a quality score.",
+    "successful_measurements": 420,
+    "measurement": {
+      "pasr_version": "0.4.0",
+      "case_denominator": 12,
+      "case_ids": [
+        "fresh-20261005-tenacity-callback-decision-order",
+        "fresh-20261005-tenacity-wait-chain-composition",
+        "fresh-20261005-tenacity-wrapped-controller-isolation",
+        "fresh-20261005-cachetools-weighted-replacement-accounting",
+        "fresh-20261005-cachetools-fifo-lru-touch-differences",
+        "fresh-20261005-cachetools-argument-key-identity",
+        "fresh-20261005-python-dotenv-interpolation-precedence",
+        "fresh-20261005-python-dotenv-discovery-origin",
+        "fresh-20261005-python-dotenv-set-key-rewrite",
+        "fresh-20261005-itsdangerous-key-rotation",
+        "fresh-20261005-itsdangerous-timestamp-age-boundaries",
+        "fresh-20261005-itsdangerous-url-payload-compression"
+      ],
+      "corpus_case_counts": {
+        "tenacity": 3,
+        "cachetools": 3,
+        "python-dotenv": 3,
+        "itsdangerous": 3
+      },
+      "calls_per_case": 35,
+      "method_count": 10,
+      "method_mode_pairs": 35,
+      "all_calls": {
+        "case_denominator": 12,
+        "cases_represented": 12,
+        "cases_successful": 12,
+        "missing_case_ids": [],
+        "planned_calls": 420,
+        "measured_calls": 420,
+        "successful_calls": 420,
+        "error_calls": 0,
+        "unsupported_calls": 0,
+        "zero_output_token_calls": 0,
+        "missing_token_measurements": 0,
+        "local_output_tokens": {
+          "count": 420,
+          "sum": 630966,
+          "mean": 1502.3,
+          "median": 1143.5,
+          "p95": 3282,
+          "max": 29345,
+          "min": 35
+        }
+      },
+      "provider_calls": 0,
+      "provider_tokens": null,
+      "provider_cost_usd": 0,
+      "nontext_block_calls": 0,
+      "timing_policy": "single ordered call per mode per development case; setup separately reported; warm process caches possible",
+      "parameter_coverage": "all public methods, discrete semantic/recall/direction/outline modes and receipt/pack paths; representative numeric/free-text arguments, not Cartesian combinations"
+    },
+    "canonical_budget_disclosure": {
+      "select_context_explicit_base_budget_tokens": 1000,
+      "production_public_schema_default_budget_tokens": 1500,
+      "explanation": "Canonical default_receipt_setup explicitly passes 1000, not the production 1500 default. Receipt explanation and expansion reuse that 1000-token selection. Included output tokens count the whole serialized MCP text, including metadata, escaped context, receipts and diagnostics; a context budget is not a cap on local output.",
+      "select_context_implicit_1500_modes": [
+        "include_scope",
+        "workspace_discovery",
+        "explicit_ranges"
+      ],
+      "load_pack_explicit_budget_tokens": 1500,
+      "expand_context_explicit_extra_budget_tokens": 500,
+      "trace_canonical_public_defaults": {
+        "direction": "dependencies",
+        "max_depth": 4,
+        "budget_tokens": 4000,
+        "max_files": 200
+      },
+      "trace_include_scope_explicit_controls": {
+        "max_depth": 2,
+        "budget_tokens": 1500,
+        "max_files": "len(probe.files)"
+      },
+      "argument_resolution": "Exact per-case arguments are retained per mode below. Missing arguments use live schema/handler defaults; listed schema defaults are observational, not newly applied arguments.",
+      "base_probe_definition": "query=development probe symbol; files/include=oracle supplied production paths; ranged files cover lines 1 through min(80,file length)."
+    },
+    "rows": [
+      {
+        "method": "find_files",
+        "default_exposed": true,
+        "canonical_mode": "query_scoped",
+        "canonical_choice_policy": "First source-defined representative plan; trace uses dependencies; receipt tools consume the default 1000-token select_context receipt. Not a best-performing-mode selection.",
+        "public_schema_defaults": {
+          "query": "",
+          "top_k": 30
+        },
+        "schema_identical_across_cases": true,
+        "canonical": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 12,
+          "measured_calls": 12,
+          "successful_calls": 12,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 12,
+            "sum": 454,
+            "mean": 37.833333333333336,
+            "median": 38,
+            "p95": 41,
+            "max": 41,
+            "min": 35
+          }
+        },
+        "all_modes": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 24,
+          "measured_calls": 24,
+          "successful_calls": 24,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 24,
+            "sum": 2455,
+            "mean": 102.29166666666667,
+            "median": 72.5,
+            "p95": 227,
+            "max": 227,
+            "min": 35
+          }
+        },
+        "per_mode": [
+          {
+            "mode": "query_scoped",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 454,
+              "mean": 37.833333333333336,
+              "median": 38,
+              "p95": 41,
+              "max": 41,
+              "min": 35
+            }
+          },
+          {
+            "mode": "list_unscoped",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 2001,
+              "mean": 166.75,
+              "median": 168,
+              "p95": 227,
+              "max": 227,
+              "min": 104
+            }
+          }
+        ]
+      },
+      {
+        "method": "find_symbols",
+        "default_exposed": true,
+        "canonical_mode": "query_scoped",
+        "canonical_choice_policy": "First source-defined representative plan; trace uses dependencies; receipt tools consume the default 1000-token select_context receipt. Not a best-performing-mode selection.",
+        "public_schema_defaults": {
+          "query": "",
+          "top_k": 30
+        },
+        "schema_identical_across_cases": true,
+        "canonical": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 12,
+          "measured_calls": 12,
+          "successful_calls": 12,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 12,
+            "sum": 1794,
+            "mean": 149.5,
+            "median": 111.5,
+            "p95": 546,
+            "max": 546,
+            "min": 95
+          }
+        },
+        "all_modes": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 36,
+          "measured_calls": 36,
+          "successful_calls": 36,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 36,
+            "sum": 3426,
+            "mean": 95.16666666666667,
+            "median": 68,
+            "p95": 177,
+            "max": 546,
+            "min": 68
+          }
+        },
+        "per_mode": [
+          {
+            "mode": "query_scoped",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 1794,
+              "mean": 149.5,
+              "median": 111.5,
+              "p95": 546,
+              "max": 546,
+              "min": 95
+            }
+          },
+          {
+            "mode": "list_unscoped",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 816,
+              "mean": 68,
+              "median": 68,
+              "p95": 68,
+              "max": 68,
+              "min": 68
+            }
+          },
+          {
+            "mode": "kind_filter",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 816,
+              "mean": 68,
+              "median": 68,
+              "p95": 68,
+              "max": 68,
+              "min": 68
+            }
+          }
+        ]
+      },
+      {
+        "method": "find_evidence",
+        "default_exposed": true,
+        "canonical_mode": "query_scoped",
+        "canonical_choice_policy": "First source-defined representative plan; trace uses dependencies; receipt tools consume the default 1000-token select_context receipt. Not a best-performing-mode selection.",
+        "public_schema_defaults": {
+          "query": "",
+          "top_k": 20,
+          "per_file": 1
+        },
+        "schema_identical_across_cases": true,
+        "canonical": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 12,
+          "measured_calls": 12,
+          "successful_calls": 12,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 12,
+            "sum": 1537,
+            "mean": 128.08333333333334,
+            "median": 117,
+            "p95": 167,
+            "max": 167,
+            "min": 109
+          }
+        },
+        "all_modes": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 24,
+          "measured_calls": 24,
+          "successful_calls": 24,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 24,
+            "sum": 6145,
+            "mean": 256.0416666666667,
+            "median": 193,
+            "p95": 481,
+            "max": 529,
+            "min": 109
+          }
+        },
+        "per_mode": [
+          {
+            "mode": "query_scoped",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 1537,
+              "mean": 128.08333333333334,
+              "median": 117,
+              "p95": 167,
+              "max": 167,
+              "min": 109
+            }
+          },
+          {
+            "mode": "unscoped_multiple_hits",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 4608,
+              "mean": 384,
+              "median": 434,
+              "p95": 529,
+              "max": 529,
+              "min": 219
+            }
+          }
+        ]
+      },
+      {
+        "method": "find_usages",
+        "default_exposed": true,
+        "canonical_mode": "qualified_scoped",
+        "canonical_choice_policy": "First source-defined representative plan; trace uses dependencies; receipt tools consume the default 1000-token select_context receipt. Not a best-performing-mode selection.",
+        "public_schema_defaults": {
+          "top_k": 30
+        },
+        "schema_identical_across_cases": true,
+        "canonical": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 12,
+          "measured_calls": 12,
+          "successful_calls": 12,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 12,
+            "sum": 2467,
+            "mean": 205.58333333333334,
+            "median": 175.5,
+            "p95": 369,
+            "max": 369,
+            "min": 67
+          }
+        },
+        "all_modes": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 24,
+          "measured_calls": 24,
+          "successful_calls": 24,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 24,
+            "sum": 7119,
+            "mean": 296.625,
+            "median": 247,
+            "p95": 476,
+            "max": 1412,
+            "min": 67
+          }
+        },
+        "per_mode": [
+          {
+            "mode": "qualified_scoped",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 2467,
+              "mean": 205.58333333333334,
+              "median": 175.5,
+              "p95": 369,
+              "max": 369,
+              "min": 67
+            }
+          },
+          {
+            "mode": "bare_unscoped",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 4652,
+              "mean": 387.6666666666667,
+              "median": 308.5,
+              "p95": 1412,
+              "max": 1412,
+              "min": 108
+            }
+          }
+        ]
+      },
+      {
+        "method": "select_context",
+        "default_exposed": true,
+        "canonical_mode": "default_receipt_setup",
+        "canonical_choice_policy": "First source-defined representative plan; trace uses dependencies; receipt tools consume the default 1000-token select_context receipt. Not a best-performing-mode selection.",
+        "public_schema_defaults": {
+          "budget_tokens": 1500,
+          "outline": false
+        },
+        "schema_identical_across_cases": true,
+        "canonical": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 12,
+          "measured_calls": 12,
+          "successful_calls": 12,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 12,
+            "sum": 13413,
+            "mean": 1117.75,
+            "median": 1222,
+            "p95": 1314,
+            "max": 1314,
+            "min": 625
+          }
+        },
+        "all_modes": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 204,
+          "measured_calls": 204,
+          "successful_calls": 204,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 204,
+            "sum": 234649,
+            "mean": 1150.2401960784314,
+            "median": 1188,
+            "p95": 1833,
+            "max": 2030,
+            "min": 304
+          }
+        },
+        "per_mode": [
+          {
+            "mode": "default_receipt_setup",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 13413,
+              "mean": 1117.75,
+              "median": 1222,
+              "p95": 1314,
+              "max": 1314,
+              "min": 625
+            }
+          },
+          {
+            "mode": "include_scope",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 18140,
+              "mean": 1511.6666666666667,
+              "median": 1731,
+              "p95": 1833,
+              "max": 1833,
+              "min": 625
+            }
+          },
+          {
+            "mode": "workspace_discovery",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 20623,
+              "mean": 1718.5833333333333,
+              "median": 1860,
+              "p95": 1927,
+              "max": 1927,
+              "min": 800
+            }
+          },
+          {
+            "mode": "explicit_ranges",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 12731,
+              "mean": 1060.9166666666667,
+              "median": 846.5,
+              "p95": 2030,
+              "max": 2030,
+              "min": 692
+            }
+          },
+          {
+            "mode": "outline",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 9155,
+              "mean": 762.9166666666666,
+              "median": 739,
+              "p95": 1190,
+              "max": 1190,
+              "min": 304
+            }
+          },
+          {
+            "mode": "recall:score_only",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 12747,
+              "mean": 1062.25,
+              "median": 1106.5,
+              "p95": 1315,
+              "max": 1315,
+              "min": 625
+            }
+          },
+          {
+            "mode": "recall:coverage_aware",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 13413,
+              "mean": 1117.75,
+              "median": 1222,
+              "p95": 1314,
+              "max": 1314,
+              "min": 625
+            }
+          },
+          {
+            "mode": "semantic:default",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 13413,
+              "mean": 1117.75,
+              "median": 1222,
+              "p95": 1314,
+              "max": 1314,
+              "min": 625
+            }
+          },
+          {
+            "mode": "semantic:none",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 13413,
+              "mean": 1117.75,
+              "median": 1222,
+              "p95": 1314,
+              "max": 1314,
+              "min": 625
+            }
+          },
+          {
+            "mode": "semantic:hashing",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 13629,
+              "mean": 1135.75,
+              "median": 1182.5,
+              "p95": 1312,
+              "max": 1312,
+              "min": 630
+            }
+          },
+          {
+            "mode": "semantic:minilm",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 13649,
+              "mean": 1137.4166666666667,
+              "median": 1179.5,
+              "p95": 1313,
+              "max": 1313,
+              "min": 626
+            }
+          },
+          {
+            "mode": "symbol_map",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 13391,
+              "mean": 1115.9166666666667,
+              "median": 1169,
+              "p95": 1239,
+              "max": 1239,
+              "min": 626
+            }
+          },
+          {
+            "mode": "dependency_trace",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 13820,
+              "mean": 1151.6666666666667,
+              "median": 1197.5,
+              "p95": 1268,
+              "max": 1268,
+              "min": 628
+            }
+          },
+          {
+            "mode": "window_and_chunk_controls",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 13126,
+              "mean": 1093.8333333333333,
+              "median": 1194,
+              "p95": 1284,
+              "max": 1284,
+              "min": 632
+            }
+          },
+          {
+            "mode": "save_pack_setup",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 13922,
+              "mean": 1160.1666666666667,
+              "median": 1264,
+              "p95": 1357,
+              "max": 1357,
+              "min": 668
+            }
+          },
+          {
+            "mode": "load_pack",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 12651,
+              "mean": 1054.25,
+              "median": 1169.5,
+              "p95": 1235,
+              "max": 1235,
+              "min": 576
+            }
+          },
+          {
+            "mode": "schema:outline=False",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 13413,
+              "mean": 1117.75,
+              "median": 1222,
+              "p95": 1314,
+              "max": 1314,
+              "min": 625
+            }
+          }
+        ]
+      },
+      {
+        "method": "trace_dependencies",
+        "default_exposed": false,
+        "canonical_mode": "direction:dependencies",
+        "canonical_choice_policy": "First source-defined representative plan; trace uses dependencies; receipt tools consume the default 1000-token select_context receipt. Not a best-performing-mode selection.",
+        "public_schema_defaults": {
+          "max_depth": 4,
+          "budget_tokens": 4000,
+          "max_files": 200,
+          "direction": "dependencies"
+        },
+        "schema_identical_across_cases": true,
+        "canonical": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 12,
+          "measured_calls": 12,
+          "successful_calls": 12,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 12,
+            "sum": 111498,
+            "mean": 9291.5,
+            "median": 4317.5,
+            "p95": 29345,
+            "max": 29345,
+            "min": 129
+          }
+        },
+        "all_modes": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 36,
+          "measured_calls": 36,
+          "successful_calls": 36,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 36,
+            "sum": 263013,
+            "mean": 7305.916666666667,
+            "median": 2999,
+            "p95": 26952,
+            "max": 29345,
+            "min": 129
+          }
+        },
+        "per_mode": [
+          {
+            "mode": "direction:dependencies",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 111498,
+              "mean": 9291.5,
+              "median": 4317.5,
+              "p95": 29345,
+              "max": 29345,
+              "min": 129
+            }
+          },
+          {
+            "mode": "direction:callers",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 44741,
+              "mean": 3728.4166666666665,
+              "median": 1466.5,
+              "p95": 20061,
+              "max": 20061,
+              "min": 130
+            }
+          },
+          {
+            "mode": "include_scope",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 106774,
+              "mean": 8897.833333333334,
+              "median": 3552,
+              "p95": 26952,
+              "max": 26952,
+              "min": 129
+            }
+          }
+        ]
+      },
+      {
+        "method": "explain_selection",
+        "default_exposed": false,
+        "canonical_mode": "stored_receipt",
+        "canonical_choice_policy": "First source-defined representative plan; trace uses dependencies; receipt tools consume the default 1000-token select_context receipt. Not a best-performing-mode selection.",
+        "public_schema_defaults": {},
+        "schema_identical_across_cases": true,
+        "canonical": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 12,
+          "measured_calls": 12,
+          "successful_calls": 12,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 12,
+            "sum": 38533,
+            "mean": 3211.0833333333335,
+            "median": 3269,
+            "p95": 5633,
+            "max": 5633,
+            "min": 1496
+          }
+        },
+        "all_modes": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 12,
+          "measured_calls": 12,
+          "successful_calls": 12,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 12,
+            "sum": 38533,
+            "mean": 3211.0833333333335,
+            "median": 3269,
+            "p95": 5633,
+            "max": 5633,
+            "min": 1496
+          }
+        },
+        "per_mode": [
+          {
+            "mode": "stored_receipt",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 38533,
+              "mean": 3211.0833333333335,
+              "median": 3269,
+              "p95": 5633,
+              "max": 5633,
+              "min": 1496
+            }
+          }
+        ]
+      },
+      {
+        "method": "expand_context",
+        "default_exposed": false,
+        "canonical_mode": "stored_receipt",
+        "canonical_choice_policy": "First source-defined representative plan; trace uses dependencies; receipt tools consume the default 1000-token select_context receipt. Not a best-performing-mode selection.",
+        "public_schema_defaults": {
+          "extra_budget": 2000
+        },
+        "schema_identical_across_cases": true,
+        "canonical": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 12,
+          "measured_calls": 12,
+          "successful_calls": 12,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 12,
+            "sum": 18701,
+            "mean": 1558.4166666666667,
+            "median": 1776,
+            "p95": 1882,
+            "max": 1882,
+            "min": 670
+          }
+        },
+        "all_modes": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 12,
+          "measured_calls": 12,
+          "successful_calls": 12,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 12,
+            "sum": 18701,
+            "mean": 1558.4166666666667,
+            "median": 1776,
+            "p95": 1882,
+            "max": 1882,
+            "min": 670
+          }
+        },
+        "per_mode": [
+          {
+            "mode": "stored_receipt",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 18701,
+              "mean": 1558.4166666666667,
+              "median": 1776,
+              "p95": 1882,
+              "max": 1882,
+              "min": 670
+            }
+          }
+        ]
+      },
+      {
+        "method": "search_code",
+        "default_exposed": false,
+        "canonical_mode": "query",
+        "canonical_choice_policy": "First source-defined representative plan; trace uses dependencies; receipt tools consume the default 1000-token select_context receipt. Not a best-performing-mode selection.",
+        "public_schema_defaults": {},
+        "schema_identical_across_cases": true,
+        "canonical": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 12,
+          "measured_calls": 12,
+          "successful_calls": 12,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 12,
+            "sum": 14683,
+            "mean": 1223.5833333333333,
+            "median": 1281.5,
+            "p95": 1347,
+            "max": 1347,
+            "min": 570
+          }
+        },
+        "all_modes": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 24,
+          "measured_calls": 24,
+          "successful_calls": 24,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 24,
+            "sum": 30502,
+            "mean": 1270.9166666666667,
+            "median": 1295.5,
+            "p95": 1373,
+            "max": 1375,
+            "min": 570
+          }
+        },
+        "per_mode": [
+          {
+            "mode": "query",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 14683,
+              "mean": 1223.5833333333333,
+              "median": 1281.5,
+              "p95": 1347,
+              "max": 1347,
+              "min": 570
+            }
+          },
+          {
+            "mode": "named_path",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 15819,
+              "mean": 1318.25,
+              "median": 1316.5,
+              "p95": 1375,
+              "max": 1375,
+              "min": 1249
+            }
+          }
+        ]
+      },
+      {
+        "method": "read_code",
+        "default_exposed": false,
+        "canonical_mode": "files",
+        "canonical_choice_policy": "First source-defined representative plan; trace uses dependencies; receipt tools consume the default 1000-token select_context receipt. Not a best-performing-mode selection.",
+        "public_schema_defaults": {},
+        "schema_identical_across_cases": true,
+        "canonical": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 12,
+          "measured_calls": 12,
+          "successful_calls": 12,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 12,
+            "sum": 15846,
+            "mean": 1320.5,
+            "median": 1514,
+            "p95": 1553,
+            "max": 1553,
+            "min": 518
+          }
+        },
+        "all_modes": {
+          "case_denominator": 12,
+          "cases_represented": 12,
+          "cases_successful": 12,
+          "missing_case_ids": [],
+          "planned_calls": 24,
+          "measured_calls": 24,
+          "successful_calls": 24,
+          "error_calls": 0,
+          "unsupported_calls": 0,
+          "zero_output_token_calls": 0,
+          "missing_token_measurements": 0,
+          "local_output_tokens": {
+            "count": 24,
+            "sum": 26423,
+            "mean": 1100.9583333333333,
+            "median": 1045.5,
+            "p95": 1698,
+            "max": 1756,
+            "min": 518
+          }
+        },
+        "per_mode": [
+          {
+            "mode": "files",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 15846,
+              "mean": 1320.5,
+              "median": 1514,
+              "p95": 1553,
+              "max": 1553,
+              "min": 518
+            }
+          },
+          {
+            "mode": "explicit_ranges",
+            "case_denominator": 12,
+            "cases_represented": 12,
+            "cases_successful": 12,
+            "missing_case_ids": [],
+            "planned_calls": 12,
+            "measured_calls": 12,
+            "successful_calls": 12,
+            "error_calls": 0,
+            "unsupported_calls": 0,
+            "zero_output_token_calls": 0,
+            "missing_token_measurements": 0,
+            "local_output_tokens": {
+              "count": 12,
+              "sum": 10577,
+              "mean": 881.4166666666666,
+              "median": 678.5,
+              "p95": 1756,
+              "max": 1756,
+              "min": 529
+            }
+          }
+        ]
+      }
+    ],
+    "limitations": [
+      "All 12 cases are development cases on four Python corpora; gold file/symbol hints make this oracle-scoped, not discovery performance.",
+      "Every public tool and all 35 measured method-mode pairs are represented on every case; numeric/free-text arguments are representative, not exhaustive or Cartesian combinations.",
+      "All-mode means depend on chosen mode mix (17 select_context modes versus one receipt mode); compare descriptively, not as a ranking of interchangeable tools.",
+      "Local o200k_base output-text tokens exclude tool schemas, request prompts, provider framing, conversation replay, cached-input billing and answer tokens; they are not provider cumulative usage.",
+      "Receipt/pack setup calls are included separately as real calls; reuse introduces dependencies among mode observations.",
+      "Single ordered observations allow warm process/model/index caches; elapsed times are not a cold-start benchmark or statistically replicated latency experiment.",
+      "All 420 final calls succeeded, but success/status alone is not task correctness or retrieval quality.",
+      "No confirmation questions inspected, no provider/API calls made for this report, no production/study files modified."
+    ]
+  },
+  "stages": {
+    "development": {
+      "unit": "attempted trajectory including failures",
+      "reviews_valid": true,
+      "schedule": {
+        "known": true,
+        "complete": true,
+        "attempted": 192,
+        "scheduled": 192,
+        "unattempted": 0
+      },
+      "groups": [
+        {
+          "model_key": "luna",
+          "arm": "aider6",
+          "N": 12,
+          "supported": 1,
+          "material_error_answers": 1,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 23196.083333333332,
+              "median": 19337.5,
+              "p95": 52690.54999999998
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 462.8333333333333,
+              "median": 445.5,
+              "p95": 603.3
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 23658.916666666668,
+              "median": 19877.5,
+              "p95": 53286.89999999998
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 278353,
+            "output": 5554,
+            "total": 283907
+          },
+          "cost_usd": {
+            "exact_total": 0.014361455,
+            "exact_mean": 0.0011967879166666668,
+            "upper_bound_total": 0.014361455,
+            "upper_bound_mean": 0.0011967879166666668
+          },
+          "provider_tokens_per_supported_answer": 283907,
+          "exact_cost_per_supported_answer_usd": 0.014361455,
+          "upper_bound_cost_per_supported_answer_usd": 0.014361455,
+          "tool_calls": {
+            "N": 12,
+            "mean": 3.3333333333333335,
+            "median": 2.5,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "aider_repomap": {
+              "calls": 12,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 42987,
+              "tokens": {
+                "N": 12,
+                "mean": 3582.25,
+                "median": 3250,
+                "p95": 5999
+              }
+            },
+            "grep": {
+              "calls": 13,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 2779,
+              "tokens": {
+                "N": 13,
+                "mean": 213.76923076923077,
+                "median": 111,
+                "p95": 801.4
+              }
+            },
+            "read_file": {
+              "calls": 27,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 24725,
+              "tokens": {
+                "N": 27,
+                "mean": 915.7407407407408,
+                "median": 741,
+                "p95": 2231.9
+              }
+            }
+          }
+        },
+        {
+          "model_key": "luna",
+          "arm": "native6",
+          "N": 12,
+          "supported": 2,
+          "material_error_answers": 0,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 10512,
+              "median": 9935,
+              "p95": 20539.699999999993
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 480.3333333333333,
+              "median": 487.5,
+              "p95": 595.05
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 10992.333333333334,
+              "median": 10459.5,
+              "p95": 21051.799999999992
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 126144,
+            "output": 5764,
+            "total": 131908
+          },
+          "cost_usd": {
+            "exact_total": 0.00996684,
+            "exact_mean": 0.00083057,
+            "upper_bound_total": 0.00996684,
+            "upper_bound_mean": 0.00083057
+          },
+          "provider_tokens_per_supported_answer": 65954,
+          "exact_cost_per_supported_answer_usd": 0.00498342,
+          "upper_bound_cost_per_supported_answer_usd": 0.00498342,
+          "tool_calls": {
+            "N": 12,
+            "mean": 4.416666666666667,
+            "median": 4,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "grep": {
+              "calls": 21,
+              "errors": 1,
+              "unknown_token_counts": 0,
+              "total_tokens": 4978,
+              "tokens": {
+                "N": 21,
+                "mean": 237.04761904761904,
+                "median": 184,
+                "p95": 521
+              }
+            },
+            "read_file": {
+              "calls": 32,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 28273,
+              "tokens": {
+                "N": 32,
+                "mean": 883.53125,
+                "median": 684.5,
+                "p95": 2270.6
+              }
+            }
+          }
+        },
+        {
+          "model_key": "luna",
+          "arm": "pasr_default6",
+          "N": 12,
+          "supported": 0,
+          "material_error_answers": 0,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 8994.25,
+              "median": 8457,
+              "p95": 13287.349999999999
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 454.5,
+              "median": 460.5,
+              "p95": 546
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 9448.75,
+              "median": 8868,
+              "p95": 13822.549999999997
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 107931,
+            "output": 5454,
+            "total": 113385
+          },
+          "cost_usd": {
+            "exact_total": 0.009318395,
+            "exact_mean": 0.0007765329166666666,
+            "upper_bound_total": 0.009318395,
+            "upper_bound_mean": 0.0007765329166666666
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 12,
+            "mean": 3.6666666666666665,
+            "median": 3.5,
+            "p95": 5.449999999999999
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "find_evidence": {
+              "calls": 14,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 5974,
+              "tokens": {
+                "N": 14,
+                "mean": 426.7142857142857,
+                "median": 448,
+                "p95": 554.05
+              }
+            },
+            "find_files": {
+              "calls": 2,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 102,
+              "tokens": {
+                "N": 2,
+                "mean": 51,
+                "median": 51,
+                "p95": 60.9
+              }
+            },
+            "find_symbols": {
+              "calls": 3,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 328,
+              "tokens": {
+                "N": 3,
+                "mean": 109.33333333333333,
+                "median": 107,
+                "p95": 116
+              }
+            },
+            "read_file": {
+              "calls": 25,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 22183,
+              "tokens": {
+                "N": 25,
+                "mean": 887.32,
+                "median": 664,
+                "p95": 2211.399999999999
+              }
+            }
+          }
+        },
+        {
+          "model_key": "luna",
+          "arm": "pasr_select6",
+          "N": 12,
+          "supported": 0,
+          "material_error_answers": 1,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 9700.25,
+              "median": 8539,
+              "p95": 19932.699999999993
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 443.25,
+              "median": 464.5,
+              "p95": 527.85
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 10143.5,
+              "median": 8995,
+              "p95": 20431.949999999993
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 116403,
+            "output": 5319,
+            "total": 121722
+          },
+          "cost_usd": {
+            "exact_total": 0.00996266,
+            "exact_mean": 0.0008302216666666667,
+            "upper_bound_total": 0.00996266,
+            "upper_bound_mean": 0.0008302216666666667
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 12,
+            "mean": 3.6666666666666665,
+            "median": 3,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "grep": {
+              "calls": 16,
+              "errors": 2,
+              "unknown_token_counts": 0,
+              "total_tokens": 3821,
+              "tokens": {
+                "N": 16,
+                "mean": 238.8125,
+                "median": 174.5,
+                "p95": 590.25
+              }
+            },
+            "read_file": {
+              "calls": 25,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 25348,
+              "tokens": {
+                "N": 25,
+                "mean": 1013.92,
+                "median": 736,
+                "p95": 2431.2
+              }
+            },
+            "select_context": {
+              "calls": 3,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 5069,
+              "tokens": {
+                "N": 3,
+                "mean": 1689.6666666666667,
+                "median": 1725,
+                "p95": 1889.7
+              }
+            }
+          }
+        },
+        {
+          "model_key": "luna",
+          "arm": "pasr_split4",
+          "N": 12,
+          "supported": 1,
+          "material_error_answers": 1,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 9608.083333333334,
+              "median": 9760.5,
+              "p95": 16517.45
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 471.25,
+              "median": 467.5,
+              "p95": 580
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 10079.333333333334,
+              "median": 10280.5,
+              "p95": 17072.7
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 115297,
+            "output": 5655,
+            "total": 120952
+          },
+          "cost_usd": {
+            "exact_total": 0.01027882,
+            "exact_mean": 0.0008565683333333333,
+            "upper_bound_total": 0.01027882,
+            "upper_bound_mean": 0.0008565683333333333
+          },
+          "provider_tokens_per_supported_answer": 120952,
+          "exact_cost_per_supported_answer_usd": 0.01027882,
+          "upper_bound_cost_per_supported_answer_usd": 0.01027882,
+          "tool_calls": {
+            "N": 12,
+            "mean": 2.9166666666666665,
+            "median": 3,
+            "p95": 4
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_code": {
+              "calls": 13,
+              "errors": 1,
+              "unknown_token_counts": 0,
+              "total_tokens": 14999,
+              "tokens": {
+                "N": 13,
+                "mean": 1153.7692307692307,
+                "median": 1495,
+                "p95": 1672
+              }
+            },
+            "search_code": {
+              "calls": 22,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 29516,
+              "tokens": {
+                "N": 22,
+                "mean": 1341.6363636363637,
+                "median": 1339.5,
+                "p95": 1405.75
+              }
+            }
+          }
+        },
+        {
+          "model_key": "luna",
+          "arm": "pasr_split6",
+          "N": 12,
+          "supported": 1,
+          "material_error_answers": 1,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 10861.583333333334,
+              "median": 9574,
+              "p95": 20934.449999999993
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 474.1666666666667,
+              "median": 471,
+              "p95": 585.0999999999999
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 11335.75,
+              "median": 10054,
+              "p95": 21492.049999999992
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 130339,
+            "output": 5690,
+            "total": 136029
+          },
+          "cost_usd": {
+            "exact_total": 0.010674860000000001,
+            "exact_mean": 0.0008895716666666668,
+            "upper_bound_total": 0.010674860000000001,
+            "upper_bound_mean": 0.0008895716666666668
+          },
+          "provider_tokens_per_supported_answer": 136029,
+          "exact_cost_per_supported_answer_usd": 0.010674860000000001,
+          "upper_bound_cost_per_supported_answer_usd": 0.010674860000000001,
+          "tool_calls": {
+            "N": 12,
+            "mean": 3.0833333333333335,
+            "median": 3,
+            "p95": 4.899999999999999
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_code": {
+              "calls": 11,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 11802,
+              "tokens": {
+                "N": 11,
+                "mean": 1072.909090909091,
+                "median": 1149,
+                "p95": 1632
+              }
+            },
+            "search_code": {
+              "calls": 26,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 34889,
+              "tokens": {
+                "N": 26,
+                "mean": 1341.8846153846155,
+                "median": 1334.5,
+                "p95": 1388.5
+              }
+            }
+          }
+        },
+        {
+          "model_key": "luna",
+          "arm": "repomix6",
+          "N": 12,
+          "supported": 1,
+          "material_error_answers": 0,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 27131.166666666668,
+              "median": 28440.5,
+              "p95": 44975.049999999996
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 438.5833333333333,
+              "median": 448,
+              "p95": 550.9
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 27569.75,
+              "median": 28888.5,
+              "p95": 45475.549999999996
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 325574,
+            "output": 5263,
+            "total": 330837
+          },
+          "cost_usd": {
+            "exact_total": 0.01710687,
+            "exact_mean": 0.0014255725,
+            "upper_bound_total": 0.01710687,
+            "upper_bound_mean": 0.0014255725
+          },
+          "provider_tokens_per_supported_answer": 330837,
+          "exact_cost_per_supported_answer_usd": 0.01710687,
+          "upper_bound_cost_per_supported_answer_usd": 0.01710687,
+          "tool_calls": {
+            "N": 12,
+            "mean": 2.8333333333333335,
+            "median": 3,
+            "p95": 5
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "grep": {
+              "calls": 9,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 2091,
+              "tokens": {
+                "N": 9,
+                "mean": 232.33333333333334,
+                "median": 113,
+                "p95": 679.5999999999999
+              }
+            },
+            "read_file": {
+              "calls": 25,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 26975,
+              "tokens": {
+                "N": 25,
+                "mean": 1079,
+                "median": 741,
+                "p95": 2607.199999999999
+              }
+            },
+            "repomix_pack": {
+              "calls": 12,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 62988,
+              "tokens": {
+                "N": 12,
+                "mean": 5249,
+                "median": 5305,
+                "p95": 6000
+              }
+            }
+          }
+        },
+        {
+          "model_key": "luna",
+          "arm": "serena6",
+          "N": 12,
+          "supported": 0,
+          "material_error_answers": 0,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 20518.833333333332,
+              "median": 21665,
+              "p95": 26987.499999999996
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 474.3333333333333,
+              "median": 457,
+              "p95": 579.7
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 20993.166666666668,
+              "median": 22169.5,
+              "p95": 27461.949999999997
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 246226,
+            "output": 5692,
+            "total": 251918
+          },
+          "cost_usd": {
+            "exact_total": 0.009114315,
+            "exact_mean": 0.0007595262499999999,
+            "upper_bound_total": 0.009114315,
+            "upper_bound_mean": 0.0007595262499999999
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 12,
+            "mean": 5.083333333333333,
+            "median": 5,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "serena_find_file": {
+              "calls": 4,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 255,
+              "tokens": {
+                "N": 4,
+                "mean": 63.75,
+                "median": 63.5,
+                "p95": 98.49999999999999
+              }
+            },
+            "serena_find_symbol": {
+              "calls": 23,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 6645,
+              "tokens": {
+                "N": 23,
+                "mean": 288.9130434782609,
+                "median": 194,
+                "p95": 480
+              }
+            },
+            "serena_get_symbols_overview": {
+              "calls": 10,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 1681,
+              "tokens": {
+                "N": 10,
+                "mean": 168.1,
+                "median": 108,
+                "p95": 360.8999999999999
+              }
+            },
+            "serena_instructions": {
+              "calls": 12,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 1176,
+              "tokens": {
+                "N": 12,
+                "mean": 98,
+                "median": 98,
+                "p95": 98
+              }
+            },
+            "serena_list_dir": {
+              "calls": 12,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 972,
+              "tokens": {
+                "N": 12,
+                "mean": 81,
+                "median": 84,
+                "p95": 117
+              }
+            },
+            "serena_read_file": {
+              "calls": 10,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 9647,
+              "tokens": {
+                "N": 10,
+                "mean": 964.7,
+                "median": 783,
+                "p95": 1717.6499999999999
+              }
+            },
+            "serena_search_for_pattern": {
+              "calls": 2,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 6084,
+              "tokens": {
+                "N": 2,
+                "mean": 3042,
+                "median": 3042,
+                "p95": 5660.099999999999
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "aider6",
+          "N": 12,
+          "supported": 0,
+          "material_error_answers": 8,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 20701.583333333332,
+              "median": 17146.5,
+              "p95": 43784.399999999994
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 1061.9166666666667,
+              "median": 1119,
+              "p95": 1401.95
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 21763.5,
+              "median": 18117,
+              "p95": 45177.549999999996
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 248419,
+            "output": 12743,
+            "total": 261162
+          },
+          "cost_usd": {
+            "exact_total": 0.01054855,
+            "exact_mean": 0.0008790458333333334,
+            "upper_bound_total": 0.01054855,
+            "upper_bound_mean": 0.0008790458333333334
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 12,
+            "mean": 2.9166666666666665,
+            "median": 2,
+            "p95": 5.449999999999999
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "aider_repomap": {
+              "calls": 12,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 42987,
+              "tokens": {
+                "N": 12,
+                "mean": 3582.25,
+                "median": 3250,
+                "p95": 5999
+              }
+            },
+            "grep": {
+              "calls": 16,
+              "errors": 3,
+              "unknown_token_counts": 0,
+              "total_tokens": 876,
+              "tokens": {
+                "N": 16,
+                "mean": 54.75,
+                "median": 16.5,
+                "p95": 210
+              }
+            },
+            "read_file": {
+              "calls": 19,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 29640,
+              "tokens": {
+                "N": 19,
+                "mean": 1560,
+                "median": 1254,
+                "p95": 3705
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "native6",
+          "N": 12,
+          "supported": 1,
+          "material_error_answers": 7,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 16932,
+              "median": 14529,
+              "p95": 38169.34999999999
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 1177.25,
+              "median": 1179,
+              "p95": 1625.5499999999995
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 18109.25,
+              "median": 16114.5,
+              "p95": 39285.149999999994
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 203184,
+            "output": 14127,
+            "total": 217311
+          },
+          "cost_usd": {
+            "exact_total": 0.01239432,
+            "exact_mean": 0.00103286,
+            "upper_bound_total": 0.01239432,
+            "upper_bound_mean": 0.00103286
+          },
+          "provider_tokens_per_supported_answer": 217311,
+          "exact_cost_per_supported_answer_usd": 0.01239432,
+          "upper_bound_cost_per_supported_answer_usd": 0.01239432,
+          "tool_calls": {
+            "N": 12,
+            "mean": 4.166666666666667,
+            "median": 4,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "grep": {
+              "calls": 14,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 3356,
+              "tokens": {
+                "N": 14,
+                "mean": 239.71428571428572,
+                "median": 156.5,
+                "p95": 625.3499999999998
+              }
+            },
+            "read_file": {
+              "calls": 36,
+              "errors": 2,
+              "unknown_token_counts": 0,
+              "total_tokens": 60267,
+              "tokens": {
+                "N": 36,
+                "mean": 1674.0833333333333,
+                "median": 1225,
+                "p95": 3705
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "pasr_default6",
+          "N": 12,
+          "supported": 0,
+          "material_error_answers": 9,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 18241.666666666668,
+              "median": 19034.5,
+              "p95": 35097.549999999996
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 1211,
+              "median": 1167.5,
+              "p95": 1550.5999999999997
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 19452.666666666668,
+              "median": 20378.5,
+              "p95": 36375.049999999996
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 218900,
+            "output": 14532,
+            "total": 233432
+          },
+          "cost_usd": {
+            "exact_total": 0.01264516,
+            "exact_mean": 0.0010537633333333335,
+            "upper_bound_total": 0.01264516,
+            "upper_bound_mean": 0.0010537633333333335
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 12,
+            "mean": 4.75,
+            "median": 6,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "find_evidence": {
+              "calls": 12,
+              "errors": 1,
+              "unknown_token_counts": 0,
+              "total_tokens": 1851,
+              "tokens": {
+                "N": 12,
+                "mean": 154.25,
+                "median": 142.5,
+                "p95": 259.4
+              }
+            },
+            "find_symbols": {
+              "calls": 11,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 5123,
+              "tokens": {
+                "N": 11,
+                "mean": 465.72727272727275,
+                "median": 493,
+                "p95": 746
+              }
+            },
+            "grep": {
+              "calls": 4,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 1593,
+              "tokens": {
+                "N": 4,
+                "mean": 398.25,
+                "median": 317,
+                "p95": 768.8499999999999
+              }
+            },
+            "read_file": {
+              "calls": 30,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 41450,
+              "tokens": {
+                "N": 30,
+                "mean": 1381.6666666666667,
+                "median": 877.5,
+                "p95": 3705
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "pasr_select6",
+          "N": 12,
+          "supported": 1,
+          "material_error_answers": 6,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 22732.833333333332,
+              "median": 21244,
+              "p95": 41990.5
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 1198.6666666666667,
+              "median": 1163,
+              "p95": 1529.6
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 23931.5,
+              "median": 22626,
+              "p95": 43154.299999999996
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 272794,
+            "output": 14384,
+            "total": 287178
+          },
+          "cost_usd": {
+            "exact_total": 0.01385218,
+            "exact_mean": 0.0011543483333333333,
+            "upper_bound_total": 0.01385218,
+            "upper_bound_mean": 0.0011543483333333333
+          },
+          "provider_tokens_per_supported_answer": 287178,
+          "exact_cost_per_supported_answer_usd": 0.01385218,
+          "upper_bound_cost_per_supported_answer_usd": 0.01385218,
+          "tool_calls": {
+            "N": 12,
+            "mean": 5.083333333333333,
+            "median": 6,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "grep": {
+              "calls": 18,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 2617,
+              "tokens": {
+                "N": 18,
+                "mean": 145.38888888888889,
+                "median": 102.5,
+                "p95": 446.15
+              }
+            },
+            "read_file": {
+              "calls": 43,
+              "errors": 3,
+              "unknown_token_counts": 0,
+              "total_tokens": 65447,
+              "tokens": {
+                "N": 43,
+                "mean": 1522.0232558139535,
+                "median": 791,
+                "p95": 4116.299999999999
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "pasr_split4",
+          "N": 12,
+          "supported": 0,
+          "material_error_answers": 7,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 5689.5,
+              "median": 2190.5,
+              "p95": 13915.499999999996
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 1051.9166666666667,
+              "median": 934.5,
+              "p95": 1535.2499999999995
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 6741.416666666667,
+              "median": 3370.5,
+              "p95": 15025.799999999997
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 68274,
+            "output": 12623,
+            "total": 80897
+          },
+          "cost_usd": {
+            "exact_total": 0.00784082,
+            "exact_mean": 0.0006534016666666667,
+            "upper_bound_total": 0.00784082,
+            "upper_bound_mean": 0.0006534016666666667
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 12,
+            "mean": 2.0833333333333335,
+            "median": 1,
+            "p95": 4
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_code": {
+              "calls": 11,
+              "errors": 8,
+              "unknown_token_counts": 0,
+              "total_tokens": 5468,
+              "tokens": {
+                "N": 11,
+                "mean": 497.09090909090907,
+                "median": 66,
+                "p95": 1578
+              }
+            },
+            "search_code": {
+              "calls": 14,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 19025,
+              "tokens": {
+                "N": 14,
+                "mean": 1358.9285714285713,
+                "median": 1364,
+                "p95": 1397
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "pasr_split6",
+          "N": 12,
+          "supported": 0,
+          "material_error_answers": 6,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 8391.333333333334,
+              "median": 8090.5,
+              "p95": 18218.699999999997
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 1151.3333333333333,
+              "median": 1100,
+              "p95": 1443.75
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 9542.666666666666,
+              "median": 9419,
+              "p95": 19236.6
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 100696,
+            "output": 13816,
+            "total": 114512
+          },
+          "cost_usd": {
+            "exact_total": 0.00944376,
+            "exact_mean": 0.0007869800000000001,
+            "upper_bound_total": 0.00944376,
+            "upper_bound_mean": 0.0007869800000000001
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 12,
+            "mean": 3.1666666666666665,
+            "median": 3.5,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_code": {
+              "calls": 19,
+              "errors": 13,
+              "unknown_token_counts": 0,
+              "total_tokens": 10054,
+              "tokens": {
+                "N": 19,
+                "mean": 529.1578947368421,
+                "median": 119,
+                "p95": 1664.1
+              }
+            },
+            "search_code": {
+              "calls": 19,
+              "errors": 3,
+              "unknown_token_counts": 0,
+              "total_tokens": 21679,
+              "tokens": {
+                "N": 19,
+                "mean": 1141,
+                "median": 1336,
+                "p95": 1389.6
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "repomix6",
+          "N": 12,
+          "supported": 1,
+          "material_error_answers": 9,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 33890.25,
+              "median": 24294.5,
+              "p95": 67203.15
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 1053.5833333333333,
+              "median": 995,
+              "p95": 1333.5
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 34943.833333333336,
+              "median": 25421,
+              "p95": 68410.9
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 406683,
+            "output": 12643,
+            "total": 419326
+          },
+          "cost_usd": {
+            "exact_total": 0.01234495,
+            "exact_mean": 0.0010287458333333333,
+            "upper_bound_total": 0.01234495,
+            "upper_bound_mean": 0.0010287458333333333
+          },
+          "provider_tokens_per_supported_answer": 419326,
+          "exact_cost_per_supported_answer_usd": 0.01234495,
+          "upper_bound_cost_per_supported_answer_usd": 0.01234495,
+          "tool_calls": {
+            "N": 12,
+            "mean": 3.1666666666666665,
+            "median": 2.5,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "grep": {
+              "calls": 10,
+              "errors": 1,
+              "unknown_token_counts": 0,
+              "total_tokens": 964,
+              "tokens": {
+                "N": 10,
+                "mean": 96.4,
+                "median": 82.5,
+                "p95": 229.24999999999997
+              }
+            },
+            "read_file": {
+              "calls": 28,
+              "errors": 1,
+              "unknown_token_counts": 0,
+              "total_tokens": 38597,
+              "tokens": {
+                "N": 28,
+                "mean": 1378.4642857142858,
+                "median": 1095.5,
+                "p95": 3322.649999999999
+              }
+            },
+            "repomix_pack": {
+              "calls": 12,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 62988,
+              "tokens": {
+                "N": 12,
+                "mean": 5249,
+                "median": 5305,
+                "p95": 6000
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "serena6",
+          "N": 12,
+          "supported": 0,
+          "material_error_answers": 6,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 25744.75,
+              "median": 22515.5,
+              "p95": 59870.49999999997
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 1046.9166666666667,
+              "median": 1093.5,
+              "p95": 1359.4
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 26791.666666666668,
+              "median": 23678.5,
+              "p95": 61215.049999999974
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 308937,
+            "output": 12563,
+            "total": 321500
+          },
+          "cost_usd": {
+            "exact_total": 0.01187813,
+            "exact_mean": 0.0009898441666666667,
+            "upper_bound_total": 0.01187813,
+            "upper_bound_mean": 0.0009898441666666667
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 12,
+            "mean": 4.583333333333333,
+            "median": 5,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "grep": {
+              "calls": 1,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 3,
+              "tokens": {
+                "N": 1,
+                "mean": 3,
+                "median": 3,
+                "p95": 3
+              }
+            },
+            "read_file": {
+              "calls": 12,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 19609,
+              "tokens": {
+                "N": 12,
+                "mean": 1634.0833333333333,
+                "median": 1019,
+                "p95": 3547
+              }
+            },
+            "serena_find_symbol": {
+              "calls": 3,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 337,
+              "tokens": {
+                "N": 3,
+                "mean": 112.33333333333333,
+                "median": 1,
+                "p95": 301.59999999999997
+              }
+            },
+            "serena_get_symbols_overview": {
+              "calls": 2,
+              "errors": 1,
+              "unknown_token_counts": 0,
+              "total_tokens": 84,
+              "tokens": {
+                "N": 2,
+                "mean": 42,
+                "median": 42,
+                "p95": 66.3
+              }
+            },
+            "serena_instructions": {
+              "calls": 12,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 1176,
+              "tokens": {
+                "N": 12,
+                "mean": 98,
+                "median": 98,
+                "p95": 98
+              }
+            },
+            "serena_list_dir": {
+              "calls": 4,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 403,
+              "tokens": {
+                "N": 4,
+                "mean": 100.75,
+                "median": 110,
+                "p95": 117
+              }
+            },
+            "serena_read_file": {
+              "calls": 27,
+              "errors": 20,
+              "unknown_token_counts": 0,
+              "total_tokens": 13891,
+              "tokens": {
+                "N": 27,
+                "mean": 514.4814814814815,
+                "median": 75,
+                "p95": 2276.2999999999997
+              }
+            },
+            "serena_search_for_pattern": {
+              "calls": 6,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 15335,
+              "tokens": {
+                "N": 6,
+                "mean": 2555.8333333333335,
+                "median": 93.5,
+                "p95": 11259
+              }
+            }
+          }
+        }
+      ]
+    },
+    "corrected_serena": {
+      "unit": "attempted trajectory including failures",
+      "reviews_valid": true,
+      "schedule": {
+        "known": true,
+        "complete": true,
+        "attempted": 24,
+        "scheduled": 24,
+        "unattempted": 0
+      },
+      "groups": [
+        {
+          "model_key": "luna",
+          "arm": "serena6",
+          "N": 12,
+          "supported": 0,
+          "material_error_answers": 0,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 30252.75,
+              "median": 30546.5,
+              "p95": 43817.5
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 502.3333333333333,
+              "median": 514,
+              "p95": 578.3
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 30755.083333333332,
+              "median": 31047.5,
+              "p95": 44321.549999999996
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 363033,
+            "output": 6028,
+            "total": 369061
+          },
+          "cost_usd": {
+            "exact_total": 0.011636085000000001,
+            "exact_mean": 0.00096967375,
+            "upper_bound_total": 0.011636085000000001,
+            "upper_bound_mean": 0.00096967375
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 12,
+            "mean": 5.333333333333333,
+            "median": 6,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "serena_find_symbol": {
+              "calls": 33,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 8677,
+              "tokens": {
+                "N": 33,
+                "mean": 262.93939393939394,
+                "median": 198,
+                "p95": 558.4
+              }
+            },
+            "serena_get_symbols_overview": {
+              "calls": 7,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 1405,
+              "tokens": {
+                "N": 7,
+                "mean": 200.71428571428572,
+                "median": 179,
+                "p95": 425.0999999999999
+              }
+            },
+            "serena_instructions": {
+              "calls": 12,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 13146,
+              "tokens": {
+                "N": 12,
+                "mean": 1095.5,
+                "median": 1096,
+                "p95": 1102
+              }
+            },
+            "serena_list_dir": {
+              "calls": 6,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 338,
+              "tokens": {
+                "N": 6,
+                "mean": 56.333333333333336,
+                "median": 62,
+                "p95": 97.75
+              }
+            },
+            "serena_read_file": {
+              "calls": 7,
+              "errors": 1,
+              "unknown_token_counts": 0,
+              "total_tokens": 4307,
+              "tokens": {
+                "N": 7,
+                "mean": 615.2857142857143,
+                "median": 436,
+                "p95": 1500.9999999999995
+              }
+            },
+            "serena_search_for_pattern": {
+              "calls": 11,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 10313,
+              "tokens": {
+                "N": 11,
+                "mean": 937.5454545454545,
+                "median": 786,
+                "p95": 2573
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "serena6",
+          "N": 12,
+          "supported": 0,
+          "material_error_answers": 5,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 35242.583333333336,
+              "median": 28895,
+              "p95": 78126.99999999996
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 1133.0833333333333,
+              "median": 1136.5,
+              "p95": 1359.4
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 36375.666666666664,
+              "median": 30112.5,
+              "p95": 79274.54999999996
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 422911,
+            "output": 13597,
+            "total": 436508
+          },
+          "cost_usd": {
+            "exact_total": 0.01272003,
+            "exact_mean": 0.0010600025,
+            "upper_bound_total": 0.01272003,
+            "upper_bound_mean": 0.0010600025
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 12,
+            "mean": 4.833333333333333,
+            "median": 6,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_file": {
+              "calls": 25,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 30619,
+              "tokens": {
+                "N": 25,
+                "mean": 1224.76,
+                "median": 794,
+                "p95": 2797
+              }
+            },
+            "serena_find_symbol": {
+              "calls": 15,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 3141,
+              "tokens": {
+                "N": 15,
+                "mean": 209.4,
+                "median": 47,
+                "p95": 883.1999999999973
+              }
+            },
+            "serena_instructions": {
+              "calls": 12,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 13146,
+              "tokens": {
+                "N": 12,
+                "mean": 1095.5,
+                "median": 1096,
+                "p95": 1102
+              }
+            },
+            "serena_read_file": {
+              "calls": 14,
+              "errors": 12,
+              "unknown_token_counts": 0,
+              "total_tokens": 2905,
+              "tokens": {
+                "N": 14,
+                "mean": 207.5,
+                "median": 76.5,
+                "p95": 748.0999999999995
+              }
+            },
+            "serena_search_for_pattern": {
+              "calls": 4,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 16255,
+              "tokens": {
+                "N": 4,
+                "mean": 4063.75,
+                "median": 98,
+                "p95": 13672.999999999995
+              }
+            }
+          }
+        }
+      ]
+    },
+    "candidates": {
+      "unit": "attempted trajectory including failures",
+      "reviews_valid": true,
+      "schedule": {
+        "known": true,
+        "complete": true,
+        "attempted": 48,
+        "scheduled": 48,
+        "unattempted": 0
+      },
+      "groups": [
+        {
+          "model_key": "luna",
+          "arm": "evidence_budget1000",
+          "N": 12,
+          "supported": 1,
+          "material_error_answers": 0,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 11111.333333333334,
+              "median": 9842,
+              "p95": 15729.7
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 490.5,
+              "median": 490,
+              "p95": 604.3
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 11601.833333333334,
+              "median": 10359,
+              "p95": 16312
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 133336,
+            "output": 5886,
+            "total": 139222
+          },
+          "cost_usd": {
+            "exact_total": 0.010374910000000001,
+            "exact_mean": 0.0008645758333333335,
+            "upper_bound_total": 0.010374910000000001,
+            "upper_bound_mean": 0.0008645758333333335
+          },
+          "provider_tokens_per_supported_answer": 139222,
+          "exact_cost_per_supported_answer_usd": 0.010374910000000001,
+          "upper_bound_cost_per_supported_answer_usd": 0.010374910000000001,
+          "tool_calls": {
+            "N": 12,
+            "mean": 3.25,
+            "median": 3,
+            "p95": 4
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_code": {
+              "calls": 24,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 22980,
+              "tokens": {
+                "N": 24,
+                "mean": 957.5,
+                "median": 1104,
+                "p95": 1200.55
+              }
+            },
+            "search_code": {
+              "calls": 15,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 19332,
+              "tokens": {
+                "N": 15,
+                "mean": 1288.8,
+                "median": 1332,
+                "p95": 1377.9
+              }
+            }
+          }
+        },
+        {
+          "model_key": "luna",
+          "arm": "evidence_first4",
+          "N": 12,
+          "supported": 2,
+          "material_error_answers": 0,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 11557.75,
+              "median": 10332.5,
+              "p95": 17874.45
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 500.5833333333333,
+              "median": 490,
+              "p95": 586.3499999999999
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 12058.333333333334,
+              "median": 10794,
+              "p95": 18442.649999999998
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 138693,
+            "output": 6007,
+            "total": 144700
+          },
+          "cost_usd": {
+            "exact_total": 0.011262625,
+            "exact_mean": 0.0009385520833333333,
+            "upper_bound_total": 0.011262625,
+            "upper_bound_mean": 0.0009385520833333333
+          },
+          "provider_tokens_per_supported_answer": 72350,
+          "exact_cost_per_supported_answer_usd": 0.0056313125,
+          "upper_bound_cost_per_supported_answer_usd": 0.0056313125,
+          "tool_calls": {
+            "N": 12,
+            "mean": 3.25,
+            "median": 3.5,
+            "p95": 4
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_code": {
+              "calls": 23,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 24241,
+              "tokens": {
+                "N": 23,
+                "mean": 1053.9565217391305,
+                "median": 1071,
+                "p95": 1655
+              }
+            },
+            "search_code": {
+              "calls": 16,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 21071,
+              "tokens": {
+                "N": 16,
+                "mean": 1316.9375,
+                "median": 1321.5,
+                "p95": 1380.75
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "evidence_budget1000",
+          "N": 12,
+          "supported": 0,
+          "material_error_answers": 8,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 5820.666666666667,
+              "median": 2952,
+              "p95": 14369.7
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 1304.4166666666667,
+              "median": 1269.5,
+              "p95": 1698.9999999999998
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 7125.083333333333,
+              "median": 4604,
+              "p95": 15483.699999999999
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 69848,
+            "output": 15653,
+            "total": 85501
+          },
+          "cost_usd": {
+            "exact_total": 0.00927552,
+            "exact_mean": 0.00077296,
+            "upper_bound_total": 0.00927552,
+            "upper_bound_mean": 0.00077296
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 12,
+            "mean": 2.1666666666666665,
+            "median": 1.5,
+            "p95": 4
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_code": {
+              "calls": 8,
+              "errors": 3,
+              "unknown_token_counts": 0,
+              "total_tokens": 5325,
+              "tokens": {
+                "N": 8,
+                "mean": 665.625,
+                "median": 966.5,
+                "p95": 1071.85
+              }
+            },
+            "search_code": {
+              "calls": 18,
+              "errors": 4,
+              "unknown_token_counts": 0,
+              "total_tokens": 18949,
+              "tokens": {
+                "N": 18,
+                "mean": 1052.7222222222222,
+                "median": 1314,
+                "p95": 1368.1
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "evidence_first4",
+          "N": 12,
+          "supported": 0,
+          "material_error_answers": 5,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 12,
+              "mean": 7108.25,
+              "median": 6128,
+              "p95": 14613.3
+            },
+            "output_tokens": {
+              "N": 12,
+              "mean": 1224.1666666666667,
+              "median": 1169.5,
+              "p95": 1778.5499999999997
+            },
+            "total_tokens": {
+              "N": 12,
+              "mean": 8332.416666666666,
+              "median": 7683.5,
+              "p95": 15542.599999999999
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 85299,
+            "output": 14690,
+            "total": 99989
+          },
+          "cost_usd": {
+            "exact_total": 0.008931350000000001,
+            "exact_mean": 0.0007442791666666667,
+            "upper_bound_total": 0.008931350000000001,
+            "upper_bound_mean": 0.0007442791666666667
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 12,
+            "mean": 2.25,
+            "median": 2,
+            "p95": 4
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_code": {
+              "calls": 13,
+              "errors": 3,
+              "unknown_token_counts": 0,
+              "total_tokens": 14732,
+              "tokens": {
+                "N": 13,
+                "mean": 1133.2307692307693,
+                "median": 1539,
+                "p95": 1610.3999999999999
+              }
+            },
+            "search_code": {
+              "calls": 14,
+              "errors": 2,
+              "unknown_token_counts": 0,
+              "total_tokens": 16295,
+              "tokens": {
+                "N": 14,
+                "mean": 1163.9285714285713,
+                "median": 1344,
+                "p95": 1385.15
+              }
+            }
+          }
+        }
+      ]
+    },
+    "confirmation": {
+      "unit": "attempted trajectory including failures",
+      "reviews_valid": true,
+      "schedule": {
+        "known": true,
+        "complete": true,
+        "attempted": 400,
+        "scheduled": 400,
+        "unattempted": 0
+      },
+      "groups": [
+        {
+          "model_key": "luna",
+          "arm": "evidence_first4",
+          "N": 40,
+          "supported": 4,
+          "material_error_answers": 3,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 40,
+              "mean": 12184.7,
+              "median": 10912,
+              "p95": 17967.55
+            },
+            "output_tokens": {
+              "N": 40,
+              "mean": 493.125,
+              "median": 496,
+              "p95": 617.2499999999998
+            },
+            "total_tokens": {
+              "N": 40,
+              "mean": 12677.825,
+              "median": 11427.5,
+              "p95": 18581.5
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 487388,
+            "output": 19725,
+            "total": 507113
+          },
+          "cost_usd": {
+            "exact_total": 0.039105645,
+            "exact_mean": 0.000977641125,
+            "upper_bound_total": 0.039105645,
+            "upper_bound_mean": 0.000977641125
+          },
+          "provider_tokens_per_supported_answer": 126778.25,
+          "exact_cost_per_supported_answer_usd": 0.00977641125,
+          "upper_bound_cost_per_supported_answer_usd": 0.00977641125,
+          "tool_calls": {
+            "N": 40,
+            "mean": 3.275,
+            "median": 3,
+            "p95": 4
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_code": {
+              "calls": 77,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 92677,
+              "tokens": {
+                "N": 77,
+                "mean": 1203.5974025974026,
+                "median": 1255,
+                "p95": 1669.2
+              }
+            },
+            "search_code": {
+              "calls": 54,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 71544,
+              "tokens": {
+                "N": 54,
+                "mean": 1324.888888888889,
+                "median": 1324.5,
+                "p95": 1380.05
+              }
+            }
+          }
+        },
+        {
+          "model_key": "luna",
+          "arm": "native6",
+          "N": 40,
+          "supported": 2,
+          "material_error_answers": 5,
+          "failed": 1,
+          "unknown_usage": 1,
+          "unknown_cost": 1,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 481450,
+            "output": 18591,
+            "total": 500041
+          },
+          "cost_usd": {
+            "exact_total": null,
+            "exact_mean": null,
+            "upper_bound_total": 0.03888591,
+            "upper_bound_mean": 0.0009721477500000001
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": 0.019442955,
+          "tool_calls": {
+            "N": 40,
+            "mean": 4.325,
+            "median": 4,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "grep": {
+              "calls": 68,
+              "errors": 3,
+              "unknown_token_counts": 0,
+              "total_tokens": 16758,
+              "tokens": {
+                "N": 68,
+                "mean": 246.44117647058823,
+                "median": 187.5,
+                "p95": 590.9499999999999
+              }
+            },
+            "read_file": {
+              "calls": 105,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 117027,
+              "tokens": {
+                "N": 105,
+                "mean": 1114.5428571428572,
+                "median": 935,
+                "p95": 2731.9999999999995
+              }
+            }
+          }
+        },
+        {
+          "model_key": "luna",
+          "arm": "pasr_split4",
+          "N": 40,
+          "supported": 3,
+          "material_error_answers": 5,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 40,
+              "mean": 10256.725,
+              "median": 9757,
+              "p95": 16529.149999999998
+            },
+            "output_tokens": {
+              "N": 40,
+              "mean": 463.8,
+              "median": 453.5,
+              "p95": 590.5999999999999
+            },
+            "total_tokens": {
+              "N": 40,
+              "mean": 10720.525,
+              "median": 10201,
+              "p95": 17082.699999999997
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 410269,
+            "output": 18552,
+            "total": 428821
+          },
+          "cost_usd": {
+            "exact_total": 0.035166005,
+            "exact_mean": 0.000879150125,
+            "upper_bound_total": 0.035166005,
+            "upper_bound_mean": 0.000879150125
+          },
+          "provider_tokens_per_supported_answer": 142940.33333333334,
+          "exact_cost_per_supported_answer_usd": 0.011722001666666667,
+          "upper_bound_cost_per_supported_answer_usd": 0.011722001666666667,
+          "tool_calls": {
+            "N": 40,
+            "mean": 3.05,
+            "median": 3,
+            "p95": 4
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_code": {
+              "calls": 43,
+              "errors": 3,
+              "unknown_token_counts": 0,
+              "total_tokens": 48227,
+              "tokens": {
+                "N": 43,
+                "mean": 1121.5581395348838,
+                "median": 1221,
+                "p95": 1695.3999999999999
+              }
+            },
+            "search_code": {
+              "calls": 79,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 106776,
+              "tokens": {
+                "N": 79,
+                "mean": 1351.5949367088608,
+                "median": 1350,
+                "p95": 1402.2
+              }
+            }
+          }
+        },
+        {
+          "model_key": "luna",
+          "arm": "repomix6",
+          "N": 40,
+          "supported": 1,
+          "material_error_answers": 5,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 40,
+              "mean": 32859.175,
+              "median": 27584,
+              "p95": 62781.29999999998
+            },
+            "output_tokens": {
+              "N": 40,
+              "mean": 465.4,
+              "median": 455,
+              "p95": 619.55
+            },
+            "total_tokens": {
+              "N": 40,
+              "mean": 33324.575,
+              "median": 28070.5,
+              "p95": 63427.44999999998
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 1314367,
+            "output": 18616,
+            "total": 1332983
+          },
+          "cost_usd": {
+            "exact_total": 0.0625585,
+            "exact_mean": 0.0015639625,
+            "upper_bound_total": 0.0625585,
+            "upper_bound_mean": 0.0015639625
+          },
+          "provider_tokens_per_supported_answer": 1332983,
+          "exact_cost_per_supported_answer_usd": 0.0625585,
+          "upper_bound_cost_per_supported_answer_usd": 0.0625585,
+          "tool_calls": {
+            "N": 40,
+            "mean": 3.475,
+            "median": 3,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "grep": {
+              "calls": 43,
+              "errors": 1,
+              "unknown_token_counts": 0,
+              "total_tokens": 6683,
+              "tokens": {
+                "N": 43,
+                "mean": 155.41860465116278,
+                "median": 113,
+                "p95": 362.4
+              }
+            },
+            "read_file": {
+              "calls": 96,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 111781,
+              "tokens": {
+                "N": 96,
+                "mean": 1164.3854166666667,
+                "median": 1014.5,
+                "p95": 2828.25
+              }
+            },
+            "repomix_pack": {
+              "calls": 40,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 209960,
+              "tokens": {
+                "N": 40,
+                "mean": 5249,
+                "median": 5305,
+                "p95": 6000
+              }
+            }
+          }
+        },
+        {
+          "model_key": "luna",
+          "arm": "serena6",
+          "N": 40,
+          "supported": 0,
+          "material_error_answers": 6,
+          "failed": 1,
+          "unknown_usage": 1,
+          "unknown_cost": 1,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 1199527,
+            "output": 20010,
+            "total": 1219537
+          },
+          "cost_usd": {
+            "exact_total": null,
+            "exact_mean": null,
+            "upper_bound_total": 0.042517985,
+            "upper_bound_mean": 0.001062949625
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 40,
+            "mean": 5.275,
+            "median": 6,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_file": {
+              "calls": 1,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 157,
+              "tokens": {
+                "N": 1,
+                "mean": 157,
+                "median": 157,
+                "p95": 157
+              }
+            },
+            "serena_find_symbol": {
+              "calls": 123,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 35386,
+              "tokens": {
+                "N": 123,
+                "mean": 287.6910569105691,
+                "median": 214,
+                "p95": 665.4999999999994
+              }
+            },
+            "serena_get_symbols_overview": {
+              "calls": 23,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 3797,
+              "tokens": {
+                "N": 23,
+                "mean": 165.08695652173913,
+                "median": 105,
+                "p95": 396
+              }
+            },
+            "serena_instructions": {
+              "calls": 40,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 43820,
+              "tokens": {
+                "N": 40,
+                "mean": 1095.5,
+                "median": 1096,
+                "p95": 1102
+              }
+            },
+            "serena_list_dir": {
+              "calls": 12,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 830,
+              "tokens": {
+                "N": 12,
+                "mean": 69.16666666666667,
+                "median": 87.5,
+                "p95": 114.8
+              }
+            },
+            "serena_read_file": {
+              "calls": 21,
+              "errors": 5,
+              "unknown_token_counts": 0,
+              "total_tokens": 10784,
+              "tokens": {
+                "N": 21,
+                "mean": 513.5238095238095,
+                "median": 444,
+                "p95": 1203
+              }
+            },
+            "serena_search_for_pattern": {
+              "calls": 31,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 28252,
+              "tokens": {
+                "N": 31,
+                "mean": 911.3548387096774,
+                "median": 462,
+                "p95": 3892.5
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "evidence_first4",
+          "N": 40,
+          "supported": 1,
+          "material_error_answers": 20,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 40,
+              "mean": 8087.025,
+              "median": 8134,
+              "p95": 17571.2
+            },
+            "output_tokens": {
+              "N": 40,
+              "mean": 1221.6,
+              "median": 1192,
+              "p95": 1777.95
+            },
+            "total_tokens": {
+              "N": 40,
+              "mean": 9308.625,
+              "median": 9372.5,
+              "p95": 18621.05
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 323481,
+            "output": 48864,
+            "total": 372345
+          },
+          "cost_usd": {
+            "exact_total": 0.03171645,
+            "exact_mean": 0.00079291125,
+            "upper_bound_total": 0.03171645,
+            "upper_bound_mean": 0.00079291125
+          },
+          "provider_tokens_per_supported_answer": 372345,
+          "exact_cost_per_supported_answer_usd": 0.03171645,
+          "upper_bound_cost_per_supported_answer_usd": 0.03171645,
+          "tool_calls": {
+            "N": 40,
+            "mean": 2.55,
+            "median": 3,
+            "p95": 4
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_code": {
+              "calls": 55,
+              "errors": 20,
+              "unknown_token_counts": 0,
+              "total_tokens": 51185,
+              "tokens": {
+                "N": 55,
+                "mean": 930.6363636363636,
+                "median": 1354,
+                "p95": 1612.4
+              }
+            },
+            "search_code": {
+              "calls": 47,
+              "errors": 3,
+              "unknown_token_counts": 0,
+              "total_tokens": 58495,
+              "tokens": {
+                "N": 47,
+                "mean": 1244.5744680851064,
+                "median": 1335,
+                "p95": 1392.7
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "native6",
+          "N": 40,
+          "supported": 1,
+          "material_error_answers": 25,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 40,
+              "mean": 17089.825,
+              "median": 17060,
+              "p95": 38702.84999999999
+            },
+            "output_tokens": {
+              "N": 40,
+              "mean": 1207.65,
+              "median": 1178,
+              "p95": 1630.55
+            },
+            "total_tokens": {
+              "N": 40,
+              "mean": 18297.475,
+              "median": 18088.5,
+              "p95": 39632.59999999999
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 683593,
+            "output": 48306,
+            "total": 731899
+          },
+          "cost_usd": {
+            "exact_total": 0.04196477,
+            "exact_mean": 0.00104911925,
+            "upper_bound_total": 0.04196477,
+            "upper_bound_mean": 0.00104911925
+          },
+          "provider_tokens_per_supported_answer": 731899,
+          "exact_cost_per_supported_answer_usd": 0.04196477,
+          "upper_bound_cost_per_supported_answer_usd": 0.04196477,
+          "tool_calls": {
+            "N": 40,
+            "mean": 4.7,
+            "median": 6,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "grep": {
+              "calls": 66,
+              "errors": 3,
+              "unknown_token_counts": 0,
+              "total_tokens": 9935,
+              "tokens": {
+                "N": 66,
+                "mean": 150.53030303030303,
+                "median": 102,
+                "p95": 464
+              }
+            },
+            "read_file": {
+              "calls": 122,
+              "errors": 2,
+              "unknown_token_counts": 0,
+              "total_tokens": 192560,
+              "tokens": {
+                "N": 122,
+                "mean": 1578.360655737705,
+                "median": 1378.5,
+                "p95": 4073.5499999999956
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "pasr_split4",
+          "N": 40,
+          "supported": 0,
+          "material_error_answers": 21,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 40,
+              "mean": 7581.25,
+              "median": 7741.5,
+              "p95": 14882.699999999997
+            },
+            "output_tokens": {
+              "N": 40,
+              "mean": 1117.85,
+              "median": 1133,
+              "p95": 1473.2999999999995
+            },
+            "total_tokens": {
+              "N": 40,
+              "mean": 8699.1,
+              "median": 8789.5,
+              "p95": 16054.8
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 303250,
+            "output": 44714,
+            "total": 347964
+          },
+          "cost_usd": {
+            "exact_total": 0.029995300000000003,
+            "exact_mean": 0.0007498825000000001,
+            "upper_bound_total": 0.029995300000000003,
+            "upper_bound_mean": 0.0007498825000000001
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 40,
+            "mean": 2.825,
+            "median": 3,
+            "p95": 4
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_code": {
+              "calls": 58,
+              "errors": 34,
+              "unknown_token_counts": 0,
+              "total_tokens": 38831,
+              "tokens": {
+                "N": 58,
+                "mean": 669.5,
+                "median": 121,
+                "p95": 1614
+              }
+            },
+            "search_code": {
+              "calls": 55,
+              "errors": 8,
+              "unknown_token_counts": 0,
+              "total_tokens": 64210,
+              "tokens": {
+                "N": 55,
+                "mean": 1167.4545454545455,
+                "median": 1351,
+                "p95": 1411.6
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "repomix6",
+          "N": 40,
+          "supported": 0,
+          "material_error_answers": 32,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 40,
+              "mean": 21778.9,
+              "median": 20135,
+              "p95": 58753.149999999994
+            },
+            "output_tokens": {
+              "N": 40,
+              "mean": 986,
+              "median": 988,
+              "p95": 1350.6999999999996
+            },
+            "total_tokens": {
+              "N": 40,
+              "mean": 22764.9,
+              "median": 21322,
+              "p95": 59848.49999999999
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 871156,
+            "output": 39440,
+            "total": 910596
+          },
+          "cost_usd": {
+            "exact_total": 0.0339322,
+            "exact_mean": 0.000848305,
+            "upper_bound_total": 0.0339322,
+            "upper_bound_mean": 0.000848305
+          },
+          "provider_tokens_per_supported_answer": null,
+          "exact_cost_per_supported_answer_usd": null,
+          "upper_bound_cost_per_supported_answer_usd": null,
+          "tool_calls": {
+            "N": 40,
+            "mean": 2.075,
+            "median": 2,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "grep": {
+              "calls": 31,
+              "errors": 3,
+              "unknown_token_counts": 0,
+              "total_tokens": 2725,
+              "tokens": {
+                "N": 31,
+                "mean": 87.90322580645162,
+                "median": 56,
+                "p95": 225.5
+              }
+            },
+            "read_file": {
+              "calls": 52,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 72184,
+              "tokens": {
+                "N": 52,
+                "mean": 1388.1538461538462,
+                "median": 1289,
+                "p95": 3094.3499999999967
+              }
+            },
+            "repomix_pack": {
+              "calls": 40,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 209960,
+              "tokens": {
+                "N": 40,
+                "mean": 5249,
+                "median": 5305,
+                "p95": 6000
+              }
+            }
+          }
+        },
+        {
+          "model_key": "nano5",
+          "arm": "serena6",
+          "N": 40,
+          "supported": 1,
+          "material_error_answers": 21,
+          "failed": 0,
+          "unknown_usage": 0,
+          "unknown_cost": 0,
+          "cumulative_actual_provider_tokens": {
+            "input_tokens": {
+              "N": 40,
+              "mean": 32568.65,
+              "median": 29821.5,
+              "p95": 60318.39999999995
+            },
+            "output_tokens": {
+              "N": 40,
+              "mean": 1191.75,
+              "median": 1221.5,
+              "p95": 1584.7999999999997
+            },
+            "total_tokens": {
+              "N": 40,
+              "mean": 33760.4,
+              "median": 30890,
+              "p95": 61748.69999999995
+            }
+          },
+          "known_provider_tokens_lower_bound": {
+            "input": 1302746,
+            "output": 47670,
+            "total": 1350416
+          },
+          "cost_usd": {
+            "exact_total": 0.04262962,
+            "exact_mean": 0.0010657405,
+            "upper_bound_total": 0.04262962,
+            "upper_bound_mean": 0.0010657405
+          },
+          "provider_tokens_per_supported_answer": 1350416,
+          "exact_cost_per_supported_answer_usd": 0.04262962,
+          "upper_bound_cost_per_supported_answer_usd": 0.04262962,
+          "tool_calls": {
+            "N": 40,
+            "mean": 4.875,
+            "median": 5.5,
+            "p95": 6
+          },
+          "local_tool_output_estimates_not_provider_usage": {
+            "read_file": {
+              "calls": 79,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 107367,
+              "tokens": {
+                "N": 79,
+                "mean": 1359.0759493670887,
+                "median": 1168,
+                "p95": 2805.8999999999974
+              }
+            },
+            "serena_find_referencing_symbols": {
+              "calls": 1,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 1,
+              "tokens": {
+                "N": 1,
+                "mean": 1,
+                "median": 1,
+                "p95": 1
+              }
+            },
+            "serena_find_symbol": {
+              "calls": 31,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 5793,
+              "tokens": {
+                "N": 31,
+                "mean": 186.8709677419355,
+                "median": 49,
+                "p95": 715
+              }
+            },
+            "serena_get_symbols_overview": {
+              "calls": 3,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 276,
+              "tokens": {
+                "N": 3,
+                "mean": 92,
+                "median": 108,
+                "p95": 130.5
+              }
+            },
+            "serena_instructions": {
+              "calls": 40,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 43820,
+              "tokens": {
+                "N": 40,
+                "mean": 1095.5,
+                "median": 1096,
+                "p95": 1102
+              }
+            },
+            "serena_list_dir": {
+              "calls": 4,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 369,
+              "tokens": {
+                "N": 4,
+                "mean": 92.25,
+                "median": 84,
+                "p95": 112.04999999999998
+              }
+            },
+            "serena_read_file": {
+              "calls": 51,
+              "errors": 42,
+              "unknown_token_counts": 0,
+              "total_tokens": 19285,
+              "tokens": {
+                "N": 51,
+                "mean": 378.1372549019608,
+                "median": 77,
+                "p95": 1983.5
+              }
+            },
+            "serena_search_for_pattern": {
+              "calls": 26,
+              "errors": 0,
+              "unknown_token_counts": 0,
+              "total_tokens": 26604,
+              "tokens": {
+                "N": 26,
+                "mean": 1023.2307692307693,
+                "median": 29.5,
+                "p95": 6465.75
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "invalid_baseline_disclosure": {
+    "stage": "development",
+    "arm": "serena6",
+    "reason": "Upstream initial_instructions was missing in the original agent-context bootstrap. Original observations are retained, not used as the corrected competitor baseline. Corrected Serena was measured separately with the upstream manual counted in provider input."
+  },
+  "candidate_profiles": {
+    "evidence_first4": {
+      "base_arm": "pasr_split4",
+      "prompt_suffix": "Use only production source files; documentation, tests and manual files are not in this workspace. Start with a short identifier-focused search_code query, not the entire question, and reuse the returned paths and line ranges. For read_code, always provide BOTH a nonempty query and a files array; put ranges inside files as path:start-end, never in path/start/end arguments. After locating the implementation, prefer a focused read over repeated broad searches; follow direct helpers when their behavior matters. Search hits and signatures alone are not behavioral proof. Inspect relevant input normalization, helper defaults, branch bounds, composition order and return/error paths; distinguish truthiness from explicit None checks exactly as the code does. Before answering, check every requested clause against the implementation you read and explain the relevant helper/default effects explicitly. Stop once those mechanisms are evidenced; state any remaining omission rather than substituting prior knowledge."
+    },
+    "evidence_budget1000": {
+      "base_arm": "pasr_split4",
+      "prompt_suffix": "Use only production source files; documentation, tests and manual files are not in this workspace. Start with a short identifier-focused search_code query, not the entire question, and reuse the returned paths and line ranges. For read_code, always provide BOTH a nonempty query and a files array; put ranges inside files as path:start-end, never in path/start/end arguments. After locating the implementation, prefer a focused read over repeated broad searches; follow direct helpers when their behavior matters. Search hits and signatures alone are not behavioral proof. Inspect relevant input normalization, helper defaults, branch bounds, composition order and return/error paths; distinguish truthiness from explicit None checks exactly as the code does. Before answering, check every requested clause against the implementation you read and explain the relevant helper/default effects explicitly. Stop once those mechanisms are evidenced; state any remaining omission rather than substituting prior knowledge.",
+      "read_budget": 1000
+    }
+  },
+  "selection": {
+    "candidate_arm": "evidence_first4",
+    "pasr_reference": "pasr_split4",
+    "static_reference": "repomix6",
+    "candidate_config": {
+      "base_arm": "pasr_split4",
+      "prompt_suffix": "Use only production source files; documentation, tests and manual files are not in this workspace. Start with a short identifier-focused search_code query, not the entire question, and reuse the returned paths and line ranges. For read_code, always provide BOTH a nonempty query and a files array; put ranges inside files as path:start-end, never in path/start/end arguments. After locating the implementation, prefer a focused read over repeated broad searches; follow direct helpers when their behavior matters. Search hits and signatures alone are not behavioral proof. Inspect relevant input normalization, helper defaults, branch bounds, composition order and return/error paths; distinguish truthiness from explicit None checks exactly as the code does. Before answering, check every requested clause against the implementation you read and explain the relevant helper/default effects explicitly. Stop once those mechanisms are evidenced; state any remaining omission rather than substituting prior knowledge."
+    },
+    "created_at_utc": "2026-10-05T11:08:04.513Z",
+    "confirmation_questions_unseen": true,
+    "selection_evidence": {
+      "rule": "Luna supported descending, material-error-answer count ascending, complete provider-token mean ascending, arm name",
+      "development_analysis_sha256": "d7fcbabb9fbfaf781ab1e74004287d365ca8b221a5b7963fbaeb0d5badcd1501",
+      "candidate_analysis_sha256": "f9b551e4f42299d073c3b51d4137da5f316b022216cfb7f2782315d32593f89f",
+      "serena_corrected_analysis_sha256": "ff86d91d26a234b7a1552142148f7028e0a449f765dbe2dff0d7ef156654cec3",
+      "bootstrap_amendment_sha256": "bc20b02e04e14a7240ccbb380e7f2b426929adcf61ff31e026e994709c9bd673",
+      "grading_adjudication_sha256": "5088b3bb99081d84ffeaaab2ed6a40f26c63154bb0f02e83123d4548e4be4dd6",
+      "original_runtime_commit": "020c226",
+      "corrected_runtime_commit": "6858acb",
+      "candidate_ranking": [
+        {
+          "arm": "evidence_first4",
+          "supported": 2,
+          "material_error_answers": 0,
+          "mean_total_tokens": 12058.333333333334
+        },
+        {
+          "arm": "evidence_budget1000",
+          "supported": 1,
+          "material_error_answers": 0,
+          "mean_total_tokens": 11601.833333333334
+        }
+      ],
+      "adjudication_selection_sensitivity": "The fixed-duration consistency correction adds one supported answer to each candidate, leaving their ranking unchanged. Original pre-adjudication reviews retained.",
+      "development_result": "Selected evidence_first4 has 2/12 full-support and zero material-error answers on Luna, but uses more tokens than native and unchanged split-4. Development is not promotion; confirmation still tests the frozen best-ranked candidate without retuning."
+    }
+  },
+  "held_out_gate": {
+    "promote": false,
+    "candidate": "evidence_first4",
+    "unchanged_pasr_reference": "pasr_split4",
+    "confirmation_cases": 40,
+    "confirmation_rows": 400,
+    "all_provider_usage_complete": false,
+    "confirmation_provider_usage_complete": false,
+    "study_provider_usage_complete": false,
+    "study_plan_sha256": "a31ca195b9f0de12d9373817e9374e9fca62c6ee524d3fe3869e76ed1a0d1bdf",
+    "confirmation_decision_sha256": "648cb04359a36a2cc42cfe3852ad4520d54ec3c641edbf4a8a18d1990e17a0f1",
+    "rule": "Luna original gate against both references; nano supported/material-error non-regression against both",
+    "comparisons": {
+      "luna:native6": {
+        "pass": false,
+        "replication_nonregression": false,
+        "problems": [
+          "Incomplete provider usage blocks promotion"
+        ]
+      },
+      "luna:pasr_split4": {
+        "pass": false,
+        "replication_nonregression": true,
+        "N_pairs": 40,
+        "seed": 2026100505,
+        "bootstrap_draws": 10000,
+        "unit": "question",
+        "candidate_supported": 4,
+        "reference_supported": 3,
+        "candidate_material_error_answers": 3,
+        "reference_material_error_answers": 5,
+        "accuracy_difference_95_ci": [
+          -0.05,
+          0.1
+        ],
+        "mean_token_ratio": 1.182575013816954,
+        "token_ratio_95_ci": [
+          1.0459362257054168,
+          1.3523051973356106
+        ],
+        "checks": {
+          "supported_nonregression": true,
+          "material_error_nonregression": true,
+          "accuracy_difference_95_lower_ge_minus_05": true,
+          "token_ratio_95_upper_lt_1": false,
+          "mean_token_ratio_le_085": false
+        },
+        "problems": []
+      },
+      "nano5:native6": {
+        "pass": true,
+        "replication_nonregression": true,
+        "N_pairs": 40,
+        "seed": 2026100505,
+        "bootstrap_draws": 10000,
+        "unit": "question",
+        "candidate_supported": 1,
+        "reference_supported": 1,
+        "candidate_material_error_answers": 20,
+        "reference_material_error_answers": 25,
+        "accuracy_difference_95_ci": [
+          0,
+          0
+        ],
+        "mean_token_ratio": 0.5087382275423248,
+        "token_ratio_95_ci": [
+          0.423294273923729,
+          0.6060796758991926
+        ],
+        "checks": {
+          "supported_nonregression": true,
+          "material_error_nonregression": true,
+          "accuracy_difference_95_lower_ge_minus_05": true,
+          "token_ratio_95_upper_lt_1": true,
+          "mean_token_ratio_le_085": true
+        },
+        "problems": []
+      },
+      "nano5:pasr_split4": {
+        "pass": false,
+        "replication_nonregression": true,
+        "N_pairs": 40,
+        "seed": 2026100505,
+        "bootstrap_draws": 10000,
+        "unit": "question",
+        "candidate_supported": 1,
+        "reference_supported": 0,
+        "candidate_material_error_answers": 20,
+        "reference_material_error_answers": 21,
+        "accuracy_difference_95_ci": [
+          0,
+          0.075
+        ],
+        "mean_token_ratio": 1.0700675931992965,
+        "token_ratio_95_ci": [
+          0.8516335733971983,
+          1.3293287710703028
+        ],
+        "checks": {
+          "supported_nonregression": true,
+          "material_error_nonregression": true,
+          "accuracy_difference_95_lower_ge_minus_05": true,
+          "token_ratio_95_upper_lt_1": false,
+          "mean_token_ratio_le_085": false
+        },
+        "problems": []
+      }
+    }
+  },
+  "post_hoc_required_criterion_coverage": {
+    "denominator_per_group": 158,
+    "not_accuracy_or_a_promotion_metric": true,
+    "groups": [
+      {
+        "model_key": "nano5",
+        "arm": "native6",
+        "answers": 40,
+        "required_criteria": 158,
+        "satisfied_required_criteria": 59,
+        "answers_with_unsupported_claims": 13
+      },
+      {
+        "model_key": "luna",
+        "arm": "evidence_first4",
+        "answers": 40,
+        "required_criteria": 158,
+        "satisfied_required_criteria": 79,
+        "answers_with_unsupported_claims": 3
+      },
+      {
+        "model_key": "luna",
+        "arm": "repomix6",
+        "answers": 40,
+        "required_criteria": 158,
+        "satisfied_required_criteria": 74,
+        "answers_with_unsupported_claims": 6
+      },
+      {
+        "model_key": "luna",
+        "arm": "native6",
+        "answers": 40,
+        "required_criteria": 158,
+        "satisfied_required_criteria": 71,
+        "answers_with_unsupported_claims": 4
+      },
+      {
+        "model_key": "nano5",
+        "arm": "serena6",
+        "answers": 40,
+        "required_criteria": 158,
+        "satisfied_required_criteria": 48,
+        "answers_with_unsupported_claims": 11
+      },
+      {
+        "model_key": "luna",
+        "arm": "pasr_split4",
+        "answers": 40,
+        "required_criteria": 158,
+        "satisfied_required_criteria": 74,
+        "answers_with_unsupported_claims": 9
+      },
+      {
+        "model_key": "luna",
+        "arm": "serena6",
+        "answers": 40,
+        "required_criteria": 158,
+        "satisfied_required_criteria": 53,
+        "answers_with_unsupported_claims": 8
+      },
+      {
+        "model_key": "nano5",
+        "arm": "repomix6",
+        "answers": 40,
+        "required_criteria": 158,
+        "satisfied_required_criteria": 31,
+        "answers_with_unsupported_claims": 19
+      },
+      {
+        "model_key": "nano5",
+        "arm": "pasr_split4",
+        "answers": 40,
+        "required_criteria": 158,
+        "satisfied_required_criteria": 41,
+        "answers_with_unsupported_claims": 21
+      },
+      {
+        "model_key": "nano5",
+        "arm": "evidence_first4",
+        "answers": 40,
+        "required_criteria": 158,
+        "satisfied_required_criteria": 44,
+        "answers_with_unsupported_claims": 17
+      }
+    ]
+  },
+  "continuation": {
+    "scheduled": 400,
+    "attempted": 400,
+    "answered": 398,
+    "original_rows_byte_identical": 272,
+    "prior_ledger_entries_unchanged": 2482,
+    "approved_continuation_rows": 128,
+    "continuation_failures": 0,
+    "failed_attempts": [
+      {
+        "identity": "confirmation-00052-luna-native6-e112b1d70919",
+        "failure": "timeout_usage_unknown",
+        "answer_nonempty": false
+      },
+      {
+        "identity": "confirmation-00271-luna-serena6-0902ea11b0a6",
+        "failure": "provider_error_usage_unknown",
+        "answer_nonempty": false
+      }
+    ],
+    "whole_study_requests": 3081,
+    "known_published_rate_cost_usd": 0.6364012400000009,
+    "unknown_reserved_usd": 0.00800375,
+    "whole_study_cost_upper_bound_usd": 0.644404990000001,
+    "requests_unique": true,
+    "original_protocol_sha256": "eaa363efebbefc578ee233bef8fce2c565d71048c6854513c4a95277c1b59529",
+    "approval_sha256": "e4e3c199a56f16d551b0e5673fc9515568b75abbdace4acaf238bb77ddd381f6",
+    "driver_sha256": "c83cef312a7069291018de81e90a9393fdef050aa4f4ea088efda75bf06376ad",
+    "promotion_forbidden": true
+  },
+  "source_pins": {
+    "D:\\kodlama\\pasr\\eval\\agent_bench\\results\\workflow_20261005\\corpora\\cachetools": {
+      "files": {
+        "src/cachetools/__init__.py": "c84b12348e387dd250514056607ff8759623d9601b3a6aa206287902dfb2594e",
+        "src/cachetools/_cached.py": "54778fb5cabacaca17d1a289dee10f374c0c88bece31746b29b57fee7a43762d",
+        "src/cachetools/_cachedmethod.py": "f890094887cf1f5e96d3065ba55993164139a13e4ed65c080ab31db76673607f",
+        "src/cachetools/func.py": "acf5a6c199984439c354de5ba6b0f5dd3f9c4b917abc20efe1baf81b5165f7a4",
+        "src/cachetools/keys.py": "f92797b1c820ca6a2e54faa472fb7c14535b2e89cea5728776e61dfece291b50"
+      },
+      "source_workspace": "D:\\kodlama\\pasr\\eval\\agent_bench\\results\\workflow_20261005\\competitors\\workspaces\\4207ef37c2a32e2f8a0e0d5ac295199bd97de6392700ed5fc7a1881155ac8111\\source"
+    },
+    "D:\\kodlama\\pasr\\eval\\agent_bench\\results\\workflow_20261005\\corpora\\itsdangerous": {
+      "files": {
+        "src/itsdangerous/__init__.py": "61cea5ce3b81936802738dbbba5cf5da04531e44a546b21c57d7ce271e164bf3",
+        "src/itsdangerous/_json.py": "b38bef90cfcd6ee2fdee115b644921d78e63754aef2e7ddd63a987a86a7c18cf",
+        "src/itsdangerous/encoding.py": "6546d4dcaca3a497dc280795fabd49d76fda2a19f68be6441560ffc5b48bcfac",
+        "src/itsdangerous/exc.py": "8b10e1d63a11c362641b272b4c8431bfe19eaf1108e63ff34dd2cfb6c4006a03",
+        "src/itsdangerous/serializer.py": "ec07e7f71ed11e8e7efbff91856b56684589bc2ebdc758445450b4ad257d1f35",
+        "src/itsdangerous/signer.py": "85d41ef5f64eb63e1299cad82d775b6021950cbfad355af3021084267be663c6",
+        "src/itsdangerous/timed.py": "fde81c664ebe5db3233d7cb00b64451b281b176edf65c3e1f52e0e894961a8a5",
+        "src/itsdangerous/url_safe.py": "4d7db7718099818b3ec71b700d8397e3b5ce12ee9dcb345885b77ade693fb1be"
+      },
+      "source_workspace": "D:\\kodlama\\pasr\\eval\\agent_bench\\results\\workflow_20261005\\competitors\\workspaces\\24c59e4d10b2d3c3a747ba0ba70bb29b6e5cb1f8344bbb5eb5c3cc605d8ffe22\\source"
+    },
+    "D:\\kodlama\\pasr\\eval\\agent_bench\\results\\workflow_20261005\\corpora\\python-dotenv": {
+      "files": {
+        "src/dotenv/__init__.py": "6e414b124db96ffc43689bd7fc9cc02d852227d7c8bf1161582c78de4b02d04e",
+        "src/dotenv/__main__.py": "f7a57c4412241a28c92793853fd02d1c988794a974a5f95c1ae43703904d82d5",
+        "src/dotenv/cli.py": "91ab3f0612a06e4332e46b7a76ed8c141d7d47f99864917143f605e3b0d1a1a0",
+        "src/dotenv/ipython.py": "ae82fbddd12de8c6626fe0394e3da69e41f0f9f972837ae7b26aaaaf7422ab40",
+        "src/dotenv/main.py": "c15d8780058d52c730d23225258cae5b3dd3047e3783321bf0e3329e185a95e4",
+        "src/dotenv/parser.py": "f00b197d1cfb697a13c3a9ab719ca67b04d1d0d158022fa68ec42382482598bd",
+        "src/dotenv/variables.py": "585f4061cd9cca9abe0d3d03f811b1d33191daf41bbdb578dbddb04c086dbc42",
+        "src/dotenv/version.py": "286250276dcc9c428c476c908a05ae379163f41e09463b1e9f086619ed1cc000"
+      },
+      "source_workspace": "D:\\kodlama\\pasr\\eval\\agent_bench\\results\\workflow_20261005\\competitors\\workspaces\\72d43ac5dcf26f92c60a001a4e7535dea7c8165cf5f4bf6cb6a8cfbd359c55cf\\source"
+    },
+    "D:\\kodlama\\pasr\\eval\\agent_bench\\results\\workflow_20261005\\corpora\\tenacity": {
+      "files": {
+        "tenacity/__init__.py": "5c3499adc659c2b645779850ccd3d912fa30c25ce3b155361d027e6686c5b655",
+        "tenacity/_utils.py": "aa050e521a5927460a251a5afd8fc12cff9814d506bf308b1cf129f857e8a8f5",
+        "tenacity/after.py": "74956c47e191034a34b74f19bc24c7194866337ff4b87ebb4e2a8664dd4617b1",
+        "tenacity/asyncio/__init__.py": "15a0b5eaea096c9d564138db28e9d3886e04c1a6919cf06e9ddcc686db68bc5f",
+        "tenacity/asyncio/retry.py": "faea4b4914071952d2c1825ef28d4de5f71b4027b53e21beb40a972c5dba19a6",
+        "tenacity/before.py": "e2481494ef11bc00d566a7723da195c61695419887fc77a3c13545f0cb75eeca",
+        "tenacity/before_sleep.py": "7a0ceb40f3af547361357107d7c17839c3220bd0f7ba0ed4ef15dd0f57f1a327",
+        "tenacity/nap.py": "e431f5ba2ebe7775f866c40244a2616398da43435d619d8012ab7b4afb795453",
+        "tenacity/retry.py": "8c77e69e7891f9061c745f6dc2d311ecdda6d883a755033c7d013e4d42ef82d5",
+        "tenacity/stop.py": "96a98b85939af910e67396cb81e57ba42a9a6a8b1a55b45dd5c405af1f000c99",
+        "tenacity/tornadoweb.py": "f7d59c49b812b054501dfe6739a1eadcfd2ecd009b2f7f612681aa63d6824d8b",
+        "tenacity/wait.py": "fe9c384cc2fcac6e85664d0289c34dc9cd9583bf171abd642039bfcf535f048d"
+      },
+      "source_workspace": "D:\\kodlama\\pasr\\eval\\agent_bench\\results\\workflow_20261005\\competitors\\workspaces\\ada088129e6730cbfd616cabf56d4010aebd960b62e99d7fea2dff49bc086a6f\\source"
+    }
+  },
+  "runtime_versions": {
+    "python": "3.12.10",
+    "pasr-mcp": "0.4.0",
+    "mcp": "2.3.0",
+    "openai": "3.24.0",
+    "tiktoken": "0.14.0"
+  },
+  "protocol_sha256": {
+    "development": "262350683706abbcc3bf24f18e86da5eccfc3eb5e1132833eac3ed7840163d39",
+    "serena_bootstrap": "fe28bf2e77718ae420a2aed16eb23e7e05b779cbf9ff6e1f17c3060216c62ca8",
+    "candidates": "500fd757cbcf22172d5b311e6ba36234c6931ae7bf5ce12ce5fb290b78794775",
+    "confirmation": "eaa363efebbefc578ee233bef8fce2c565d71048c6854513c4a95277c1b59529"
+  },
+  "harness_history": {
+    "original_development": "020c226",
+    "corrected_serena": "6858acb",
+    "approved_continuation": "95987cf"
+  },
+  "artifacts": {
+    "release": "https://github.com/Apheironn/pasr/releases/tag/workflow-study-20261005",
+    "archive_url": "https://github.com/Apheironn/pasr/releases/download/workflow-study-20261005/pasr-workflow-study-20261005-evidence.zip",
+    "archive_sha256": "5fd78f28078e665c9e02abd46339177e023aac38236007d1c9813c2d6c7449a8",
+    "archive_bytes": 11258286,
+    "manifest_member": "manifest.json",
+    "manifest_sha256": "06e0734f21caf3b9148f2b6f619bdb9cda24a98bc697b1b2064860f72c899000",
+    "archive_members": 285,
+    "export_policy": {
+      "allowlisted_only": true,
+      "excluded": [
+        "Credentials and authentication state",
+        "Raw provider responses and encrypted replay state",
+        "Raw request-message histories",
+        "Mutable pacing state",
+        "Assistant transcripts and local runtimes"
+      ],
+      "originals": "Original private rows and measurement files remain unchanged locally. Original file/row hashes bind derived exports; public file hashes below bind the actual distributed bytes.",
+      "microbenchmark_redaction": "Each microbenchmark export redacts 12 personal-home prefixes in returned_text after measurement. Original measured token counts and source text/file hashes are retained; those redacted strings need not retokenize identically.",
+      "grading": "All 400 held-out semantic reviews are final and unmodified. Strict compound-criterion support is not ordinary accuracy; grader qualifications are retained.",
+      "licenses": "Production source snapshots and actual competitor licenses are included under sources/ and licenses/."
+    }
+  },
+  "research_sources": [
+    "https://developers.openai.com/api/docs/pricing",
+    "https://developers.openai.com/api/docs/guides/prompt-caching",
+    "https://developers.openai.com/api/docs/guides/function-calling",
+    "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+    "https://aider.chat/docs/repomap.html",
+    "https://repomix.com/guide/code-compress",
+    "https://github.com/oraios/serena"
+  ],
+  "limitations": [
+    "These are actual competitor context providers under a shared answer harness, not complete Aider/Serena coding-agent products.",
+    "Candidate changes were limited to the two frozen policies; no third candidate or held-out retuning.",
+    "The same four repositories were used across splits; concept overlap and model pretraining overlap are not excluded.",
+    "Low strict full-support counts do not imply that every unsupported answer is incorrect.",
+    "Some criteria demand unprompted implementation details; reviewer qualifications and original criteria are retained.",
+    "Known published-rate charges and conservative reservations are not invoices; authoring/coding/review assistant tokens are excluded and unmeasured.",
+    "No production retrieval-default change or universal product-superiority claim follows from this study."
+  ]
+}

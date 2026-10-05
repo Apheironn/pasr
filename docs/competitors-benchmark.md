@@ -538,3 +538,136 @@ This is an **explicitly amended descriptive continuation**, not a pristine
 completed confirmation. Unknown usage already violates the original promotion
 gate, and the continuation approval independently forbids promotion from this
 interrupted run. Neither failure is retried or reclassified as zero cost.
+
+### Completed 40-question observations and decision
+
+All **400 scheduled attempts** are retained: **398 answers and two failed
+attempts**, with no replacement. The approved remainder completed all 128 new
+identities without another generation failure. All 272 earlier rows are
+byte-identical, and all 2482 pre-continuation ledger entries are unchanged.
+Forty separate, label-blind assistant reviewers assessed all 400 attempts against
+1580 criterion judgments. Source/quote/coverage validation passed. No held-out
+semantic verdict was changed after review.
+
+**Decision: do not promote either candidate; production retrieval defaults remain
+unchanged.** The selected prompt improved some descriptive quality counts, but
+failed the token objective against unchanged split-4 even independently of the
+interruption. Unknown usage and the explicit continuation condition also prohibit
+promotion.
+
+Each row below has **40 attempted questions**. Full support means every required
+criterion and substantive claim is supported by the delivered evidence, with no
+material error; it is **not ordinary answer accuracy**. “Error answers” counts
+answers with at least one material contradiction, not omitted details.
+
+| Model | Profile | Full support / 40 | Error answers | Mean cumulative provider tokens | Published-rate cost / 40 |
+|---|---|---:|---:|---:|---:|
+| Luna | native grep/read, 6 | 2 | 5 | unknown; observed lower bound 12,501 | at most $0.038886 |
+| Luna | unchanged PASR split, 4 | 3 | 5 | 10,721 | $0.035166 |
+| Luna | Repomix + native, 6 | 1 | 5 | 33,325 | $0.062559 |
+| Luna | corrected Serena + native, 6 | 0 | 6 | unknown; observed lower bound 30,488 | at most $0.042518 |
+| Luna | `evidence_first4`, 4 | 4 | 3 | 12,678 | $0.039106 |
+| GPT-5 nano | native grep/read, 6 | 1 | 25 | 18,297 | $0.041965 |
+| GPT-5 nano | unchanged PASR split, 4 | 0 | 21 | 8,699 | $0.029995 |
+| GPT-5 nano | Repomix + native, 6 | 0 | 32 | 22,765 | $0.033932 |
+| GPT-5 nano | corrected Serena + native, 6 | 1 | 21 | 33,760 | $0.042630 |
+| GPT-5 nano | `evidence_first4`, 4 | 1 | 20 | 9,309 | $0.031716 |
+
+Token and dollar figures are rounded. Unknown means stay unknown in the primary
+analysis: their observed subtotals divided by 40 are lower bounds, not complete
+means. The separate runtime artifact also describes the 39 complete trajectories
+in each affected Luna group; those subsets are not silently substituted for the
+full paired comparison. Dollar bounds retain the missing requests' reservations.
+Aider's 24 development trajectories remain reported above; the frozen ranking
+selected Repomix, not Aider, for the 400-attempt schedule.
+
+For the fully measured **Luna candidate versus unchanged PASR** pair:
+
+- Mean token ratio **1.182575**, or **18.26% more tokens**, not the required
+  reduction of at least 15%.
+- Paired question-bootstrap token-ratio 95% interval **[1.04594, 1.35231]**;
+  its upper endpoint fails the required `< 1` condition.
+- Full-support difference: **+2.5 percentage points**, 95% interval
+  **[-5, +10] points**. That does not establish better answer accuracy.
+- Material-error answers fell from 5 to 3, but published-rate cost rose from
+  $0.035166005 to $0.039105645, about **11.2%**.
+
+Nano's candidate used **7.01% more tokens than unchanged split-4**; its ratio
+interval was **[0.85163, 1.32933]**. It used fewer tokens than native, but that is
+not a novel win over the unchanged PASR reference, and the four-versus-six-call
+host policy remains a confound for a core-retrieval claim. All intervals use the
+original 10,000 draws, seed 2026100505 and question-level pairing. The native/Luna
+paired token gate is unavailable because usage is incomplete; no missing request
+was imputed as zero.
+
+#### What the low full-support scores do and do not mean
+
+The compound rubrics are stringent and sometimes require implementation details
+not explicit in the question: input conversion/normalization, lazy digest lookup,
+base storage size enforcement, or a driver/helper return path. Consequently an
+otherwise useful answer can miss full support for one omitted clause. The frozen
+rubrics were not relaxed to improve scores. Reviewer qualifications also retain
+source-snippet gaps and wording ambiguities, including regex “horizontal
+whitespace” terminology and what a custom implementation can guarantee.
+
+As a **post hoc descriptive diagnostic only**, Luna satisfied 71/158 required
+criteria with native, 74/158 with unchanged split-4, 74/158 with Repomix, 53/158
+with Serena and 79/158 with the candidate. Nano's corresponding counts were
+59, 41, 31, 48 and 44 out of 158. These are not calibrated accuracy percentages,
+independent observations, a new ranking rule or a replacement promotion metric.
+With so few fully supported answers, this study does not establish fine-grained
+product superiority. Review was AI-mediated, not independently human-audited.
+
+#### Practical findings and retained negative results
+
+- A shorter response budget did **not** deliver the intended end-to-end saving:
+  the 1000-token candidate reduced local payload but lost development support and
+  still exceeded unchanged split-4's provider-token mean. It was not retuned or
+  tried again on confirmation.
+- Better tool-use instructions helped some failures without meeting the cost
+  objective. In confirmation, Luna's split-pair tool errors fell from 3 to 0;
+  nano's fell from 42 to 23, not to zero. Schema instructions alone are insufficient.
+- Small location results are not substitutes for implementation evidence.
+  `trace_context` and `explain_selection` were expensive diagnostic envelopes in
+  the method probes; repeated source representations are a measured payload
+  finding, **not measured savings from deleting a field**. No response contract
+  was changed on that speculation.
+- Strict function schemas, smaller diagnostic payloads and history rewriting
+  were **not tested candidate improvements** here. No quality/cost win is claimed
+  for them. The two tested policies are retained as research data, not installed
+  defaults.
+
+#### Accounting, artifacts and reproduction
+
+Across development, corrected Serena, both candidates and confirmation:
+**664 attempted trajectories, 3081 distinct answering requests, 3079 known usage
+records and two unknown requests**. Known published-rate charges total
+**$0.636401240**; unknown requests retain **$0.008003750**; the conservative whole
+study bound is **$0.644404990**, below $5. These are not invoices. Authoring,
+coding and reviewing assistant-session tokens are **excluded and unmeasured** by
+this ledger. The 420 method probes themselves made no answering-model API calls.
+
+The [machine-readable summary](../eval/agent_bench/workflow_study_20261005.json)
+and [separate research evidence release](https://github.com/Apheironn/pasr/releases/tag/workflow-study-20261005)
+preserve protocols, cases, pinned source snapshots and licenses, anonymous review
+packets and decisions, the bootstrap correction, interrupted attempts, explicit
+continuation approval, method measurements and request accounting. Public rows
+omit duplicated request histories and encrypted provider replay state, retain
+observations and usage, and identify their original local row hashes. This is an
+auditable data export, not a byte-identical export of private replay transcripts.
+
+For privacy, each microbenchmark export redacts 12 personal-home prefixes after
+measurement. Original counters and original text/file hashes are retained; those
+redacted strings need not retokenize identically. All 33 production-source
+snapshots and all 400 held-out semantic reviews remain unmodified.
+
+The original development implementation is preserved at `020c226`, corrected
+Serena runtime at `6858acb`, and continuation driver at `95987cf`. Original
+protocols retain workstation-specific paths and exact source/runtime hashes.
+Another machine must install the pinned components, relocate cases/source paths,
+and create a **new** protocol rather than rewriting or pretending to replay this
+freeze. New model runs cost money and need not reproduce sampled answers.
+
+Final local source verification: **577 tests passed, four Windows symlink checks
+skipped; Ruff check passed and all 114 files were formatted**. The released 0.4.0
+package and its separate clean-install/runtime evidence remain unchanged.
