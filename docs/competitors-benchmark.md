@@ -281,7 +281,7 @@ reviews and protocols. Python syntax compilation and actual execution passed;
 the full Ruff check reported research-script style diagnostics, so this is not a
 claim of a clean lint run.
 
-## Fresh workflow study: method measurements — 2026-10-05
+## Fresh workflow study — 2026-10-05
 
 PASR 0.4.0 was exercised on 12 newly authored development questions across
 Tenacity, Cachetools, python-dotenv and ItsDangerous. These repositories were
@@ -371,3 +371,170 @@ commit `020c226` before this correction. Each subsequent frozen stage records it
 own corrected runtime hashes; an old stage must be verified with its recorded
 source revision, not silently rebound to newer code. The original questions,
 selection rule, candidate limits and promotion thresholds were not changed.
+
+### Original development results: exploratory, not promotion
+
+The original frozen run completed **192/192 trajectories and 899 requests**:
+3,425,976 cumulative provider input-plus-output tokens and **$0.181732085**
+at the recorded published rates. All provider usage and cache-price components
+were known. These estimates are not invoices and exclude authoring/review
+assistant-session consumption, which this OpenAI-key ledger does not measure.
+The answering-model ceiling remains $5 across study stages.
+
+Twelve independent, arm/model-label-blind assistant reviewers inspected all
+192 answers and 768 criterion judgments; quote/identity validation passed.
+This is AI review, not human validation, and tool formats can reveal families.
+“Full support” below means every frozen required compound criterion plus all
+substantive claims is supported. It is deliberately stricter than “contains no
+false claim”: omitted implementation details can fail completeness without being
+material errors. For example, an answer describing first/later chain members but
+omitting the frozen rubric's lower-attempt clamp fails that criterion. Rubrics
+were not relaxed after observing answers.
+
+Every row has 12 questions. Token means include schemas, repeated conversation
+history, initial maps/manuals, output and reasoning once.
+
+| Model | Profile | Full support | Answers with material errors | Mean provider tokens | Published-rate cost / 12 |
+|---|---|---:|---:|---:|---:|
+| Luna | native-6 | 2 | 0 | 10,992 | $0.009967 |
+| Luna | PASR default + native, 6 | 0 | 0 | 9,449 | $0.009318 |
+| Luna | selector + native, 6 | 0 | 1 | 10,144 | $0.009963 |
+| Luna | split-6 | 1 | 1 | 11,336 | $0.010675 |
+| Luna | split-4 | 1 | 1 | 10,079 | $0.010279 |
+| Luna | Aider RepoMap + native, 6 | 1 | 1 | 23,659 | $0.014361 |
+| Luna | Repomix + native, 6 | 1 | 0 | 27,570 | $0.017107 |
+| GPT-5 nano | native-6 | 1 | 7 | 18,109 | $0.012394 |
+| GPT-5 nano | PASR default + native, 6 | 0 | 9 | 19,453 | $0.012645 |
+| GPT-5 nano | selector + native, 6 | 1 | 6 | 23,932 | $0.013852 |
+| GPT-5 nano | split-6 | 0 | 6 | 9,543 | $0.009444 |
+| GPT-5 nano | split-4 | 0 | 7 | 6,741 | $0.007841 |
+| GPT-5 nano | Aider RepoMap + native, 6 | 0 | 8 | 21,764 | $0.010549 |
+| GPT-5 nano | Repomix + native, 6 | 1 | 9 | 34,944 | $0.012345 |
+
+The adapter-defective Serena rows are excluded from this competitive table, not
+erased from accounting: Luna had 0 full-support/0 material-error answers,
+20,993 mean tokens and $0.009114; nano had 0/6, 26,792 and $0.011878.
+Their separately corrected measurement is not a retry or replacement of those
+identities.
+
+These are **exposed tool profiles, not forced use of every method**. Luna's
+default profile made no `select_context` calls; its selector-plus-native profile
+made only three across 12 questions. Nano used no selector calls in either
+profile. Most reads there were native. Those results cannot establish the
+selector algorithm's answer-quality advantage. The compact pair has no native
+fallback; four versus six calls is explicitly a host-policy difference.
+
+The precommitted quality/error/token ranking selected **split-4** as the unchanged
+PASR reference and **Repomix** as the static comparator for confirmation.
+Repomix beat Aider on the material-error tie-break despite using more tokens.
+Even the token and dollar rankings differ: Luna/split-4 used fewer tokens than
+native here but cost slightly more at the observed cache rates.
+
+### Corrected competitor and two research-informed candidates
+
+The corrected Serena stage added 24 trajectories. It made **zero manual/README
+file requests**, unlike the defective bootstrap. This fixes the startup contract;
+it does not prove an answer-quality improvement. The original and corrected
+development stages were not interleaved, so their dollar/timing differences are
+not a controlled causal estimate of the bootstrap's effect.
+
+Two explicit host-policy candidates were then tested on all 12 development
+questions with both models (48 trajectories):
+
+1. **`evidence_first4`:** the unchanged compact pair and four-call cap, plus a
+   prompt asking for short identifier searches, exact existing reader arguments,
+   focused implementation/helper reads, branch/default/return checks and explicit
+   uncertainty. No library names, gold paths or rubric text are supplied.
+2. **`evidence_budget1000`:** exactly the same prompt and cap, with the reader's
+   context budget reduced from 1500 to 1000. Search budget is unchanged.
+
+The prompt's source-only scope reminder is specific to the production-source
+snapshots used here; it must not be treated as a claim that ordinary repositories
+lack documentation or tests.
+
+| Model | Corrected/candidate profile | Full support / 12 | Answers with material errors | Mean provider tokens | Published-rate cost / 12 |
+|---|---|---:|---:|---:|---:|
+| Luna | corrected Serena + native, 6 | 0 | 0 | 30,755 | $0.011636 |
+| GPT-5 nano | corrected Serena + native, 6 | 0 | 5 | 36,376 | $0.012720 |
+| Luna | `evidence_first4` | 2 | 0 | 12,058 | $0.011263 |
+| GPT-5 nano | `evidence_first4` | 0 | 5 | 8,332 | $0.008931 |
+| Luna | `evidence_budget1000` | 1 | 0 | 11,602 | $0.010375 |
+| GPT-5 nano | `evidence_budget1000` | 0 | 8 | 7,125 | $0.009276 |
+
+All 72 new generation attempts completed with known usage and pricing components.
+Six independent reviewers received 12 neutral packets mixing the six anonymous
+answers per question; no stage/arm/model mapping was supplied. Three fixed-duration
+criterion judgments were adjudicated before unblinding to match the original
+review's acceptance of equivalent constant-duration wording without a literal
+conversion-helper phrase. Two verdicts changed, one for each candidate; their
+ranking did not change. Original reviews and the decision are retained. Exact
+quote/coverage/source-binding validation passed for all 72 final reviews.
+
+The source of the hypotheses was not “shorter must be better”:
+
+- [OpenAI function-calling guidance](https://developers.openai.com/api/docs/guides/function-calling)
+  recommends explicit parameter formats and usage instructions, while warning that
+  examples can hurt reasoning-model performance. The original run had 60 tool
+  errors among 707 calls, including 30 schema errors. The new prompt did not
+  eliminate nano's schema errors: five remained in `evidence_first4`, six in the
+  budget variant. Strict-schema normalization was researched but **not tested**
+  within the two predeclared prompt/budget hooks.
+- [Anthropic's context-engineering guidance](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+  motivates focused, just-in-time evidence rather than indiscriminate truncation.
+  On Luna, both candidates made 3.25 tool calls/question versus split-4's 2.92.
+  The budget variant delivered fewer local tool-text tokens (3526 versus 3710)
+  yet consumed more cumulative provider tokens (11,602 versus 10,079).
+  This is a combined policy comparison, not proof that lowering a budget alone
+  caused extra calls. Between the two otherwise matching candidates, the smaller
+  budget reduced mean provider tokens by only about 3.8% and lost one fully
+  supported Luna answer.
+- [OpenAI prompt-caching guidance](https://developers.openai.com/api/docs/guides/prompt-caching)
+  explains why stable prefixes and price-weighted cache usage matter. These
+  experiments retain append-only history; they do not replace earlier evidence
+  with lossy summaries and then assume cached cost remains unchanged.
+- [Aider's repository-map documentation](https://aider.chat/docs/repomap.html) and
+  [Repomix's compression documentation](https://repomix.com/guide/code-compress)
+  distinguish navigation/compressed representations from complete implementation
+  evidence. Both real components retain the same native follow-up reads here.
+
+The original quality-first ranking selected **`evidence_first4`**, despite its
+higher development token mean. Its exact prompt/configuration, split-4 reference,
+Repomix comparator and corrected Serena runtime were frozen before opening the
+40 confirmation questions. The locked schedule contains both models and all five
+arms on every question: **400 trajectories**, with no development result treated
+as promotion.
+
+### Recorded interruption and user-approved continuation
+
+The original confirmation runner stopped after **272 of 400 attempted
+trajectories**: 270 answers, one native/Luna timeout and one Serena/Luna connection
+failure. Both failed requests have unknown usage. At that checkpoint, 2480 requests
+had known published-rate charges totaling **$0.508876885**, while the two unknown
+requests retained **$0.008003750** in full reservations; the whole-study conservative
+bound was **$0.516880635**, not an exhausted $5 ceiling. A read-only
+[organization-usage lookup](https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/usage/methods/completions)
+returned HTTP 403 and did not reconcile either request.
+
+The frozen runner already allowed other affordable requests after recognized
+timeouts, but deliberately blocked all spending after a generic connection error.
+The user explicitly chose **“Kalan 128 denemeyi tamamla”** rather than ending the
+study at 272 attempts. A separate
+[`workflow_continue.py`](../eval/agent_bench/workflow_continue.py) driver implements
+that narrow, recorded operational amendment without rewriting the original
+protocol, runner, failed rows or ledger charges:
+
+- Only fully reserved `APIConnectionError` records with no recovered usage or HTTP
+  status become eligible for continuation. Other unknown states still halt.
+- The $5 cap, request reservations, unique identities, zero SDK retries and
+  prohibition on replacing an unfinished/failed trajectory remain enforced.
+- The approval binds the exact remaining 128 identities, all 272 original row
+  hashes, original protocol and continuation-driver hash. Each new row carries
+  the amendment binding; candidate, source, rubric and ordering are unchanged.
+- Eight regression cases exercised retained reservations, the next-request
+  spending boundary and rejection of other unresolved/invalid states. A real
+  preflight verified all 272 rows and the unchanged ledger without a provider call.
+
+This is an **explicitly amended descriptive continuation**, not a pristine
+completed confirmation. Unknown usage already violates the original promotion
+gate, and the continuation approval independently forbids promotion from this
+interrupted run. Neither failure is retried or reclassified as zero cost.
