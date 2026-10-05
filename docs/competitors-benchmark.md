@@ -347,3 +347,27 @@ No API calls were made for this method measurement. Smaller local payloads alone
 do not establish fewer cumulative provider tokens, lower bills or better answers.
 The diagnostic payload findings do not authorize removing public response fields
 without a separate compatibility and answer-quality evaluation.
+
+### Serena bootstrap correction before confirmation
+
+The first development run exposed an adapter defect, not a Serena retrieval
+failure: its MCP initialization instructed the model to call `initial_instructions`,
+but the selected `agent` context explicitly excluded that tool. A seven-tool
+project allowlist also omitted it. The nano model consequently tried nonexistent
+manual filenames. Those original observations and charges remain retained; they
+are not presented as a representative Serena baseline.
+
+The corrected adapter uses upstream `desktop-app` context, enables and locally
+calls the required bootstrap once, and supplies its actual complete manual before
+the question. A real smoke returned a 988-token manual and 1094 tokens of delivered
+prefixed instructions, retrieved `Cache/__setitem__`, and left source hashes
+unchanged. The answering model still receives exactly seven read-only Serena
+source tools plus the common native fallback; bootstrap/manual tokens are included
+in provider input usage, while local setup is outside the six source-tool calls.
+No upstream package or production PASR retrieval code was modified.
+
+The original development runtime and its validated analysis were preserved at
+commit `020c226` before this correction. Each subsequent frozen stage records its
+own corrected runtime hashes; an old stage must be verified with its recorded
+source revision, not silently rebound to newer code. The original questions,
+selection rule, candidate limits and promotion thresholds were not changed.

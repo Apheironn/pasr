@@ -387,7 +387,7 @@ class SerenaSession:
             "ignore_all_files_in_gitignore": False,
             "read_only": True,
             "ignored_paths": [".serena/**", ".pasr/**", ".aider*", "**/__pycache__/**"],
-            "fixed_tools": sorted(SERENA_READ_TOOLS),
+            "fixed_tools": sorted(SERENA_READ_TOOLS | {"initial_instructions"}),
             "default_modes": ["planning", "no-memories", "no-onboarding"],
         }
         self.artifact_dir = ARTIFACTS / "sessions" / uuid.uuid4().hex
@@ -416,7 +416,7 @@ class SerenaSession:
             "--project",
             str(root),
             "--context",
-            "agent",
+            "desktop-app",
             "--mode",
             "planning",
             "--mode",
@@ -475,7 +475,18 @@ class SerenaSession:
                 for t in tools
                 if t.name in SERENA_READ_TOOLS
             ]
-            self.instructions = self._prefix(initialized.instructions or "")
+            if not any(tool.name == "initial_instructions" for tool in tools):
+                raise RuntimeError("Actual Serena lacks its required initial_instructions bootstrap")
+            bootstrap = await self._session.call_tool("initial_instructions", {})
+            _save(self.artifact_dir / "initial-instructions.json", bootstrap.model_dump(mode="json"))
+            manual = "\n".join(content.text for content in bootstrap.content if content.type == "text")
+            if bootstrap.is_error or not manual.strip():
+                raise RuntimeError("Serena initial_instructions did not return its manual")
+            self.instructions = self._prefix(manual)
+            self.instructions += (
+                "\nThe host has already called initial_instructions and supplied its complete manual above. "
+                "Do not look for a manual file or repeat that bootstrap operation."
+            )
             self.instructions += (
                 "\nStudy scope: production Python sources only. Tool names are prefixed serena_. "
                 "Only the seven supplied read-only navigation/search tools are available; "
@@ -492,6 +503,9 @@ class SerenaSession:
                     "server_info": initialized.server_info.model_dump(mode="json"),
                     "tools": self.tools,
                     "instructions": self.instructions,
+                    "initialize_instructions": initialized.instructions,
+                    "bootstrap_tool": "initial_instructions",
+                    "bootstrap_result": "initial-instructions.json",
                     "omitted_advertised_tools": sorted(t.name for t in tools if t.name not in SERENA_READ_TOOLS),
                     "prefix": "serena_",
                     "skip_ignored_files_for": ["list_dir", "search_for_pattern"],
