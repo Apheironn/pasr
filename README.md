@@ -208,8 +208,27 @@ budgets and selection receipts; that does not establish better answers or a lowe
 total model bill. Aider RepoMap provides structural navigation, and Repomix packages
 source for a model. These are overlapping workflows, not interchangeable products.
 
-**Latest source-reviewed agent studies (2026-10-03): the combined quality/cost
-gates failed.** The experimental split reader used `search_code` / `read_code`
+**Fresh workflow study (2026-10-05): no pipeline promotion.** All 10 PASR methods
+were measured in 420 local calls. The answering study retained 664 trajectories,
+including a 400-attempt, 40-question comparison with actual Repomix and Serena
+components; actual Aider RepoMap also ran in development.
+
+The selected prompt policy used **18.26% more cumulative provider tokens** than
+unchanged split-4 on Luna (paired 95% ratio interval **1.04594–1.35231**).
+Full rubric/source support rose from 3/40 to 4/40 and material-error answers fell
+from 5 to 3, but the cost objective failed. These stringent completeness scores are
+not ordinary answer accuracy. Two provider failures retain unknown usage; the
+user-approved continuation finished the remaining schedule without retries, not
+as an unamended confirmation. Production retrieval defaults remain unchanged.
+
+See the [method-by-method and competitor report](https://github.com/Apheironn/pasr/blob/main/docs/competitors-benchmark.md#fresh-workflow-study--2026-10-05),
+[machine-readable summary](https://github.com/Apheironn/pasr/blob/main/eval/agent_bench/workflow_study_20261005.json)
+and [licensed evidence bundle](https://github.com/Apheironn/pasr/releases/tag/workflow-study-20261005).
+The answering API's conservative cost bound is **$0.644405**; authoring/coding/review
+assistant-session tokens are excluded and unmeasured.
+
+**Earlier source-reviewed studies (2026-10-03): the combined quality/cost gates
+also failed.** Their experimental split reader used `search_code` / `read_code`
 with a host-enforced four-call limit and conservative stopping instructions.
 That workflow is not the default installed product:
 

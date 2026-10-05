@@ -234,7 +234,50 @@ The current source manifest and workflow default target 0.4.0; they do not
 establish publication. Release-branch installation instructions must match the
 version being built into the immutable wheel/sdist README. Merge those instructions
 to public main only after exact-artifact PyPI and registry verification; add new
-availability evidence only when observed. The records below remain historical 0.3.0 evidence.
+availability evidence only when observed. Keep historical records separate from newer observations.
+
+### Observed 0.4.0 publication — 2026-10-05
+
+[CI run 37283601255](https://github.com/Apheironn/pasr/actions/runs/37283601255)
+passed all six source/distribution jobs for
+`52a9d0b8c11ae477e7efb6a240a89df87f06df74`. The retained `pasr-dist` artifacts
+were promoted without rebuilding to [v0.4.0](https://github.com/Apheironn/pasr/releases/tag/v0.4.0).
+[Publish run 37284488496](https://github.com/Apheironn/pasr/actions/runs/37284488496)
+succeeded through the existing Trusted Publisher. The
+[public PyPI metadata](https://pypi.org/pypi/pasr-mcp/0.4.0/json) reports the same hashes:
+
+| Artifact | SHA-256 |
+|---|---|
+| `pasr_mcp-0.4.0-py3-none-any.whl` | `393897e88cc1d97982f204fd8cee14ea5fcd861abbfd1314bcd76a8d093b610d` |
+| `pasr_mcp-0.4.0.tar.gz` | `97518dc0a732855a668e0a0be8c771e4f76f94a79e210fed81e038f3a838c12d` |
+
+A fresh Windows/Python 3.12 environment installed `pasr-mcp==0.4.0` from
+`https://pypi.org/simple`. The installed smoke passed actual CLI/default-and-split
+MCP calls, source provenance, receipt recovery, token budgets, workspace escape
+rejection and `doctor` without changing the inspected workspace. The known fixture
+returned 33 context tokens under its 180-token selection budget.
+
+A separate fresh, isolated uv 0.12.23 `tool run --from pasr-mcp==0.4.0`
+resolved the public package without an editable checkout. It reported 0.4.0,
+passed all four doctor checks and read a real three-line source fixture with
+receipt provenance and 25/180 context tokens. Public-installed report commands
+also preserved a signed -60-token difference, propagated incomplete counters as
+`null`, accepted Unicode separators inside a query, and rejected corrupt JSONL
+with exit 2, empty stdout and sanitized diagnostics. Every inspected ledger
+remained byte-identical. The isolated launcher cache/workspaces were removed.
+
+The deployed [website](https://apheironn.github.io/pasr/) was inspected in Chromium
+at 1365×900: the visible installation section and both PyPI links targeted 0.4.0;
+no page-level horizontal overflow or broken images were observed. This is a
+desktop installation-section check, not a full accessibility or mobile audit.
+
+The checksum-verified official `mcp-publisher` 1.8.1 validated and published the
+same `server.json`. The [public registry version](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.Apheironn%2Fpasr/versions/0.4.0)
+is active, references PyPI `pasr-mcp==0.4.0`, uses stdio and requires `--workspace`.
+Its publication timestamp is `2026-10-05T08:42:37.99215Z`. Publisher logout succeeded
+and its isolated credential directory was removed. [Release PR #4](https://github.com/Apheironn/pasr/pull/4)
+was merged only after package and registry verification. These are distribution
+and protocol observations, not adoption or answer-quality results.
 
 ### Observed PyPI publication — 2026-10-04
 

@@ -640,3 +640,69 @@ def test_anthropic_cap_is_between_turns_not_within_an_accepted_batch(
     assert result["tool_calls"] == expected_calls
     assert delivered == ["1: FIRST = 1", "2: SECOND = 2", "3: THIRD = 3"][:expected_calls]
     assert result["failure"] == ("tool_choice_violation" if limit else None)
+
+
+@pytest.mark.parametrize(
+    "changes, reason",
+    [
+        ({"status": "reserved"}, "unresolved_usage_no_further_spending"),
+        ({"status": "usage_missing"}, "unresolved_usage_no_further_spending"),
+        ({"error_type": "RateLimitError", "status_code": 429}, "unresolved_usage_no_further_spending"),
+        ({"usage": {"input_tokens": 1}}, "unresolved_usage_no_further_spending"),
+        ({"budget_charge_usd": 0.05}, "unresolved_reservation_was_reduced"),
+        ({"budget_charge_usd": -0.1}, "ledger_charge_violation"),
+        ({"budget_charge_usd": 5.1, "reserved_usd": 5.1}, "global_ceiling_reached"),
+    ],
+)
+def test_continuation_exception_preserves_other_financial_guards(tmp_path, changes, reason):
+    from agent_bench.workflow_continue import _ContinuationBudget
+    from agent_bench.workflow_study.budget import BudgetHalt, save
+
+    request = {
+        "identity": "interrupted/turn-1",
+        "status": "failed_usage_unknown",
+        "error_type": "APIConnectionError",
+        "status_code": None,
+        "usage": None,
+        "budget_charge_usd": 0.1,
+        "reserved_usd": 0.1,
+        **changes,
+    }
+    path = tmp_path / "spend_ledger.json"
+    save(path, {"ceiling_usd": 5.0, "requests": [request], "recent_requests": {}})
+    before = path.read_bytes()
+    with pytest.raises(BudgetHalt) as error:
+        _ContinuationBudget(tmp_path)
+    assert error.value.reason == reason
+    assert path.read_bytes() == before
+
+
+def test_continuation_keeps_connection_reservation_against_next_request(tmp_path, monkeypatch):
+    import asyncio
+
+    from agent_bench.workflow_continue import _ContinuationBudget
+    from agent_bench.workflow_study import budget as accounting
+
+    request = {
+        "identity": "interrupted/turn-1",
+        "status": "failed_usage_unknown",
+        "error_type": "APIConnectionError",
+        "status_code": None,
+        "usage": None,
+        "budget_charge_usd": 4.9999,
+        "reserved_usd": 4.9999,
+    }
+    path = tmp_path / "spend_ledger.json"
+    accounting.save(path, {"ceiling_usd": 5.0, "requests": [request], "recent_requests": {}})
+    before = path.read_bytes()
+    # Isolate financial policy from tokenizer downloads; no provider is supplied.
+    monkeypatch.setattr(accounting, "token_count", lambda text: 1)
+    budget = _ContinuationBudget(tmp_path)
+    try:
+        with pytest.raises(accounting.BudgetHalt) as error:
+            asyncio.run(budget.call(None, accounting.MODELS["luna"], {}, "new/turn-1"))
+        assert error.value.reason == "global_ceiling_reached"
+        assert budget.record["requests"] == [request]
+        assert path.read_bytes() == before
+    finally:
+        budget.close()

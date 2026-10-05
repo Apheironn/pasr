@@ -3,6 +3,31 @@
 All notable changes to PASR. Format follows [Keep a Changelog](https://keepachangelog.com/);
 this project uses [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+- **Reproducible workflow research.** Added frozen schedules, durable shared
+  spending reservations, source-bound blinded review and paired promotion gates
+  for real native/PASR/Aider/Repomix/Serena measurements. Local method measurements
+  exercised all 10 PASR tools in 420 successful calls, including actual optional
+  CPU MiniLM inference; returned-payload estimates are separated from provider
+  conversation usage and answer quality.
+- **Serena research bootstrap correction.** Use the upstream MCP-compatible
+  context and consume its required `initial_instructions` before exposing the
+  same seven read-only source tools. The original defective adapter observations
+  and validated runtime revision remain preserved, rather than overwritten.
+  This changes the research adapter, not production PASR retrieval defaults.
+- **Explicit research continuation.** A separately hashed, user-approved driver
+  can finish only the remaining scheduled measurements after fully reserved
+  connection failures. It preserves the $5 cap, prior rows and charges, does not
+  retry failed requests, and leaves other unknown states fail-closed. The
+  interrupted study is explicitly ineligible for pipeline promotion.
+- **Completed fresh workflow comparison.** Retained all 664 attempts, including
+  400 held-out schedule cells and two unretried provider failures. The selected
+  prompt used 18.26% more Luna provider tokens than unchanged split-4 (paired
+  95% ratio interval 1.04594–1.35231); no retrieval policy was promoted. Published
+  method/competitor results distinguish strict source support, material errors,
+  local payload estimates, unknown usage and reserved cost bounds.
+
 ## [0.4.0] — 2026-10-05
 
 Runtime diagnostics and report compatibility corrections; retrieval defaults are unchanged.
@@ -53,6 +78,11 @@ Runtime diagnostics and report compatibility corrections; retrieval defaults are
   differences, ratios and cost estimates; do not coerce unknown values to zero or
   clamp expansion away. Handle report exit 2 as a failed read, not an empty report.
   Existing ledgers require no rewrite; frozen evaluation evidence is unchanged.
+- **Verified publication.** Exact artifacts from six-job green CI `37283601255`
+  were released as `v0.4.0` and published to PyPI by workflow `37284488496`.
+  A clean PyPI installation passed real CLI/MCP/doctor checks; MCP Registry
+  `io.github.Apheironn/pasr` is active at 0.4.0. Artifact hashes and the observed
+  publication sequence are recorded in `docs/ci.md`.
 
 ### Historical 0.3.0 onboarding and publication — 2026-10-04
 
